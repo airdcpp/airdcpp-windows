@@ -24,6 +24,7 @@
 #include "WinUtil.h"
 #include "ChatFilterDlg.h"
 
+namespace wingui {
 PropPage::TextItem ChatFilterPage::texts[] = {
 	{ IDC_IGNORE_ADD, ResourceManager::ADD },
 	{ IDC_IGNORE_REMOVE, ResourceManager::REMOVE },
@@ -164,4 +165,5 @@ void ChatFilterPage::removeChatFilter(int pos) {
 
 void ChatFilterPage::write() {
 	IgnoreManager::getInstance()->replaceList(ChatFilterItems);
+}
 }

@@ -28,6 +28,7 @@
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 
+namespace wingui {
 //Wrapper around different dialog classes
 class TabPage
 {
@@ -81,5 +82,6 @@ private:
 	CTabCtrl cTab;
 
 };
+}
 
 #endif

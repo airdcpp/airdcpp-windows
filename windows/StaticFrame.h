@@ -23,6 +23,7 @@
 #include "WinUtil.h"
 
 
+namespace wingui {
 template<class T, int title, int ID = -1>
 class StaticFrame {
 public:
@@ -81,5 +82,7 @@ public:
 };
 
 template<class T, int title, int ID> T* StaticFrame<T, title, ID>::frame = nullptr;
+
+}
 
 #endif // !defined(STATICFRAME_H)

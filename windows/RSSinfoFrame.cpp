@@ -33,6 +33,8 @@
 
 #include <boost/algorithm/cxx11/all_of.hpp>
 
+
+namespace wingui {
 string RssInfoFrame::id = "RSS";
 
 int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_NAME };
@@ -689,4 +691,5 @@ void RssInfoFrame::createColumns() {
 	ctrlRss.list.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlRss.list.setSortColumn(COLUMN_FILE);
 	ctrlRss.list.setVisible(SETTING(RSSFRAME_VISIBLE));
+}
 }

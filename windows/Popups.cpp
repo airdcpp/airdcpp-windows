@@ -26,6 +26,7 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 
+namespace wingui {
 PropPage::TextItem Popups::texts[] = {
 	{ IDC_POPUPGROUP, ResourceManager::BALLOON_POPUPS },
 	{ IDC_PREVIEW, ResourceManager::PREVIEW },
@@ -210,4 +211,5 @@ LRESULT Popups::onPreview(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, 
 	);
 
 	return 0;
+}
 }

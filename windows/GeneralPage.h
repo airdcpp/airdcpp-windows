@@ -27,6 +27,8 @@
 #include "PropPage.h"
 #include "ActionUtil.h"
 
+
+namespace wingui {
 class GeneralPage : public CPropertyPage<IDD_GENERALPAGE>, public PropPage
 {
 public:
@@ -65,5 +67,5 @@ private:
 	int curProfile;
 	ProfileSettingItem::List conflicts;
 };
-
+}
 #endif // !defined(GENERAL_PAGE_H)

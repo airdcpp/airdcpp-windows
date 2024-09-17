@@ -27,6 +27,7 @@
 #include "DynamicTabPage.h"
 
 
+namespace wingui {
 class DynamicDialogBase : public CDialogImpl<DynamicDialogBase> {
 public:
 
@@ -75,6 +76,7 @@ private:
 	CRect m_rcClip;
 
 	shared_ptr<DynamicTabPage> m_page;
-
 };
+}
+
 #endif

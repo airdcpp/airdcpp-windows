@@ -24,7 +24,7 @@
 #include <airdcpp/typedefs.h>
 #include <atlctrls.h>
 
-namespace dcpp {
+namespace wingui {
 
 class SearchTypeCombo : public CComboBox {
 public:

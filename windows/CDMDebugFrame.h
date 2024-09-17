@@ -24,8 +24,8 @@
 
 #include <boost/lockfree/queue.hpp>
 
-using namespace webserver;
-class CDMDebugFrame : private ProtocolCommandManagerListener, private WebServerManagerListener, public Thread,
+namespace wingui {
+class CDMDebugFrame : private ProtocolCommandManagerListener, private webserver::WebServerManagerListener, public Thread,
 	public MDITabChildWindowImpl<CDMDebugFrame>,
 	public StaticFrame<CDMDebugFrame, ResourceManager::MENU_CDMDEBUG_MESSAGES>
 {
@@ -108,9 +108,10 @@ private:
 	bool closed = false;
 	
 	void on(ProtocolCommandManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept override;
-	void on(WebServerManagerListener::Data, const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept override;
+	void on(webserver::WebServerManagerListener::Data, const string& aData, webserver::TransportType aType, webserver::Direction aDirection, const string& aIP) noexcept override;
 
 	static string formatMessage(const string& aType, bool aIncoming, const string& aData, const string& aIP) noexcept;
 };
+}
 
 #endif // __CDMDEBUGFRAME_H

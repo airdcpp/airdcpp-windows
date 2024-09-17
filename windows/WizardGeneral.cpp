@@ -23,6 +23,7 @@
 
 #include <airdcpp/Localization.h>
 
+namespace wingui {
 PropPage::TextItem WizardGeneral::texts[] = {
 	{ IDC_SETTINGS_NICK, ResourceManager::NICK },
 	{ IDC_SETTINGS_EMAIL, ResourceManager::EMAIL },
@@ -79,4 +80,5 @@ int WizardGeneral::OnSetActive() {
 	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
 	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 	return 0;
+}
 }

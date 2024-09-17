@@ -27,6 +27,7 @@
 #include <airdcpp/TimerManager.h>
 
 
+namespace wingui {
 HashProgressDlg::HashProgressDlg(bool aAutoClose /*false*/) : autoClose(aAutoClose) { }
 
 LRESULT HashProgressDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -181,4 +182,5 @@ LRESULT HashProgressDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD/* wID*/, HWND /*h
 	if( IsWindow() )
 		DestroyWindow();
 	return 0;
+}
 }

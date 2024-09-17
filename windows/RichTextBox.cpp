@@ -51,6 +51,7 @@
 #include "TextFrame.h"
 
 
+namespace wingui {
 EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
@@ -860,7 +861,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.InsertSeparatorFirst(selectedIP);
 			menu.AppendMenu(MF_STRING, IDC_WHOIS_IP, (TSTRING(WHO_IS) + _T(" ") + selectedIP).c_str() );
 			if (client)
-				prepareMenu(menu, ::UserCommand::CONTEXT_USER, getHubUrl());
+				prepareMenu(menu, UserCommand::CONTEXT_USER, getHubUrl());
 
 			if (client && client->isOp()) {
 				menu.AppendMenu(MF_SEPARATOR);
@@ -962,7 +963,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		menu.AppendMenu(MF_POPUP, (HMENU)copyMenu, CTSTRING(COPY));
 		
 		// add user commands
-		prepareMenu(menu, ::UserCommand::CONTEXT_USER, getHubUrl());
+		prepareMenu(menu, UserCommand::CONTEXT_USER, getHubUrl());
 
 		/*// default doubleclick action
 		switch(SETTING(CHAT_DBLCLICK)) {
@@ -1822,4 +1823,5 @@ void RichTextBox::handleSearchTTH() {
 		ActionUtil::searchHash(TTHValue(Text::fromT(selectedWord)), Util::emptyString, 0);
 	}
 	SetSelNone();
+}
 }

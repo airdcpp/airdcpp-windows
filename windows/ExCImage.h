@@ -32,6 +32,8 @@
 #include <atlimage.h>
 #undef byte
 
+
+namespace wingui {
 class ExCImage : public CImage, public FastAlloc<ExCImage>, public intrusive_ptr_base<ExCImage>, boost::noncopyable
 {
 public:
@@ -100,6 +102,7 @@ inline bool ExCImage::LoadFromResource(UINT id, LPCTSTR pType, HMODULE hInst) th
 		m_hBuffer = NULL;
 	}
 	return (res == S_OK);
+}
 }
 
 #endif //EXCIMAGE

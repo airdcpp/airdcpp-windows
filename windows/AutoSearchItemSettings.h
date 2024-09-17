@@ -26,6 +26,7 @@
 #include <airdcpp/SettingsManager.h>
 
 
+namespace wingui {
 //Item settings to be feed into dialog... yeah, open for cleaner methods.. at least rename some of them.
 struct AutoSearchItemSettings {
 
@@ -130,7 +131,7 @@ public:
 	Search::TypeModes searchType;
 	string groupName;
 	AutoSearchPtr as;
-
 }; 
+}
 #pragma once
 #endif

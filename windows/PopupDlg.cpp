@@ -25,6 +25,7 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 
+namespace wingui {
 PopupWnd::PopupWnd(const tstring& aMsg, const tstring& aTitle, CRect rc, uint32_t aId, HBITMAP hBmp): visible(GET_TICK()), id(aId), msg(aMsg), title(aTitle), bmp(hBmp) {
 	if((SETTING(POPUP_TYPE) == BALLOON) || (SETTING(POPUP_TYPE) == SPLASH))
 		Create(NULL, rc, NULL, WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_TOOLWINDOW );
@@ -169,4 +170,5 @@ LRESULT PopupWnd::onPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 	::EndPaint(m_hWnd,&ps);
 
 	return 0;
+}
 }

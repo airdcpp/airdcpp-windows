@@ -19,6 +19,8 @@
 #ifndef EX_MESSAGE_BOX
 #define EX_MESSAGE_BOX
 
+
+namespace wingui {
 class ExMessageBox
 {
 	private:
@@ -109,5 +111,7 @@ class ExMessageBox
 // Overload the standard MessageBox for convenience
 int WINAPI MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType, WNDPROC wndProc);
 int WINAPI MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, LPCTSTR lpQuestion, UINT uType, UINT& bCheck);
+
+}
 
 #endif // EX_MESSAGE_BOX

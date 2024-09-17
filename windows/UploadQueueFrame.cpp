@@ -28,6 +28,38 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/UploadManager.h>
 
+namespace dcpp {
+int UploadQueueItem::getImageIndex() const noexcept {
+	return wingui::ResourceLoader::getIconIndex(Text::toT(file));
+}
+
+int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueItem* b, uint8_t col) {
+	switch (col) {
+	case COLUMN_TRANSFERRED: return compare(a->pos, b->pos);
+	case COLUMN_SIZE: return compare(a->size, b->size);
+	case COLUMN_ADDED:
+	case COLUMN_WAITING: return compare(a->time, b->time);
+	default: return Util::stricmp(a->getText(col).c_str(), b->getText(col).c_str());
+	}
+}
+
+const tstring UploadQueueItem::getText(uint8_t col) const noexcept {
+	switch (col) {
+	case COLUMN_FILE: return Text::toT(PathUtil::getFileName(file));
+	case COLUMN_PATH: return Text::toT(PathUtil::getFilePath(file));
+	case COLUMN_NICK: return wingui::FormatUtil::getNicks(user);
+	case COLUMN_HUB: return wingui::FormatUtil::getHubNames(user);
+	case COLUMN_SIZE: return Util::formatBytesW(size);
+	case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", time));
+	case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + (size > 0 ? Util::toStringW((double)pos * 100.0 / (double)size) : _T("0")) + _T("%)");
+	case COLUMN_WAITING: return Util::formatSecondsW(GET_TIME() - time);
+	default: return Util::emptyStringT;
+	}
+}
+}
+
+
+namespace wingui {
 string UploadQueueFrame::id = "UploadQueue";
 
 int UploadQueueFrame::columnSizes[] = { 250, 100, 75, 75, 75, 75, 100, 100 };
@@ -394,34 +426,6 @@ void UploadQueueFrame::updateStatus() {
 	}
 }
 
-int UploadQueueItem::getImageIndex() const noexcept {
-	return ResourceLoader::getIconIndex(Text::toT(file));
-}
-
-int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueItem* b, uint8_t col) {
-	switch (col) {
-		case COLUMN_TRANSFERRED: return compare(a->pos, b->pos);
-		case COLUMN_SIZE: return compare(a->size, b->size);
-		case COLUMN_ADDED:
-		case COLUMN_WAITING: return compare(a->time, b->time);
-		default: return Util::stricmp(a->getText(col).c_str(), b->getText(col).c_str());
-	}
-}
-
-const tstring UploadQueueItem::getText(uint8_t col) const noexcept {
-	switch(col) {
-		case COLUMN_FILE: return Text::toT(PathUtil::getFileName(file));
-		case COLUMN_PATH: return Text::toT(PathUtil::getFilePath(file));
-		case COLUMN_NICK: return FormatUtil::getNicks(user);
-		case COLUMN_HUB: return FormatUtil::getHubNames(user);
-		case COLUMN_SIZE: return Util::formatBytesW(size);
-		case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", time));
-		case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + (size > 0 ? Util::toStringW((double)pos*100.0/(double)size) : _T("0")) + _T("%)");
-		case COLUMN_WAITING: return Util::formatSecondsW(GET_TIME() - time);
-		default: return Util::emptyStringT;
-	}
-}
-
 LRESULT UploadQueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	ctrlList.SetRedraw(FALSE);
 	switch(wParam) {
@@ -547,7 +551,4 @@ LRESULT UploadQueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHand
 	}
 }
 
-/**
- * @file
- * $Id: UploadQueueFrame.cpp,v 1.4 2003/05/13 11:34:07
- */
+}

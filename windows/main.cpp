@@ -41,12 +41,16 @@
 #include "WinUtil.h"
 
 #include <airdcpp/MerkleTree.h>
+#include <airdcpp/SSLSocket.h>
 
 #include <airdcpp/version.h>
 
 #include <delayimp.h>
 
 CAppModule _Module;
+
+using namespace dcpp;
+using namespace wingui;
 
 CriticalSection exceptionCS;
 
@@ -56,9 +60,6 @@ static char exeTTH[192*8/(5*8)+2];
 static bool firstException = true;
 
 static char debugBuf[DEBUG_BUFSIZE];
-
-
-#include <airdcpp/SSLSocket.h>
 
 string getExceptionName(DWORD code) {
 	switch(code)

@@ -27,6 +27,8 @@
 
 #include "WTL\atldlgs.h"
 
+namespace wingui {
+
 class SetupWizard;
 class WizardSharing : public SharePageBase, public PropPage, public CAeroWizardPageImpl<WizardSharing> { 
 public: 
@@ -54,5 +56,7 @@ private:
 	static TextItem texts[];
 	unique_ptr<ShareDirectories> dirPage;
 }; 
+
+}
 
 #endif

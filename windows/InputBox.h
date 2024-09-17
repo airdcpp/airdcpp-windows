@@ -10,6 +10,7 @@
 #endif // _MSC_VER > 1000
 
 
+namespace wingui {
 #define INPUTBOX_WIDTH 400
 #define INPUTBOX_HEIGHT 220
 
@@ -45,5 +46,6 @@ public:
 	~CInputBox();
 
 };
+}
 
 #endif // !defined(AFX_INPUTBOX_H__0BE6B01B_C74A_45FE_AF35_D6E8E4B65A1B__INCLUDED_)

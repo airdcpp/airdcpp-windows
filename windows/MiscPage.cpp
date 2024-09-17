@@ -29,6 +29,7 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/Util.h>
 
+namespace wingui {
 PropPage::TextItem MiscPage::texts[] = {
 	{ IDC_CZDC_WINAMP, ResourceManager::SETCZDC_WINAMP },
 	{ IDC_PLAYER_PATH, ResourceManager::SETCZDC_WINAMP_PATH },
@@ -364,6 +365,4 @@ void MiscPage::fixControls() {
 	if(IsDlgButtonChecked(IDC_PASSWD_PROTECT_CHCKBOX) == BST_UNCHECKED)
 		::CheckDlgButton(*this, IDC_PASSWD_PROTECT_TRAY_CHCKBOX, BST_UNCHECKED);
 }
-
-
-
+}

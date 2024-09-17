@@ -33,9 +33,9 @@ BOOL InitSymInfo( PCSTR );
 BOOL UninitSymInfo();
 
 #ifndef _WIN64
-void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx);
+void StackTrace( HANDLE hThread, dcpp::File& f, const PCONTEXT pCtx);
 #else
-void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx);
+void StackTrace( HANDLE hThread, dcpp::File& f, const PCONTEXT pCtx);
 #endif
 
 #else

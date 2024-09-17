@@ -21,6 +21,7 @@
 #include "Resource.h"
 #include "WindowsPage.h"
 
+namespace wingui {
 PropPage::Item WindowsPage::items[] = { { 0, 0, PropPage::T_END } };
 
 PropPage::TextItem WindowsPage::textItem[] = {
@@ -90,4 +91,5 @@ void WindowsPage::write() {
 	PropPage::write((HWND)*this, items, confirmItems, GetDlgItem(IDC_CONFIRM_OPTIONS));
 	SettingsManager::getInstance()->set(SettingsManager::SAVE_LAST_STATE, IsDlgButtonChecked(IDC_SAVE_LAST_STATE) == BST_CHECKED);
 
+}
 }

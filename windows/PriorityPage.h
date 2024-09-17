@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class PriorityPage : public CPropertyPage<IDD_PRIORITYPAGE>, public PropPage
 {
 public:
@@ -60,5 +61,5 @@ protected:
 	static ListItem optionItems[];
 	TCHAR* title;
 };
-
+}
 #endif // !defined(PRIORITY_PAGE_H)

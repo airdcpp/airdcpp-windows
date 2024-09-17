@@ -35,6 +35,8 @@
 #define FLV_HAS_DUPE_OPTIONS 0x04 
 #define FLV_DEFAULT FLV_HAS_CHECKBOXES | FLV_HAS_OPTIONS | FLV_HAS_DUPE_OPTIONS
 
+
+namespace wingui {
 template<class ContainerT, class ParentT, int ctrlId, DWORD style = FLV_DEFAULT>
 class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ContainerT, ParentT, ctrlId, style>>  {
 
@@ -403,5 +405,6 @@ private:
 	CContainedWindow sharedContainer;
 	CContainedWindow optionsContainer;
 };
+}
 
 #endif // FILTEREDLISTVIEW_H_

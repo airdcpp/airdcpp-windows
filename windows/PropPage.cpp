@@ -26,6 +26,7 @@
 
 #define SETTING_STR_MAXLEN 1024
 
+namespace wingui {
 void SettingTab::read(HWND page, Item const* items, ListItem* listItems /* = NULL */, HWND list /* = 0 */) {
 
 	/*SettingsManager* settings = SettingsManager::getInstance();
@@ -226,4 +227,5 @@ void SettingTab::translate(HWND page, TextItem* textItems)
 				CTSTRING_I(textItems[i].translatedString));
 		}
 	}
+}
 }

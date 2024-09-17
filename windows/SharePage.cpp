@@ -33,6 +33,7 @@
 #include "SharePageDlg.h"
 #include "MainFrm.h"
 
+namespace wingui {
 PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
 	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE_DOTS },
@@ -286,4 +287,5 @@ void SharePage::applyChanges(bool isQuit) {
 	}
 
 	dirPage->applyChanges(isQuit);
+}
 }

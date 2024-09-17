@@ -19,7 +19,7 @@
 #ifndef DIRECTORY_LISTING_FRM_H
 #define DIRECTORY_LISTING_FRM_H
 
-#include "FlatTabCtrl.h"
+#include "flattabctrl.h"
 #include "FilteredListViewCtrl.h"
 #include "UCHandler.h"
 #include "UserInfoBaseHandler.h"
@@ -38,6 +38,8 @@
 
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11
+
+namespace wingui {
 
 struct cmdBarButton {
 	int id, image;
@@ -282,12 +284,16 @@ private:
 	void up();
 	void handleHistoryClick(const string& aPath, bool byHistory);
 
+	using ItemInfoToken = size_t;
+
 	class ItemInfo : public FastAlloc<ItemInfo> {
 	public:
 		enum ItemType {
 			FILE,
 			DIRECTORY
-		} type;
+		};
+
+		const ItemType type;
 		
 		union {
 			const DirectoryListing::File::Ptr file;
@@ -298,18 +304,12 @@ private:
 		ItemInfo(const DirectoryListing::Directory::Ptr& d);
 		~ItemInfo();
 
-		DirectoryListingToken getToken() const noexcept {
-			return hash<string>()(type == DIRECTORY ? dir->getName() : file->getName());
+		DirectoryListingItemToken getToken() const noexcept {
+			return type == DIRECTORY ? dir->getToken() : file->getToken();
 		}
 
 		const tstring getText(uint8_t col) const noexcept;
 		const string getTextNormal(uint8_t col) const noexcept;
-		
-		/*struct TotalSize {
-			TotalSize() : total(0) { }
-			void operator()(ItemInfo* a) { total += a->type == DIRECTORY ? a->dir->getTotalSize(true) : a->file->getSize(); }
-			int64_t total;
-		};*/
 
 		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) noexcept;
 
@@ -468,5 +468,7 @@ private:
 	void validateTreeDebug();
 #endif
 };
+
+}
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

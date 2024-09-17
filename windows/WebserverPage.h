@@ -23,7 +23,7 @@
 
 #include "stdafx.h"
 #include "Async.h"
-#include "Resource.h"
+#include "resource.h"
 
 #include <atlcrack.h>
 #include "PropPage.h"
@@ -32,6 +32,7 @@
 
 #include <web-server/WebServerManager.h>
 
+namespace wingui {
 class WebServerPage : public CPropertyPage<IDD_WEB_SERVER_PAGE>, public PropPage, private webserver::WebServerManagerListener, private Async<WebServerPage>
 {
 public:
@@ -120,5 +121,6 @@ protected:
 
 	bool needsRestartTask = false;
 };
+}
 
 #endif

@@ -28,6 +28,7 @@
 #include "ShellContextMenu.h"
 #include "resource.h"
 
+namespace wingui {
 enum {
 	FT_FIRST = WM_APP + 700,
 	/** This will be sent when the user presses a tab. WPARAM = HWND */
@@ -965,5 +966,6 @@ public:
 private:
 	bool created;
 };
+}
 
 #endif // !defined(FLAT_TAB_CTRL_H)

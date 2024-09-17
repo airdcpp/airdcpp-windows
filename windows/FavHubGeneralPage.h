@@ -27,6 +27,8 @@
 #include "ActionUtil.h"
 #include "TabbedDialog.h"
 
+
+namespace wingui {
 class FavHubGeneralPage : public CDialogImpl<FavHubGeneralPage>, public TabPage {
 public:
 
@@ -83,6 +85,7 @@ private:
 
 	string name;
 	bool loading;
-
 };
+
+}
 #endif

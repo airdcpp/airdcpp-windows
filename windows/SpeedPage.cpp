@@ -28,6 +28,7 @@
 #include "WinUtil.h"
 #include "ActionUtil.h"
 
+namespace wingui {
 PropPage::TextItem SpeedPage::texts[] = {
 	{ IDC_LINE_SPEED, ResourceManager::LINE_SPEED },
 	{ IDC_SETTINGS_UPLOAD_LINE_SPEED, ResourceManager::SETCZDC_UPLOAD_SPEED },
@@ -334,4 +335,5 @@ void SpeedPage::write() {
 		validateMCNLimits(0);
 		PropPage::write((HWND)(*this), mcnItems);
 	}	
+}
 }

@@ -15,6 +15,7 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class ShareDirectories;
 
 //Class which gets stored int the item data on the tree control
@@ -211,4 +212,5 @@ protected:
 
 	ShareEnumerator theSharedEnumerator;
 };
+}
 

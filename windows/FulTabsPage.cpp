@@ -24,6 +24,7 @@
 #include "WinUtil.h"
 
 
+namespace wingui {
 PropPage::TextItem FulTabsPage::texts[] = {
 	{ IDC_CH_STATUS_HUB_BOLD,		ResourceManager::HUB_BOLD_TABS				},
 	{ IDC_CH_ICONS,					ResourceManager::TAB_SHOW_ICONS				},
@@ -146,4 +147,5 @@ LRESULT FulTabsPage::onHelp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 LRESULT FulTabsPage::onHelpInfo(LPNMHDR /*pnmh*/) {
 //	HtmlHelp(m_hWnd, WinUtil::getHelpFile().c_str(), HH_HELP_CONTEXT, IDD_FULTABSPAGE);
 	return 0;
+}
 }

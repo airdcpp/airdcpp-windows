@@ -20,6 +20,7 @@
 
 #include "WizardFinish.h"
 
+namespace wingui {
 PropPage::TextItem WizardFinish::texts[] = {
 	{ IDC_FINISH_INTRO, ResourceManager::WIZARD_FINISHED_INTRO },
 	{ 0, ResourceManager::LAST }
@@ -50,4 +51,5 @@ int WizardFinish::OnSetActive() {
 
 int WizardFinish::OnWizardBack() {
 	return 0;
+}
 }

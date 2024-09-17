@@ -27,6 +27,7 @@
 #include <airdcpp/SearchTypes.h>
 #include <airdcpp/ResourceManager.h>
 
+namespace wingui {
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
 	var = Text::fromT(buf);
@@ -152,4 +153,5 @@ void SearchTypeDlg::fillList() {
 	}
 
 	ctrlExtensions.RedrawWindow();
+}
 }

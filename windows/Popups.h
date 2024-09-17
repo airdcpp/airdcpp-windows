@@ -27,6 +27,7 @@
 #include "ExListViewCtrl.h"
 
 
+namespace wingui {
 class Popups : public CPropertyPage<IDD_POPUPS>, public PropPage
 {
 public:
@@ -76,5 +77,6 @@ protected:
 	CComboBox ctrlPopupType;
 	LOGFONT myFont;
 };
+}
 
 #endif //Popups_H

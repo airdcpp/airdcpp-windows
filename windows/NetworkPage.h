@@ -28,6 +28,7 @@
 #include "PropPage.h"
 #include "ProtocolPage.h"
 
+namespace wingui {
 class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage
 {
 public:
@@ -51,5 +52,6 @@ private:
 
 	unique_ptr<ProtocolBase> protocols;
 };
+}
 
 #endif // !defined(NETWORK_PAGE_H)

@@ -23,6 +23,7 @@
 
 #include <airdcpp/SettingHolder.h>
 
+namespace wingui {
 PropPage::TextItem WizardProfile::texts[] = {
 	{ IDC_USER_PROFILE_BOX, ResourceManager::USER_PROFILE_PLAIN },
 	{ IDC_PROFILE_INTRO, ResourceManager::WIZARD_PROFILE_INTRO },
@@ -118,4 +119,5 @@ int WizardProfile::OnSetActive() {
 	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
 	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 	return 0;
+}
 }

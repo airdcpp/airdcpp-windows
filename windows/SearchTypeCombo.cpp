@@ -25,7 +25,7 @@
 #include <airdcpp/SearchTypes.h>
 
 
-namespace dcpp {
+namespace wingui {
 
 SearchTypeCombo::SearchTypeCombo() { }
 SearchTypeCombo::~SearchTypeCombo() { }

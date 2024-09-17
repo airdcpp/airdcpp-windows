@@ -32,6 +32,7 @@
 #include "StaticFrame.h"
 
 
+namespace wingui {
 #define EDIT_MESSAGE_MAP 10		// This could be any number, really...
 
 class ChatFrameBase : public MDITabChildWindowImpl<ChatFrameBase>, public Async<ChatFrameBase> {
@@ -134,5 +135,6 @@ private:
 	ClientPtr getClient() { return ctrlClient.getClient(); }
 	const tstring& getSendFileTitle();
 };
+}
 
 #endif // !defined(CHATFRAME_BASE_H)

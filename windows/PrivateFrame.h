@@ -30,6 +30,7 @@
 #include "UCHandler.h"
 #include "UserUtil.h"
 
+namespace wingui {
 #define HUB_SEL_MAP 9
 #define STATUS_MSG_MAP 19
 
@@ -165,7 +166,7 @@ private:
 	CIcon tabIcon;
 
 	void fillHubSelection();
-	StringPairList hubs;
+	User::UserInfoList hubs;
 	void showHubSelection(bool show);
 	void updateOnlineStatus();
 
@@ -227,5 +228,5 @@ private:
 	void onChatMessage(const ChatMessagePtr& aMessage) noexcept;
 	void onStatusMessage(const LogMessagePtr& aMessage) noexcept;
 };
-
+}
 #endif // !defined(PRIVATE_FRAME_H)

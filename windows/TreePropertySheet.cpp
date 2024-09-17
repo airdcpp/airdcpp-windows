@@ -24,6 +24,7 @@
 #include <airdcpp/ResourceManager.h>
 
 
+namespace wingui {
 static const TCHAR SEPARATOR = _T('\\');
 
 int TreePropertySheet::PropSheetProc(HWND hwndDlg, UINT uMsg, LPARAM lParam) {
@@ -205,4 +206,5 @@ LRESULT TreePropertySheet::onSetCurSel(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lP
 	ctrlTree.SelectItem(findItem((int)wParam, ctrlTree.GetRootItem()));
 	bHandled = FALSE;
 	return 0;
+}
 }

@@ -39,6 +39,7 @@
 #include "UCHandler.h"
 #include "ListFilter.h"
 
+namespace wingui {
 #define SHOW_USERS 9
 #define STATUS_MSG 52
 class ChatFrameBase;
@@ -160,7 +161,7 @@ public:
 	bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) override;
 	void onTab() override;
 	void handleTab(bool reverse);
-	void runUserCommand(::UserCommand& uc);
+	void runUserCommand(UserCommand& uc);
 	static void ShutDown() {
 		shutdown = true;
 	}
@@ -251,8 +252,8 @@ private:
 
 	static bool shutdown;
 
-	bool waitingForPW;
-	bool extraSort;
+	bool waitingForPW = false;
+	bool extraSort = false;
 
 	ClientPtr client;
 	tstring server;
@@ -270,19 +271,19 @@ private:
 	
 	int statusSizes[4];
 	
-	bool closed;
-	bool showUsers;
-	bool forceClose;
+	bool closed = false;
+	bool showUsers = true;
+	bool forceClose = false;
 
-	Client::CountType countType;
+	Client::CountType countType = Client::COUNT_NORMAL;
 
 	TStringMap tabParams;
 	bool tabMenuShown;
 
 	TaskQueue tasks;
-	bool updateUsers;
-	bool resort;
-	bool statusDirty;
+	bool updateUsers = false;
+	bool resort = false;
+	bool statusDirty = true;
 
 	ParamMap ucLineParams;
 	string getLogPath(bool status = false) const;
@@ -310,7 +311,7 @@ private:
 	void clearUserList();
 	void clearTaskList();
 
-	int hubchatusersplit;
+	int hubchatusersplit = 0;
 
 	string sColumsOrder;
     string sColumsWidth;
@@ -358,5 +359,6 @@ private:
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();
 };
+}
 
 #endif // !defined(HUB_FRAME_H)

@@ -29,6 +29,8 @@
 #include "FulHighlightDialog.h"
 #include "PropertiesDlg.h"
 
+
+namespace wingui {
 PropPage::TextItem FulHighlightPage::texts[] = {
 	{ IDC_ADD,			 ResourceManager::HIGHLIGHT_ADD				},
 	{ IDC_DELETE,		 ResourceManager::REMOVE					},
@@ -280,4 +282,5 @@ LRESULT FulHighlightPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bH
 	}
 
 	return 0;
+}
 }

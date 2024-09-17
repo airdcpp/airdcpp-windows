@@ -30,6 +30,7 @@
 #include <airdcpp/ViewFileManagerListener.h>
 #include <airdcpp/SimpleXML.h>
 
+namespace wingui {
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener, private ViewFileManagerListener
 {
 public:
@@ -113,5 +114,6 @@ private:
 
 	ViewFilePtr viewFile = nullptr;
 };
+}
 
 #endif // !defined(TEXT_FRAME_H)

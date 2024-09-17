@@ -29,6 +29,7 @@
 #include "ExListViewCtrl.h"
 #include "LineDlg.h"
 
+namespace wingui {
 class PublicHubListDlg : public CDialogImpl<PublicHubListDlg> {
 public:
 	enum { IDD = IDD_HUB_LIST };
@@ -172,5 +173,6 @@ public:
 private:
 	ExListViewCtrl ctrlList;
 };
+}
 
 #endif // !defined(PUBLIC_HUBS_LIST_DLG_H)

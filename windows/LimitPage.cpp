@@ -24,6 +24,7 @@
 
 #include "LimitPage.h"
 
+namespace wingui {
 PropPage::TextItem LimitPage::texts[] = {
 	//limiter
 	{ IDC_STRONGDC_UP_SPEED, ResourceManager::MAX_UPLOAD_RATE },
@@ -156,4 +157,5 @@ LRESULT LimitPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		break;
 	}
 	return true;
+}
 }

@@ -31,6 +31,7 @@
 #include "BrowseDlg.h"
 #include "WinUtil.h"
 
+namespace wingui {
 template<class T>
 class DownloadBaseHandler {
 public:
@@ -254,5 +255,6 @@ private:
 		return WinUtil::showQuestionBox(msg, MB_ICONQUESTION);
 	}
 };
+}
 
 #endif // !defined(DOWNLOADBASEHANDLER_H)

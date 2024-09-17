@@ -5,6 +5,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+namespace wingui {
 #define ATTACH(id, var, txt) \
 		var.Attach(GetDlgItem(id)); \
 		var.SetWindowText(Text::toT(txt).c_str());
@@ -63,5 +64,6 @@ public:
 		return 0;
 	}
 };
+}
 
 #endif //PARAMS_DLG_H

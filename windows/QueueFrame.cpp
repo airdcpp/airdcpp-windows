@@ -36,6 +36,7 @@
 #include <web-server/WebServerManager.h>
 
 
+namespace wingui {
 string QueueFrame::id = "Queue";
 
 int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_TYPE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, 
@@ -1031,7 +1032,7 @@ void QueueFrame::handleRecheckBundles(BundleList bl) {
 }
 
 void QueueFrame::handleRecheckFiles(QueueItemList ql) {
-	MainFrame::getMainFrame()->addThreadedTask([=] {
+	MainFrame::getMainFrame()->addThreadedTask([ql] {
 		QueueManager::getInstance()->recheckFiles(ql);
 	});
 }
@@ -1847,4 +1848,5 @@ COLORREF QueueFrame::getStatusColor(uint8_t status) {
 		case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
 		default: return SETTING(DOWNLOAD_BAR_COLOR);
 	}
+}
 }

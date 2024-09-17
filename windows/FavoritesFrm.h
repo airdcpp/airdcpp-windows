@@ -32,6 +32,7 @@
 
 #define SERVER_MESSAGE_MAP 7
 
+namespace wingui {
 class FavoriteHubsFrame : public MDITabChildWindowImpl<FavoriteHubsFrame>, public StaticFrame<FavoriteHubsFrame, ResourceManager::FAVORITE_HUBS, IDC_FAVORITES>,
 	private FavoriteManagerListener, private SettingsManagerListener, private ClientManagerListener
 {
@@ -178,5 +179,6 @@ private:
 	}
 
 };
+}
 
 #endif // !defined(FAVORITE_HUBS_FRM_H)

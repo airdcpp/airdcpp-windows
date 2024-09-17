@@ -25,6 +25,7 @@
 #include "MainFrm.h"
 #include "PopupDlg.h"
 
+namespace wingui {
 PopupManager::PopupManager() : height(90), width(200), offset(0), activated(true), id(0) {
 	user32lib = LoadLibrary(_T("user32"));
 	if (user32lib)
@@ -205,4 +206,5 @@ void PopupManager::Remove(uint32_t pos) {
 		rc.bottom += height;
 		(*i)->MoveWindow(rc);
 	}
+}
 }

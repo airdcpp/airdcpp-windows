@@ -26,6 +26,7 @@
 
 #include <airdcpp/Text.h>
 
+namespace wingui {
 PropPage::TextItem Sounds::texts[] = {
 	{ IDC_PRIVATE_MESSAGE_BEEP, ResourceManager::SETTINGS_PM_BEEP },
 	{ IDC_PRIVATE_MESSAGE_BEEP_OPEN, ResourceManager::SETTINGS_PM_BEEP_OPEN },
@@ -142,4 +143,5 @@ LRESULT Sounds::onPlay(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOO
 
 	}
 	return 0;
+}
 }

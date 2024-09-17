@@ -30,6 +30,7 @@
 #include "WinUtil.h"
 
 
+namespace wingui {
 ProtocolBase::ProtocolBase(SettingsManager *s) : SettingTab(s) {
 	//SetTitle(CTSTRING(SETTINGS_NETWORK));
 	//m_psp.dwFlags |= PSP_RTLREADING;
@@ -352,4 +353,5 @@ void ProtocolPage::on(SettingChanged) noexcept {
 
 		//read();
 	});
+}
 }

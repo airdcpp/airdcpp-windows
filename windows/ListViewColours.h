@@ -7,6 +7,7 @@
 
 #include "PropPage.h"
 
+namespace wingui {
 class ListViewColours : public CPropertyPage<IDD_LISTVIEW_COLOURS>, public PropPage, private SettingsManagerListener
 {
 public:
@@ -72,5 +73,6 @@ protected:
 	static TextItem texts[];
 	TCHAR* title;
 };
+}
 
 #endif //LISTVIEWCOLOURS

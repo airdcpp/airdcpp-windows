@@ -37,6 +37,7 @@
 #include <airdcpp/Util.h>
 
 
+namespace wingui {
 PrivateFrame::FrameMap PrivateFrame::frames;
 string PrivateFrame::id = "PM";
 
@@ -70,7 +71,7 @@ void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived)
 }
 
 bool PrivateFrame::getWindowParams(HWND hWnd, StringMap& params) {
-	auto f = ranges::find_if(frames | views::values, [hWnd](PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
+	auto f = ranges::find_if(frames | views::values, [hWnd](const PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
 	if (f != frames.end()) {
 		params["id"] = PrivateFrame::id;
 		params["CID"] = f->first->getCID().toBase32();
@@ -262,7 +263,7 @@ LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 	pDispInfo->szText[0] = 0;
 	if (idCtrl == STATUS_TEXT + POPUP_UID) {
 		lastLines.clear();
-		for (auto& i : lastLinesList) {
+		for (const auto& i : lastLinesList) {
 			lastLines += i;
 			lastLines += _T("\r\n");
 		}
@@ -328,12 +329,12 @@ LRESULT PrivateFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 }
 
 LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	auto selUrl = hubs[ctrlHubSel.GetCurSel()].first;
+	auto selUrl = hubs[ctrlHubSel.GetCurSel()].hubUrl;
 	if (chat->getHubUrl() == selUrl)
 		return 0;
 
 	chat->setHubUrl(selUrl);
-	chat->statusMessage(STRING_F(MESSAGES_SENT_THROUGH, hubs[ctrlHubSel.GetCurSel()].second), LogMessage::SEV_INFO, LogMessage::Type::SERVER);
+	chat->statusMessage(STRING_F(MESSAGES_SENT_THROUGH, hubs[ctrlHubSel.GetCurSel()].hubName), LogMessage::SEV_INFO, LogMessage::Type::SERVER);
 	bHandled = FALSE;
 	return 0;
 }
@@ -356,7 +357,7 @@ void PrivateFrame::updateOnlineStatus() {
 		updateTabIcon(false);
 
 		if (!ccReady() && !getUser()->isNMDC() && !getUser()->isSet(User::BOT)) {
-			hubs = ClientManager::getInstance()->getHubs(getUser()->getCID());
+			hubs = ClientManager::getInstance()->getUserInfoList(getUser());
 			while (ctrlHubSel.GetCount()) {
 				ctrlHubSel.DeleteString(0);
 			}
@@ -377,19 +378,30 @@ void PrivateFrame::updateOnlineStatus() {
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
 
-void PrivateFrame::fillHubSelection() {
-	auto* cm = ClientManager::getInstance();
-	auto idents = cm->getIdentities(cm->getMe());
+int hubToImage(const string& aHubUrl) {
+	auto c = ClientManager::getInstance()->findClient(aHubUrl);
+	if (!c) {
+		return 0;
+	}
 
-	for (const auto& hub : hubs) {
-		auto me = idents.find(hub.first);
-		int img = me == idents.end() ? 0 : me->second.isOp() ? 2 : me->second.isRegistered() ? 1 : 0;
-		auto i = ctrlHubSel.AddItem(Text::toT(hub.second).c_str(), img, img, 0);
-		if (hub.first == getHubUrl()) {
+	const auto ident = c->getMyIdentity();
+	if (ident.isOp())
+		return 2;
+	
+	return ident.isRegistered() ? 1 : 0;
+}
+
+void PrivateFrame::fillHubSelection() {
+	for (const auto& hubInfo: hubs) {
+		auto img = hubToImage(hubInfo.hubUrl);
+		auto i = ctrlHubSel.AddItem(Text::toT(hubInfo.hubName).c_str(), img, img, 0);
+
+		if (hubInfo.hubUrl == getHubUrl()) {
 			ctrlHubSel.SetCurSel(i);
 		}
 	}
 }
+
 void PrivateFrame::showHubSelection(bool show) {
 	ctrlHubSel.ShowWindow(show);
 	ctrlHubSel.EnableWindow(show);
@@ -513,7 +525,7 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t aSeverity) {
 
 void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 	auto myPM = aMessage->getReplyTo()->getUser() == ClientManager::getInstance()->getMe();
-	addMessage(aMessage);
+	addMessage(Message(aMessage));
 
 	if (!myPM) {
 		addStatus(WinUtil::formatMessageWithTimestamp(TSTRING(LAST_MESSAGE_RECEIVED)), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
@@ -551,7 +563,7 @@ void PrivateFrame::addStatus(const tstring& aLine, HICON aIcon) {
 
 void PrivateFrame::addPrivateLine(const tstring& aLine) {
 	auto message = std::make_shared<LogMessage>(Text::fromT(aLine), LogMessage::SEV_INFO, LogMessage::Type::PRIVATE, Util::emptyString);
-	addMessage(message, WinUtil::m_ChatTextPrivate);
+	addMessage(Message(message), WinUtil::m_ChatTextPrivate);
 }
 
 void PrivateFrame::addMessage(const Message& aMessage, CHARFORMAT2& cf) {
@@ -626,7 +638,7 @@ void PrivateFrame::runUserCommand(UserCommand& uc) {
 
 	auto ucParams = ucLineParams;
 
-	ClientManager::getInstance()->userCommand(chat->getHintedUser(), uc, ucParams, true);
+	UserCommandManager::getInstance()->userCommand(chat->getHintedUser(), uc, ucParams, true);
 }
 
 void PrivateFrame::updateStatusBar() {
@@ -890,4 +902,5 @@ void PrivateFrame::on(PrivateChatListener::Close, PrivateChat*) noexcept {
 		closed = true;
 		PostMessage(WM_CLOSE);
 		});
+}
 }

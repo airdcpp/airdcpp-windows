@@ -38,6 +38,13 @@
 
 #include <airdcpp/modules/FinishedManager.h>
 
+namespace wingui {
+
+static const ResourceManager::Strings columnNames[] = { 
+	ResourceManager::FILENAME, ResourceManager::TIME, ResourceManager::PATH,
+	ResourceManager::NICK, ResourceManager::HUB, ResourceManager::SIZE, ResourceManager::SPEED, ResourceManager::TYPE
+};
+
 template<class T, int title, int Idc>
 class FinishedFrameBase : public MDITabChildWindowImpl<T>, public StaticFrame<T, title, Idc>,
 	protected FinishedManagerListener, private SettingsManagerListener
@@ -46,7 +53,7 @@ class FinishedFrameBase : public MDITabChildWindowImpl<T>, public StaticFrame<T,
 public:
 	typedef MDITabChildWindowImpl<T> baseClass;
 
-	FinishedFrameBase() : totalBytes(0), totalSpeed(0), closed(false) { }
+	FinishedFrameBase() { }
 	virtual ~FinishedFrameBase() { }
 
 	BEGIN_MSG_MAP(T)
@@ -88,7 +95,7 @@ public:
 
 		for(uint8_t j=0; j<FinishedItem::COLUMN_LAST; j++) {
 			int fmt = (j == FinishedItem::COLUMN_SIZE || j == FinishedItem::COLUMN_SPEED) ? LVCFMT_RIGHT : LVCFMT_LEFT;
-			ctrlList.InsertColumn(j, CTSTRING_I(::columnNames[j]), fmt, columnSizes[j], j);
+			ctrlList.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
 		}
 
 		ctrlList.SetColumnOrderArray(FinishedItem::COLUMN_LAST, columnIndexes);
@@ -334,10 +341,10 @@ protected:
 	
 	TypedListViewCtrl<FinishedItem, Idc> ctrlList;
 
-	int64_t totalBytes;
-	int64_t totalSpeed;
+	int64_t totalBytes = 0;
+	int64_t totalSpeed = 0;
 
-	bool closed;
+	bool closed = false;
 
 	bool upload;
 	int iIcon;
@@ -410,10 +417,9 @@ FinishedItem::COLUMN_PATH, FinishedItem::COLUMN_NICK, FinishedItem::COLUMN_HUB, 
 
 template <class T, int title, int Idc>
 int FinishedFrameBase<T, title, Idc>::columnSizes[] = { 100, 110, 290, 125, 80, 80 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, ResourceManager::TIME, ResourceManager::PATH, 
-ResourceManager::NICK, ResourceManager::HUB, ResourceManager::SIZE, ResourceManager::SPEED, ResourceManager::TYPE
-};
 
-int FinishedItem::getImageIndex() const { return ResourceLoader::getIconIndex(Text::toT(getTarget())); }
+}
+
+int dcpp::FinishedItem::getImageIndex() const { return wingui::ResourceLoader::getIconIndex(Text::toT(getTarget())); }
 
 #endif // !defined(FINISHED_FRAME_BASE_H)

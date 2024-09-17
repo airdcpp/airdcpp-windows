@@ -28,6 +28,7 @@
 #include "HttpLinks.h"
 #include "WinUtil.h"
 
+namespace wingui {
 WinUtil::TextItem CommandDlg::texts[] = {
 	{ IDCANCEL, ResourceManager::CANCEL },
 	{ IDC_SETTINGS_TYPE, ResourceManager::USER_CMD_TYPE },
@@ -236,4 +237,5 @@ void CommandDlg::updateControls() {
 LRESULT CommandDlg::onHelp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ActionUtil::openLink(HttpLinks::userCommandsHelp);
 	return 0;
+}
 }

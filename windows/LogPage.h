@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class LogPage : public CPropertyPage<IDD_LOGPAGE>, public PropPage
 {
 public:
@@ -71,5 +72,6 @@ protected:
 
 	void getValues();
 };
+}
 
 #endif // !defined(LOG_PAGE_H)

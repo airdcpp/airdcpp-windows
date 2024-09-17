@@ -26,6 +26,7 @@
 #include "resource.h"
 #include "WinUtil.h"
 
+namespace wingui {
 LRESULT SplashWindow::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (closing) {
 		bHandled = FALSE;
@@ -174,4 +175,5 @@ void SplashWindow::draw() {
 	}
 
 	EndPaint(&ps);
+}
 }

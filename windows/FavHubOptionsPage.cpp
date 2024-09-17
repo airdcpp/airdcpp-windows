@@ -27,6 +27,7 @@
 #include <airdcpp/tribool.h>
 
 
+namespace wingui {
 FavHubOptionsPage::FavHubOptionsPage(FavoriteHubEntry *_entry, const string& aName) : entry(_entry), name(aName) { }
 
 LRESULT FavHubOptionsPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
@@ -151,4 +152,5 @@ bool FavHubOptionsPage::write() {
 	FavoriteManager::getInstance()->setDirty();
 
 	return true;
+}
 }

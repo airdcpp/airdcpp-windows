@@ -26,6 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
+namespace wingui {
 class FulTabsPage: public CPropertyPage<IDD_FULTABSPAGE>, public PropPage
 {
 public:
@@ -61,5 +62,5 @@ protected:
 	CComboBox colorList;
 	TCHAR* title;
 };
-
+}
 #endif // FULTABSPAGE_H

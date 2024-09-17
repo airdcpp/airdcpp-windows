@@ -25,6 +25,7 @@
 #include <airdcpp/MerkleTree.h>
 #include <airdcpp/SettingsManager.h>
 
+namespace wingui {
 
 // Some utilities for handling HLS colors, taken from Jean-Michel LE FOL's codeproject
 // article on WTL OfficeXP Menus
@@ -325,5 +326,6 @@ private:
 	static string paths[PATH_LAST];
 };
 
+}
 
 #endif // !defined(WIN_UTIL_H)

@@ -22,6 +22,7 @@
 #include <airdcpp/Util.h>
 #include "WinUtil.h"
 
+namespace wingui {
 class PreviewDlg : public CDialogImpl<PreviewDlg> {
 	CEdit ctrlName;
 	CEdit ctrlApplication;
@@ -80,3 +81,4 @@ public:
 private:
 	static WinUtil::TextItem texts[];
 };
+}

@@ -24,6 +24,7 @@
 #include "Resource.h"
 #include "ProxyPage.h"
 
+namespace wingui {
 ProxyPage::ProxyPage(SettingsManager *s) : PropPage(s) {
 	title = _tcsdup((TSTRING(SETTINGS_NETWORK) + _T('\\') + TSTRING(PROXIES)).c_str());
 	SetTitle(title);
@@ -123,4 +124,5 @@ void ProxyPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_SOCKS_PASSWORD), socks);
 	::EnableWindow(GetDlgItem(IDC_SOCKS_RESOLVE), socks);
 
+}
 }

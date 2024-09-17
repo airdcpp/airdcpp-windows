@@ -14,6 +14,7 @@
 #include "stdafx.h"
 #include "ImageDataObject.h"
 
+namespace wingui {
 // Static member functions
 void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap, bool deleteHandle/*true*/ )
 {
@@ -119,4 +120,5 @@ SCODE CImageDataObject::createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBy
 		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, pStorage);
 	
 	return sc;
+}
 }

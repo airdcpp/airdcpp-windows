@@ -21,6 +21,8 @@
 
 #include <airdcpp/modules/ADLSearch.h>
 
+
+namespace wingui {
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	Dialog for new/edit ADL searches
@@ -72,5 +74,6 @@ private:
 	string matchRegExp(const string& aExp, const string& aString);
 	void fixControls();
 };
+}
 
 #endif // !defined(ADLS_PROPERTIES_H)

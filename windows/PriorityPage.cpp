@@ -23,6 +23,8 @@
 #include "PriorityPage.h"
 #include "PropertiesDlg.h"
 
+
+namespace wingui {
 PropPage::TextItem PriorityPage::texts[] = {
 	{ IDC_ORDER_BALANCED, ResourceManager::PRIOPAGE_ORDER_BALANCED },
 	{ IDC_ORDER_PROGRESS, ResourceManager::PRIOPAGE_ORDER_PROGRESS },
@@ -131,4 +133,5 @@ BOOL PriorityPage::fixPrioTypeControls() {
 		CheckDlgButton(IDC_PRIO_BALANCED, BST_UNCHECKED);
 	}
 	return TRUE;
+}
 }

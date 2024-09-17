@@ -33,6 +33,7 @@
 
 #include <airdcpp/SettingsManagerListener.h>
 
+namespace wingui {
 #define FILTER_MESSAGE_MAP 8
 class PublicHubsFrame : public MDITabChildWindowImpl<PublicHubsFrame>, public StaticFrame<PublicHubsFrame, ResourceManager::PUBLIC_HUBS, ID_FILE_CONNECT>, 
 	private HublistManagerListener, private SettingsManagerListener, public Async<PublicHubsFrame>
@@ -172,5 +173,5 @@ private:
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 };
-
+}
 #endif // !defined(PUBLIC_HUBS_FRM_H)

@@ -25,6 +25,7 @@
 #include <airdcpp/TimerManager.h>
 
 
+namespace wingui {
 ListFilter::ListFilter(size_t colCount, UpdateFunction updateF) :
 	colCount(colCount),
 	updateFunction(updateF),
@@ -414,4 +415,5 @@ pair<double, bool> ListFilter::prepareSpeed() const {
 	}
 
 	return make_pair(Util::toDouble(matcher.pattern.substr(0, end)) * multiplier, multiplier > 1);
+}
 }

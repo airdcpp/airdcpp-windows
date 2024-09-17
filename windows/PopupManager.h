@@ -35,6 +35,7 @@
 
 #include "PopupDlg.h"
 
+namespace wingui {
 class PopupManager : public Singleton< PopupManager >, private TimerManagerListener
 {
 public:
@@ -88,5 +89,6 @@ private:
 	void on(TimerManagerListener::Second, uint64_t tick) noexcept;
 
 };
+}
 
 #endif

@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 
+namespace wingui {
 template<class T>
 class TypedTreeCtrl : public CTreeViewCtrl {
 public:
@@ -292,5 +293,7 @@ private:
 
 	PT* parent;
 };
+
+}
 
 #endif // !defined(VIRTUAL_TREE_CTRL_H)

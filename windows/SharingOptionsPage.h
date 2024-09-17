@@ -28,6 +28,7 @@
 #include "ExListViewCtrl.h"
 
 
+namespace wingui {
 class SharingOptionsPage : public CPropertyPage<IDD_SHARING_OPTIONS>, public PropPage
 {
 public:
@@ -62,7 +63,7 @@ protected:
 
 	int monitoringMode;
 };
-
+}
 #endif // !defined(SHARINGOPTIONS_PAGE_H)
 
 

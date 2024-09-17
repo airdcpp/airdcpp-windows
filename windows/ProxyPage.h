@@ -26,6 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
+namespace wingui {
 class ProxyPage : public CPropertyPage<IDD_PROXYPAGE>, public PropPage
 {
 public:
@@ -54,5 +55,5 @@ private:
 	TCHAR* title;
 	void fixControls();
 };
-
+}
 #endif // !defined(PROXY_PAGE_H)

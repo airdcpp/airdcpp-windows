@@ -26,6 +26,7 @@
 #include <airdcpp/SettingsManager.h>
 
 
+namespace wingui {
 uint8_t UserUtil::getUserImageIndex(const OnlineUserPtr& aUser) noexcept {
 	const auto& identity = aUser->getIdentity();
 	return getIdentityImage(identity, identity.hasActiveTcpConnectivity(aUser->getClient()));
@@ -148,4 +149,5 @@ tstring UserUtil::getUserText(const OnlineUserPtr& aUser, uint8_t col, bool copy
 	case COLUMN_CID: return Text::toT(identity.getUser()->getCID().toBase32());
 	default: return Util::emptyStringT;
 	}
+}
 }

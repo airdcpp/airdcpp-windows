@@ -28,6 +28,7 @@
 #include "PropPageTextStyles.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class OperaColorsPage : public CPropertyPage<IDD_OPERACOLORS>, public PropPage, private SettingsManagerListener
 {
 public:
@@ -199,6 +200,7 @@ private:
 		SendMessage(WM_INITDIALOG,0,0);
 	}
 };
+}
 
 #endif //OperaColorsPage_H
 

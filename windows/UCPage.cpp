@@ -26,6 +26,7 @@
 #include "UCPage.h"
 #include "CommandDlg.h"
 
+namespace wingui {
 PropPage::TextItem UCPage::texts[] = {
 	{ IDC_MOVE_UP, ResourceManager::MOVE_UP },
 	{ IDC_MOVE_DOWN, ResourceManager::MOVE_DOWN },
@@ -202,4 +203,5 @@ void UCPage::addEntry(const UserCommand& uc, int pos) {
 
 void UCPage::write() {
 	PropPage::write((HWND)*this, items);
+}
 }

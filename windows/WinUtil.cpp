@@ -17,7 +17,7 @@
  */
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "resource.h"
 
 #include "WinUtil.h"
 
@@ -53,6 +53,7 @@
 #include <mmsystem.h>
 
 
+namespace wingui {
 boost::wregex WinUtil::pathReg;
 boost::wregex WinUtil::chatLinkReg;
 boost::wregex WinUtil::chatReleaseReg;
@@ -584,7 +585,7 @@ bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& t
 	UINT ret = IDYES;
 	UINT bCheck = SettingsManager::getInstance()->get(i) ? BST_UNCHECKED : BST_CHECKED;
 	if(bCheck == BST_UNCHECKED)
-		ret = ::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(shortVersionString).c_str(), CTSTRING(DONT_ASK_AGAIN), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2, bCheck);
+		ret = wingui::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(shortVersionString).c_str(), CTSTRING(DONT_ASK_AGAIN), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2, bCheck);
 		
 	SettingsManager::getInstance()->set(i, bCheck != BST_CHECKED);
 	return ret == IDYES;
@@ -593,7 +594,7 @@ bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& t
 void WinUtil::ShowMessageBox(SettingsManager::BoolSetting i, const tstring& txt) {
 	if (SettingsManager::getInstance()->get(i)) {
 		UINT bCheck = BST_UNCHECKED;
-		::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(shortVersionString).c_str(), CTSTRING(DONT_SHOW_AGAIN), MB_OK | MB_ICONWARNING | MB_DEFBUTTON2, bCheck);
+		wingui::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(shortVersionString).c_str(), CTSTRING(DONT_SHOW_AGAIN), MB_OK | MB_ICONWARNING | MB_DEFBUTTON2, bCheck);
 		if (bCheck == BST_CHECKED)
 			SettingsManager::getInstance()->set(i, false);
 	}
@@ -1410,7 +1411,7 @@ bool WinUtil::checkClientPassword() {
 	passDlg.ok = TSTRING(UNLOCK);
 	if(passDlg.DoModal(NULL) == IDOK) {
 		if (passDlg.line != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-			MessageBox(mainWnd, CTSTRING(INVALID_PASSWORD), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONERROR);
+			::MessageBox(mainWnd, CTSTRING(INVALID_PASSWORD), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONERROR);
 			return false;
 		}
 	}
@@ -1467,4 +1468,5 @@ void WinUtil::insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBo
 	// Select the current address
 	auto curItem = ranges::find_if(aBindAdapters, [&aCurValue](const AdapterInfo& aInfo) { return aInfo.ip == aCurValue; });
 	combo_.SetCurSel(distance(aBindAdapters.begin(), curItem));
+}
 }

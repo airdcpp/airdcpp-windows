@@ -26,15 +26,15 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/UpdateManager.h>
-#include <airdcpp/Updater.h>
+#include <airdcpp/UpdateDownloader.h>
 
 #include "WinUtil.h"
 #include "ActionUtil.h"
 #include "MainFrm.h"
 
-UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool bAutoUpdate, int aBuildID, const string& bAutoUpdateUrl)
-	: title(aTitle), message(aMessage), versionString(aVersionString), infoLink(infoUrl), autoUpdate(bAutoUpdate),
-	autoUpdateUrl(bAutoUpdateUrl), buildID(aBuildID), versionAvailable(false) { };
+namespace wingui {
+UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const UpdateVersion& aVersionInfo)
+	: message(aMessage), title(aTitle), updateVersion(aVersionInfo) { };
 
 
 UpdateDlg::~UpdateDlg() {
@@ -75,12 +75,12 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlDownload.SetWindowText(CTSTRING(DOWNLOAD));
 	
 #ifndef FORCE_UPDATE
-	versionAvailable = BUILD_NUMBER < buildID;
+	versionAvailable = BUILD_NUMBER < updateVersion.build;
 #else
 	versionAvailable = true;
 #endif
 
-	bool versionDownloaded = UpdateManager::getInstance()->getUpdater().getInstalledUpdate() == buildID;
+	bool versionDownloaded = UpdateManager::getInstance()->getUpdater().getInstalledUpdate() == updateVersion.build;
 	ctrlDownload.EnableWindow(!versionDownloaded && versionAvailable);
 	//ctrlDownload.EnableWindow(!versionDownloaded);
 
@@ -109,12 +109,12 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	m_Changelog.SetSel(0, 0); //set scroll position to top
 
 	//m_Changelog.AppendText(Text::toT(message), WinUtil::m_ChatTextGeneral);
-	ctrlLatestVersion.SetWindowText(Text::toT(versionString).c_str());
+	ctrlLatestVersion.SetWindowText(Text::toT(updateVersion.versionStr).c_str());
 
 	url.SubclassWindow(GetDlgItem(IDC_LINK));
 	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
 
-	url.SetHyperLink(Text::toT(infoLink).c_str());
+	url.SetHyperLink(Text::toT(updateVersion.infoUrl).c_str());
 	url.SetLabel(CTSTRING(MORE_INFORMATION));
 
 	SetWindowText(CTSTRING(UPDATE_CHECK));
@@ -135,10 +135,10 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 LRESULT UpdateDlg::OnDownload(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(autoUpdate && canAutoUpdate(autoUpdateUrl)) {
+	if(updateVersion.autoUpdate && canAutoUpdate(updateVersion.updateUrl)) {
 		EndDialog(wID);
 	} else {
-		ActionUtil::openLink(Text::toT(infoLink));
+		ActionUtil::openLink(Text::toT(updateVersion.infoUrl));
 	}
 	return S_OK;
 }
@@ -151,4 +151,5 @@ bool UpdateDlg::canAutoUpdate(const string& url) {
 		return (buf.find(_T("FAT")) == string::npos);
 	}
 	return false;
+}
 }

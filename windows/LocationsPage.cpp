@@ -29,6 +29,7 @@
 #include "LineDlg.h"
 
 
+namespace wingui {
 PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_SETTINGS_FAVORITE_DIRECTORIES, ResourceManager::SETTINGS_FAVORITE_DIRS },
 	{ IDC_REMOVE, ResourceManager::REMOVE },
@@ -210,4 +211,5 @@ LRESULT LocationsPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		SetDlgItemText(IDC_DOWNLOADDIR, target.c_str());
 	}
 	return 0;
+}
 }

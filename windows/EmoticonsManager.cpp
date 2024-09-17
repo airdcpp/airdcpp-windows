@@ -34,6 +34,7 @@
 
 #include <cmath>
 
+namespace wingui {
 Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) : 
 	emoticonText(_emoticonText), imagePath(_imagePath)
 {	
@@ -183,4 +184,5 @@ void EmoticonsManager::Load() {
 void EmoticonsManager::Unload() {
 	for_each(emoticons.begin(), emoticons.end(), DeleteFunction());
 	emoticons.clear();
+}
 }

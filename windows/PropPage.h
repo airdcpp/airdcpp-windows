@@ -33,6 +33,7 @@
 
 #include "Dispatchers.h"
 
+namespace wingui {
 #define setMinMax(x, y, z) \
 	updown.Attach(GetDlgItem(x)); \
 	updown.SetRange32(y, z); \
@@ -84,5 +85,6 @@ public:
 
 	virtual PROPSHEETPAGE *getPSP() = 0;
 };
+}
 
 #endif // !defined(PROP_PAGE_H)

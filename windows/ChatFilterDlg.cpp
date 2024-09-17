@@ -24,6 +24,7 @@
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/ResourceManager.h>
 
+namespace wingui {
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 ChatFilterDlg::ChatFilterDlg() : nick(""), text(""), nickMethod(StringMatch::EXACT), textMethod(StringMatch::PARTIAL), MC(true), PM(true) {}
@@ -97,4 +98,5 @@ LRESULT ChatFilterDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	
 	EndDialog(wID);
 	return 0;
+}
 }

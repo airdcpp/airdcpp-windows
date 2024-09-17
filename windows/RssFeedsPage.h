@@ -27,6 +27,7 @@
 #include <airdcpp/modules/RSSManager.h>
 #include "TabbedDialog.h"
 
+namespace wingui {
 class RssFeedsPage : public CDialogImpl<RssFeedsPage>, public TabPage {
 public:
 
@@ -81,4 +82,7 @@ private:
 
 	void fixControls();
 };
+
+}
+
 #endif

@@ -39,6 +39,7 @@
 #include "UserInfoBaseHandler.h"
 #include "UserUtil.h"
 
+namespace wingui {
 class UserInfo;
 
 class RichTextBox : public CRichEditCtrl, public CMessageMap, public UCHandler<RichTextBox>, public DownloadBaseHandler<RichTextBox>, public UserInfoBaseHandler<RichTextBox>, public UserInfoBase
@@ -260,5 +261,6 @@ private:
 	string getHighlightDisplayText(const MessageHighlightPtr& aHighlight) const noexcept;
 };
 
+}
 
 #endif //!defined(AFX_CHAT_CTRL_H__595F1372_081B_11D1_890D_00A0244AB9FD__INCLUDED_)

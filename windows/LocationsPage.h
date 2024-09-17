@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class LocationsPage : public CPropertyPage<IDD_LOCATIONSPAGE>, public PropPage
 {
 public:
@@ -83,5 +84,6 @@ protected:
 
 	void fillList();
 };
+}
 
 #endif // !defined(FAVORITE_DIR_SPAGE_H)

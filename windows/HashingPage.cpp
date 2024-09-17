@@ -28,6 +28,7 @@
 #include <airdcpp/HashManager.h>
 
 
+namespace wingui {
 PropPage::TextItem HashingPage::texts[] = {
 	//hashing
 	{ IDC_HASHING_OPTIONS, ResourceManager::HASHING_OPTIONS },
@@ -121,4 +122,5 @@ void HashingPage::optimizeDb(bool verify) {
 
 	MainFrame::getMainFrame()->addThreadedTask([=] { HashManager::getInstance()->startMaintenance(verify); });
 	WinUtil::showMessageBox(TSTRING(MAINTENANCE_STARTED_SETTINGS), MB_ICONINFORMATION);
+}
 }

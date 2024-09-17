@@ -23,6 +23,7 @@
 #include "DownloadPage.h"
 #include "PropertiesDlg.h"
 
+namespace wingui {
 PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_AUTO_SEARCH_ALT, ResourceManager::SETTINGS_AUTO_BUNDLE_SEARCH },
 	{ IDC_ENABLE_SEGMENTS, ResourceManager::ENABLE_MULTI_SOURCE },
@@ -122,4 +123,4 @@ void DownloadPage::checkItems() {
 	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_LIMIT),			searchAlt && autoAddSources);
 	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SEARCH_LIMIT),	searchAlt && autoAddSources);
 }
-
+}

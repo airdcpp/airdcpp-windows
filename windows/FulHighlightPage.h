@@ -30,6 +30,7 @@
 #include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/SettingsManager.h>
 
+namespace wingui {
 class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage, private SettingsManagerListener
 {
 	public:
@@ -115,5 +116,5 @@ protected:
 	}
 	
 };
-
+}
 #endif //HIGHLIGHTPAGE_H

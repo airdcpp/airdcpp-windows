@@ -26,6 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
+namespace wingui {
 class DownloadPage : public CPropertyPage<IDD_DOWNLOADPAGE>, public PropPage
 {
 public:
@@ -56,5 +57,6 @@ protected:
 	static TextItem texts[];
 	static ListItem optionItems[];
 };
+}
 
 #endif //  !defined(DOWNLOAD_PAGE_H)

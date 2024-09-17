@@ -22,6 +22,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
+namespace wingui {
 class LimitPage : public CPropertyPage<IDD_LIMITPAGE>, public PropPage
 {
 public:
@@ -54,5 +55,6 @@ private:
 	TCHAR* title;
 	void fixControls();
 };
+}
 
 #endif //LIMITPAGE_H

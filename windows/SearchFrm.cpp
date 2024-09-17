@@ -48,6 +48,7 @@
 #include <boost/range/numeric.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+namespace wingui {
 string SearchFrame::id = "Search";
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_RELEVANCE, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_DATE, COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, 
@@ -799,7 +800,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 			} else {
 				if (!targetName) {
 					// Only pick the directory name, different paths are always needed
-					targetName = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : PathUtil::getAdcLastDir(aSR->getAdcFilePath());
+					targetName = aSR->getType() == SearchResult::Type::DIRECTORY ? aSR->getFileName() : PathUtil::getAdcLastDir(aSR->getAdcFilePath());
 				}
 
 				MainFrame::getMainFrame()->addThreadedTask([=] {
@@ -1260,7 +1261,7 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 		ucParams["tth"] = ucParams["fileTR"];
 
 		auto tmp = ucParams;
-		ClientManager::getInstance()->userCommand(si->getHintedUser(), uc, tmp, true);
+		UserCommandManager::getInstance()->userCommand(si->getHintedUser(), uc, tmp, true);
 	}
 }
 
@@ -1549,8 +1550,16 @@ void SearchFrame::updateHubInfoString() {
 		}
 	}
 
-	auto p = ClientManager::getInstance()->countAschSupport(clients);
-	tstring txt = _T("* ") + TSTRING_F(ASCH_SUPPORT_COUNT, p.first % p.second);
+	size_t total = 0, asch = 0;
+	ClientManager::getInstance()->forEachOnlineUser([&](const OnlineUserPtr& aUser) {
+		if (clients.contains(aUser->getHubUrl())) {
+			total++;
+			if (aUser->getUser()->isSet(User::ASCH))
+				asch++;
+		}
+	}, true);
+
+	tstring txt = _T("* ") + TSTRING_F(ASCH_SUPPORT_COUNT, asch % total);
 	aschLabel.SetWindowText(txt.c_str());
 }
 
@@ -1820,4 +1829,5 @@ void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
+}
 }

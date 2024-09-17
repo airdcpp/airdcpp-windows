@@ -22,6 +22,7 @@
 #include "WinUtil.h"
 
 
+namespace wingui {
 PropPage::TextItem WizardManualConnectivity::texts[] = {
 	{ IDC_MANUALCONN_INTRO, ResourceManager::WIZARD_MANUAL_CONNECTIVITY_INTRO },
 	{ 0, ResourceManager::LAST }
@@ -63,4 +64,5 @@ int WizardManualConnectivity::OnSetActive() {
 	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
 	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 	return 0;
+}
 }

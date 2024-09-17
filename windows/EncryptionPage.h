@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class EncryptionPage : public CPropertyPage<IDD_ENCRYPTIONPAGE>, public PropPage
 {
 public:
@@ -67,5 +68,6 @@ protected:
 
 	CComboBox ctrlTransferEncryption;
 };
+}
 
 #endif // !defined(ENCRYPTION_PAGE_H)

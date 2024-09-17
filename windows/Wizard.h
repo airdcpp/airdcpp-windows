@@ -26,6 +26,7 @@
 
 #include <atldlgs.h>
 
+namespace wingui {
 class SetupWizard : public CAeroWizardFrameImpl<SetupWizard>, public Async<SetupWizard> { 
 public: 
 	enum { WM_USER_INITDIALOG = WM_APP + 501 };
@@ -68,5 +69,6 @@ private:
 	bool saved;
 	bool pagesDeleted;
 };
+}
 
 #endif

@@ -31,6 +31,7 @@
 #include "TabbedDialog.h"
 
 
+namespace wingui {
 class AutoSearchGeneralPage : public CDialogImpl<AutoSearchGeneralPage>, public DownloadBaseHandler<AutoSearchGeneralPage>, public TabPage {
 public:
 
@@ -121,5 +122,6 @@ private:
 	bool loading;
 
 };
+}
 #endif
 #pragma once

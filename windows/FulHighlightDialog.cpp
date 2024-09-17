@@ -28,6 +28,8 @@
 #include "FulHighlightDialog.h"
 #include "WinUtil.h"
 
+
+namespace wingui {
 ResourceManager::Strings FulHighlightDialog::UserColumnNames[] = { ResourceManager::NICK, ResourceManager::SHARED, ResourceManager::EXACT_SHARED, 
 	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::SETCZDC_UPLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ResourceManager::IP_BARE, ResourceManager::EMAIL,
 	ResourceManager::VERSION, ResourceManager::MODE, ResourceManager::HUBS, ResourceManager::SLOTS, ResourceManager::CID };
@@ -353,4 +355,5 @@ LRESULT FulHighlightDialog::onClickedBox(WORD /*wNotifyCode*/, WORD wID, HWND /*
 	ctrlButton.Detach();
 
 	return 0;
+}
 }

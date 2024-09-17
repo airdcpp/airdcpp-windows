@@ -24,7 +24,7 @@
 
 #include "atlcoll.h"
 
-namespace dcpp {
+namespace wingui {
 
 class CBarShader
 {
@@ -228,6 +228,6 @@ private:
 	static FCIMap flood_cache;
 };
 
-} //dcpp
+} //wingui
 
 #endif // BARSHARED_H

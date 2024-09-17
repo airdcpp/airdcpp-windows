@@ -29,6 +29,8 @@
 
 #include <airdcpp/SettingItem.h>
 
+namespace wingui {
+
 class SetupWizard;
 class WizardProfile : public PropPage, public CAeroWizardPageImpl<WizardProfile> { 
 public: 
@@ -65,5 +67,7 @@ private:
 	int lastProfile;
 	ProfileSettingItem::List conflicts;
 }; 
+
+}
 
 #endif

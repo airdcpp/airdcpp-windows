@@ -31,6 +31,7 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>
 
+namespace wingui {
 class FulHighlightDialog: public CDialogImpl<FulHighlightDialog>
 {
 public:
@@ -90,5 +91,5 @@ protected:
 	ColorSettings cs;
 	
 };
-
+}
 #endif //HIGHLIGHTPAGE_H

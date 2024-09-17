@@ -20,6 +20,7 @@
 #include "SearchPage.h"
 #include <airdcpp/modules/AutoSearchManager.h>
 
+namespace wingui {
 PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_SETTINGS_SECONDS,						ResourceManager::SECONDS_LOWER },
 	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL },
@@ -82,3 +83,4 @@ void SearchPage::write() {
 SearchPage::~SearchPage() {
 	free(title);
 };
+}

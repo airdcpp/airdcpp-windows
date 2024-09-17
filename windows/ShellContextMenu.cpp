@@ -27,6 +27,7 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/Text.h>
 
+namespace wingui {
 ShellMenu* ShellMenu::curMenu = nullptr;
 unique_ptr<ShellMenu::Handler> ShellMenu::curHandler;
 unsigned ShellMenu::sel_id = 0; 
@@ -199,4 +200,5 @@ LRESULT ShellMenu::dispatch(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHand
 
 	bHandled = FALSE;
 	return FALSE;
+}
 }

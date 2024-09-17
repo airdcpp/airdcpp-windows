@@ -25,6 +25,7 @@
 
 #include <airdcpp/Text.h>
 
+namespace wingui {
 PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_APPEARANCE_OPTIONS, ResourceManager::SETTINGS_OPTIONS },
 	{ IDC_SETTINGS_BOLD_CONTENTS, ResourceManager::SETTINGS_BOLD_OPTIONS },
@@ -132,4 +133,5 @@ LRESULT AppearancePage::onClickedCountryHelp(WORD /* wNotifyCode */, WORD /*wID*
 	decltype(auto) defaultFormat = SettingsManager::getInstance()->getDefault(SettingsManager::COUNTRY_FORMAT);
 	MessageBox(CTSTRING_F(SETTINGS_COUNTRY_FORMAT_HELP, Text::toT(defaultFormat)), CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	return S_OK;
+}
 }

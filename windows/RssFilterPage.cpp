@@ -26,6 +26,7 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SimpleXML.h>
 
+namespace wingui {
 #define setMinMax(x, y, z) \
 	updown.Attach(GetDlgItem(x)); \
 	updown.SetRange32(y, z); \
@@ -401,4 +402,5 @@ void RssFilterPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_EXPIRE_INT_SPIN), enable);
 	::EnableWindow(GetDlgItem(IDC_FORMAT_TIME), enable);
 
+}
 }

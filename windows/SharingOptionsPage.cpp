@@ -26,6 +26,7 @@
 #include <airdcpp/ShareManager.h>
 
 
+namespace wingui {
 PropPage::ListItem SharingOptionsPage::listItems[] = {
 	{ SettingsManager::SHARE_HIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
 	{ SettingsManager::REMOVE_FORBIDDEN, ResourceManager::SETCZDC_REMOVE_FORBIDDEN },
@@ -94,4 +95,5 @@ void SharingOptionsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SHARINGLIST));
 	
 	settings->set(SettingsManager::REFRESH_THREADING, ctrlThreadedRefresh.GetCurSel());
+}
 }

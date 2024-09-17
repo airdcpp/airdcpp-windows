@@ -25,6 +25,7 @@
 
 #include "EmoticonsManager.h"
 
+namespace wingui {
 #define EMOTICONS_ICONMARGIN 8
 
 extern EmoticonsManager* emoticonsManager;
@@ -188,4 +189,5 @@ LRESULT CALLBACK EmoticonsDlg::NewWndProc( HWND hWnd, UINT message, WPARAM wPara
 		bitmapList.clear();
 	}
 	return ::CallWindowProc(m_MFCWndProc, hWnd, message, wParam, lParam);
+}
 }

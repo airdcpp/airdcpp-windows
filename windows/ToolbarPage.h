@@ -22,6 +22,7 @@
 
 #include "PropPage.h"
 
+namespace wingui {
 class ToolbarPage : public CPropertyPage<IDD_TOOLBARPAGE>, public PropPage
 {
 public:
@@ -58,5 +59,6 @@ protected:
 	static TextItem texts[];
 	TCHAR* title;
 };
+}
 
 #endif //TOOLBARPAGE_H

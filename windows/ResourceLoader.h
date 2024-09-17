@@ -34,6 +34,7 @@
 #include "resource.h"
 #include "ExCImage.h"
 
+namespace wingui {
 #define GET_ICON(id, size) ResourceLoader::getIcon(id, size)
 
 class ResourceLoader
@@ -142,5 +143,7 @@ private:
 	static CIcon errorIcon;
 
 };
+
+}
 
 #endif // RESOURCE_LOADER_H

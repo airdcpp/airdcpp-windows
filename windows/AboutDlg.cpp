@@ -29,9 +29,10 @@
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/version.h>
-#include <airdcpp/Updater.h>
+#include <airdcpp/UpdateDownloader.h>
 #include <airdcpp/UpdateManager.h>
 
+namespace wingui {
 static const TCHAR Airthanks[] = 
 _T("IP Geolocation by DB-IP.com.\r\n\r\n")
 _T("Thanks to Absolon, Alehk, en_dator, Charlie, Freebow, Herman, Juckpuck, Mad, Peken, PeTaKe, Sepenoob, Skalman, Sopor, steve72, Toans, whinner and Zoolut1oN for testing the client and helping to make it better.\r\n")
@@ -100,11 +101,10 @@ void AboutDlg::on(HttpConnectionListener::Complete, HttpConnection* conn, const 
 			xml.fromXML(downBuf);
 			if(xml.findChild("DCUpdate")) {
 				xml.stepIn();
-				string versionString;
-				int remoteBuild = 0;
 
-				if(Updater::getUpdateVersionInfo(xml, versionString, remoteBuild)) {
-					tstring* x = new tstring(Text::toT(versionString));
+				auto version = UpdateDownloader::parseVersionFile(xml, false);
+				if (version) {
+					tstring* x = new tstring(Text::toT(version->versionStr));
 					PostMessage(WM_VERSIONDATA, (WPARAM) x);
 					return;
 				}
@@ -121,4 +121,5 @@ void AboutDlg::on(HttpConnectionListener::Failed, HttpConnection* conn, const st
 	tstring* x = new tstring(Text::toT(aLine));
 	PostMessage(WM_VERSIONDATA, (WPARAM) x);
 	conn->removeListener(this);
+}
 }

@@ -25,6 +25,7 @@
 #include "resource.h"
 #include "WinUtil.h"
 
+namespace wingui {
 class WebUserDlg : public CDialogImpl<WebUserDlg> {
 public:
 
@@ -88,4 +89,7 @@ private:
 	CEdit ctrlPassword;
 
 };
+
+}
+
 #endif

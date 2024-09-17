@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class UCPage : public CPropertyPage<IDD_UCPAGE>, public PropPage
 {
 public:
@@ -77,5 +78,6 @@ protected:
 
 	void addEntry(const UserCommand& uc, int pos);
 };
+}
 
 #endif // !defined(UC_PAGE_H)

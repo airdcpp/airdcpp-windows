@@ -26,6 +26,7 @@
 
 #include "Dispatchers.h"
 
+namespace wingui {
 
 #define EXT_CONTEXT_MENU(menu, menuId, tokens) \
 if (!tokens.empty()) { \
@@ -53,14 +54,14 @@ if (!tokens.empty()) { \
 class OMenu : public CMenu {
 public:
 	struct OMenuItem {
-		typedef vector<unique_ptr<OMenuItem>> List;
+		using List = vector<unique_ptr<OMenuItem>>;
 
-		OMenuItem() : ownerdrawn(true), text(), parent(nullptr), data(nullptr) {}
+		OMenuItem() = default;
 
 		tstring text;
-		OMenu* parent;
-		void* data;
-		bool ownerdrawn;
+		OMenu* parent = nullptr;
+		void* data = nullptr;
+		bool ownerdrawn = true;
 		Dispatcher::F f;
 	};
 
@@ -71,7 +72,7 @@ public:
 		FLAG_DISABLED	= 0x08,
 	};
 
-	OMenu(OMenu* aParent = nullptr);
+	explicit OMenu(OMenu* aParent = nullptr);
 	~OMenu();
 
 	BOOL CreatePopupMenu();
@@ -84,7 +85,7 @@ public:
 		InsertSeparator(GetMenuItemCount(), TRUE, caption);
 	}
 
-	typedef std::function<void(const webserver::ContextMenuItemClickData&)> ExtensionMenuItemClickHandler;
+	using ExtensionMenuItemClickHandler = std::function<void (const webserver::ContextMenuItemClickData &)>;
 	static void appendExtensionMenuItems(OMenu& menu_, const webserver::GroupedContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept;
 
 	void appendSeparator();
@@ -159,4 +160,5 @@ private:
 			return TRUE; \
 	}
 
+}
 #endif // __OMENU_H

@@ -49,6 +49,7 @@
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
 
+namespace wingui {
 class SearchFrame : public MDITabChildWindowImpl<SearchFrame>, 
 	private SearchInstanceListener, private ClientManagerListener,
 	public UCHandler<SearchFrame>, public UserInfoBaseHandler<SearchFrame>, public DownloadBaseHandler<SearchFrame>,
@@ -525,5 +526,6 @@ private:
 
 	SearchInstancePtr search;
 };
+}
 
 #endif // !defined(SEARCH_FRM_H)

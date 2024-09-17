@@ -12,7 +12,7 @@
 #ifndef WILDCARD_H
 #define WILDCARD_H
 
-namespace dcpp {
+namespace wingui {
 
 // Implementation of the UN*X wildcards
 // Supported wild-characters: '*', '?'; sets: [a-z], '!' negation

@@ -30,6 +30,7 @@
 
 #include <airdcpp/SettingsManager.h>
 
+namespace wingui {
 class SharePage : public CPropertyPage<IDD_SHAREPAGE>, public PropPage, public SharePageBase
 {
 public:
@@ -84,5 +85,6 @@ protected:
 
 	void applyChanges(bool isQuit);
 };
+}
 
 #endif // !defined(SHARE_PAGE_H)

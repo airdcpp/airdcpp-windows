@@ -24,6 +24,7 @@
 #include <airdcpp/StartupParams.h>
 #include <airdcpp/Updater.h>
 
+namespace wingui {
 class WinUpdater {
 public:
 	WinUpdater();
@@ -41,13 +42,13 @@ public:
 	// Returns false if the application should exit
 	bool isUpdaterAction(const StartupParams& aStartupParams) noexcept;
 private:
-	void listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept;
+	static void listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept;
 
 	void createUpdater(const StartupParams& aStartupParams);
 
-	bool installUpdate(const string& aInstallPath);
-	void updateRegistry(const string& aApplicationPath, Updater::FileLogger& logger_);
-	void startNewInstance(const string& aInstallPath, const StartupParams& aNewStartupParams);
+	static bool installUpdate(const string& aInstallPath);
+	static void updateRegistry(const string& aApplicationPath, Updater::FileLogger& logger_);
+	void startNewInstance(const string& aInstallPath, const StartupParams& aNewStartupParams) const;
 
 	// Check from disk whether we have an update pending
 	bool checkAndCleanUpdaterFiles(const StartupParams& aStartupParams) noexcept;
@@ -60,5 +61,6 @@ private:
 	optional<PendingUpdate> pendingUpdate;
 };
 
+}
 
 #endif // !defined(WINCLIENT_H)

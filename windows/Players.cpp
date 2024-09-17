@@ -42,7 +42,7 @@
 
 #include <fstream>
 
-namespace dcpp {
+namespace wingui {
 
 string Players::getItunesSpam(HWND playerWnd /*= NULL*/) {
 	// If it's not running don't even bother...

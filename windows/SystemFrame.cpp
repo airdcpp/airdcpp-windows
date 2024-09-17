@@ -36,6 +36,7 @@
 #include <airdcpp/DupeUtil.h>
 #include <airdcpp/PathUtil.h>
 
+namespace wingui {
 #define ICON_SIZE 16
 string SystemFrame::id = "SystemLog";
 LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -522,4 +523,5 @@ LRESULT SystemFrame::onSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT SystemFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ActionUtil::search(Text::toT(DupeUtil::getReleaseDirLocal(Text::fromT(selWord), true)), true);
 	return 0;
+}
 }

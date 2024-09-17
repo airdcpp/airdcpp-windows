@@ -74,11 +74,12 @@
 #include <airdcpp/SettingHolder.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/ShareProfile.h>
+#include <airdcpp/SimpleXML.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/SystemUtil.h>
 #include <airdcpp/ThrottleManager.h>
 #include <airdcpp/UpdateManager.h>
-#include <airdcpp/Updater.h>
+#include <airdcpp/UpdateDownloader.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/ViewFileManager.h>
 
@@ -87,6 +88,7 @@
 #include <VersionHelpers.h>
 #include <dbt.h>
 
+namespace wingui {
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
 uint64_t MainFrame::iCurrentShutdownTime = 0;
@@ -98,9 +100,9 @@ bool MainFrame::isShutdownStatus = false;
 #define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
 MainFrame::MainFrame(const StartupParams& aStartupParams, AddUpdateF&& aAddUpdateF) : CSplitterImpl(false),
-	transferView(make_unique<TransferView>()), hashProgress(make_unique<HashProgressDlg>()),
-	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP),
-	addUpdateF(std::move(aAddUpdateF)), startupParams(aStartupParams)
+	addUpdateF(std::move(aAddUpdateF)), transferView(make_unique<TransferView>()),
+	hashProgress(make_unique<HashProgressDlg>()),
+	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), startupParams(aStartupParams)
 {
 	user32lib = LoadLibrary(_T("user32"));
 	_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
@@ -726,7 +728,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 				ctrlStatus.SetText(STATUS_SHUTDOWN, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
 				if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
 					bool bDidShutDown = false;
-					bDidShutDown = ::OSUtil::shutdown(SETTING(SHUTDOWN_ACTION));
+					bDidShutDown = OSUtil::shutdown(SETTING(SHUTDOWN_ACTION));
 					if (bDidShutDown) {
 						// Should we go faster here and force termination?
 						// We "could" do a manual shutdown of this app...
@@ -2036,12 +2038,12 @@ void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noex
 	ShowPopup(Text::toT(line), CTSTRING(UPDATER), NIIF_ERROR, true);
 }
 
-void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	callAsync([=] { onUpdateAvailable(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl); });
+void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const UpdateVersion& aVersionInfo) noexcept {
+	callAsync([=] { onUpdateAvailable(title, message, aVersionInfo); });
 }
 
-void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
-	callAsync([=] { onBadVersion(message, infoUrl, updateUrl, buildID, autoUpdate); });
+void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const UpdateVersion& aVersionInfo) noexcept {
+	callAsync([=] { onBadVersion(message, aVersionInfo); });
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater) noexcept {
@@ -2056,28 +2058,28 @@ void MainFrame::on(UpdateManagerListener::VersionFileDownloaded, SimpleXML& xml)
 	}
 }
 
-void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
+void MainFrame::onUpdateAvailable(const string& title, const string& message, const UpdateVersion& aVersionInfo) noexcept {
+	UpdateDlg dlg(title, message, aVersionInfo);
 	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
-		addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(autoUpdateUrl, build, true); });
+		addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(aVersionInfo, true); });
 		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 	}
 }
 
-void MainFrame::onBadVersion(const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
-	bool canAutoUpdate = autoUpdate && UpdateDlg::canAutoUpdate(updateUrl);
+void MainFrame::onBadVersion(const string& message, const UpdateVersion& aVersionInfo) noexcept {
+	bool canAutoUpdate = aVersionInfo.autoUpdate && UpdateDlg::canAutoUpdate(aVersionInfo.updateUrl);
 
 	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " + shortVersionString);
 	showMessageBox(Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), MB_OK | MB_ICONEXCLAMATION, title);
 
 	if (!canAutoUpdate) {
-		if (!infoUrl.empty())
-			ActionUtil::openLink(Text::toT(infoUrl));
+		if (!aVersionInfo.infoUrl.empty())
+			ActionUtil::openLink(Text::toT(aVersionInfo.infoUrl));
 
 		shutdown();
 	} else {
 		if (!UpdateManager::getInstance()->getUpdater().isUpdating()) {
-			addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(updateUrl, buildID, true); });
+			addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(aVersionInfo, true); });
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
@@ -2203,4 +2205,5 @@ void MainFrame::updateTooltipRect() {
 		ctrlStatus.GetRect(i, sr);
 		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, i+POPUP_UID, sr);
 	}
+}
 }

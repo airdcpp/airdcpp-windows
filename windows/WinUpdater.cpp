@@ -30,18 +30,22 @@
 #include <airdcpp/SystemUtil.h>
 #include <airdcpp/Text.h>
 #include <airdcpp/Updater.h>
+#include <airdcpp/UpdaterCreator.h>
+#include <airdcpp/UpdateDownloader.h>
 #include <airdcpp/ValueGenerator.h>
 #include <airdcpp/ZipFile.h>
 
 #include <web-server/WebServerSettings.h>
 
 
+namespace wingui {
+
 WinUpdater::WinUpdater() {
 
 }
 
 void WinUpdater::listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept {
-	auto assertFiles = [](string&& title, int minExpected, int added) {
+	auto assertFiles = [](const string& title, int minExpected, int added) {
 		if (added < minExpected) {
 			::MessageBox(
 				WinUtil::splash->m_hWnd,
@@ -71,11 +75,11 @@ void WinUpdater::createUpdater(const StartupParams& aStartupParams) {
 	SplashWindow::create();
 	WinUtil::splash->update("Creating updater");
 
-	auto updaterFilePath = Updater::createUpdate([this](auto&&... args) { listUpdaterFiles(args...); });
+	auto updaterFilePath = UpdaterCreator::createUpdate([this](auto&&... args) { listUpdaterFiles(args...); });
 
 	if (aStartupParams.hasParam("/test")) {
 		WinUtil::splash->update("Extracting updater");
-		auto updaterExeFile = Updater::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(ValueGenerator::rand()));
+		auto updaterExeFile = UpdateDownloader::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(ValueGenerator::rand()));
 
 		addUpdate(updaterExeFile);
 
@@ -177,7 +181,7 @@ bool WinUpdater::isUpdaterAction(const StartupParams& aStartupParams) noexcept {
 			auto keyPath = aStartupParams.getParams()[2];
 			bool genHeader = aStartupParams.hasParam("-pubout");
 			if (PathUtil::fileExists(xmlPath) && PathUtil::fileExists(keyPath)) {
-				Updater::signVersionFile(xmlPath, keyPath, genHeader);
+				UpdaterCreator::signVersionFile(xmlPath, keyPath, genHeader);
 			}
 		}
 
@@ -212,7 +216,7 @@ bool WinUpdater::isUpdaterAction(const StartupParams& aStartupParams) noexcept {
 	return checkAndCleanUpdaterFiles(aStartupParams);
 }
 
-void WinUpdater::startNewInstance(const string& aInstallPath, const StartupParams& aNewStartupParams) {
+void WinUpdater::startNewInstance(const string& aInstallPath, const StartupParams& aNewStartupParams) const {
 	auto path = Text::toT(aInstallPath + AppUtil::getAppFileName());
 	auto newStartupParams = Text::toT(aNewStartupParams.formatParams(true));
 
@@ -226,8 +230,7 @@ void WinUpdater::startNewInstance(const string& aInstallPath, const StartupParam
 bool WinUpdater::checkAndCleanUpdaterFiles(const StartupParams& aStartupParams) noexcept {
 	auto updated = aStartupParams.hasParam("/updated") || aStartupParams.hasParam("/updatefailed");
 
-	string updaterFile;
-	if (Updater::checkAndCleanUpdaterFiles(AppUtil::getAppFilePath(), updaterFile, updated)) {
+	if (string updaterFile; Updater::checkAndCleanUpdaterFiles(AppUtil::getAppFilePath(), updaterFile, updated)) {
 		addUpdate(updaterFile);
 		runPendingUpdate(aStartupParams);
 		return true;
@@ -239,10 +242,10 @@ bool WinUpdater::checkAndCleanUpdaterFiles(const StartupParams& aStartupParams) 
 void WinUpdater::reportPostInstall(StartupParams& startupParams_) const noexcept {
 	// Report
 	if (startupParams_.hasParam("/updated")) {
-		Updater::log(STRING(UPDATE_SUCCEEDED), LogMessage::SEV_INFO);
+		UpdateDownloader::log(STRING(UPDATE_SUCCEEDED), LogMessage::SEV_INFO);
 		startupParams_.removeParam("/updated");
 	} else if (startupParams_.hasParam("/updatefailed")) {
-		Updater::log(STRING_F(UPDATE_FAILED, Updater::getFinalLogFilePath()), LogMessage::SEV_ERROR);
+		UpdateDownloader::log(STRING_F(UPDATE_FAILED, Updater::getFinalLogFilePath()), LogMessage::SEV_ERROR);
 		startupParams_.removeParam("/updatefailed");
 	}
 }
@@ -270,3 +273,4 @@ bool WinUpdater::runPendingUpdate(const StartupParams& aStartupParams) noexcept 
 	return false;
 }
 
+}

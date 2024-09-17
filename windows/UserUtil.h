@@ -22,6 +22,7 @@
 
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class UserUtil
 {
 public:
@@ -52,5 +53,6 @@ public:
 	static tstring getUserText(const OnlineUserPtr& aUser, uint8_t col, bool copy = false) noexcept;
 	static uint8_t getIdentityImage(const Identity& identity, bool aIsClientTcpActive);
 };
+}
 
 #endif // WIN_USERUTIL_H

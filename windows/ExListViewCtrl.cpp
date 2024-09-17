@@ -24,6 +24,7 @@
 
 #include <airdcpp/Util.h>
 
+namespace wingui {
 // TODO: make sure that moved items maintain their selection state
 int ExListViewCtrl::moveItem(int oldPos, int newPos) {
 	TCHAR buf[512];
@@ -212,4 +213,4 @@ int CALLBACK ExListViewCtrl::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM 
 
 	return result;
 }
-
+}

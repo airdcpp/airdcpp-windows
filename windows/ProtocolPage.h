@@ -27,6 +27,7 @@
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/UpdateManagerListener.h>
 
+namespace wingui {
 class ProtocolPage : public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener, private ConnectivityManagerListener, private Async<ProtocolPage>
 {
 public:
@@ -117,5 +118,6 @@ private:
 	void showProtocol(bool v6);
 	bool created = false;
 };
+}
 
 #endif // !defined(NETWORK_PAGE_H)

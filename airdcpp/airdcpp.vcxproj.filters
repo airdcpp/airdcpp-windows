@@ -725,6 +725,15 @@
     <ClCompile Include="airdcpp\version.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
+    <ClCompile Include="airdcpp\HBRIValidation.cpp">
+      <Filter>Source Files\hub</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UpdateDownloader.cpp">
+      <Filter>Source Files\core\update</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UpdaterCreator.cpp">
+      <Filter>Source Files\core\update</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="airdcpp\DCPlusPlus.h">
@@ -1470,6 +1479,21 @@
     </ClInclude>
     <ClInclude Include="airdcpp\StartupParams.h">
       <Filter>Header Files\core\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\HBRIValidation.h">
+      <Filter>Header Files\hub</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UpdateVersion.h">
+      <Filter>Header Files\core\update</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UpdateDownloader.h">
+      <Filter>Header Files\core\update</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UpdaterCreator.h">
+      <Filter>Header Files\core\update</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UpdateConstants.h">
+      <Filter>Header Files\core\update</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

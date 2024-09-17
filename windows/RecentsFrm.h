@@ -27,6 +27,7 @@
 
 #include <airdcpp/RecentManager.h>
 
+namespace wingui {
 class RecentsFrame : public MDITabChildWindowImpl<RecentsFrame>, public StaticFrame<RecentsFrame, ResourceManager::RECENTS, IDC_RECENTS>, 
 	private RecentManagerListener, private SettingsManagerListener, private Async<RecentsFrame>
 {
@@ -139,5 +140,5 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 };
-
+}
 #endif

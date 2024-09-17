@@ -28,6 +28,7 @@
 #include "TabbedDialog.h"
 #include "DownloadBaseHandler.h"
 
+namespace wingui {
 class RssFilterPage : public CDialogImpl<RssFilterPage>, public DownloadBaseHandler<RssFilterPage>, public TabPage {
 public:
 
@@ -142,4 +143,7 @@ private:
 	void fixControls();
 
 };
+
+}
+
 #endif

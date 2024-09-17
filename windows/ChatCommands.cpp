@@ -30,6 +30,7 @@
 #include <WinInet.h>
 #include <atlwin.h>
 
+#include <airdcpp/ClientManager.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ShareManager.h>
@@ -43,6 +44,7 @@
 #include "boost/format.hpp"
 
 
+namespace wingui {
 tstring ChatCommands::UselessInfo() {
 	tstring result = _T("\n");
 	TCHAR buf[255];
@@ -447,5 +449,51 @@ TTH searches: %d%% (hash bloom mode: %s)")
 );
 
 	return ret;
+}
+
+
+string ChatCommands::hubStats() noexcept {
+	auto optionalStats = ClientManager::getInstance()->getClientStats();
+	if (!optionalStats) {
+		return "No hubs";
+	}
+
+	auto stats = *optionalStats;
+
+	string lb = "\r\n";
+	string ret = boost::str(boost::format(
+		"\r\n\r\n-=[ Hub statistics ]=-\r\n\r\n\
+All users: %d\r\n\
+Unique users: %d (%d%%)\r\n\
+Active/operators/bots/hidden: %d (%d%%) / %d (%d%%) / %d (%d%%) / %d (%d%%)\r\n\
+Protocol users (ADC/NMDC): %d / %d\r\n\
+Total share: %s (%s per user)\r\n\
+Average ADC connection speed: %s down, %s up\r\n\
+Average NMDC connection speed: %s")
+
+% stats.totalUsers
+% stats.uniqueUsers % Util::countPercentage(stats.uniqueUsers, stats.totalUsers)
+% stats.activeUsers % Util::countPercentage(stats.activeUsers, stats.uniqueUsers)
+% stats.operators % Util::countPercentage(stats.operators, stats.uniqueUsers)
+% stats.bots % Util::countPercentage(stats.bots, stats.uniqueUsers)
+% stats.hiddenUsers % Util::countPercentage(stats.hiddenUsers, stats.uniqueUsers)
+% stats.adcUsers % stats.nmdcUsers
+% Util::formatBytes(stats.totalShare) % Util::formatBytes(Util::countAverageInt64(stats.totalShare, stats.uniqueUsers))
+% Util::formatConnectionSpeed(stats.downPerAdcUser) % Util::formatConnectionSpeed(stats.upPerAdcUser)
+% Util::formatConnectionSpeed(stats.nmdcSpeedPerUser)
+
+);
+
+	ret += lb;
+	ret += lb;
+	ret += "Clients (from unique users)";
+	ret += lb;
+
+	for (const auto& [name, count] : stats.clients) {
+		ret += name + ":\t\t" + Util::toString(count) + " (" + Util::toString(Util::countPercentage(count, stats.uniqueUsers)) + "%)" + lb;
+	}
+
+	return ret;
+}
 }
 

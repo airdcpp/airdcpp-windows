@@ -27,6 +27,7 @@
 #include "LogPage.h"
 
 
+namespace wingui {
 PropPage::TextItem LogPage::texts[] = {
 	{ IDC_SETTINGS_LOGGING,		ResourceManager::SETTINGS_LOGGING },
 	{ IDC_SETTINGS_LOG_DIR,		ResourceManager::DIRECTORY },
@@ -175,4 +176,5 @@ LRESULT LogPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		SetDlgItemText(IDC_LOG_DIRECTORY, target.c_str());
 	}
 	return 0;
+}
 }

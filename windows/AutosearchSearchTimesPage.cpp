@@ -20,6 +20,7 @@
 #include "Resource.h"
 #include "AutosearchSearchTimesPage.h"
 
+namespace wingui {
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 #define setMinMax(x, y, z) \
 	updown.Attach(GetDlgItem(x)); \
@@ -144,3 +145,4 @@ void AutosearchSearchTimesPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_SEARCH_END), useCustomTimes);
 }
 
+}

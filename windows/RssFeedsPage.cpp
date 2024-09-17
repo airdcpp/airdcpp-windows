@@ -24,6 +24,7 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
 
+namespace wingui {
 #define setMinMax(x, y, z) \
 	updown.Attach(GetDlgItem(x)); \
 	updown.SetRange32(y, z); \
@@ -130,4 +131,5 @@ void RssFeedsPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_RSS_INTERVAL_TEXT), enabled);
 	::EnableWindow(GetDlgItem(IDC_RSS_INT_SPIN), enabled);
 
+}
 }

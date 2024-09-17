@@ -21,6 +21,7 @@
 
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class EmoticonsDlg : public CDialogImpl<EmoticonsDlg>
 {
 public:
@@ -54,5 +55,6 @@ private:
 	static LRESULT CALLBACK NewWndProc( HWND, UINT, WPARAM, LPARAM );
 
 };
+}
 
 #endif // __EMOTICONS_DLG

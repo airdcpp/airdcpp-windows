@@ -26,6 +26,7 @@
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchTypes.h>
 
+namespace wingui {
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings, const string& aName) : options(aSettings), name(aName), loading(true) {}
@@ -273,4 +274,5 @@ void AutoSearchGeneralPage::fixControls() {
 	/* Expiry date */
 	::EnableWindow(GetDlgItem(IDC_DATETIMEPICKER), IsDlgButtonChecked(IDC_USE_EXPIRY) == BST_CHECKED);
 
+}
 }

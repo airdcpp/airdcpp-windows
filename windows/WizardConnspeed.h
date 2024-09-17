@@ -26,6 +26,7 @@
 
 #include "WTL\atldlgs.h"
 
+namespace wingui {
 class SetupWizard;
 class WizardConnspeed : public PropPage, public CAeroWizardPageImpl<WizardConnspeed> { 
 public: 
@@ -75,5 +76,7 @@ private:
 
 	SetupWizard* wizard;
 }; 
+
+}
 
 #endif

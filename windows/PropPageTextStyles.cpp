@@ -29,6 +29,7 @@
 #include "OperaColorsPage.h"
 #include "PropertiesDlg.h"
 
+namespace wingui {
 PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_AVAILABLE_STYLES, ResourceManager::SETCZDC_STYLES },
 	{ IDC_BACK_COLOR, ResourceManager::SETCZDC_BACK_COLOR },
@@ -815,4 +816,5 @@ LRESULT PropPageTextStyles::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 	} else {
 		return FALSE;
 	}
+}
 }

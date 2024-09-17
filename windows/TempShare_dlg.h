@@ -24,6 +24,7 @@
 
 #include <airdcpp/TempShareItem.h>
 
+namespace wingui {
 class TempShareDlg : public CDialogImpl<TempShareDlg>
 {
 public:
@@ -50,4 +51,5 @@ public:
 private:
 	TempShareInfoList files;
 };
+}
 

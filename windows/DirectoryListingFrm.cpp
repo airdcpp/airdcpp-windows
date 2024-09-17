@@ -54,6 +54,7 @@
 #include <web-server/WebServerManager.h>
 
 
+namespace wingui {
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
 int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COLUMN_EXACTSIZE, COLUMN_SIZE, COLUMN_TTH, COLUMN_DATE };
 int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 130 };
@@ -1535,7 +1536,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 	fileMenu.appendSeparator();
 
 	{
-		vector<DirectoryListingToken> tokens;
+		vector<DirectoryListingItemToken> tokens;
 		ctrlFiles.list.forEachSelectedT([&tokens](const ItemInfo* ii) {
 			tokens.push_back(ii->getToken());
 		});
@@ -1597,7 +1598,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 	directoryMenu.appendSeparator();
 
 	{
-		vector<DirectoryListingToken> tokens({ ii->getToken() });
+		vector<DirectoryListingItemToken> tokens({ ii->getToken() });
 		EXT_CONTEXT_MENU_ENTITY(directoryMenu, FilelistItem, tokens, dl);
 	}
 
@@ -1880,7 +1881,7 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		ucParams["tth"] = ucParams["fileTR"];
 
 		auto tmp = ucParams;
-		ClientManager::getInstance()->userCommand(dl->getHintedUser(), uc, tmp, true);
+		UserCommandManager::getInstance()->userCommand(dl->getHintedUser(), uc, tmp, true);
 	}
 }
 
@@ -2465,4 +2466,5 @@ LRESULT DirectoryListingFrame::onComboSelChanged(WORD /*wNotifyCode*/, WORD /*wI
 
 	bHandled = FALSE;
 	return 0;
+}
 }

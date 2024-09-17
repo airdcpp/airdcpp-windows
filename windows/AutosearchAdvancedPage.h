@@ -31,6 +31,7 @@
 #include "AutoSearchItemSettings.h"
 #include "TabbedDialog.h"
 
+namespace wingui {
 class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage>, public TabPage {
 public:
 
@@ -86,6 +87,7 @@ private:
 	bool loading;
 
 };
+}
 
 
 #endif

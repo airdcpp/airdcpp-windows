@@ -27,6 +27,8 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+
+namespace wingui {
 class AirAppearancePage : public CPropertyPage<IDD_AIRAPPEARANCEPAGE>, public PropPage
 {
 public:
@@ -60,6 +62,7 @@ protected:
 	TCHAR* title;
 
 };
+}
 
 #endif // !defined(AIRAPPEARANCE_PAGE_H)
 

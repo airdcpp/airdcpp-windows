@@ -23,6 +23,7 @@
 #include "SDCPage.h"
 #include "PropertiesDlg.h"
 
+namespace wingui {
 PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_SETTINGS_WRITE_BUFFER, ResourceManager::SETTINGS_WRITE_BUFFER },
 	{ IDC_SETTINGS_KB, ResourceManager::KiB },
@@ -137,4 +138,5 @@ void SDCPage::write()
 	if(SETTING(DOWNCONN_PER_SEC) > 5) 
 		settings->set(SettingsManager::DOWNCONN_PER_SEC, 5);
 
+}
 }

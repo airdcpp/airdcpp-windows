@@ -27,6 +27,7 @@
 #include <airdcpp/AutoLimitUtil.h>
 #include <airdcpp/Util.h>
 
+namespace wingui {
 
 PropPage::TextItem WizardConnspeed::texts[] = {
 	{ IDC_CONNSPEED_INTRO, ResourceManager::WIZARD_CONNECTION_SPEED_INTRO },
@@ -261,4 +262,5 @@ int WizardConnspeed::OnSetActive() {
 	//update in case the profile has been changed
 	updateAutoValues();
 	return 0;
+}
 }

@@ -25,6 +25,8 @@
 
 #include "ListViewArrows.h"
 
+
+namespace wingui {
 class ExListViewCtrl : public CWindowImpl<ExListViewCtrl, CListViewCtrl, CControlWinTraits>,
 	public ListViewArrows<ExListViewCtrl>
 {
@@ -135,5 +137,6 @@ public:
 
 	~ExListViewCtrl() { }
 };
+}
 
 #endif // !defined(EX_LIST_VIEW_CTRL_H)

@@ -27,6 +27,8 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+
+namespace wingui {
 class AppearancePage : public CPropertyPage<IDD_APPEARANCEPAGE>, public PropPage
 {
 public:
@@ -59,5 +61,6 @@ protected:
 	static ListItem listItems[];
 
 };
+}
 
 #endif // !defined(APPEARANCE_PAGE_H)

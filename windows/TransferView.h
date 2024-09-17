@@ -40,6 +40,7 @@
 #include "UserInfoBaseHandler.h"
 #include "FormatUtil.h"
 
+namespace wingui {
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 
 	private UploadBundleInfoReceiverListener, private ConnectionManagerListener, private QueueManagerListener,
 	public UserInfoBaseHandler<TransferView>, public UCHandler<TransferView>,
@@ -330,5 +331,6 @@ private:
 
 	static tstring getRunningStatus(const OrderedStringSet& aFlags) noexcept;
 };
+}
 
 #endif // !defined(TRANSFER_VIEW_H)

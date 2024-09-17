@@ -37,6 +37,7 @@
 #define STATUS_MSG_MAP 19
 //#define CONTROL_MSG_MAP 22
 
+namespace wingui {
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
 	public CSplitterImpl<QueueFrame>,
 	private QueueManagerListener, private DownloadManagerListener, private SettingsManagerListener, private Async<QueueFrame>
@@ -401,4 +402,7 @@ private:
 		}
 	}
 };
+
+}
+
 #endif // !defined(QUEUE_FRAME_H)

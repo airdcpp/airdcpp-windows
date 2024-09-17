@@ -25,7 +25,7 @@
 
 #include <airdcpp/typedefs.h>
 
-using namespace webserver;
+namespace wingui {
 
 class ConfigUtil {
 
@@ -41,7 +41,7 @@ public:
 			FLAG_DISABLE_HELP = 0x02,
 		};
 
-		ConfigItem(ExtensionSettingItem& aSetting, int aFlags = 0);
+		ConfigItem(webserver::ExtensionSettingItem& aSetting, int aFlags = 0);
 
 		string getId() const {
 			return setting.name;
@@ -51,7 +51,7 @@ public:
 		}
 		
 
-		ExtensionSettingItem& setting;
+		webserver::ExtensionSettingItem& setting;
 
 		void Create(HWND m_hWnd);
 		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
@@ -79,12 +79,12 @@ public:
 		const int flags;
 	};
 
-	static shared_ptr<ConfigItem> getConfigItem(ExtensionSettingItem& aSetting);
+	static shared_ptr<ConfigItem> getConfigItem(webserver::ExtensionSettingItem& aSetting);
 
 	//Combines CStatic as setting label and CEdit as setting field
 	struct StringConfigItem : public ConfigItem {
 
-		StringConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
+		explicit StringConfigItem(webserver::ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
 		bool write() override;
@@ -100,7 +100,7 @@ public:
 	//CheckBox type config
 	struct BoolConfigItem : public ConfigItem {
 
-		BoolConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting, FLAG_DISABLE_LABEL) {}
+		explicit BoolConfigItem(webserver::ExtensionSettingItem& aSetting) : ConfigItem(aSetting, FLAG_DISABLE_LABEL) {}
 
 
 		//todo handle errors
@@ -119,7 +119,7 @@ public:
 	//Extends StringConfigItem by adding a browse button after CEdit field
 	struct BrowseConfigItem : public StringConfigItem {
 
-		BrowseConfigItem(ExtensionSettingItem& aSetting) : StringConfigItem(aSetting) {}
+		BrowseConfigItem(webserver::ExtensionSettingItem& aSetting) : StringConfigItem(aSetting) {}
 
 		void Create(HWND m_hWnd, RECT rcDefault) override;
 		void updateLayout(HWND m_hWnd, CRect& rect_) override;
@@ -132,7 +132,7 @@ public:
 	//Combines CStatic as setting label and CEdit as setting field with spin control
 	struct IntConfigItem : public ConfigItem {
 
-		IntConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
+		explicit IntConfigItem(webserver::ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
 		bool write() override;
@@ -148,7 +148,7 @@ public:
 
 	struct EnumConfigItem : public ConfigItem {
 
-		EnumConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
+		explicit EnumConfigItem(webserver::ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		void Create(HWND m_hWnd, RECT rcDefault) override;
 		void updateLayout(HWND m_hWnd, CRect& rect_) override;
@@ -164,7 +164,7 @@ public:
 
 	struct WebConfigItem : public ConfigItem {
 
-		WebConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting, FLAG_DISABLE_HELP) {}
+		explicit WebConfigItem(webserver::ExtensionSettingItem& aSetting) : ConfigItem(aSetting, FLAG_DISABLE_HELP) {}
 
 		void Create(HWND m_hWnd, RECT rcDefault) override;
 		void updateLayout(HWND m_hWnd, CRect& rect_) override;
@@ -179,7 +179,7 @@ public:
 		void onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam) override;
 	};
 };
-
+}
 
 
 #endif

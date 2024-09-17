@@ -36,6 +36,7 @@
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/TaskQueue.h>
 
+namespace wingui {
 
 #define RSS_STATUS_MSG_MAP 11
 
@@ -217,5 +218,7 @@ private:
 	virtual void on(AutoSearchManagerListener::ItemAdded, const AutoSearchPtr& as) noexcept;
 
 };
+
+}
 
 #endif //

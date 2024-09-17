@@ -28,6 +28,7 @@
 #include "ExListViewCtrl.h"
 
 
+namespace wingui {
 class DownloadingOptionsPage : public CPropertyPage<IDD_DOWNLOADING_OPTIONS_PAGE>, public PropPage
 {
 public:
@@ -60,7 +61,6 @@ protected:
 	TCHAR* title;
 
 };
+}
 
 #endif // !defined(AIRDOWNLOADS_PAGE_H)
-
-

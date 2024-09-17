@@ -45,6 +45,7 @@
 #include "picturewindow.h"
 #include "CProgressCtrlEx.h"
 
+namespace wingui {
 #define STATUS_MESSAGE_MAP 9
 #define POPUP_UID 19000
 
@@ -469,39 +470,40 @@ private:
 	void setTrayIcon(HICON aIcon);
 
 	// LogManagerListener
-	void on(LogManagerListener::Message, const LogMessagePtr& aMessage) noexcept;
+	void on(LogManagerListener::Message, const LogMessagePtr& aMessage) noexcept override;
 
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
 
 	// PrivateChatManagerListener
-	void on(PrivateChatManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept;
+	void on(PrivateChatManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept override;
 
 	// QueueManagerListener
-	void on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
-	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept override;
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override;
 
 	// DirectoryListingManagerListener
-	void on(DirectoryListingManagerListener::OpenListing, const DirectoryListingPtr& aList, const string& aDir, const string& aXML) noexcept;
+	void on(DirectoryListingManagerListener::OpenListing, const DirectoryListingPtr& aList, const string& aDir, const string& aXML) noexcept override;
 
 	//ActivityManagerListener
-	void on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept;
+	void on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept override;
 
-	void on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept;
+	void on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept override;
 
-	void onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
-	void onBadVersion(const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;
+	void onUpdateAvailable(const string& title, const string& message, const UpdateVersion& aVersionInfo) noexcept;
+	void onBadVersion(const string& message, const UpdateVersion& aVersionInfo) noexcept;
 	void onUpdateComplete(const string& updater) noexcept;
 
-	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
-	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;
-	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept;
-	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
-	void on(UpdateManagerListener::VersionFileDownloaded, SimpleXML&) noexcept;
+	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const UpdateVersion& aVersionInfo) noexcept override;
+	void on(UpdateManagerListener::BadVersion, const string& message, const UpdateVersion& aVersionInfo) noexcept override;
+	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept override;
+	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept override;
+	void on(UpdateManagerListener::VersionFileDownloaded, SimpleXML&) noexcept override;
 
-	void on(ClientManagerListener::ClientCreated, const ClientPtr&) noexcept;
+	void on(ClientManagerListener::ClientCreated, const ClientPtr&) noexcept override;
 
 	const StartupParams& startupParams;
 };
+}
 
 #endif // !defined(MAIN_FRM_H)

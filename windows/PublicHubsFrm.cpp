@@ -28,6 +28,7 @@
 #include <airdcpp/modules/HublistManager.h>
 #include <airdcpp/Localization.h>
 
+namespace wingui {
 string PublicHubsFrame::id = "PublicHubs";
 
 int PublicHubsFrame::columnIndexes[] = { 
@@ -657,4 +658,5 @@ void PublicHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noex
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 	updateDropDown();
+}
 }

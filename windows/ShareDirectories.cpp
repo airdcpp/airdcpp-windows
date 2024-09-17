@@ -39,6 +39,7 @@
 #include "MainFrm.h"
 #include "ActionUtil.h"
 
+namespace wingui {
 #define curProfile parent->getCurProfile()
 #define defaultProfile parent->getDefaultProfile()
 
@@ -750,4 +751,5 @@ bool ShareDirectories::shareFolder(const string& path) {
 
 	foundInfo->found = true;
 	return true;
+}
 }

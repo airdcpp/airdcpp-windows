@@ -30,6 +30,7 @@
 
 #include <airdcpp/modules/PreviewAppManager.h>
 
+namespace wingui {
 class AVIPreview : public CPropertyPage<IDD_AVIPREVIEW>, public PropPage
 {
 public:
@@ -73,5 +74,6 @@ protected:
 	TCHAR* title;
 	void addEntry(PreviewApplication* pa, int pos);
 };
+}
 
 #endif

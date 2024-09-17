@@ -30,6 +30,7 @@
 #define EXTENSION_GROUP_LIMIT 2
 
 
+namespace wingui {
 OMenu::~OMenu() {
 	if (::IsMenu(m_hMenu)) {
 		while(GetMenuItemCount() != 0)
@@ -364,4 +365,5 @@ LRESULT OMenu::onDrawItem(HWND /*hWnd*/, UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 	}
 
 	return S_OK;
+}
 }

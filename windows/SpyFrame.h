@@ -31,6 +31,7 @@
 
 #define IGNORETTH_MESSAGE_MAP 7
 
+namespace wingui {
 class SpyFrame : public MDITabChildWindowImpl<SpyFrame>, public StaticFrame<SpyFrame, ResourceManager::SEARCH_SPY, IDC_SEARCH_SPY>,
 	private SearchManagerListener, private TimerManagerListener, private SettingsManagerListener
 {
@@ -124,5 +125,7 @@ private:
 	void on(TimerManagerListener::Second, uint64_t) noexcept override;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 };
+
+}
 
 #endif // !defined(SPY_FRAME_H)

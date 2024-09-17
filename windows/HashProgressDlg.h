@@ -25,6 +25,7 @@
 
 #include "resource.h"
 
+namespace wingui {
 class HashProgressDlg : public CDialogImpl<HashProgressDlg>
 {
 public:
@@ -72,5 +73,5 @@ private:
 	bool init = false;
 	int hashersRunning = 0;
 };
-
+}
 #endif // !defined(HASH_PROGRESS_DLG_H)

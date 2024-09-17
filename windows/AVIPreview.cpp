@@ -21,6 +21,7 @@
 #include "AVIPreview.h"
 #include "PreviewDlg.h"
 
+namespace wingui {
 PropPage::TextItem AVIPreview::texts[] = {
 	{ IDC_ADD_MENU, ResourceManager::ADD },
 	{ IDC_CHANGE_MENU, ResourceManager::SETTINGS_CHANGE },
@@ -133,4 +134,5 @@ LRESULT AVIPreview::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 		ctrlCommands.DeleteItem(sel);
 	}
 	return 0;
+}
 }

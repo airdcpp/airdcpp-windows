@@ -225,6 +225,7 @@
     <ClCompile Include="airdcpp\GroupedSearchResult.cpp" />
     <ClCompile Include="airdcpp\Hasher.cpp" />
     <ClCompile Include="airdcpp\HashStore.cpp" />
+    <ClCompile Include="airdcpp\HBRIValidation.cpp" />
     <ClCompile Include="airdcpp\IgnoreManager.cpp" />
     <ClCompile Include="airdcpp\LinkUtil.cpp" />
     <ClCompile Include="airdcpp\MessageCache.cpp" />
@@ -335,6 +336,8 @@
     <ClCompile Include="airdcpp\TrackableDownloadItem.cpp" />
     <ClCompile Include="airdcpp\Transfer.cpp" />
     <ClCompile Include="airdcpp\TransferInfoManager.cpp" />
+    <ClCompile Include="airdcpp\UpdateDownloader.cpp" />
+    <ClCompile Include="airdcpp\UpdaterCreator.cpp" />
     <ClCompile Include="airdcpp\UploadBundleInfoSender.cpp" />
     <ClCompile Include="airdcpp\UDPServer.cpp" />
     <ClCompile Include="airdcpp\UpdateManager.cpp" />
@@ -372,8 +375,13 @@
     <ClInclude Include="airdcpp\FavoriteUserManager.h" />
     <ClInclude Include="airdcpp\FavoriteUserManagerListener.h" />
     <ClInclude Include="airdcpp\FloodCounter.h" />
+    <ClInclude Include="airdcpp\HBRIValidation.h" />
     <ClInclude Include="airdcpp\StartupParams.h" />
     <ClInclude Include="airdcpp\TransferInfoManagerListener.h" />
+    <ClInclude Include="airdcpp\UpdateConstants.h" />
+    <ClInclude Include="airdcpp\UpdateDownloader.h" />
+    <ClInclude Include="airdcpp\UpdaterCreator.h" />
+    <ClInclude Include="airdcpp\UpdateVersion.h" />
     <ClInclude Include="airdcpp\UploadFileParser.h" />
     <ClInclude Include="airdcpp\UploadFileProvider.h" />
     <ClInclude Include="airdcpp\HasherManager.h" />

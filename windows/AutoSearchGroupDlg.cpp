@@ -23,6 +23,7 @@
 #include "WinUtil.h"
 #include "AutoSearchGroupDlg.h"
 
+namespace wingui {
 LRESULT AsGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlGroups.Attach(GetDlgItem(IDC_GROUPS));
 
@@ -247,4 +248,5 @@ LRESULT AsGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		}
 	}
 	return 0;
+}
 }

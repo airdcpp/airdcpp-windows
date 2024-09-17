@@ -30,6 +30,7 @@
 #include <web-server/WebServerManager.h>
 
 
+namespace wingui {
 using namespace webserver;
 
 shared_ptr<ConfigUtil::ConfigItem> ConfigUtil::getConfigItem(ExtensionSettingItem& aSetting) {
@@ -449,4 +450,5 @@ void ConfigUtil::WebConfigItem::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lPar
 	}
 
 	ConfigItem::onCtlColor(uMsg, wParam, lParam);
+}
 }

@@ -29,25 +29,13 @@
 #include <atlcomtime.h>
 #undef byte
 
+namespace wingui {
 
 string OSUtil::getCompileDate() {
 	COleDateTime tCompileDate;
 	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
 	return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
 }
-
-/*double OSUtil::getFontFactor() {
-	return static_cast<float>(::GetDeviceCaps(::GetDC(reinterpret_cast<HWND>(0)), LOGPIXELSX)) / 96.0;
-}
-
-void OSUtil::playSound(const tstring& sound) {
-	if (sound == _T("beep")) {
-		::MessageBeep(MB_OK);
-	}
-	else {
-		::PlaySound(sound.c_str(), 0, SND_FILENAME | SND_ASYNC);
-	}
-}*/
 
 bool OSUtil::getVersionInfo(OSVERSIONINFOEX& ver) {
 	memzero(&ver, sizeof(OSVERSIONINFOEX));
@@ -154,3 +142,4 @@ bool OSUtil::isElevated() {
 	return fRet ? true : false;
 }
 
+}

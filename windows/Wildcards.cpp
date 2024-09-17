@@ -17,7 +17,7 @@
 #include <airdcpp/Util.h>
 
 
-namespace dcpp {
+namespace wingui {
 int Wildcard::wildcardfit(const char *wildcard, const char *test, bool useSet) {
   int fit = 1;
   

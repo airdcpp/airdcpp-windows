@@ -27,6 +27,7 @@
 #include "ExListViewCtrl.h"
 
 
+namespace wingui {
 class Sounds : public CPropertyPage<IDD_SOUNDS>, public PropPage
 {
 public:
@@ -72,5 +73,6 @@ protected:
 
 	ExListViewCtrl ctrlSounds;
 };
+}
 
 #endif //Sounds_H

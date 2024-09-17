@@ -28,6 +28,7 @@
 #include "ExListViewCtrl.h"
 #include <airdcpp/IgnoreManager.h>
 
+namespace wingui {
 class ChatFilterPage : public CPropertyPage<IDD_CHATFILTERPAGE>, public PropPage
 {
 public:
@@ -94,5 +95,6 @@ private:
 
 	vector<ChatFilterItem> ChatFilterItems;
 };
+}
 
 #endif // !defined(CHATFILTER_PAGE_H)

@@ -28,6 +28,7 @@
 
 #include <airdcpp/UserCommandManager.h>
 
+namespace wingui {
 template<class T>
 class UCHandler {
 public:
@@ -87,5 +88,6 @@ public:
 private:
 	UserCommand::List userCommands;
 };
+}
 
 #endif // !defined(UC_HANDLER_H)

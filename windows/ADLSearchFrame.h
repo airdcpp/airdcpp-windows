@@ -27,6 +27,8 @@
 #include "StaticFrame.h"
 #include "ExListViewCtrl.h"
 
+
+namespace wingui {
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	Class that represent an ADL search manager interface
@@ -135,5 +137,6 @@ private:
 	static int columnSizes[];
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
+}
 
 #endif // !defined(ADL_SEARCH_FRAME_H)

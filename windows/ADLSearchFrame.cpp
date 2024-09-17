@@ -29,6 +29,7 @@
 #include <airdcpp/modules/ADLSearch.h>
 #include <airdcpp/LogManager.h>
 
+namespace wingui {
 string ADLSearchFrame::id = "ADLSearch";
 
 int ADLSearchFrame::columnIndexes[] = { 
@@ -650,4 +651,5 @@ void ADLSearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexc
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
+}
 }

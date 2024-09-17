@@ -23,6 +23,7 @@
 
 #include <airdcpp/Search.h>
 
+namespace wingui {
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 #define setMinMax(x, y, z) \
 	updown.Attach(GetDlgItem(x)); \
@@ -149,3 +150,4 @@ void AutoSearchAdvancedPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_MATCHER_TYPE), matcherEnabled);
 }
 
+}

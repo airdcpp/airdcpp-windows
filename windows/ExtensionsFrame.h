@@ -16,8 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef EXTENSIONS_FRAME
-#define EXTENSIONS_FRAME
+#ifndef DCPP_WINGUI_EXTENSIONS_FRAME
+#define DCPP_WINGUI_EXTENSIONS_FRAME
 
 #include "Async.h"
 #include "StaticFrame.h"
@@ -30,10 +30,9 @@
 #include <web-server/ExtensionManager.h>
 #include <web-server/Extension.h>
 
-using namespace webserver;
-
 #define EXT_STATUS_MSG_MAP 17
 
+namespace wingui {
 class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::EXTENSIONS, IDC_EXTENSIONS>,
 	private SettingsManagerListener, private webserver::ExtensionManagerListener, private Async<ExtensionsFrame>
 {
@@ -199,7 +198,7 @@ private:
 
 	void installExtension(const ItemInfo* ii) noexcept;
 	void onExtensionInfoDownloaded() noexcept;
-	void parseExtensionCatalogItems(const json& aJson) noexcept;
+	void parseExtensionCatalogItems(const nlohmann::json& aJson) noexcept;
 
 	webserver::ExtensionManager& getExtensionManager() noexcept;
 
@@ -220,13 +219,13 @@ private:
 	void on(webserver::ExtensionManagerListener::Stopped) noexcept override;
 
 	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept override;
-	void on(webserver::ExtensionManagerListener::ExtensionStateUpdated, const Extension*) noexcept override;
+	void on(webserver::ExtensionManagerListener::ExtensionStateUpdated, const webserver::Extension*) noexcept override;
 	void on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept override;
 
 	void on(webserver::ExtensionManagerListener::InstallationStarted, const string& aInstallId) noexcept override;
 	void on(webserver::ExtensionManagerListener::InstallationFailed, const string& aInstallId, const string& aError) noexcept override;
-	void on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& aInstallId, const ExtensionPtr& aExtension, bool aUpdated) noexcept override;
-
-
+	void on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& aInstallId, const webserver::ExtensionPtr& aExtension, bool aUpdated) noexcept override;
 };
+}
+
 #endif

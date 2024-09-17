@@ -23,6 +23,7 @@
 #include "resource.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class AsGroupsDlg : public CDialogImpl<AsGroupsDlg> {
 public:
 	enum { IDD = IDD_FAVHUBGROUPS };
@@ -56,4 +57,6 @@ private:
 
 	ExListViewCtrl ctrlGroups;
 };
+
+}
 #endif

@@ -22,6 +22,7 @@
 #include "HttpLinks.h"
 #include "TabbedDialog.h"
 
+namespace wingui {
 class AutoSearchParams : public CDialogImpl<AutoSearchParams>
 {
 public:
@@ -124,5 +125,6 @@ public:
 	}
 	
 };
+}
 
 #endif

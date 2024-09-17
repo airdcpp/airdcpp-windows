@@ -17,6 +17,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+namespace wingui {
 class CImageDataObject : IDataObject
 {
 public:
@@ -118,5 +119,6 @@ public:
 	SCODE createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes);
 
 };
+}
 
 #endif // !defined(AFX_IMAGEDATAOBJECT_H__7E162227_62B8_49E3_A35B_FEC3F241A78F__INCLUDED_)

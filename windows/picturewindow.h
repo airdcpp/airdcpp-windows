@@ -15,6 +15,8 @@
 //#include <atlbase.h>
 //#include <atlwin.h>
 
+namespace wingui {
+
 class CPictureWindow  : public CWindowImpl<CPictureWindow>
 {
 public:
@@ -148,5 +150,7 @@ protected:
 	//Attributes
 	CComPtr<IPicture> m_spPicture;
 };
+
+}
 
 #endif // !defined(AFX_PICTUREWINDOW_H__44323373_9E89_11D3_A393_00C0DFC59237__INCLUDED_)

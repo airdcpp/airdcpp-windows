@@ -24,6 +24,7 @@
 #include "ResourceLoader.h"
 
 
+namespace wingui {
 #define HISTORY_MSG_MAP 9
 
 struct tButton {
@@ -186,4 +187,5 @@ private:
 	size_t historyIndex;
 
 };
+}
 #endif

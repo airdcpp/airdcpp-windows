@@ -26,6 +26,8 @@
 #include <airdcpp/HubEntry.h>
 #include "TabbedDialog.h"
 
+
+namespace wingui {
 class FavHubOptionsPage : public CDialogImpl<FavHubOptionsPage>, public TabPage {
 public:
 
@@ -71,4 +73,6 @@ private:
 
 	FavoriteHubEntry* entry;
 };
+}
+
 #endif

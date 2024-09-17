@@ -32,6 +32,7 @@
 
 #include <airdcpp/SettingsManager.h>
 
+namespace wingui {
 #define MAX_STATUS_LINES 10
 
 //static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
@@ -707,4 +708,5 @@ LRESULT AutoSearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 		bHandled = FALSE;
 		return 0;
 	}
-}	
+}
+}

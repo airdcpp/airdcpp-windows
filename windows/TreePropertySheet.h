@@ -26,6 +26,7 @@
 #include "resource.h"
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class TreePropertySheet : public CPropertySheetImpl<TreePropertySheet> {
 public:
 	virtual ~TreePropertySheet() { };
@@ -91,5 +92,6 @@ private:
 	CContainedWindow tabContainer;
 
 };
+}
 
 #endif // !defined(TREE_PROPERTY_SHEET_H)

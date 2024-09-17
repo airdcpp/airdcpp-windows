@@ -23,6 +23,8 @@
 
 #include "ResourceLoader.h"
 
+namespace wingui {
+
 tstring ResourceLoader::m_IconPath;
 ResourceLoader::ImageMap ResourceLoader::fileIndexes;
 int ResourceLoader::fileImageCount;
@@ -695,4 +697,5 @@ HICON ResourceLoader::convertGrayscaleIcon( HICON hIcon ) {
 	::ReleaseDC(NULL, hdc);
 
 	return hGrayIcon;
+}
 }

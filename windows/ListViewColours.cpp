@@ -22,6 +22,7 @@
 #include "PropertiesDlg.h"
 #include "ResourceLoader.h"
 
+namespace wingui {
 PropPage::TextItem ListViewColours::texts[] = {
 	{ IDC_CHANGE_COLOR, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_USER_LIST_COLOR_DESC, ResourceManager::SETTINGS_USER_COLORS },
@@ -156,4 +157,4 @@ void ListViewColours::write() {
 
 }
 
-
+}

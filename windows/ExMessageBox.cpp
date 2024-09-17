@@ -22,6 +22,7 @@
 
 #include "ExMessageBox.h"
 
+namespace wingui {
 ExMessageBox::MessageBoxValues ExMessageBox::mbv = {0};
 
 // Helper function for CheckMessageBoxProc
@@ -186,4 +187,5 @@ int WINAPI MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, LPCTSTR lpQu
 	uCheck = ExMessageBox::GetUserData() ? 1 : 0;
 	ExMessageBox::SetUserData(NULL);
 	return nRet;
+}
 }

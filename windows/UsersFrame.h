@@ -36,6 +36,7 @@
 
 #define STATUS_MAP 10
 
+namespace wingui {
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteUserManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
 	private SettingsManagerListener, private QueueManagerListener, private IgnoreManagerListener, private Async<UsersFrame> {
@@ -252,5 +253,6 @@ private:
 
 	void on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept override;
 };
+}
 
 #endif // !defined(USERS_FRAME_H)

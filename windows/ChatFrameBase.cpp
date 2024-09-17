@@ -49,6 +49,7 @@
 
 #include <airdcpp/version.h>
 
+namespace wingui {
 extern EmoticonsManager* emoticonsManager;
 
 ChatFrameBase::ChatFrameBase() {
@@ -873,7 +874,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 		if (j > 0) {
 			SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SLOTS, j);
 			status_ = TSTRING(SLOTS_SET);
-			ClientManager::getInstance()->infoUpdated();
+			ClientManager::getInstance()->myInfoUpdated();
 		} else {
 			status_ = TSTRING(INVALID_NUMBER_OF_SLOTS);
 		}
@@ -892,7 +893,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 	} else if (stricmp(cmd.c_str(), _T("as")) == 0) {
 		//AutoSearchManager::getInstance()->runSearches();
 	} else if (stricmp(cmd.c_str(), _T("clientstats")) == 0) {
-		status_ = Text::toT(ClientManager::getInstance()->printClientStats());
+		status_ = Text::toT(ChatCommands::hubStats());
 	} else if (stricmp(cmd.c_str(), _T("compact")) == 0) {
 		MainFrame::getMainFrame()->addThreadedTask([this] { HashManager::getInstance()->compact(); });
 	} else if (stricmp(cmd.c_str(), _T("setlistdirty")) == 0) {
@@ -1057,4 +1058,5 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 	}
 
 	return true;
+}
 }

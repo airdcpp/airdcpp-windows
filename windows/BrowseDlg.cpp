@@ -25,6 +25,7 @@
 #include <airdcpp/Util.h>
 
 
+namespace wingui {
 const GUID BrowseDlg::browseGuids[TYPE_LAST] = {
 	{ 0 },
 	{ 0 },
@@ -165,4 +166,5 @@ BrowseDlg::~BrowseDlg() {
 	if (initialized) {
 		pfd->Release();
 	}
+}
 }

@@ -29,6 +29,7 @@
 #include <airdcpp/User.h>
 
 
+namespace wingui {
 class OMenu;
 class RichTextBox;
 
@@ -116,6 +117,7 @@ public:
 	static void findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept;
 	static bool allowGetFullList(const HintedUser& aUser) noexcept;
 };
+}
 
 
 #endif // !defined(MENU_UTIL_H)

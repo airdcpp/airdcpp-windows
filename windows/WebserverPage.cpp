@@ -18,12 +18,12 @@
 
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "resource.h"
 
 #include "LineDlg.h"
 #include "HttpLinks.h"
 #include "MainFrm.h"
-#include "WebServerPage.h"
+#include "WebserverPage.h"
 #include "WebUserDlg.h"
 
 #include <web-server/WebServerSettings.h>
@@ -32,6 +32,7 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/NetworkUtil.h>
 
+namespace wingui {
 
 PropPage::TextItem WebServerPage::texts[] = {
 	{ IDC_WEBSERVER_ADD_USER,					ResourceManager::ADD },
@@ -403,3 +404,4 @@ WebServerPage::~WebServerPage() {
 	webUserList.clear();
 	ctrlWebUsers.Detach();
 };
+}

@@ -29,6 +29,7 @@
 #include <airdcpp/ViewFileManager.h>
 
 
+namespace wingui {
 string TextFrame::id = "TextFrame";
 TextFrame::FrameMap TextFrame::frames;
 
@@ -259,4 +260,5 @@ LRESULT TextFrame::OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 void TextFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+}
 }

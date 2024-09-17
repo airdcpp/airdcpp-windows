@@ -25,10 +25,12 @@
 #include <DbgHelp.h>
 #include "ExtendedTrace.h"
 
+using namespace dcpp;
+
 #define BUFFERSIZE		0x200
 #define LIBCOUNT		47
 
-const TCHAR* crashLibs[LIBCOUNT][2] = {
+const TCHAR* const crashLibs[LIBCOUNT][2] = {
 	{ L"Vlsp", L"V-One Smartpass" },
 	{ L"mclsp", L"McAfee AV" },
 	{ L"Niphk", L"Norman AV" },

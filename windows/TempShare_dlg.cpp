@@ -26,6 +26,7 @@
 #include <airdcpp/TempShareManager.h>
 
 
+namespace wingui {
 LRESULT TempShareDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlFiles.Attach(GetDlgItem(IDC_TEMPSHARELST));
 	ctrlFiles.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
@@ -83,4 +84,5 @@ LRESULT TempShareDlg::onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	ctrlFiles.DeleteAllItems();
 	return 0;
+}
 }

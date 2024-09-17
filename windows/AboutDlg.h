@@ -25,7 +25,7 @@
 
 #include <airdcpp/HttpConnection.h>
 
-
+namespace wingui {
 class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener
 {
 
@@ -58,5 +58,6 @@ private:
 
 	string downBuf;
 };
+}
 
 #endif // !defined(ABOUT_DLG_H)

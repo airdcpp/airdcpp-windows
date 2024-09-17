@@ -30,6 +30,7 @@
 #include <airdcpp/Text.h>
 #include <airdcpp/TimerManager.h>
 
+namespace wingui {
 class LanguageDownloadDlg : private UpdateManagerListener, private TimerManagerListener { 
 public: 
 	LanguageDownloadDlg(HWND hwnd, function<void()> aCompletionF, bool aIsInitial) : completionF(aCompletionF), m_hwnd(hwnd), isValid(false), isInitial(aIsInitial) {
@@ -115,6 +116,7 @@ private:
 			close();
 		});
 	}
-}; 
+};
+}
 
 #endif

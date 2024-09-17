@@ -26,6 +26,7 @@
 
 
 
+namespace wingui {
 class FormatUtil {
 public:
 	static tstring getNicks(const CID& cid);
@@ -47,5 +48,5 @@ public:
 	static CountryFlagInfo toCountryInfo(const string& aIP) noexcept;
 };
 
-
+}
 #endif // !defined(FORMAT_UTIL_H)

@@ -30,6 +30,7 @@
 #include "WizardLanguage.h"
 
 
+namespace wingui {
 SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(CTSTRING(WIZARD)), initial(isInitial), saved(false), pagesDeleted(false) {
 	//m_psh.pfnCallback = &PropSheetProc;
 
@@ -74,4 +75,5 @@ int SetupWizard::OnWizardFinish() {
 			pages[i]->write();	
 	}
 	return FALSE;
+}
 }

@@ -25,6 +25,7 @@
 
 #include <airdcpp/HashManagerListener.h>
 
+namespace wingui {
 class HashingPage : public CPropertyPage<IDD_HASHINGPAGE>, public PropPage
 {
 public:
@@ -65,7 +66,7 @@ protected:
 	void on(HashManagerListener::MaintananceStarted()) noexcept;
 	void on(HashManagerListener::MaintananceFinished()) noexcept;
 };
-
+}
 #endif // !defined(HASHINGPAGE_H)
 
 

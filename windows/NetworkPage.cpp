@@ -25,6 +25,7 @@
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/Text.h>
 
+namespace wingui {
 NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), protocols(new ProtocolBase(s)) {
 	SetTitle(CTSTRING(SETTINGS_NETWORK));
 	m_psp.dwFlags |= PSP_RTLREADING;
@@ -82,4 +83,5 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	protocols->ShowWindow(SW_SHOW);
 	
 	return TRUE;
+}
 }

@@ -33,6 +33,7 @@
 #include "TabbedDialog.h"
 
 
+namespace wingui {
 class AutosearchSearchTimesPage : public CDialogImpl<AutosearchSearchTimesPage>, public TabPage {
 public:
 
@@ -81,6 +82,6 @@ private:
 	bool loading;
 
 };
-
+}
 
 #endif

@@ -27,6 +27,7 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 
+namespace wingui {
 PropPage::TextItem ToolbarPage::texts[] = {
 	{ IDC_MOUSE_OVER, ResourceManager::SETTINGS_MOUSE_OVER },
 	{ IDC_IMAGEBROWSE, ResourceManager::BROWSE },
@@ -162,4 +163,5 @@ LRESULT ToolbarPage::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		ctrlToolbar.SelectItem(max(sel-1,0));
 	}
 	return 0;
+}
 }

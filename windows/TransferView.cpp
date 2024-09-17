@@ -43,6 +43,7 @@
 
 #include "BarShader.h"
 
+namespace wingui {
 int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB_CONNECTIONS, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_IP/*, COLUMN_ENCRYPTION*/ };
 int TransferView::columnSizes[] = { 150, 250, 150, 275, 75, 75, 75, 200, 175/*, 50*/ };
 
@@ -270,7 +271,7 @@ void TransferView::runUserCommand(UserCommand& uc) {
 		// compatibility with 0.674 and earlier
 		ucParams["file"] = ucParams["fileFN"];
 		
-		ClientManager::getInstance()->userCommand(itemI->user, uc, tmp, true);
+		UserCommandManager::getInstance()->userCommand(itemI->user, uc, tmp, true);
 	}
 }
 
@@ -484,7 +485,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	for(auto& i: t) {
 		if(i.first == ADD_ITEM) {
-			auto &ui = static_cast<UpdateInfo&>(*i.second);
+			auto const &ui = static_cast<UpdateInfo&>(*i.second);
 			//LogManager::getInstance()->message("Transferview, ADD_ITEM: " + ui.token);
 			auto ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
@@ -876,8 +877,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			}
 		}
 
-		auto connections = b->getDownloads().size();
-		if(connections > 0) {
+		if (auto connections = b->getDownloads().size(); connections > 0) {
 			ratio = ratio / connections;
 
 			ui->setStatus(ItemInfo::STATUS_RUNNING);
@@ -911,8 +911,7 @@ void TransferView::on(UploadBundleInfoReceiverListener::BundleComplete, const st
 }
 
 void TransferView::on(UploadBundleInfoReceiverListener::BundleTick, const TickUploadBundleList& aBundles) noexcept {
-	for (const auto& bp: aBundles) {
-		const auto& b = bp.first;
+	for (const auto& [b, flags] : aBundles) {
 		auto ui = new UpdateInfo(b->getToken(), false);
 
 		if (b->getConnectionCount() > 0) {
@@ -940,7 +939,7 @@ void TransferView::on(UploadBundleInfoReceiverListener::BundleTick, const TickUp
 				dcassert(percent <= 100.00);
 				tstring elapsed = Util::formatSecondsW(timeSinceStarted / 1000);
 
-				ui->setStatusString(getRunningStatus(bp.second) + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				ui->setStatusString(getRunningStatus(flags) + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
 			}
 		}
 
@@ -1049,7 +1048,7 @@ void TransferView::on(TransferInfoManagerListener::Updated, const TransferInfoPt
 		return;
 	}
 
-	UpdateInfo* ui = new UpdateInfo(aInfo->getStringToken(), aInfo->isDownload());
+	auto ui = new UpdateInfo(aInfo->getStringToken(), aInfo->isDownload());
 	ui->setUpdateFlags(aInfo, aUpdatedProperties);
 	// ui->setBundle(aInfo->getBundle());
 	ui->setBundle(getBundle(aInfo));
@@ -1153,7 +1152,7 @@ void TransferView::performActionBundles(std::function<void (const ItemInfo* aInf
 
 void TransferView::handleCollapseAll() {
 	for(int q = ctrlTransfers.GetItemCount()-1; q != -1; --q) {
-		auto m = (ItemInfo*)ctrlTransfers.getItemData(q);
+		auto m = ctrlTransfers.getItemData(q);
 		if(m->download && m->parent) {
 			ctrlTransfers.deleteItem(m); 
 		}
@@ -1165,8 +1164,8 @@ void TransferView::handleCollapseAll() {
 }
 
 void TransferView::handleExpandAll() {
-	for(auto& p: ctrlTransfers.getParents()) {
-		auto l = p.second.parent;
+	for (const auto& [_, parentPair] : ctrlTransfers.getParents()) {
+		auto l = parentPair.parent;
 		if(l->collapsed) {
 			ctrlTransfers.Expand(l, ctrlTransfers.findItem(l));
 		}
@@ -1272,4 +1271,5 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
+}
 }

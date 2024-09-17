@@ -28,6 +28,7 @@
 #include "Dispatchers.h"
 
 
+namespace wingui {
 class PropertiesDlg : public TreePropertySheet
 {
 
@@ -91,5 +92,5 @@ protected:
 	bool saved;
 	unique_ptr<PropPage> pages[PAGE_LAST];
 };
-
+}
 #endif // !defined(PROPERTIES_DLG_H)

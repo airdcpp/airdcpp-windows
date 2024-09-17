@@ -22,19 +22,20 @@
 
 #include <web-server/WebServerManager.h>
 
+namespace wingui {
 #define MAX_TEXT_LEN 131072
 
 string CDMDebugFrame::id = "CDMDebug";
 
 CDMDebugFrame::CDMDebugFrame() : cmdList(1024),
-		commandApiContainer(WC_BUTTON, this, API_COMMAND_MESSAGE_MAP),
-		commandHubContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
 		commandTCPContainer(WC_BUTTON, this, TCP_COMMAND_MESSAGE_MAP),
 		commandUDPContainer(WC_BUTTON, this, UDP_COMMAND_MESSAGE_MAP),
-		cFilterContainer(WC_BUTTON, this, DEBUG_FILTER_MESSAGE_MAP),
-		eFilterContainer(WC_EDIT, this, DEBUG_FILTER_TEXT_MESSAGE_MAP),
+		commandHubContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
+		commandApiContainer(WC_BUTTON, this, API_COMMAND_MESSAGE_MAP),
 		clearContainer(WC_BUTTON, this, CLEAR_MESSAGE_MAP),
-		statusContainer(STATUSCLASSNAME, this, CLEAR_MESSAGE_MAP)
+		statusContainer(STATUSCLASSNAME, this, CLEAR_MESSAGE_MAP),
+		cFilterContainer(WC_BUTTON, this, DEBUG_FILTER_MESSAGE_MAP),
+		eFilterContainer(WC_EDIT, this, DEBUG_FILTER_TEXT_MESSAGE_MAP)
 	 { }
 
 LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -95,7 +96,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	WinUtil::SetIcon(m_hWnd, IDI_CDM);
 	start();
 	ProtocolCommandManager::getInstance()->addListener(this);
-	WebServerManager::getInstance()->addListener(this);
+	webserver::WebServerManager::getInstance()->addListener(this);
 		
 	bHandled = FALSE;
 	return 1;
@@ -104,7 +105,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 LRESULT CDMDebugFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		ProtocolCommandManager::getInstance()->removeListener(this);
-		WebServerManager::getInstance()->removeListener(this);
+		webserver::WebServerManager::getInstance()->removeListener(this);
 		
 		closed = true;
 		stop = true;
@@ -235,7 +236,7 @@ void CDMDebugFrame::addCmd(const string& cmd) {
 }
 
 string CDMDebugFrame::formatMessage(const string& aType, bool aIncoming, const string& aData, const string& aIP) noexcept {
-	string cmd(Text::fromT(WinUtil::formatTimestamp()) + aType + ":\t\t");
+	string cmd(Text::fromT(WinUtil::formatTimestamp()) + " " + aType + ":\t\t");
 
 	if (aIncoming) {
 		cmd += "[Incoming]";
@@ -247,26 +248,26 @@ string CDMDebugFrame::formatMessage(const string& aType, bool aIncoming, const s
 	return cmd;
 }
 
-void CDMDebugFrame::on(WebServerManagerListener::Data, const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept {
+void CDMDebugFrame::on(webserver::WebServerManagerListener::Data, const string& aData, webserver::TransportType aType, webserver::Direction aDirection, const string& aIP) noexcept {
 	if (!showApiCommands) {
 		return;
 	}
 
 	string type;
 	switch (aType) {
-		case TransportType::TYPE_HTTP_API:
+		case webserver::TransportType::TYPE_HTTP_API:
 			type = "API (HTTP)";
 			break;
-		case TransportType::TYPE_SOCKET:
+		case webserver::TransportType::TYPE_SOCKET:
 			type = "API (socket)";
 			break;
-		case TransportType::TYPE_HTTP_FILE:
+		case webserver::TransportType::TYPE_HTTP_FILE:
 			type = "HTTP file request";
 			break;
 		default: dcassert(0);
 	}
 
-	addCmd(formatMessage(type, aDirection == Direction::INCOMING, aData, aIP));
+	addCmd(formatMessage(type, aDirection == webserver::Direction::INCOMING, aData, aIP));
 }
 
 void CDMDebugFrame::on(ProtocolCommandManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& aIP) noexcept {
@@ -343,4 +344,5 @@ LRESULT CDMDebugFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 	UpdateLayout();
 	return 0;
+}
 }

@@ -21,6 +21,7 @@
 
 #include "resource.h"
 
+namespace wingui {
 class FavHubGroupsDlg : public CDialogImpl<FavHubGroupsDlg> {
 public:
 	enum { IDD = IDD_FAVHUBGROUPS };
@@ -51,5 +52,6 @@ private:
 
 	CListViewCtrl ctrlGroups;
 };
+}
 
 #endif //STRONGDCPLUSPLUS_FAV_HUB_GROUPS_DLG

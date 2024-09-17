@@ -22,6 +22,7 @@
 #include "FavHubGroupsDlg.h"
 #include "WinUtil.h"
 
+namespace wingui {
 LRESULT FavHubGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlGroups.Attach(GetDlgItem(IDC_GROUPS));
 
@@ -46,10 +47,15 @@ LRESULT FavHubGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	ctrlGroups.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, WinUtil::percent(width, 100), 0);
 	ctrlGroups.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
-	const FavHubGroups& groups = FavoriteManager::getInstance()->getFavHubGroups();
-	for(FavHubGroups::const_iterator i = groups.begin(); i != groups.end(); ++i) {
-		addItem(Text::toT(i->first));
+	{
+		RLock l(FavoriteManager::getInstance()->getCS());
+		const auto& groups = FavoriteManager::getInstance()->getFavHubGroupsUnsafe();
+		for (const auto& [name, _] : groups) {
+			addItem(Text::toT(name));
+		}
 	}
+
+
 	updateSelectedGroup(true);
 	return 0;
 }
@@ -68,7 +74,6 @@ LRESULT FavHubGroupsDlg::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /
 void FavHubGroupsDlg::save() {
 	FavHubGroups groups;
 	string name;
-	//FavHubGroupProperties group;
 
 	HubSettings settings;
 	for(int i = 0; i < ctrlGroups.GetItemCount(); ++i) {
@@ -202,4 +207,5 @@ LRESULT FavHubGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		}
 	}
 	return 0;
+}
 }

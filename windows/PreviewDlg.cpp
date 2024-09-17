@@ -23,6 +23,7 @@
 #include "PreviewDlg.h"
 #include "WinUtil.h"
 
+namespace wingui {
 WinUtil::TextItem PreviewDlg::texts[] = {
 	{ IDCANCEL, ResourceManager::CANCEL },
 	{ IDC_PREVIEW_BROWSE, ResourceManager::BROWSE },
@@ -61,4 +62,5 @@ LRESULT PreviewDlg::OnBrowse(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 	}
 
 	return 0;
+}
 }

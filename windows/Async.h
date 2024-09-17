@@ -25,10 +25,10 @@
 
 #include "stdafx.h"
 
-namespace dcpp {
+namespace wingui {
 
-static inline void callAsync(HWND m_hWnd, std::function<void ()> f) {
-	PostMessage(m_hWnd, WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
+static inline void callAsync(HWND m_hWnd, std::function<void ()>&& f) {
+	PostMessage(m_hWnd, WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(std::move(f)));
 }
 
 template<class Parent>
@@ -36,8 +36,8 @@ class Async {
 
 public:
 	Async() {}
-	void callAsync(std::function<void ()> f) {
-		PostMessage(((Parent*)this)->m_hWnd, WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
+	void callAsync(std::function<void ()>&& f) {
+		PostMessage(((Parent*)this)->m_hWnd, WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(std::move(f)));
 	}
 
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {

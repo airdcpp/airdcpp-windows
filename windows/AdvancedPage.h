@@ -26,6 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
+namespace wingui {
 class AdvancedPage : public CPropertyPage<IDD_ADVANCEDPAGE>, public PropPage
 {
 public:
@@ -52,5 +53,6 @@ protected:
 	static TextItem texts[];
 	static ListItem listItems[];
 };
+}
 
 #endif // !defined(ADVANCED_PAGE_H)

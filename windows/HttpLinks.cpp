@@ -22,7 +22,7 @@
 
 #include <airdcpp/SimpleXML.h>
 
-namespace dcpp {
+namespace wingui {
 
 tstring HttpLinks::homepage = _T("https://www.airdcpp.net/");
 tstring HttpLinks::github = _T("https://github.com/airdcpp/airdcpp-windows/");

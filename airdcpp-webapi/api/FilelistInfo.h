@@ -34,12 +34,12 @@ namespace webserver {
 
 	class FilelistInfo : public SubApiModule<CID, FilelistInfo, std::string, HookApiModule>, private DirectoryListingListener {
 	public:
-		typedef shared_ptr<FilelistInfo> Ptr;
+		using Ptr = shared_ptr<FilelistInfo>;
 
 		static const StringList subscriptionList;
 
 		FilelistInfo(ParentType* aParentModule, const DirectoryListingPtr& aFilelist);
-		~FilelistInfo();
+		~FilelistInfo() override;
 
 		DirectoryListingPtr getList() const noexcept { return dl; }
 
@@ -70,19 +70,11 @@ namespace webserver {
 
 		void addListTask(Callback&& aTask) noexcept;
 
-		/*void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
-		void on(DirectoryListingListener::Close) noexcept;
-		void on(DirectoryListingListener::SearchStarted) noexcept;
-		void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
-		void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
-		void on(DirectoryListingListener::SetActive) noexcept;
-		void on(DirectoryListingListener::HubChanged) noexcept;*/
-
 		FilelistItemInfo::List getCurrentViewItems();
 
 		DirectoryListingPtr dl;
 
-		typedef ListViewController<FilelistItemInfoPtr, FilelistUtils::PROP_LAST> DirectoryView;
+		using DirectoryView = ListViewController<FilelistItemInfoPtr, FilelistUtils::PROP_LAST>;
 		DirectoryView directoryView;
 
 		void onSessionUpdated(const json& aData) noexcept;
@@ -95,7 +87,7 @@ namespace webserver {
 		SharedMutex cs;
 	};
 
-	typedef FilelistInfo::Ptr FilelistInfoPtr;
+	using FilelistInfoPtr = FilelistInfo::Ptr;
 }
 
 #endif

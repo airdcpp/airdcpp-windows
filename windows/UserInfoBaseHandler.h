@@ -32,6 +32,7 @@
 
 #include "ActionUtil.h"
 
+namespace wingui {
 // emulation for non-list objects
 template<class T>
 struct UserListHandler {
@@ -230,5 +231,6 @@ public:
 		grantMenu.AppendMenu(MF_STRING, IDC_UNGRANTSLOT, CTSTRING(REMOVE_EXTRA_SLOT));
 	}	
 };
+}
 
 #endif // !defined(USERINFOBASEHANDLER_H)

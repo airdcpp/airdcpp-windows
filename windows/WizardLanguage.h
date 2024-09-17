@@ -28,7 +28,7 @@
 
 #include <atldlgs.h>
 
-//#include <airdcpp/UpdateManagerListener.h>
+namespace wingui {
 
 class SetupWizard;
 class WizardLanguage : public PropPage, public CAeroWizardPageImpl<WizardLanguage> { 
@@ -59,5 +59,7 @@ private:
 	SetupWizard* wizard;
 	LanguageDownloadDlg* dl;
 }; 
+
+}
 
 #endif

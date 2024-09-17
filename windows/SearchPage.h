@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class SearchPage : public CPropertyPage<IDD_SEARCHPAGE>, public PropPage
 {
 public:
@@ -58,5 +59,6 @@ protected:
 	CComboBox failedGroup;
 
 };
+}
 
 #endif //AUTOSEARCH_PAGE_H

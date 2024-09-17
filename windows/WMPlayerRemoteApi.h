@@ -9,6 +9,8 @@
 
 #include <wmp.h>	// WMPSDK file...
 
+namespace wingui {
+
 class WMPlayerRemoteApi : public CComObjectRootEx<CComSingleThreadModel>, public IServiceProvider, 
     public IWMPRemoteMediaServices  
 {
@@ -28,5 +30,6 @@ public:
     STDMETHOD(GetCustomUIMode)(BSTR * bstrFile);
 
 };
+}
 
 #endif // !defined(_REMOTE_API_H_)

@@ -26,6 +26,7 @@
 #include "SearchTypeDlg.h"
 #include "WinUtil.h"
 
+namespace wingui {
 PropPage::TextItem SearchTypesPage::texts[] = {
 	{ IDC_ADD_MENU, ResourceManager::ADD },
 	{ IDC_CHANGE_MENU, ResourceManager::SETTINGS_CHANGE },
@@ -210,4 +211,5 @@ LRESULT SearchTypesPage::onResetDefaults(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 
 void SearchTypesPage::showError(const string& e) {
 	WinUtil::showMessageBox(Text::toT(e), MB_ICONEXCLAMATION);
+}
 }

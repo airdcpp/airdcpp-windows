@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class SearchTypesPage : public CPropertyPage<IDD_SEARCHTYPESPAGE>, public PropPage
 {
 public:
@@ -77,5 +78,7 @@ protected:
 	void fillList();
 	void showError(const string& e);
 };
+
+}
 
 #endif // !defined(SEARCHTYPE_PAGE_H)

@@ -19,15 +19,15 @@
 #ifndef DCPLUSPLUS_HTTPLINKS_H_
 #define DCPLUSPLUS_HTTPLINKS_H_
 
-// #include "Dispatchers.h"
-
-// #include <functional>
 
 #include <airdcpp/typedefs.h>
 
 namespace dcpp {
+	class SimpleXML;
+}
 
-class SimpleXML;
+namespace wingui {
+
 
 class HttpLinks {
 public:

@@ -28,6 +28,7 @@
 
 #define POPUP_UID 19000
 
+namespace wingui {
 class StatusBarTextHandler {
 public:
 	StatusBarTextHandler(CStatusBarCtrl& aCtrlStatus, int aStatusTextSectionIndex, int aMaxHistoryLines) :
@@ -100,4 +101,6 @@ private:
 	deque<tstring> lastLinesList;
 	tstring lastLines;
 };
+
+}
 #endif

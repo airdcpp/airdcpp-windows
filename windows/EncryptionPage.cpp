@@ -26,6 +26,7 @@
 #include "EncryptionPage.h"
 #include "BrowseDlg.h"
 
+namespace wingui {
 PropPage::TextItem EncryptionPage::texts[] = {
 	{ IDC_CERT_USE_DEFAULT_PATHS, ResourceManager::USE_DEFAULT_CERT_PATHS },
 	{ IDC_PRIV_KEY_LBL, ResourceManager::PRIVATE_KEY_FILE },
@@ -143,4 +144,5 @@ LRESULT EncryptionPage::onGenerateCerts(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		MessageBox(Text::toT(e.getError()).c_str(), L"Error generating certificate");
 	}
 	return 0;
+}
 }

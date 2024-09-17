@@ -27,12 +27,13 @@
 #include <airdcpp/Util.h>
 
 
+namespace wingui {
 tstring FormatUtil::getNicks(const CID& cid) {
 	return Text::toT(Util::listToString(ClientManager::getInstance()->getNicks(cid)));
 }
 
 tstring FormatUtil::getNicks(const HintedUser& user) {
-	return Text::toT(ClientManager::getInstance()->getFormatedNicks(user));
+	return Text::toT(ClientManager::getInstance()->getFormattedNicks(user));
 }
 
 
@@ -61,7 +62,7 @@ pair<tstring, bool> FormatUtil::getHubNames(const CID& cid) {
 }
 
 tstring FormatUtil::getHubNames(const HintedUser& aUser) {
-	return Text::toT(ClientManager::getInstance()->getFormatedHubNames(aUser));
+	return Text::toT(ClientManager::getInstance()->getFormattedHubNames(aUser));
 }
 
 FormatUtil::CountryFlagInfo FormatUtil::toCountryInfo(const string& aIP) noexcept {
@@ -80,4 +81,5 @@ FormatUtil::CountryFlagInfo FormatUtil::toCountryInfo(const string& aIP) noexcep
 		Text::toT(ip),
 		flagIndex
 	};
+}
 }

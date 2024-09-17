@@ -32,6 +32,7 @@
 #include <airdcpp/ShareProfileManager.h>
 
 
+namespace wingui {
 FavHubGeneralPage::FavHubGeneralPage(FavoriteHubEntry *_entry, const string& aName) : entry(_entry), name(aName), loading(true) { }
 
 LRESULT FavHubGeneralPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
@@ -74,12 +75,15 @@ LRESULT FavHubGeneralPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	tmpCombo.AddString(_T("---"));
 	tmpCombo.SetCurSel(0);
 
-	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for (const auto& n : favHubGroups | views::keys) {
-		int pos = tmpCombo.AddString(Text::toT(n).c_str());
+	{
+		RLock l(FavoriteManager::getInstance()->getCS());
+		const auto& favHubGroups = FavoriteManager::getInstance()->getFavHubGroupsUnsafe();
+		for (const auto& n : favHubGroups | views::keys) {
+			int pos = tmpCombo.AddString(Text::toT(n).c_str());
 
-		if (n == entry->getGroup())
-			tmpCombo.SetCurSel(pos);
+			if (n == entry->getGroup())
+				tmpCombo.SetCurSel(pos);
+		}
 	}
 
 	tmpCombo.Detach();
@@ -277,4 +281,5 @@ bool FavHubGeneralPage::write() {
 	//FavoriteManager::getInstance()->save();
 
 	return true;
+}
 }

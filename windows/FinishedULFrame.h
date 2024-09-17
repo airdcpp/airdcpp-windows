@@ -25,6 +25,7 @@
 
 #include "FinishedFrameBase.h"
 
+namespace wingui {
 class FinishedULFrame : public FinishedFrameBase<FinishedULFrame, ResourceManager::FINISHED_UPLOADS, IDC_FINISHED_UL>
 {
 public:
@@ -49,5 +50,6 @@ private:
 	}
 };
 string FinishedULFrame::id = "FinishedUL";
+}
 
 #endif // !defined(FINISHED_UL_FRAME_H)

@@ -26,6 +26,7 @@
 
 #include "WinUpdater.h"
 
+namespace wingui {
 class SetupWizard;
 class MainFrame;
 class WinClient {
@@ -56,6 +57,6 @@ private:
 	StartupParams startupParams;
 	WinUpdater updater;
 };
-
+}
 
 #endif // !defined(WINCLIENT_H)

@@ -21,10 +21,13 @@
 
 #include "RichTextBox.h"
 
+#include <airdcpp/UpdateVersion.h>
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
+namespace wingui {
 class UpdateDlg : public CDialogImpl<UpdateDlg> {
 	CEdit ctrlCurrentVersion;
 	CEdit ctrlLatestVersion;
@@ -52,7 +55,7 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)	
 	END_MSG_MAP()
 
-	UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl);
+	UpdateDlg(const string& aTitle, const string& aMessage, const UpdateVersion& aVersionInfo);
 	~UpdateDlg();
 
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -81,21 +84,17 @@ public:
 private:
 	CHyperLink url;
 	CStatic ctrlUpdateStatus;
-	bool versionAvailable;
+	bool versionAvailable = false;
 
 	string message;
-	string downloadURL;
-	string infoLink;
 	string title;
-	string autoUpdateUrl;
-	int buildID;
 
-	string versionString;
-	bool autoUpdate;
+	const UpdateVersion updateVersion;
+
 	CIcon m_hIcon16;
 	CIcon m_hIcon32;
 
 	RichTextBox m_Changelog;
 };
-
+}
 #endif // __UPDATE_DLG

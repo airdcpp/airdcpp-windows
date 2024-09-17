@@ -23,6 +23,7 @@
 
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class BrowseDlg {
 public:
 	typedef COMDLG_FILTERSPEC ExtensionList;
@@ -64,5 +65,6 @@ private:
 	HWND m_hwnd = nullptr;
 	IFileDialog *pfd = nullptr;
 };
+}
 
 #endif

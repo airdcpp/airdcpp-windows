@@ -36,11 +36,6 @@
 
 #define _WTL_NO_CSTRING
 
-#include <winsock2.h>
-
-// Fix nt4 startup
-#include <multimon.h>
-
 #pragma warning( disable: 4302 ) // 'type cast': truncation from 'LPCTSTR' to 'WORD'
 #pragma warning( disable: 4838 ) // conversion from 'int' to 'UINT' requires a narrowing conversion
 #pragma warning( disable: 4312 ) // 'type cast': conversion from 'HFILE' to 'HANDLE' of greater size
@@ -68,7 +63,7 @@ extern CAppModule _Module;
 #include <atlsplit.h>
 #include <atltheme.h>
 
-#include <Shellapi.h>
+#include <shellapi.h>
 
 #include <atlctrlx.h>
 
@@ -80,6 +75,10 @@ extern CAppModule _Module;
 #endif
 
 
+namespace wingui {
+
 using namespace dcpp;
 
 using byte = ::byte;
+
+}

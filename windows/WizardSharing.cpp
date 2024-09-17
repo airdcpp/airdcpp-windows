@@ -21,6 +21,7 @@
 #include "WizardSharing.h"
 #include "WizardAutoConnectivity.h"
 
+namespace wingui {
 PropPage::TextItem WizardSharing::texts[] = {
 	{ IDC_SHARING_INTRO, ResourceManager::WIZARD_SHARING_INTRO },
 	{ IDC_SHARING_SP_NOTE, ResourceManager::WIZARD_SHARING_SP_NOTE },
@@ -75,4 +76,5 @@ int WizardSharing::OnWizardBack() {
 	}
 
 	return 0;
+}
 }

@@ -26,6 +26,7 @@
 #include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 
+namespace wingui {
 string NotepadFrame::id = "Notepad";
 
 LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -138,4 +139,5 @@ LRESULT NotepadFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 void NotepadFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+}
 }

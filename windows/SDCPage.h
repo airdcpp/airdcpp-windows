@@ -25,6 +25,7 @@
 
 #include "PropPage.h"
 
+namespace wingui {
 
 class SDCPage : public CPropertyPage<IDD_SDCPAGE>, public PropPage
 {
@@ -61,5 +62,7 @@ protected:
 
 	TCHAR* title;
 };
+
+}
 
 #endif //SDCPage_H

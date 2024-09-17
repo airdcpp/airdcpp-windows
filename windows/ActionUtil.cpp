@@ -55,7 +55,91 @@
 
 #include <airdcpp/modules/PreviewAppManager.h>
 
+namespace dcpp {
 
+void UserInfoBase::pm() {
+	wingui::ActionUtil::PM()(getUser(), getHubUrl());
+}
+
+void UserInfoBase::matchQueue() {
+	wingui::ActionUtil::MatchQueue()(getUser(), getHubUrl());
+}
+
+void UserInfoBase::getList() {
+	wingui::ActionUtil::GetList()(getUser(), getHubUrl());
+}
+void UserInfoBase::browseList() {
+	wingui::ActionUtil::BrowseList()(getUser(), getHubUrl());
+}
+void UserInfoBase::getBrowseList() {
+	wingui::ActionUtil::GetBrowseList()(getUser(), getHubUrl());
+}
+
+void UserInfoBase::connectFav() {
+	wingui::ActionUtil::ConnectFav()(getUser(), getHubUrl());
+}
+
+void UserInfoBase::handleFav() {
+	if (getUser() && !getUser()->isFavorite()) {
+		FavoriteUserManager::getInstance()->addFavoriteUser(HintedUser(getUser(), getHubUrl()));
+	} else if (getUser()) {
+		FavoriteUserManager::getInstance()->removeFavoriteUser(getUser());
+	}
+}
+
+void UserInfoBase::grant() {
+	if (getUser()) {
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 600);
+	}
+}
+
+void UserInfoBase::grantTimeless() {
+	if (getUser()) {
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 0);
+	}
+}
+
+void UserInfoBase::removeAll() {
+	wingui::MainFrame::getMainFrame()->addThreadedTask([=] {
+		if (getUser()) {
+			QueueManager::getInstance()->removeSource(getUser(), QueueItem::Source::FLAG_REMOVED);
+		}
+		});
+}
+
+void UserInfoBase::grantHour() {
+	if (getUser()) {
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 3600);
+	}
+}
+
+void UserInfoBase::grantDay() {
+	if (getUser()) {
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 24 * 3600);
+	}
+}
+
+void UserInfoBase::grantWeek() {
+	if (getUser()) {
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 7 * 24 * 3600);
+	}
+}
+
+void UserInfoBase::ungrant() {
+	if (getUser()) {
+		FavoriteUserManager::getInstance()->getReservedSlots().unreserveSlot(getUser());
+	}
+}
+
+bool UserInfoBase::hasReservedSlot() {
+	if (getUser()) {
+		return FavoriteUserManager::getInstance()->getReservedSlots().hasReservedSlot(getUser());
+	}
+	return false;
+}
+}
+
+namespace wingui {
 void ActionUtil::PM::operator()(UserPtr aUser, const string& aUrl) const {
 	if (aUser)
 		PrivateFrame::openWindow(HintedUser(aUser, aUrl));
@@ -111,88 +195,6 @@ void ActionUtil::ConnectFav::operator()(UserPtr aUser, const string& aUrl) const
 			connectHub(aUrl);
 		}
 	}
-}
-
-
-void UserInfoBase::pm() {
-	ActionUtil::PM()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::matchQueue() {
-	ActionUtil::MatchQueue()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::getList() {
-	ActionUtil::GetList()(getUser(), getHubUrl());
-}
-void UserInfoBase::browseList() {
-	ActionUtil::BrowseList()(getUser(), getHubUrl());
-}
-void UserInfoBase::getBrowseList() {
-	ActionUtil::GetBrowseList()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::connectFav() {
-	ActionUtil::ConnectFav()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::handleFav() {
-	if (getUser() && !getUser()->isFavorite()) {
-		FavoriteUserManager::getInstance()->addFavoriteUser(HintedUser(getUser(), getHubUrl()));
-	} else if (getUser()) {
-		FavoriteUserManager::getInstance()->removeFavoriteUser(getUser());
-	}
-}
-
-void UserInfoBase::grant() {
-	if (getUser()) {
-		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 600);
-	}
-}
-
-void UserInfoBase::grantTimeless() {
-	if (getUser()) {
-		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 0);
-	}
-}
-
-void UserInfoBase::removeAll() {
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if (getUser()) {
-			QueueManager::getInstance()->removeSource(getUser(), QueueItem::Source::FLAG_REMOVED);
-		}
-		});
-}
-
-void UserInfoBase::grantHour() {
-	if (getUser()) {
-		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 3600);
-	}
-}
-
-void UserInfoBase::grantDay() {
-	if (getUser()) {
-		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 24 * 3600);
-	}
-}
-
-void UserInfoBase::grantWeek() {
-	if (getUser()) {
-		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 7 * 24 * 3600);
-	}
-}
-
-void UserInfoBase::ungrant() {
-	if (getUser()) {
-		FavoriteUserManager::getInstance()->getReservedSlots().unreserveSlot(getUser());
-	}
-}
-
-bool UserInfoBase::hasReservedSlot() {
-	if (getUser()) {
-		return FavoriteUserManager::getInstance()->getReservedSlots().hasReservedSlot(getUser());
-	}
-	return false;
 }
 
 bool ActionUtil::browseList(tstring& target_, HWND aOwner) {
@@ -407,7 +409,7 @@ void ActionUtil::openTextFile(const string& aFileName, int64_t aSize, const TTHV
 			auto fileData = ViewedFileAddData(aFileName, aTTH, aSize, nullptr, aUser, false);
 			QueueManager::getInstance()->addOpenedItemHooked(fileData, false);
 		} catch (const Exception& e) {
-			auto nicks = ClientManager::getInstance()->getFormatedNicks(aUser);
+			auto nicks = ClientManager::getInstance()->getFormattedNicks(aUser);
 			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY, STRING(SETTINGS_QUEUE));
 		}
 	});
@@ -925,7 +927,7 @@ bool ActionUtil::allowGetFullList(const HintedUser& aUser) noexcept {
 }
 
 tstring ActionUtil::getNicks(const HintedUser& user) {
-	return Text::toT(ClientManager::getInstance()->getFormatedNicks(user));
+	return Text::toT(ClientManager::getInstance()->getFormattedNicks(user));
 }
 
 
@@ -954,7 +956,7 @@ pair<tstring, bool> ActionUtil::getHubNames(const CID& cid) {
 }
 
 tstring ActionUtil::getHubNames(const HintedUser& aUser) {
-	return Text::toT(ClientManager::getInstance()->getFormatedHubNames(aUser));
+	return Text::toT(ClientManager::getInstance()->getFormattedHubNames(aUser));
 }
 
 ActionUtil::CountryFlagInfo ActionUtil::toCountryInfo(const string& aIP) noexcept {
@@ -974,3 +976,4 @@ ActionUtil::CountryFlagInfo ActionUtil::toCountryInfo(const string& aIP) noexcep
 		flagIndex
 	};
 }*/
+}

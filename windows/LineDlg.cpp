@@ -27,6 +27,7 @@
 #include "atlstr.h"
 
 
+namespace wingui {
 tstring KickDlg::m_sLastMsg = _T("");
 
 LRESULT KickDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -337,4 +338,5 @@ LRESULT PassDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 
 	EndDialog(wID);
 	return 0;
+}
 }

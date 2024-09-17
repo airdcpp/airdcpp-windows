@@ -80,7 +80,7 @@
 
 #include <string>
 
-namespace dcpp {
+namespace wingui {
 
 class Players {
 public:

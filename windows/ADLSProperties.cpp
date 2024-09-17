@@ -22,6 +22,7 @@
 #include "ADLSProperties.h"
 #include "WinUtil.h"
 
+namespace wingui {
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
 	var = buf;
@@ -137,4 +138,5 @@ void ADLSProperties::fixControls() {
 	BOOL isRegExp = (ctrlRegexp.GetCheck() == 1);
 	::EnableWindow(GetDlgItem(IDC_REGEXP_TEST),				isRegExp);
 	::EnableWindow(GetDlgItem(IDC_TEST_STRING),				isRegExp);
+}
 }

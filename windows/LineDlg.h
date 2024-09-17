@@ -22,6 +22,7 @@
 #include "resource.h"
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class LineDlg : public CDialogImpl<LineDlg>
 {
 	CEdit ctrlLine;
@@ -175,5 +176,6 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 };
+}
 
 #endif // !defined(LINE_DLG_H)

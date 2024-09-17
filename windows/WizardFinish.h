@@ -26,6 +26,7 @@
 
 #include "WTL\atldlgs.h"
 
+namespace wingui {
 class SetupWizard;
 class WizardFinish : public PropPage, public CAeroWizardPageImpl<WizardFinish> { 
 public: 
@@ -50,5 +51,7 @@ private:
 	SetupWizard* wizard;
 	static TextItem texts[];
 }; 
+
+}
 
 #endif

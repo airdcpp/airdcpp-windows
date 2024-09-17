@@ -61,6 +61,7 @@
 #include "WebServerPage.h"
 
 
+namespace wingui {
 PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent), saved(false)
 {
 
@@ -150,4 +151,5 @@ LRESULT PropertiesDlg::onCancel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	SettingsManager::getInstance()->Cancel();
 	bHandled = FALSE;
 	return TRUE;
+}
 }

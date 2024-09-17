@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "InputBox.h"
 
+namespace wingui {
 HFONT CInputBox::m_hFont = NULL;
 HWND  CInputBox::m_hWndInputBox = NULL;
 HWND  CInputBox::m_hWndParent = NULL;
@@ -291,4 +292,5 @@ BOOL CInputBox::DoModal(LPCTSTR szCaption, LPCTSTR szPrompt, LPCTSTR szText, LPC
     }
 
 	return ret;
+}
 }

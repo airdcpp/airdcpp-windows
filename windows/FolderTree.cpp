@@ -25,6 +25,7 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 //Pull in the WNet Lib automatically
 #pragma comment(lib, "mpr.lib")
 
+namespace wingui {
 #define curProfile parent->getCurProfile()
 
 FolderTreeItemInfo::FolderTreeItemInfo() : m_pNetResource(nullptr), m_bNetworkNode(false) {
@@ -1547,4 +1548,5 @@ void FolderTree::ShareParentButNotSiblings(HTREEITEM hItem)
 		auto path = PathUtil::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
 		sp->removeExcludeFolder(path);
 	}
+}
 }

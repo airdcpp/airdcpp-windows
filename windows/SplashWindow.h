@@ -31,6 +31,7 @@
 
 using std::string;
 
+namespace wingui {
 class SplashWindow : public CWindowImpl<SplashWindow, CWindow>, public Async<SplashWindow> {
 public:
 	BEGIN_MSG_MAP(SplashImpl)
@@ -74,5 +75,7 @@ private:
 	HFONT hFontTitle;
 	HFONT hFontStatus;
 };
+
+}
 
 #endif

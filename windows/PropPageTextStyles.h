@@ -6,6 +6,7 @@
 #include "RichTextBox.h"
 #include <airdcpp/SettingsManager.h>
 
+namespace wingui {
 class PropPageTextStyles: public CPropertyPage<IDD_TEXT_STYLES>, public PropPage, private SettingsManagerListener
 {
 public:
@@ -142,5 +143,6 @@ protected:
 	void PopulateThemes();
 
 };
+}
 
 #endif // _PROP_PAGE_TEXT_STYLES_H_

@@ -29,6 +29,7 @@
 
 #include <atldlgs.h>
 
+namespace wingui {
 class SetupWizard;
 class WizardAutoConnectivity : public PropPage, public CAeroWizardPageImpl<WizardAutoConnectivity>, private ConnectivityManagerListener { 
 public: 
@@ -94,5 +95,7 @@ private:
 	void on(ConnectivityManagerListener::Finished, bool /*v6*/, bool /*failed*/) noexcept override;
 	void on(ConnectivityManagerListener::SettingChanged) noexcept override;
 }; 
+
+}
 
 #endif

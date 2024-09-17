@@ -29,6 +29,7 @@
 
 #define SYSTEM_LOG_MESSAGE_MAP 42
 
+namespace wingui {
 class SystemFrame : public MDITabChildWindowImpl<SystemFrame>, public StaticFrame<SystemFrame, ResourceManager::SYSTEM_LOG, IDC_SYSTEM_LOG>,
 	private LogManagerListener, private SettingsManagerListener
 {
@@ -212,5 +213,7 @@ private:
 	}
 
 };
+
+}
 
 #endif // !defined(SYSTEM_FRAME_H)

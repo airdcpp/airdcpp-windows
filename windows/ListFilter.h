@@ -23,6 +23,7 @@
 #include "TypedListViewCtrl.h"
 #include <airdcpp/StringMatch.h>
 
+namespace wingui {
 /*
 a helper class for adding and handling list filters, any of the objects can be added to any parent 
 and moved to proper placement as individuals.
@@ -125,4 +126,5 @@ private:
 
 	FilterMode mode;
 };
+}
 #endif

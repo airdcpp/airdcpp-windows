@@ -25,6 +25,7 @@
 
 #include <airdcpp/StringMatch.h>
 
+namespace wingui {
 class ChatFilterDlg : public CDialogImpl<ChatFilterDlg> {
 public:
 
@@ -66,6 +67,7 @@ private:
 
 	CButton ctrlMainchat;
 	CButton ctrlPM;
-
 };
+
+}
 #endif

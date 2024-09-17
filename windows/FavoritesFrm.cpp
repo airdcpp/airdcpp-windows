@@ -36,6 +36,8 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
+
+namespace wingui {
 int FavoriteHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_NICK, COLUMN_PASSWORD, COLUMN_SERVER, COLUMN_USERDESCRIPTION, 
 	COLUMN_SHAREPROFILE };
 int FavoriteHubsFrame::columnSizes[] = { 200, 290, 125, 100, 100, 125, 100 };
@@ -259,7 +261,7 @@ LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 		hubsMenu.AppendMenu(MF_SEPARATOR);
 
 		{
-			vector<QueueToken> tokens;
+			vector<FavoriteHubToken> tokens;
 
 			int i = -1;
 			while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
@@ -350,9 +352,9 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	int i = -1;
 	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
 	{
-		FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+		auto e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
 
-		bool isActive = ClientManager::getInstance()->isActive();
+		bool isActive = ConnectivityManager::getInstance()->isActive();
 		dcassert(e != NULL);
 		TabbedDialog dlg(STRING(FAVORITE_HUB_PROPERTIES));
 		dlg.addPage<FavHubGeneralPage>(shared_ptr<FavHubGeneralPage>(new FavHubGeneralPage(e, STRING(SETTINGS_GENERAL))));
@@ -360,7 +362,7 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 		if(dlg.DoModal(m_hWnd) == IDOK)
 		{
-			if (ClientManager::getInstance()->isActive() != isActive) {
+			if (ConnectivityManager::getInstance()->isActive() != isActive) {
 				ConnectivityManager::getInstance()->setup(true, true);
 			}
 
@@ -406,14 +408,15 @@ LRESULT FavoriteHubsFrame::onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 }
 
 void FavoriteHubsFrame::handleMove(bool up) {
-	FavoriteHubEntryList& fh = FavoriteManager::getInstance()->getFavoriteHubs();
-	if(fh.size() <= 1)
+	RLock l(FavoriteManager::getInstance()->getCS());
+	auto& fh = FavoriteManager::getInstance()->getFavoriteHubsUnsafe();
+	if (fh.size() <= 1)
 		return;
 	
 	StateKeeper keeper(ctrlHubs);
-	const FavoriteHubEntryList& selected = keeper.getSelection();
+	const auto& selected = keeper.getSelection();
 
-	FavoriteHubEntryList fh_copy = fh;
+	auto fh_copy = fh;
 	if(!up)
 		reverse(fh_copy.begin(), fh_copy.end());
 	FavoriteHubEntryList moved;
@@ -455,9 +458,13 @@ void FavoriteHubsFrame::handleMove(bool up) {
 
 TStringList FavoriteHubsFrame::getSortedGroups() const {
 	set<tstring, noCaseStringLess> sorted_groups;
-	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for(const auto& fhg: favHubGroups | views::keys)
-		sorted_groups.insert(Text::toT(fhg));
+
+	{
+		RLock l(FavoriteManager::getInstance()->getCS());
+		const auto& favHubGroups = FavoriteManager::getInstance()->getFavHubGroupsUnsafe();
+		for (const auto& fhg : favHubGroups | views::keys)
+			sorted_groups.insert(Text::toT(fhg));
+	}
 
 	TStringList groups(sorted_groups.begin(), sorted_groups.end());
 	groups.insert(groups.begin(), Util::emptyStringT); // default group (otherwise, hubs without group don't show up)
@@ -654,4 +661,5 @@ LRESULT FavoriteHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BO
 		ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
 	}
 	return 0;
+}
 }

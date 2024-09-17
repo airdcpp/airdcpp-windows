@@ -23,6 +23,7 @@
 #include "BrowseDlg.h"
 #include "PropertiesDlg.h"
 
+namespace wingui {
 PropPage::TextItem AirAppearancePage::texts[] = {
 	{ IDC_SETTINGS_BACKGROUND_IMAGE,	ResourceManager::BACKGROUND_IMAGE },
 	{ IDC_IMAGEBROWSE,			ResourceManager::BROWSE },
@@ -82,8 +83,4 @@ LRESULT AirAppearancePage::onImageBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	BrowseForPic(IDC_BACKGROUND_IMAGE);
 	return 0;
 }
-
-/**
- * @file
- * $Id: AppearancePage.cpp 265 2007-12-15 09:57:02 Night $
- */
+}

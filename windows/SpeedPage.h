@@ -28,6 +28,7 @@
 
 #include <airdcpp/SettingsManager.h>
 
+namespace wingui {
 class SpeedPage : public CPropertyPage<IDD_SPEEDPAGE>, public PropPage
 {
 public:
@@ -91,5 +92,6 @@ protected:
 
 	bool loading;
 };
+}
 
 #endif //SPEED_PAGE_H

@@ -25,6 +25,7 @@
 
 #include "StaticFrame.h"
 
+namespace wingui {
 #define NOTEPAD_MESSAGE_MAP 13
 
 class NotepadFrame : public MDITabChildWindowImpl<NotepadFrame>, public StaticFrame<NotepadFrame, ResourceManager::NOTEPAD, IDC_NOTEPAD>, 
@@ -78,5 +79,6 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
+}
 
 #endif // !defined(NOTEPAD_FRAME_H)

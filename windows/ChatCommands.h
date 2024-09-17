@@ -25,6 +25,7 @@
 
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class ChatCommands {
 public:
 	static tstring UselessInfo();
@@ -41,6 +42,8 @@ public:
 
 	static TStringList FindVolumes();
 	static string shareStats() noexcept;
+	static string hubStats() noexcept;
 };
+}
 
 #endif // !defined(CHATCOMMANDS_H)

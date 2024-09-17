@@ -29,6 +29,7 @@
 #include <airdcpp/DirectoryListing.h>
 #include <airdcpp/Search.h>
 
+namespace wingui {
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:
 	string searchStr;
@@ -66,4 +67,6 @@ private:
 	CComboBox ctrlSizeUnit;
 	DirectoryListingPtr dl;
 };
+}
+
 #endif

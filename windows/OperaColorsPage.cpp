@@ -26,6 +26,7 @@
 #include "PropertiesDlg.h"
 #include "BarShader.h"
 
+namespace wingui {
 PropPage::TextItem OperaColorsPage::texts[] = {
 	{ IDC_ODC_STYLE, ResourceManager::PROGRESS_ODC_STYLE },
 	{ IDC_PROGRESS_OVERRIDE, ResourceManager::SETTINGS_ZDC_PROGRESS_OVERRIDE },
@@ -412,4 +413,5 @@ LRESULT OperaColorsPage::onSelectColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 		}
 	}
 	return S_OK;
+}
 }

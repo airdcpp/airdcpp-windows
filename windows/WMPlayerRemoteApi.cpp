@@ -3,6 +3,8 @@
 #include "WMPlayerRemoteApi.h"
 #include <airdcpp/version.h>
 
+namespace wingui {
+
 WMPlayerRemoteApi::WMPlayerRemoteApi() { }
 WMPlayerRemoteApi::~WMPlayerRemoteApi() { }
 
@@ -44,4 +46,5 @@ HRESULT WMPlayerRemoteApi::GetCustomUIMode(BSTR * bstrFile) {
 		*bstrFile = NULL;
 	}
     return E_NOTIMPL;
+}
 }

@@ -33,6 +33,7 @@
 
 #define SHOWTREE_MESSAGE_MAP 12
 
+namespace wingui {
 class UploadQueueFrame : public MDITabChildWindowImpl<UploadQueueFrame>, public StaticFrame<UploadQueueFrame, ResourceManager::UPLOAD_QUEUE, IDC_UPLOAD_QUEUE>,
 	private UploadQueueManagerListener, public CSplitterImpl<UploadQueueFrame>, private SettingsManagerListener, public UserInfoBaseHandler<UploadQueueFrame>
 {
@@ -212,5 +213,6 @@ private:
 	// SettingsManagerListener
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
+}
 
 #endif

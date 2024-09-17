@@ -21,6 +21,7 @@
 #include "WizardAutoConnectivity.h"
 #include <airdcpp/Message.h>
 
+namespace wingui {
 PropPage::TextItem WizardAutoConnectivity::texts[] = {
 	{ IDC_IPV4_AUTODETECT, ResourceManager::ALLOW_AUTO_DETECT_V4 },
 	{ IDC_IPV6_AUTODETECT, ResourceManager::ALLOW_AUTO_DETECT_V6 },
@@ -188,4 +189,5 @@ void WizardAutoConnectivity::changeControlState(bool enable) {
 
 void WizardAutoConnectivity::on(ConnectivityManagerListener::SettingChanged) noexcept {
 	wizard->callAsync([this] { updateAuto(); });
+}
 }

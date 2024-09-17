@@ -27,6 +27,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
+namespace wingui {
 class MiscPage : public CPropertyPage<IDD_MISC_PAGE>, public PropPage
 {
 public:
@@ -83,5 +84,6 @@ private:
 
 	CComboBox ctrlUpdates;
 };
+}
 
 #endif // !defined(AIRDC_PAGE_H)

@@ -23,6 +23,7 @@
 
 #include <airdcpp/Localization.h>
 
+namespace wingui {
 
 LRESULT WizardLanguage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
 	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
@@ -81,4 +82,5 @@ int WizardLanguage::OnSetActive() {
 	EnableWizardButtons(PSWIZB_BACK, 0);
 	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 	return 0;
+}
 }

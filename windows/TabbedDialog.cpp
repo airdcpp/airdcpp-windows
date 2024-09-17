@@ -22,6 +22,7 @@
 #include "TabbedDialog.h"
 #include <airdcpp/Text.h>
 
+namespace wingui {
 TabbedDialog::TabbedDialog(const string& aTitle) : wTitle(aTitle) { }
 
 TabbedDialog::~TabbedDialog() { 
@@ -82,5 +83,4 @@ LRESULT TabbedDialog::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	EndDialog(wID);
 	return 0;
 }
-
-
+}

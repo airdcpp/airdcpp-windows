@@ -25,6 +25,7 @@
 
 #include <airdcpp/RecentManager.h>
 
+namespace wingui {
 string RecentsFrame::id = "Recents";
 
 int RecentsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER, COLUMN_DATE };
@@ -324,4 +325,5 @@ void RecentsFrame::createColumns() {
 	ctrlList.list.setSortColumn(COLUMN_DATE);
 	ctrlList.list.setAscending(false);
 	//ctrlList.list.setVisible(SETTING(RECENTFRAME_VISIBLE));
+}
 }

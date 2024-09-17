@@ -31,6 +31,8 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/Text.h>
 
+
+namespace wingui {
 struct Parser : SimpleXMLReader::CallBack {
 	Parser(RichTextBox* box);
 	void startTag(const string& name, StringPairList& attribs, bool simple);
@@ -331,4 +333,5 @@ void Parser::parseColor(size_t& contextColor, const string& s) {
 			contextColor = addColor(RGB((color & 0xFF0000) >> 16, (color & 0xFF00) >> 8, color & 0xFF));
 		} catch(const std::exception& e) { dcdebug("color parsing exception: %s with str: %s\n", e.what(), s.c_str()); }
 	}
+}
 }

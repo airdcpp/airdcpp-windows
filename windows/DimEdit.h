@@ -36,6 +36,7 @@
 #include <AtlCrack.h>
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class CDimEdit : public CWindowImpl< CDimEdit, CEdit > {
 public:
 
@@ -187,5 +188,6 @@ private:
   //  The color to display it in.
   DWORD m_dimColor;
 };
+}
 
 #endif // DIMEDIT

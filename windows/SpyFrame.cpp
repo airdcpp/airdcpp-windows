@@ -27,6 +27,7 @@
 #include <airdcpp/SearchQuery.h>
 #include <airdcpp/ResourceManager.h>
 
+namespace wingui {
 string SpyFrame::id = "SpyFrame";
 int SpyFrame::columnSizes[] = { 305, 70, 85 };
 int SpyFrame::columnIndexes[] = { COLUMN_STRING, COLUMN_COUNT, COLUMN_TIME };
@@ -272,4 +273,5 @@ void SpyFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	if (refresh) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
+}
 }

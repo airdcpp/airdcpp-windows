@@ -26,6 +26,8 @@
 #include <airdcpp/SearchTypes.h>
 #include <airdcpp/ResourceManager.h>
 
+
+namespace wingui {
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
 	var = Text::fromT(buf);
@@ -106,4 +108,5 @@ LRESULT DirectoryListingDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, H
 LRESULT DirectoryListingDlg::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlSearch.SetFocus();
 	return FALSE;
+}
 }

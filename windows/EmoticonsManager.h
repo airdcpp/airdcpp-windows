@@ -30,6 +30,7 @@
 
 // Emoticon
 
+namespace wingui {
 class Emoticon : public FastAlloc<Emoticon> {
 public:
 	typedef list<Emoticon*> List;
@@ -68,5 +69,6 @@ public:
 private:
 	Emoticon::List emoticons;
 };
+}
 
 #endif // EMOTICONSMANAGER_H

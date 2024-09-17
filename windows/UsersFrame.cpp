@@ -37,6 +37,7 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
+namespace wingui {
 string UsersFrame::id = "Users";
 
 int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER, COLUMN_IGNORE, COLUMN_SHARED, COLUMN_TAG, COLUMN_IP4, COLUMN_IP6 };
@@ -665,14 +666,16 @@ int UsersFrame::UserInfo::compareItems(const UserInfo* a, const UserInfo* b, int
 void UsersFrame::updateInfoText(const UserInfo* ui){
 	if(!showInfo)
 		return;
-	map<string, Identity> idents = ClientManager::getInstance()->getIdentities(ui->getUser());
-	if(!idents.empty()) {
+
+	auto ouList = ClientManager::getInstance()->getOnlineUsers(ui->getUser());
+	if (!ouList.empty()) {
 		tstring tmp = _T("");
-		for(auto& identity: idents) {
-			auto info = identity.second.getInfo();
+		for (const auto& ou: ouList) {
+			// const auto& ident = ou->getIdentity();
+			auto info = ou->getIdentity().getInfo();
 		
 			tmp += _T("\r\nUser Information: \r\n");
-			tmp += _T("Hub: ") + Text::toT(identity.first) + _T("\r\n");
+			tmp += _T("Hub: ") + Text::toT(ou->getHubUrl()) + _T("\r\n");
 			for(auto f = fields; !f->field.empty(); ++f) {
 				auto i = info.find(f->field);
 				if(i != info.end()) {
@@ -967,7 +970,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		params["hubURL"] = [=] { return Util::listToString(ClientManager::getInstance()->getHubUrls(ui->getUser()->getCID())); };
 		params["userCID"] = [=] { return ui->getUser()->getCID().toBase32(); };
 		params["userNI"] = [=] { return ClientManager::getInstance()->getNicks(ui->getUser()->getCID())[0]; };
-		params["myCID"] = [=] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
+		params["myCID"] = [=] { return ClientManager::getInstance()->getMyCID().toBase32(); };
 
 		string file = LogManager::getInstance()->getPath(ui->getUser(), params);
 		if(PathUtil::fileExists(file)) {
@@ -1076,4 +1079,5 @@ void UsersFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUse
 
 void UsersFrame::on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept {
 	callAsync([=] { updateUser(aUser); });
+}
 }

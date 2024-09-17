@@ -17,13 +17,14 @@
 */
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "resource.h"
 
 #include "DynamicTabPage.h"
 
 #include <airdcpp/Text.h>
 
 
+namespace wingui {
 DynamicTabPage::DynamicTabPage()
 { };
 
@@ -137,11 +138,12 @@ bool DynamicTabPage::write() {
 		for (auto cfg : configs) {
 			cfg->write();
 		}
-	} catch (const ArgumentException& e) {
+	} catch (const webserver::ArgumentException& e) {
 		string error = e.getErrorJson().at("field") + " : " + e.getErrorJson().at("message");
 		MessageBox(Text::toT(error).c_str());
 		return false;
 	}
 
 	return true;
+}
 }

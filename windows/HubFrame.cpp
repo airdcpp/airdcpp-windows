@@ -51,6 +51,7 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
+namespace wingui {
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;
 string HubFrame::id = "hub";
@@ -207,17 +208,12 @@ HubFrame::~HubFrame() {
 }
 
 HubFrame::HubFrame(const tstring& aServer) : 
-		waitingForPW(false), extraSort(false), server(aServer), closed(false), forceClose(false),
-		showUsers(SETTING(GET_USER_INFO)), updateUsers(false), resort(false), countType(Client::COUNT_NORMAL),
-		hubchatusersplit(0),
-		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS),
-		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
-		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
-		ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG),
-		filter(UserUtil::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
-		statusDirty(true)
+		server(aServer), 
+		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS), ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
+		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP), ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG),
+		filter(UserUtil::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;})
 {
-	client = ClientManager::getInstance()->getClient(Text::fromT(server));
+	client = ClientManager::getInstance()->findClient(Text::fromT(server));
 	dcassert(client);
 
 	auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
@@ -429,7 +425,7 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 }
 
 void HubFrame::onChatMessage(const ChatMessagePtr& msg) {
-	addMessage(msg, WinUtil::m_ChatTextGeneral);
+	addMessage(Message(msg), WinUtil::m_ChatTextGeneral);
 	if (client->get(HubSettings::ChatNotify)) {
 		MainFrame::getMainFrame()->onChatMessage(false);
 	}
@@ -876,7 +872,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 
 void HubFrame::addPrivateLine(const tstring& aLine, bool bUseEmo/* = true*/) {
 	auto message = std::make_shared<LogMessage>(Text::fromT(aLine), LogMessage::SEV_INFO, LogMessage::Type::PRIVATE, Util::emptyString);
-	addMessage(message, WinUtil::m_ChatTextPrivate, bUseEmo);
+	addMessage(Message(message), WinUtil::m_ChatTextPrivate, bUseEmo);
 }
 
 void HubFrame::addMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
@@ -942,7 +938,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	}
 
 
-	prepareMenu(tabMenu, ::UserCommand::CONTEXT_HUB, client->getHubUrl());
+	prepareMenu(tabMenu, UserCommand::CONTEXT_HUB, client->getHubUrl());
 	tabMenu.AppendMenu(MF_SEPARATOR);
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
 	
@@ -1028,7 +1024,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 
 		ctrlUsers.appendCopyMenu(menu);
 
-		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+		prepareMenu(menu, UserCommand::CONTEXT_USER, client->getHubUrl());
 		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
 	}
@@ -1037,7 +1033,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 	return 0; 
 }
 
-void HubFrame::runUserCommand(::UserCommand& uc) {
+void HubFrame::runUserCommand(UserCommand& uc) {
 	if (!ActionUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
@@ -1246,7 +1242,7 @@ void HubFrame::addStatus(const LogMessagePtr& aMessage, bool aInChat /* = true *
 	}
 	
 	if(SETTING(STATUS_IN_CHAT) && aInChat) {
-		addMessage(aMessage, getStatusMessageStyle(aMessage));
+		addMessage(Message(aMessage), getStatusMessageStyle(aMessage));
 	}
 }
 
@@ -1936,3 +1932,4 @@ bool HubFrame::ItemInfo::update(int sortCol, const tstring& oldText) noexcept {
 	return needsSort;
 }
 
+}

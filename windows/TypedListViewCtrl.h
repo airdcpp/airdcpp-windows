@@ -37,6 +37,7 @@
 #define VIRTUAL_CHILDREN 0x02 //parent handles item creation on expanding
 #define LVITEM_GROUPING 0x08 //Items have groups
 
+namespace wingui {
 enum ColumnType{
 	COLUMN_TEXT,
 	COLUMN_SIZE,
@@ -124,7 +125,7 @@ public:
 		return 0;
 	}
 
-	class iterator : public ::iterator<random_access_iterator_tag, T*> {
+	class iterator : public std::iterator<random_access_iterator_tag, T*> {
 	public:
 		iterator() { }
 		iterator(const iterator& rhs) : typedList(rhs.typedList), cur(rhs.cur), cnt(rhs.cnt) { }
@@ -1308,5 +1309,7 @@ private:
 
 template<class T, int ctrlId, class K, class hashFunc, class equalKey, DWORD style>
 const vector<T*> TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, style>::emptyVector;
+
+}
 
 #endif // !defined(TYPED_LIST_VIEW_CTRL_H)

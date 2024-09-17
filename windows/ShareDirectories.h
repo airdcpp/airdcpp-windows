@@ -30,6 +30,7 @@
 #include <airdcpp/ShareDirectoryInfo.h>
 #include <airdcpp/ShareProfile.h>
 
+namespace wingui {
 class SharePageBase {
 public:
 	SharePageBase();
@@ -174,5 +175,6 @@ protected:
 
 	StringSet excludedPaths;
 };
+}
 
 #endif // !defined(SHARE_PAGE_H)

@@ -21,15 +21,15 @@
 
 #include <functional>
 
-namespace dcpp {
+namespace wingui {
 
 namespace Dispatchers {
 
 	template<typename T>
 	struct Base {
-		typedef std::function<T> F;
+		using F = std::function<T>;
 
-		Base(const F& f_) : f(f_) { }
+		explicit Base(F&& f_) : f(std::move(f_)) { }
 
 	protected:
 		F f;
@@ -38,7 +38,7 @@ namespace Dispatchers {
 	template<LRESULT value = 0, bool handled = true>
 	struct VoidVoid : public Base<void ()> {
 
-		VoidVoid(const F& f_) : Base<void ()>(f_) { }
+		explicit VoidVoid(const F& f_) : Base<void ()>(f_) { }
 
 		bool operator()(const MSG& msg, LRESULT& ret) const {
 			this->f();
@@ -49,7 +49,7 @@ namespace Dispatchers {
 
 }
 
-typedef Dispatchers::VoidVoid<> Dispatcher;
+using Dispatcher = Dispatchers::VoidVoid<>;
 
 }
 

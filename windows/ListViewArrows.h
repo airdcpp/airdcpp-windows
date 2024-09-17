@@ -23,6 +23,7 @@
 
 #include <airdcpp/SettingsManager.h>
 
+namespace wingui {
 template<class T>
 class ListViewArrows {
 public:
@@ -90,5 +91,6 @@ private:
 	CBitmap upArrow;
 	CBitmap downArrow;
 };
+}
 
 #endif // !defined(LIST_VIEW_ARROWS_H)

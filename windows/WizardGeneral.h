@@ -28,6 +28,7 @@
 
 #include <atldlgs.h>
 
+namespace wingui {
 class SetupWizard;
 class WizardGeneral : public PropPage, public CAeroWizardPageImpl<WizardGeneral> { 
 public: 
@@ -57,5 +58,7 @@ private:
 
 	SetupWizard* wizard;
 }; 
+
+}
 
 #endif

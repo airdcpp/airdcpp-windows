@@ -31,6 +31,7 @@
 #include "stdafx.h"
 #include "WinUtil.h"
 
+namespace wingui {
 class CProgressCtrlEx :  public CWindowImpl< CProgressCtrlEx, CProgressBarCtrl, CControlWinTraits> {
 
 public:
@@ -103,5 +104,6 @@ private:
 	tstring ctrlText;
 
 };
+}
 
 #endif

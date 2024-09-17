@@ -34,6 +34,10 @@
 #include <web-server/ContextMenuManager.h>
 #include <api/common/SettingUtils.h>
 
+namespace wingui {
+
+using json = nlohmann::json;
+
 #define MAX_STATUS_LINES 10
 
 string ExtensionsFrame::id = "Extensions";
@@ -383,9 +387,9 @@ LRESULT ExtensionsFrame::onClickedSettings(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	targetMenu.CreatePopupMenu();
 
 	{
-		const auto addSettingMenuItem = [&](ApiSettingItem& aItem) {
+		const auto addSettingMenuItem = [&](webserver::ApiSettingItem& aItem) {
 			targetMenu.appendItem(Text::toT(aItem.getTitle()), [&aItem] {
-				auto wsm = WebServerManager::getInstance();
+				auto wsm = webserver::WebServerManager::getInstance();
 				wsm->getSettingsManager().setValue(aItem, !aItem.getValue());
 			}, aItem.getValue() ? OMenu::FLAG_CHECKED : 0);
 		};
@@ -458,7 +462,7 @@ void ExtensionsFrame::onStopExtension(const ItemInfo* ii) noexcept {
 
 void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
 	MainFrame::getMainFrame()->addThreadedTask([ext = ii->ext, this] {
-		auto wsm = WebServerManager::getInstance();
+		auto wsm = webserver::WebServerManager::getInstance();
 		try {
 			auto launchInfo = getExtensionManager().getStartCommandThrow(ext->getEngines(), getExtensionManager().getEngines());
 			ext->startThrow(launchInfo.command, wsm, launchInfo.arguments);
@@ -588,7 +592,7 @@ void ExtensionsFrame::installExtension(const ItemInfo* ii) noexcept {
 		return;
 	}
 
-	auto wsm = WebServerManager::getInstance();
+	auto wsm = webserver::WebServerManager::getInstance();
 	if (!wsm->isRunning()) {
 		updateStatusAsync(TSTRING(WEB_EXTENSION_SERVER_NOT_RUNNING), LogMessage::SEV_ERROR);
 		return;
@@ -785,7 +789,7 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionAdded, co
 	});
 }
 
-void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionStateUpdated, const Extension* aExtension) noexcept {
+void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionStateUpdated, const webserver::Extension* aExtension) noexcept {
 	callAsync([this, extensionName = aExtension->getName()] {
 		auto i = itemInfos.find(extensionName);
 		if (i != itemInfos.end()) {
@@ -810,7 +814,7 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionRemoved, 
 	});
 }
 
-void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& /*aInstallId*/, const ExtensionPtr& aExtension, bool aUpdated) noexcept {
+void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& /*aInstallId*/, const webserver::ExtensionPtr& aExtension, bool aUpdated) noexcept {
 	const auto name = Text::toT(aExtension->getName());
 	updateStatusAsync(aUpdated ? TSTRING_F(WEB_EXTENSION_UPDATED, name) : TSTRING_F(WEB_EXTENSION_INSTALLED, name), LogMessage::SEV_INFO);
 }
@@ -897,4 +901,5 @@ void ExtensionsFrame::createColumns() {
 
 	ctrlList.setSortColumn(COLUMN_NAME);
 
+}
 }

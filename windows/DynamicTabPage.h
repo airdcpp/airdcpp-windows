@@ -30,6 +30,7 @@
 
 #include "ConfigUtil.h"
 
+namespace wingui {
 class DynamicTabPage : public CDialogImpl<DynamicTabPage> {
 public:
 
@@ -70,9 +71,8 @@ private:
 
 	int m_prevConfigBottomMargin = 0;
 	int m_configSpacing = 20;
-
-
 };
+}
 
 
 #endif

@@ -34,6 +34,7 @@
 
 #include <airdcpp/modules/AutoSearchManager.h>
 
+namespace wingui {
 #define AS_STATUS_MSG_MAP 17
 
 class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTO_SEARCH, IDC_AUTOSEARCH>,
@@ -184,10 +185,11 @@ private:
 	void createPages(TabbedDialog& dlg, AutoSearchItemSettings& options);
 
 
-	virtual void on(AutoSearchManagerListener::ItemRemoved, const AutoSearchPtr& aToken) noexcept;
-	virtual void on(AutoSearchManagerListener::ItemAdded, const AutoSearchPtr& as) noexcept;
-	virtual void on(AutoSearchManagerListener::ItemUpdated, const AutoSearchPtr& as, bool setDirty) noexcept;
-	virtual void on(AutoSearchManagerListener::SearchForeground, const AutoSearchPtr& as, const string& searchString) noexcept;
-	virtual void on(AutoSearchManagerListener::ItemSearched, const AutoSearchPtr&/* as*/, const string& aMsg) noexcept;
+	void on(AutoSearchManagerListener::ItemRemoved, const AutoSearchPtr& aToken) noexcept;
+	void on(AutoSearchManagerListener::ItemAdded, const AutoSearchPtr& as) noexcept;
+	void on(AutoSearchManagerListener::ItemUpdated, const AutoSearchPtr& as, bool setDirty) noexcept;
+	void on(AutoSearchManagerListener::SearchForeground, const AutoSearchPtr& as, const string& searchString) noexcept;
+	void on(AutoSearchManagerListener::ItemSearched, const AutoSearchPtr&/* as*/, const string& aMsg) noexcept;
 };
+}
 #endif // !defined(AUTOSEARCH_FRM_H)

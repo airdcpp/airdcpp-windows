@@ -25,6 +25,7 @@
 
 #include "WinUtil.h"
 
+namespace wingui {
 class CommandDlg : public CDialogImpl<CommandDlg>
 {
 	CEdit ctrlName;
@@ -88,5 +89,6 @@ private:
 	void updateControls();
 	void updateContext();
 };
+}
 
 #endif // !defined(COMMAND_DLG_H)

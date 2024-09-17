@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class PopupWnd : public CWindowImpl<PopupWnd, CWindow>
 {
 public:
@@ -63,6 +64,6 @@ private:
 	HFONT   titlefont;
 	HBITMAP bmp;
 };
-
+}
 
 #endif

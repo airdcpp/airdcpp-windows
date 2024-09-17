@@ -28,6 +28,7 @@
 
 #include <atldlgs.h>
 
+namespace wingui {
 class SetupWizard;
 class WizardManualConnectivity : public PropPage, public CAeroWizardPageImpl<WizardManualConnectivity> { 
 public: 
@@ -54,5 +55,7 @@ private:
 
 	unique_ptr<ProtocolBase> protocols;
 }; 
+
+}
 
 #endif

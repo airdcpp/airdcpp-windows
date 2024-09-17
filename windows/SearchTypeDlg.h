@@ -23,6 +23,7 @@
 
 #include <atlcrack.h>
 
+namespace wingui {
 class SearchTypeDlg : public CDialogImpl<SearchTypeDlg> {
 public:
 	string name;
@@ -76,4 +77,7 @@ private:
 
 	void fillList();
 };
+
+}
+
 #endif

@@ -25,6 +25,7 @@
 
 #include "OMenu.h"
 
+namespace wingui {
 class ShellMenu : public OMenu {
 	typedef OMenu BaseType;
 	static ShellMenu* curMenu;
@@ -70,5 +71,6 @@ private:
 	static unique_ptr<Handler> curHandler;
 	static unsigned sel_id;
 };
+}
 
 #endif // !defined(DCPLUSPLUS_WIN32_SHELL_MENU_H)

@@ -26,6 +26,8 @@
 #include "GeneralPage.h"
 #include "WinUtil.h"
 
+
+namespace wingui {
 PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_SETTINGS_PERSONAL_INFORMATION, ResourceManager::SETTINGS_PERSONAL_INFORMATION },
 	{ IDC_SETTINGS_NICK, ResourceManager::NICK },
@@ -112,4 +114,5 @@ LRESULT GeneralPage::onSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	}
 
 	return TRUE;
+}
 }

@@ -21,6 +21,7 @@
 
 #include <airdcpp/typedefs.h>
 
+namespace wingui {
 class OSUtil {
 public:
 	// static double getFontFactor();
@@ -35,5 +36,6 @@ public:
 	static time_t fromSystemTime(const SYSTEMTIME* pTime);
 	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);
 };
+}
 
 #endif // !defined(SYSTEM_UTIL_H)

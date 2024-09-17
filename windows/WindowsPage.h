@@ -26,6 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
+namespace wingui {
 class WindowsPage : public CPropertyPage<IDD_WINDOWSPAGE>, public PropPage
 {
 public:
@@ -63,5 +64,6 @@ protected:
 	void fixControls();
 	TCHAR* title;
 };
+}
 
 #endif // !defined(WINDOWS_PAGE_H)

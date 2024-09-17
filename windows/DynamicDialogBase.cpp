@@ -22,6 +22,7 @@
 #include "DynamicDialogBase.h"
 
 
+namespace wingui {
 DynamicDialogBase::DynamicDialogBase(const tstring& aName) : name(aName) {
 	//Create a dummy page to fill in dialog items
 	m_page = make_shared<DynamicTabPage>(DynamicTabPage());
@@ -155,4 +156,5 @@ LRESULT DynamicDialogBase::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	}
 	EndDialog(wID);
 	return 0;
+}
 }

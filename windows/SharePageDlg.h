@@ -28,6 +28,7 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/Text.h>
 
+namespace wingui {
 class SharePageDlg : public CDialogImpl<SharePageDlg>
 {
 	CEdit ctrlLine;
@@ -128,5 +129,6 @@ public:
 	}
 	
 };
+}
 
 #endif // !defined(SHAREPAGE_DLG_H)

@@ -23,6 +23,7 @@
 
 #include "PropertiesDlg.h"
 
+namespace wingui {
 PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_KBPS5, ResourceManager::KiBS },
 	{ IDC_SETTINGS_KBPS6, ResourceManager::KiBS },
@@ -102,6 +103,4 @@ void DownloadingOptionsPage::write() {
 
 	SettingsManager::getInstance()->set(SettingsManager::DL_AUTO_DISCONNECT_MODE, disconnectMode.GetCurSel());
 }
-
-
-
+}

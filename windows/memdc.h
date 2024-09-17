@@ -35,6 +35,7 @@
 
 #include "stdafx.h"
 
+namespace wingui {
 class CMemDC : public CDC {
 private:	
 	CBitmap		m_bitmap;		// Offscreen bitmap
@@ -128,5 +129,6 @@ public:
 		Paint();	
 	}
 };
+}
 
 #endif

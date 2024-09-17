@@ -47,6 +47,7 @@
 #include <future>
 
 
+namespace wingui {
 class CFindDialogMessageFilter : public CMessageFilter
 {
 public:
@@ -347,4 +348,5 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 
 	updater.runPendingUpdate(startupParams);
 	return nRet;
+}
 }
