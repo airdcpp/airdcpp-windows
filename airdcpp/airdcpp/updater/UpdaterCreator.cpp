@@ -17,22 +17,23 @@
  */
 
 #include "stdinc.h"
+
 #include "UpdaterCreator.h"
 
-#include "UpdateConstants.h"
+#include <airdcpp/UpdateConstants.h>
 
-#include "format.h"
+#include <airdcpp/format.h>
 
-#include "AppUtil.h"
-#include "CryptoManager.h"
-#include "File.h"
-#include "HashCalc.h"
-#include "PathUtil.h"
-#include "SimpleXML.h"
-#include "Util.h"
-#include "ZipFile.h"
-#include "ValueGenerator.h"
-#include "version.h"
+#include <airdcpp/AppUtil.h>
+#include <airdcpp/CryptoManager.h>
+#include <airdcpp/File.h>
+#include <airdcpp/HashCalc.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/ZipFile.h>
+#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/version.h>
 
 #include <boost/shared_array.hpp>
 #include <boost/algorithm/string/replace.hpp>

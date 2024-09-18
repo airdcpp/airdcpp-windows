@@ -29,11 +29,12 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/SystemUtil.h>
 #include <airdcpp/Text.h>
-#include <airdcpp/Updater.h>
-#include <airdcpp/UpdaterCreator.h>
 #include <airdcpp/UpdateDownloader.h>
 #include <airdcpp/ValueGenerator.h>
 #include <airdcpp/ZipFile.h>
+
+#include <airdcpp/updater/Updater.h>
+#include <airdcpp/updater/UpdaterCreator.h>
 
 #include <web-server/WebServerSettings.h>
 

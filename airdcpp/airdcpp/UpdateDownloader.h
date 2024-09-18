@@ -19,8 +19,9 @@
 #ifndef DCPLUSPLUS_DCPP_UPDATE_DOWNLOADER_H
 #define DCPLUSPLUS_DCPP_UPDATE_DOWNLOADER_H
 
-#include "Message.h"
 #include "UpdateVersion.h"
+
+#include "Message.h"
 
 namespace dcpp {
 
@@ -34,6 +35,8 @@ class UpdateDownloader {
 // #define FORCE_UPDATE
 
 public:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
+
 	explicit UpdateDownloader(UpdateManager* aUm) noexcept;
 	int getInstalledUpdate() const noexcept { return installedUpdate; }
 	bool isUpdating() const noexcept;
@@ -47,8 +50,6 @@ public:
 		PROMPT
 	};
 
-	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
-
 	// Extract the updater package
 	// Returns the path of the extracted updater executable
 	// Throws FileException, ZipFileException
@@ -56,7 +57,6 @@ public:
 
 	static optional<UpdateVersion> parseVersionFile(SimpleXML& xml, bool aVerified);
 private:
-
 	UpdateManager* um;
 	unique_ptr<HttpDownload> clientDownload;
 

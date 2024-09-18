@@ -17,24 +17,24 @@
  */
 
 #include "stdinc.h"
-#include "UpdateDownloader.h"
 
+#include "UpdateDownloader.h"
 #include "UpdateConstants.h"
 
-#include "File.h"
-#include "Exception.h"
-#include "HashCalc.h"
-#include "HttpDownload.h"
-#include "LogManager.h"
-#include "ScopedFunctor.h"
-#include "SimpleXML.h"
-#include "StringTokenizer.h"
-#include "SystemUtil.h"
-#include "UpdateManager.h"
-#include "Util.h"
-#include "ZipFile.h"
-#include "ValueGenerator.h"
-#include "version.h"
+#include <airdcpp/File.h>
+#include <airdcpp/Exception.h>
+#include <airdcpp/HashCalc.h>
+#include <airdcpp/HttpDownload.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/SystemUtil.h>
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/ZipFile.h>
+#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/version.h>
 
 namespace dcpp {
 

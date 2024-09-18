@@ -18,6 +18,7 @@
 
 #include "stdinc.h"
 #include "UpdateManager.h"
+#include "UpdateDownloader.h"
 
 #include <openssl/rsa.h>
 
@@ -34,7 +35,6 @@
 #include "SimpleXML.h"
 #include "Text.h"
 #include "TimerManager.h"
-#include "UpdateDownloader.h"
 #include "version.h"
 
 #include "pubkey.h"

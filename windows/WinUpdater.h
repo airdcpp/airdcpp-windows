@@ -22,7 +22,7 @@
 #include "stdafx.h"
 
 #include <airdcpp/StartupParams.h>
-#include <airdcpp/Updater.h>
+#include <airdcpp/updater/Updater.h>
 
 namespace wingui {
 class WinUpdater {

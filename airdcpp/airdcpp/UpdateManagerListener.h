@@ -23,9 +23,11 @@
 #include "typedefs.h"
 #include <string>
 
-#include "UpdateVersion.h"
+// #include "UpdateVersion.h"
 
 namespace dcpp {
+
+struct UpdateVersion;
 
 class UpdateManagerListener {
 public:

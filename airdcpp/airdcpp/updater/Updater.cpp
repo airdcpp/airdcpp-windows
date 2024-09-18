@@ -19,17 +19,17 @@
 #include "stdinc.h"
 #include "Updater.h"
 
-#include "UpdateConstants.h"
+#include <airdcpp/UpdateConstants.h>
 
-#include "AppUtil.h"
-#include "Exception.h"
-#include "File.h"
-#include "LogManager.h"
-#include "PathUtil.h"
-#include "SimpleXML.h"
-#include "Thread.h"
-#include "Util.h"
-#include "version.h"
+#include <airdcpp/AppUtil.h>
+#include <airdcpp/Exception.h>
+#include <airdcpp/File.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/Thread.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/version.h>
 
 #define UPDATER_LOG_FILE "updater.log"
 

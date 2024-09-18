@@ -19,8 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_UPDATER_H
 #define DCPLUSPLUS_DCPP_UPDATER_H
 
-#include "typedefs.h"
-#include "Message.h"
+#include <airdcpp/typedefs.h>
 
 namespace dcpp {
 
