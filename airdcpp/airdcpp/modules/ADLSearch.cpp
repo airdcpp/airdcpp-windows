@@ -610,7 +610,7 @@ void ADLSearchManager::matchRecurse(DestDirList &aDestList, const DirectoryListi
 	}
 
 	for (const auto& dir: aDir->directories | views::values) {
-		auto subAdcPath = aAdcPath + dir->getName() + ADC_SEPARATOR_STR;
+		auto subAdcPath = PathUtil::joinAdcDirectory(aAdcPath, dir->getName());
 		MatchesDirectory(aDestList, dir, subAdcPath);
 		matchRecurse(aDestList, dir, subAdcPath, aDirList);
 	}

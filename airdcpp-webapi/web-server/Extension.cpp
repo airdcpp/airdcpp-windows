@@ -138,7 +138,7 @@ namespace webserver {
 			if (osJson != aJson.end()) {
 				const StringList osList = *osJson;
 				auto currentOs = SystemUtil::getPlatform();
-				if (std::find(osList.begin(), osList.end(), currentOs) == osList.end() && currentOs != "other") {
+				if (ranges::find(osList, currentOs) == osList.end() && currentOs != "other") {
 					throw Exception(STRING(WEB_EXTENSION_OS_UNSUPPORTED));
 				}
 			}

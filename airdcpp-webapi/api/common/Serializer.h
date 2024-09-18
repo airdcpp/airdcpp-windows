@@ -50,7 +50,7 @@ namespace webserver {
 
 		static string toFileContentType(const string& aExt) noexcept;
 		static string getFileTypeId(const string& aName) noexcept;
-		static json serializeFileType(const string& aPath) noexcept;
+		static json serializeFileType(const string& aName) noexcept;
 		static json serializeFolderType(const DirectoryContentInfo& aContentInfo) noexcept;
 
 		static json serializeIp(const string& aIP) noexcept;

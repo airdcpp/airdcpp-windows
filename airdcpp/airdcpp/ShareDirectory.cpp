@@ -126,7 +126,7 @@ int64_t ShareDirectory::getTotalSize() const noexcept {
 
 string ShareDirectory::getAdcPathUnsafe() const noexcept {
 	if (parent) {
-		return parent->getAdcPathUnsafe() + realName.getNormal() + ADC_SEPARATOR;
+		return PathUtil::joinAdcDirectory(parent->getAdcPathUnsafe(), realName.getNormal());
 	}
 
 	if (!root) {

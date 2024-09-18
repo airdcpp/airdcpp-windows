@@ -367,11 +367,11 @@ void Socket::connect(const AddressInfo& aAddr, const string& aPort, const string
 		connect(aAddr.getV6CompatibleAddress(), aPort, aLocalPort, AF_UNSPEC, lastError);
 	} else {
 		if (aAddr.hasV6CompatibleAddress()) {
-			connect(aAddr.getV6CompatibleAddress(), aPort, aLocalPort, AF_UNSPEC, lastError);
+			connect(aAddr.getV6CompatibleAddress(), aPort, aLocalPort, AF_INET6, lastError);
 		}
 
 		if (aAddr.hasV4CompatibleAddress()) {
-			connect(aAddr.getV4CompatibleAddress(), aPort, aLocalPort, AF_UNSPEC, lastError);
+			connect(aAddr.getV4CompatibleAddress(), aPort, aLocalPort, AF_INET, lastError);
 		}
 	}
 

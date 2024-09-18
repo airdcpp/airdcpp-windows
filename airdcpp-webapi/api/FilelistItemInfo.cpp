@@ -46,10 +46,11 @@ namespace webserver {
 	}
 
 	void FilelistItemInfo::getLocalPathsThrow(StringList& paths_) const {
+		// TODO
 		if (type == DIRECTORY) {
-			dir->getLocalPaths(paths_, shareProfileToken);
+			dir->getLocalPathsUnsafe(paths_, shareProfileToken);
 		} else {
-			file->getLocalPaths(paths_, shareProfileToken);
+			file->getLocalPathsUnsafe(paths_, shareProfileToken);
 		}
 	}
 }

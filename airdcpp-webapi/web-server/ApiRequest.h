@@ -47,7 +47,7 @@ namespace webserver {
 		using PathTokenList = std::deque<std::string>;
 		using NamedParamMap = std::map<std::string, std::string>;
 
-		// Throws on errors
+		// Throws std::invalid_argument on validation errors
 		ApiRequest(const std::string& aUrl, const std::string& aMethod, json&& aBody, const SessionPtr& aSession, const ApiDeferredHandler& aDeferredHandler, json& output_, json& error_);
 
 		int getApiVersion() const noexcept {

@@ -30,9 +30,9 @@ namespace webserver {
 		ApiRouter();
 		~ApiRouter();
 
-		void handleSocketRequest(const std::string& aMessage, const WebSocketPtr& aSocket, bool aIsSecure) noexcept;
+		void handleSocketRequest(const std::string& aMessage, const WebSocketPtr& aSocket, bool aIsSecure) const noexcept;
 		api_return handleHttpRequest(const HttpRequest& aRequest,
-			json& output_, json& error_, const ApiDeferredHandler& aDeferredHandler) noexcept;
+			json& output_, json& error_, const ApiDeferredHandler& aDeferredHandler) const noexcept;
 	private:
 		api_return handleRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) const noexcept;
 

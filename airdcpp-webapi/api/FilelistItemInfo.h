@@ -53,7 +53,7 @@ namespace webserver {
 			return type == DIRECTORY ? dir->getDupe() : file->getDupe(); 
 		}
 		const string& getName() const noexcept { return type == DIRECTORY ? dir->getName() : file->getName(); }
-		string getAdcPath() const noexcept { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
+		string getAdcPath() const noexcept { return type == DIRECTORY ? dir->getAdcPathUnsafe() : file->getAdcPathUnsafe(); } // TODO
 		bool isComplete() const noexcept { return type == DIRECTORY ? dir->isComplete() : true; }
 		void getLocalPathsThrow(StringList& paths_) const;
 

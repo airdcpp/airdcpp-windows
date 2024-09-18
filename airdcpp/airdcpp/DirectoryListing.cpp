@@ -508,7 +508,7 @@ DirectoryListing::Directory::Ptr DirectoryListing::Directory::create(Directory* 
 		dcassert(!aParent->directories.contains(&dir->getName()));
 		auto [dp, inserted] = aParent->directories.try_emplace(&dir->getName(), dir);
 		if (!inserted) {
-			throw AbortException("The directory " + dir->getAdcPath() + " contains items with duplicate names (" + dir->getName() + ", " + *(*dp).first + ")");
+			throw AbortException("The directory " + dir->getAdcPathUnsafe() + " contains items with duplicate names (" + dir->getName() + ", " + *(*dp).first + ")");
 		}
 	}
 
@@ -554,7 +554,7 @@ DirectoryListing::Directory::Directory(Directory* aParent, const string& aName, 
 	}
 
 	if (aCheckDupe) {
-		dupe = DupeUtil::checkAdcDirectoryDupe(getAdcPath(), partialSize);
+		dupe = DupeUtil::checkAdcDirectoryDupe(getAdcPathUnsafe(), partialSize);
 	}
 
 	//dcdebug("DirectoryListing::Directory %s was created\n", aName.c_str());
@@ -565,7 +565,7 @@ void DirectoryListing::Directory::search(OrderedStringSet& aResults, SearchQuery
 		return;
 
 	if (aStrings.matchesDirectory(name)) {
-		auto path = parent ? parent->getAdcPath() : ADC_ROOT_STR;
+		auto path = parent ? parent->getAdcPathUnsafe() : ADC_ROOT_STR;
 		auto res = ranges::find(aResults, path);
 		if (res == aResults.end() && aStrings.matchesSize(getTotalSize(false))) {
 			aResults.insert(path);
@@ -574,7 +574,7 @@ void DirectoryListing::Directory::search(OrderedStringSet& aResults, SearchQuery
 
 	for (auto& f: files) {
 		if (aStrings.matchesFile(f->getName(), f->getSize(), f->getRemoteDate(), f->getTTH())) {
-			aResults.insert(getAdcPath());
+			aResults.insert(getAdcPathUnsafe());
 			break;
 		}
 	}
@@ -676,8 +676,7 @@ optional<DirectoryBundleAddResult> DirectoryListing::createBundleHooked(const Di
 }
 
 int64_t DirectoryListing::getDirectorySizeUnsafe(const string& aDir) const noexcept {
-	dcassert(aDir.size() > 2);
-	dcassert(aDir == ADC_ROOT_STR || aDir[aDir.size() - 1] == ADC_SEPARATOR);
+	dcassert(PathUtil::isAdcDirectoryPath(aDir));
 
 	auto d = findDirectoryUnsafe(aDir);
 	if (d) {
@@ -708,7 +707,9 @@ DirectoryListing::Directory::Ptr DirectoryListing::findDirectoryUnsafe(const str
 }
 
 void DirectoryListing::Directory::findFiles(const boost::regex& aReg, File::List& aResults) const noexcept {
-	copy_if(files.begin(), files.end(), back_inserter(aResults), [&aReg](const File::Ptr& df) { return boost::regex_match(df->getName(), aReg); });
+	ranges::copy_if(files, back_inserter(aResults), [&aReg](const File::Ptr& df) { 
+		return boost::regex_match(df->getName(), aReg); 
+	});
 
 	for (const auto& d : directories | views::values) {
 		d->findFiles(aReg, aResults);
@@ -762,7 +763,7 @@ void DirectoryListing::Directory::runHooksRecursive(const DirectoryListing& aLis
 	std::erase_if(directories, [&aList, this](auto& dp) {
 		auto error = aList.loadHooks->directoryLoadHook.runHooksError(this, dp.second, aList);
 		if (error) {
-			dcdebug("Hook rejection for filelist directory %s (%s)\n", dp.second->getAdcPath().c_str(), ActionHookRejection::formatError(error).c_str());
+			dcdebug("Hook rejection for filelist directory %s (%s)\n", dp.second->getAdcPathUnsafe().c_str(), ActionHookRejection::formatError(error).c_str());
 		}
 
 		return error;
@@ -771,7 +772,7 @@ void DirectoryListing::Directory::runHooksRecursive(const DirectoryListing& aLis
 	// Files
 	std::erase_if(files, [&aList, this](const auto& f) {
 		if (auto error = aList.loadHooks->fileLoadHook.runHooksError(this, f, aList)) {
-			dcdebug("Hook rejection for filelist file %s (%s)\n", f->getAdcPath().c_str(), ActionHookRejection::formatError(error).c_str());
+			dcdebug("Hook rejection for filelist file %s (%s)\n", f->getAdcPathUnsafe().c_str(), ActionHookRejection::formatError(error).c_str());
 			return true;
 		}
 
@@ -812,10 +813,10 @@ void DirectoryListing::getLocalPathsUnsafe(const File::Ptr& f, StringList& ret) 
 	if (f->getParent()->isVirtual() && (f->getParent()->getParent() == root.get() || !isOwnList))
 		return;
 
-	return f->getLocalPaths(ret, getShareProfile());
+	return f->getLocalPathsUnsafe(ret, getShareProfile());
 }
 
-void DirectoryListing::File::getLocalPaths(StringList& ret, const OptionalProfileToken& aShareProfileToken) const {
+void DirectoryListing::File::getLocalPathsUnsafe(StringList& ret, const OptionalProfileToken& aShareProfileToken) const {
 	//if (f->getParent()->isVirtual() && (f->getParent()->getParent() == root.get() || !isOwnList))
 	//	return;
 
@@ -825,7 +826,7 @@ void DirectoryListing::File::getLocalPaths(StringList& ret, const OptionalProfil
 			auto virtualDir = static_cast<VirtualDirectory*>(parent);
 			path = virtualDir->getFullAdcPath();
 		} else {
-			path = parent->getAdcPath();
+			path = parent->getAdcPathUnsafe();
 		}
 
 		ShareManager::getInstance()->getRealPaths(path + name, ret, aShareProfileToken);
@@ -838,25 +839,25 @@ void DirectoryListing::getLocalPathsUnsafe(const Directory::Ptr& d, StringList& 
 	if (d->isVirtual() && (d->getParent() == root.get() || !isOwnList))
 		return;
 
-	return d->getLocalPaths(ret, getShareProfile());
+	return d->getLocalPathsUnsafe(ret, getShareProfile());
 }
 
-void DirectoryListing::Directory::getLocalPaths(StringList& ret, const OptionalProfileToken& aShareProfileToken) const {
+void DirectoryListing::Directory::getLocalPathsUnsafe(StringList& ret, const OptionalProfileToken& aShareProfileToken) const {
 	if (isRoot() || (isVirtual() && parent->isRoot()) /* || !isOwnList)*/)
 		return;
 
 	string path;
 	if (isVirtual()) {
 		auto virtualDir = static_cast<const VirtualDirectory*>(this);
-		path = virtualDir->getFullAdcPath();
+		path = virtualDir->getFullAdcPath() + name;
 	} else {
-		path = getAdcPath();
+		path = getAdcPathUnsafe();
 	}
 
 	if (aShareProfileToken) {
 		ShareManager::getInstance()->getRealPaths(path, ret, aShareProfileToken);
 	} else {
-		ret = ShareManager::getInstance()->getAdcDirectoryDupePaths(path);
+		ret = DupeUtil::getAdcDirectoryDupePaths(dupe, path);
 	}
 }
 
@@ -864,7 +865,7 @@ int64_t DirectoryListing::Directory::getTotalSize(bool aCountVirtual) const noex
 	if (!isComplete())
 		return partialSize;
 	
-	auto x = getFilesSize();
+	auto x = getFilesSizeUnsafe();
 	for (const auto& d: directories | views::values) {
 		if (!aCountVirtual && d->isVirtual()) {
 			continue;
@@ -900,17 +901,17 @@ void DirectoryListing::Directory::clearVirtualDirectories() noexcept {
 	}*/
 }
 
-string DirectoryListing::Directory::getAdcPath() const noexcept {
+string DirectoryListing::Directory::getAdcPathUnsafe() const noexcept {
 	//make sure to not try and get the name of the root dir
 	if (parent) {
-		return parent->getAdcPath() + name + ADC_SEPARATOR;
+		return PathUtil::joinAdcDirectory(parent->getAdcPathUnsafe(), name);
 	}
 
 	// root
 	return ADC_ROOT_STR;
 }
 
-int64_t DirectoryListing::Directory::getFilesSize() const noexcept {
+int64_t DirectoryListing::Directory::getFilesSizeUnsafe() const noexcept {
 	int64_t x = 0;
 	for (const auto& f: files) {
 		x += f->getSize();
@@ -1003,12 +1004,12 @@ void DirectoryListing::addListDiffTask(const string& aFile, bool aOwnList) noexc
 }
 
 void DirectoryListing::addPartialListLoadTask(const string& aXml, const string& aBase, bool aBackgroundTask /*false*/, const AsyncF& aCompletionF) noexcept {
-	dcassert(!aBase.empty() && aBase.front() == ADC_SEPARATOR);
+	dcassert(PathUtil::isAdcDirectoryPath(aBase));
 	addAsyncTask([=, this] { loadPartialImpl(aXml, aBase, aBackgroundTask, aCompletionF); });
 }
 
 void DirectoryListing::addOwnListLoadTask(const string& aBase, bool aBackgroundTask /*false*/) noexcept {
-	dcassert(!aBase.empty() && aBase.front() == ADC_SEPARATOR);
+	dcassert(PathUtil::isAdcDirectoryPath(aBase));
 	addAsyncTask([=, this] { loadPartialImpl(Util::emptyString, aBase, aBackgroundTask, nullptr); });
 }
 
@@ -1092,7 +1093,7 @@ void DirectoryListing::loadFileImpl(const string& aInitialDir) {
 
 	fire(DirectoryListingListener::LoadingStarted(), false);
 
-	auto curDirectoryPath = !currentLocation.directory ? Util::emptyString : currentLocation.directory->getAdcPath();
+	auto curDirectoryPath = !currentLocation.directory ? Util::emptyString : currentLocation.directory->getAdcPathUnsafe();
 
 	// In case we are reloading...
 	root->clearAll();
@@ -1136,7 +1137,7 @@ void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aLoad
 	}
 
 	setDirectoryLoadingState(loadedDir, DirectoryLoadType::NONE);
-	fire(DirectoryListingListener::LoadingFinished(), aStartTime, loadedDir->getAdcPath(), static_cast<uint8_t>(changeType));
+	fire(DirectoryListingListener::LoadingFinished(), aStartTime, loadedDir->getAdcPathUnsafe(), static_cast<uint8_t>(changeType));
 }
 
 void DirectoryListing::updateCurrentLocation(const Directory::Ptr& aCurrentDirectory) noexcept {
@@ -1182,7 +1183,7 @@ void DirectoryListing::loadPartialImpl(const string& aXml, const string& aBasePa
 	if (!partialList)
 		return;
 
-	auto curDirectoryPath = !currentLocation.directory ? Util::emptyString : currentLocation.directory->getAdcPath();
+	auto curDirectoryPath = !currentLocation.directory ? Util::emptyString : currentLocation.directory->getAdcPathUnsafe();
 	Directory::Ptr optionalOldDirectory = nullptr;
 
 	// Preparations
@@ -1305,7 +1306,7 @@ void DirectoryListing::changeDirectoryImpl(const string& aAdcPath, DirectoryLoad
 
 	clearLastError();
 
-	if (aType != DirectoryLoadType::LOAD_CONTENT && (!currentLocation.directory || aAdcPath != currentLocation.directory->getAdcPath())) {
+	if (aType != DirectoryLoadType::LOAD_CONTENT && (!currentLocation.directory || aAdcPath != currentLocation.directory->getAdcPathUnsafe())) {
 		updateCurrentLocation(dir);
 		fire(DirectoryListingListener::ChangeDirectory(), aAdcPath, static_cast<uint8_t>(aType));
 	}

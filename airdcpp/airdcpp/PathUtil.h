@@ -58,6 +58,8 @@ public:
 
 	static string joinDirectory(const string& aPath, const string& aDirectoryName, const char separator = PATH_SEPARATOR) noexcept;
 
+	static string joinAdcDirectory(const string& aPath, const string& aDirectoryName) noexcept { return joinDirectory(aPath, aDirectoryName, ADC_SEPARATOR); }
+
 	static string getFileExt(const string& aPath) noexcept;
 
 	static wstring getFilePath(const wstring& aPath) noexcept;

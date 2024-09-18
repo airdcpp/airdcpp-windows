@@ -713,7 +713,7 @@ void DirectoryListingFrame::createRoot() {
 	root.reset(new ItemInfo(r));
 	const auto icon = ResourceLoader::DIR_NORMAL;
 	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(dl->getNick(true)).c_str(), icon, icon, 0, 0, (LPARAM)root.get(), NULL, NULL);
-	browserBar.addHistory(dl->getRoot()->getAdcPath());
+	browserBar.addHistory(dl->getRoot()->getAdcPathUnsafe());
 	dcassert(treeRoot); 
 }
 
@@ -725,7 +725,7 @@ const string DirectoryListingFrame::getCurrentListPath() const noexcept {
 
 	return ii->dir->getAdcPath();*/
 
-	const auto ret = dl->getCurrentLocationInfo().directory ? dl->getCurrentLocationInfo().directory->getAdcPath() : ADC_ROOT_STR;
+	const auto ret = dl->getCurrentLocationInfo().directory ? dl->getCurrentLocationInfo().directory->getAdcPathUnsafe() : ADC_ROOT_STR;
 	return ret;
 }
 
@@ -772,7 +772,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 		// tweak to insert the items in the current thread
 		if (aSelectDir) {
 			updateItems(loadedDirectory);
-			selectItem(loadedDirectory->getAdcPath());
+			selectItem(loadedDirectory->getAdcPathUnsafe());
 		} else {
 			// Subdirectory of the loaded directory is selected
 			auto currentTreeItem = ctrlTree.findItemByPath(treeRoot, Text::toT(getCurrentListPath()));
@@ -781,7 +781,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 			auto currentDirectory = ((ItemInfo*)ctrlTree.GetItemData(currentTreeItem))->dir;
 
 			updateItems(currentDirectory);
-			selectItem(currentDirectory->getAdcPath());
+			selectItem(currentDirectory->getAdcPathUnsafe());
 		}
 	}
 
@@ -799,11 +799,11 @@ void DirectoryListingFrame::validateTreeDebug() {
 	StringList paths;
 	for (const auto& cacheItem : itemInfos | views::values) {
 		for (const auto& d : cacheItem->directories) {
-			paths.push_back(d.dir->getAdcPath());
+			paths.push_back(d.getAdcPath());
 		}
 
 		for (const auto& f : cacheItem->files) {
-			paths.push_back(f.file->getAdcPath());
+			paths.push_back(f.getAdcPath());
 		}
 	}
 
@@ -1173,14 +1173,14 @@ void DirectoryListingFrame::insertItems(const string& aPath, const optional<stri
 void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& d) {
 	ctrlFiles.list.SetRedraw(FALSE);
 	updating = true;
-	if (itemInfos.find(d->getAdcPath()) == itemInfos.end()) {
-		updateItemCache(d->getAdcPath());
+	if (!itemInfos.contains(d->getAdcPathUnsafe())) {
+		updateItemCache(d->getAdcPathUnsafe());
 	}
 
 	optional<string> selectedName;
 	if (changeType == CHANGE_HISTORY) {
 		auto historyPath = browserBar.getCurSel();
-		if (!historyPath.empty() && (!d->getParent() || PathUtil::getAdcParentDir(historyPath) == d->getAdcPath())) {
+		if (!historyPath.empty() && (!d->getParent() || PathUtil::getAdcParentDir(historyPath) == d->getAdcPathUnsafe())) {
 			selectedName = PathUtil::getLastDir(historyPath);
 		}
 
@@ -1188,7 +1188,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 	}
 
 	ctrlFiles.onListChanged(false);
-	insertItems(d->getAdcPath(), selectedName);
+	insertItems(d->getAdcPathUnsafe(), selectedName);
 
 	ctrlFiles.list.SetRedraw(TRUE);
 	updating = false;
@@ -1568,7 +1568,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 	prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getHintedUser().user->getCID()));
 
 	// Share stuff
-	if (dl->getIsOwnList() && !hasFiles) {
+	if (dl->getIsOwnList() && !hasFiles && !ii->isAdl()) {
 		fileMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(false); });
 	}
 
@@ -1591,7 +1591,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 	directoryMenu.CreatePopupMenu();
 
 	if (!dl->getIsOwnList()) {
-		appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullopt, dir->getAdcPath());
+		appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullopt, dir->getAdcPathUnsafe());
 		directoryMenu.appendSeparator();
 	}
 
@@ -2329,7 +2329,7 @@ void DirectoryListingFrame::onComboSelChanged(bool aUserChange) {
 		auto token = ShareManager::getInstance()->getProfiles()[selCombo.GetCurSel()]->getToken();
 		dl->addShareProfileChangeTask(token);
 	} else {
-		auto& newHub = hubs[selCombo.GetCurSel()];
+		const auto& newHub = hubs[selCombo.GetCurSel()];
 		if (aUserChange) {
 			auto p = ranges::find_if(hubs, [this](const User::UserHubInfo& uhi) { return uhi.hubUrl == dl->getHubUrl(); });
 			if (p != hubs.end()) {
@@ -2383,13 +2383,11 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		dcassert(!hint.empty() || !dl->getPartialList());
 
 		//get the hub and online status
-		auto hubsInfoNew = std::move(FormatUtil::getHubNames(cid));
-		if (!hubsInfoNew.second && !online) {
+		auto [_, onlineNew] = FormatUtil::getHubNames(cid);
+		if (!onlineNew && !online) {
 			//nothing to update... probably a delayed event
 			return;
 		}
-
-		auto tmp = FormatUtil::getHubNames(cid);
 
 		auto oldSel = selCombo.GetStyle() & WS_VISIBLE ? selCombo.GetCurSel() : 0;
 		StringPair oldHubPair;
@@ -2402,7 +2400,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		}
 
 		//General things
-		if (hubsInfoNew.second) {
+		if (onlineNew) {
 			//the user is online
 
 			onlineHubNames = FormatUtil::getHubNames(dl->getHintedUser());
@@ -2414,7 +2412,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		}
 
 		//ADC related changes
-		if (hubsInfoNew.second && !dl->getUser()->isNMDC() && !hubs.empty()) {
+		if (onlineNew && !dl->getUser()->isNMDC() && !hubs.empty()) {
 			if (!(selCombo.GetStyle() & WS_VISIBLE)) {
 				showSelCombo(true, init);
 			}
@@ -2437,7 +2435,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 			showSelCombo(false, init);
 		}
 
-		online = hubsInfoNew.second;
+		online = onlineNew;
 	} else {
 		showSelCombo(false, init);
 	}

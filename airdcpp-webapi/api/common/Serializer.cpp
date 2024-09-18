@@ -173,8 +173,8 @@ namespace webserver {
 		return typeName;
 	}
 
-	json Serializer::serializeFileType(const string& aPath) noexcept {
-		auto ext = Util::formatFileType(aPath);
+	json Serializer::serializeFileType(const string& aName) noexcept {
+		auto ext = Util::formatFileType(aName);
 		return{
 			{ "id", "file" },
 			{ "content_type", toFileContentType(ext) },

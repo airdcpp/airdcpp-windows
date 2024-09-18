@@ -144,7 +144,7 @@ namespace webserver {
 		}
 
 		PropertyFilter::List::iterator findFilter(FilterToken aToken) {
-			return find_if(filters.begin(), filters.end(), [&](const PropertyFilter::Ptr& aFilter) { return aFilter->getId() == aToken; });
+			return ranges::find_if(filters, [&](const PropertyFilter::Ptr& aFilter) { return aFilter->getId() == aToken; });
 		}
 
 		bool removeFilter(FilterToken aToken) {

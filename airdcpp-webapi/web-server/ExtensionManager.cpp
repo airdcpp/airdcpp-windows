@@ -123,7 +123,7 @@ namespace webserver {
 			// Remove possible unmanaged extensions matching this session
 			{
 				RLock l(cs);
-				auto i = find_if(extensions.begin(), extensions.end(), [&](const ExtensionPtr& aExtension) {
+				auto i = ranges::find_if(extensions, [&](const ExtensionPtr& aExtension) {
 					return aExtension->getSession() == session;
 				});
 
@@ -278,7 +278,7 @@ namespace webserver {
 	bool ExtensionManager::removeExtension(const ExtensionPtr& aExtension) noexcept {
 		{
 			WLock l(cs);
-			auto i = find(extensions.begin(), extensions.end(), aExtension);
+			auto i = ranges::find(extensions, aExtension);
 			if (i != extensions.end()) {
 				extensions.erase(i);
 			} else {
@@ -669,7 +669,7 @@ namespace webserver {
 		string lastError;
 		for (const auto& supportedExtEngine: aSupportedExtEngines) {
 			// Find an installed engine that can run this extension
-			auto engineIter = find_if(aInstalledEngines.begin(), aInstalledEngines.end(), [&supportedExtEngine](const auto& e) { return e.name == supportedExtEngine; });
+			auto engineIter = ranges::find_if(aInstalledEngines, [&supportedExtEngine](const auto& e) { return e.name == supportedExtEngine; });
 			if (engineIter == aInstalledEngines.end()) {
 				lastError = STRING_F(WEB_EXTENSION_ENGINE_NO_CONFIG, supportedExtEngine);
 				continue;

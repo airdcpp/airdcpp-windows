@@ -64,7 +64,7 @@ namespace webserver {
 		}
 
 		// Version
-		const auto& version = pathTokens.front();
+		const auto version = pathTokens.front();
 		pathTokens.pop_front();
 
 		// API Module

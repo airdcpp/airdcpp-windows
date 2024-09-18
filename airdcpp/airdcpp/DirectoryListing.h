@@ -71,8 +71,8 @@ public:
 
 		using ValidationHook = ActionHook<nullptr_t, const File::Ptr &, const DirectoryListing &>;
 
-		string getAdcPath() const noexcept {
-			return parent->getAdcPath() + name;
+		string getAdcPathUnsafe() const noexcept {
+			return parent->getAdcPathUnsafe() + name;
 		}
 
 		GETSET(string, name, Name);
@@ -90,7 +90,7 @@ public:
 		DirectoryListingItemToken getToken() const noexcept {
 			return token;
 		}
-		void getLocalPaths(StringList& ret, const OptionalProfileToken& aShareProfileToken) const;
+		void getLocalPathsUnsafe(StringList& ret, const OptionalProfileToken& aShareProfileToken) const;
 	private:
 		Owner owner = nullptr;
 		const DirectoryListingItemToken token;
@@ -146,16 +146,16 @@ public:
 		void getHashList(TTHSet& l) const noexcept;
 		void clearVirtualDirectories() noexcept;
 		void clearAll() noexcept;
-		void getLocalPaths(StringList& ret, const OptionalProfileToken& aShareProfileToken) const;
+		void getLocalPathsUnsafe(StringList& ret, const OptionalProfileToken& aShareProfileToken) const;
 
 		bool findIncomplete() const noexcept;
 		bool findCompleteChildren() const noexcept;
 		void search(OrderedStringSet& aResults, SearchQuery& aStrings) const noexcept;
 		void findFiles(const boost::regex& aReg, File::List& aResults) const noexcept;
 		
-		int64_t getFilesSize() const noexcept;
+		int64_t getFilesSizeUnsafe() const noexcept;
 
-		string getAdcPath() const noexcept;
+		string getAdcPathUnsafe() const noexcept;
 		uint8_t checkDupesRecursive() noexcept;
 		void runHooksRecursive(const DirectoryListing& aList) noexcept;
 		
