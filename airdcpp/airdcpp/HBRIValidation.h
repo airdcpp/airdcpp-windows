@@ -23,7 +23,7 @@
 
 #include "Message.h"
 
-#include <future>
+#include <thread>
 
 namespace dcpp {
 

@@ -106,7 +106,7 @@ void UploadBundleInfoSender::on(DownloadManagerListener::Starting, const Downloa
 	if (!ubnBundle) {
 		ubnBundle = make_shared<UBNBundle>(
 			bundle, 
-			sendUpdate,
+			[this](auto... args) { sendUpdate(args...); },
 			bind_front(&UploadBundleInfoSender::dbgMsg, this)
 		);
 

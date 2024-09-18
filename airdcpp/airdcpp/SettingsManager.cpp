@@ -36,8 +36,6 @@
 #include "Util.h"
 #include "version.h"
 
-#include <thread>
-
 namespace dcpp {
 
 #define CONFIG_NAME "DCPlusPlus.xml"
