@@ -35,7 +35,7 @@ namespace webserver {
 	class WebUserManager : private WebServerManagerListener, public Speaker<WebUserManagerListener> {
 	public:
 		explicit WebUserManager(WebServerManager* aServer);
-		~WebUserManager() final;
+		~WebUserManager() override;
 
 		// Parse Authentication header from an HTTP request
 		// Throws on errors, returns nullptr if no Authorization header is present

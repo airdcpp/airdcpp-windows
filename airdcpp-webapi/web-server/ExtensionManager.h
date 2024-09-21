@@ -52,7 +52,7 @@ namespace webserver {
 	class ExtensionManager: public Speaker<ExtensionManagerListener>, private WebServerManagerListener, private UpdateManagerListener, ExtensionListener {
 	public:
 		explicit ExtensionManager(WebServerManager* aWsm);
-		~ExtensionManager() final;
+		~ExtensionManager() override;
 
 		// Load and start all managed extensions from disk
 		void load() noexcept;

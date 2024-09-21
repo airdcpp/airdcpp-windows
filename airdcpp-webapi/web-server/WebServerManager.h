@@ -80,7 +80,7 @@ namespace webserver {
 		void addAsyncTask(Callback&& aCallback) noexcept;
 
 		WebServerManager();
-		~WebServerManager() final;
+		~WebServerManager() override;
 
 		// Leave the path empty to use the default resource path
 		bool startup(const MessageCallback& errorF, const string& aWebResourcePath, const Callback& aShutdownF);

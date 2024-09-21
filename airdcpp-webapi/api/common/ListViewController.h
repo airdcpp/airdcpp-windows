@@ -59,7 +59,7 @@ namespace webserver {
 			MODULE_METHOD_HANDLER(aModule, access, METHOD_GET, (EXACT_PARAM(viewName), EXACT_PARAM("items"), RANGE_START_PARAM, RANGE_MAX_PARAM), ListViewController::handleGetItems);
 		}
 
-		~ListViewController() final {
+		~ListViewController() override {
 			apiModule->getSession()->removeListener(this);
 
 			timer->stop(true);

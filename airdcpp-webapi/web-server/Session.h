@@ -44,7 +44,7 @@ namespace webserver {
 		};
 
 		Session(const WebUserPtr& aUser, const std::string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, const string& aIP);
-		~Session() final;
+		~Session() override;
 
 		const std::string& getAuthToken() const noexcept {
 			return token;
