@@ -50,7 +50,7 @@
 
 namespace dcpp {
 
-string UpdaterCreator::createUpdate(const FileListF& aFileListF) noexcept {
+string UpdaterCreator::createUpdate(const FileListF& aFileListF, const ErrorF& aErrorF) noexcept {
 	auto updaterFilePath = PathUtil::getParentDir(AppUtil::getAppPath());
 
 	// Create zip
@@ -62,14 +62,19 @@ string UpdaterCreator::createUpdate(const FileListF& aFileListF) noexcept {
 	}
 
 	// Update version file
-	updateVersionFile(updaterFilePath);
+	if (!updateVersionFile(updaterFilePath, aErrorF)) {
+		return Util::emptyString;
+	}
 
 	// Signature file
-	signVersionFile(updaterFilePath + VERSION_FILE_NAME, updaterFilePath + "air_rsa", false);
+	if (!signVersionFile(updaterFilePath + VERSION_FILE_NAME, updaterFilePath + "air_rsa", aErrorF, false)) {
+		return Util::emptyString;
+	}
+
 	return updaterFilePath + UPDATER_FILE_NAME;
 }
 
-void UpdaterCreator::updateVersionFile(const string& aUpdaterPath) {
+bool UpdaterCreator::updateVersionFile(const string& aUpdaterPath, const ErrorF& aErrorF) {
 	try {
 		SimpleXML xml;
 		xml.fromXML(File(aUpdaterPath + VERSION_FILE_NAME, File::READ, File::OPEN).read());
@@ -91,104 +96,154 @@ void UpdaterCreator::updateVersionFile(const string& aUpdaterPath) {
 
 					File f(aUpdaterPath + VERSION_FILE_NAME, File::WRITE, File::CREATE | File::TRUNCATE);
 					f.write(content);
+					return true;
 				}
 			}
 		}
-	} catch(const Exception& /*e*/) { }
+	} catch(const Exception& /*e*/) { 
+		aErrorF("Failed to update version.xml");
+		return false;
+	}
+
+	aErrorF("Invalid version.xml content");
+	return false;
 }
 
-// Deprecations, TODO: fix
-# pragma warning(disable: 4996) 
-void UpdaterCreator::signVersionFile(const string& aVersionFilePath, const string& aPrivateKeyFilePath, bool aMakeHeader) {
+optional<ByteVector> UpdaterCreator::calculateFileSha1(const string& aVersionFilePath, const ErrorF& aErrorF) {
 	string versionData;
-	unsigned int sig_len = 0;
-
-	RSA* rsa = RSA_new();
-
 	try {
 		// Read All Data from files
 		{
 			File versionFile(aVersionFilePath, File::READ, File::OPEN);
 			versionData = versionFile.read();
 		}
+	} catch (const FileException&) { return nullopt; }
 
-		FILE* f = fopen(aPrivateKeyFilePath.c_str(), "r");
-		PEM_read_RSAPrivateKey(f, &rsa, NULL, NULL);
-		fclose(f);
-	} catch(const FileException&) { return; }
-
-#ifdef _WIN32
 	if (versionData.find("\r\n") != string::npos) {
-		::MessageBox(NULL, _T("The version file contains Windows line endings. UNIX endings should be used instead."), _T(""), MB_OK | MB_ICONERROR);
-		return;
+		aErrorF("The version file contains Windows line endings. UNIX endings should be used instead.");
+		return nullopt;
 	}
-#endif
 
-	// Make SHA hash
-	int res = -1;
-	SHA_CTX sha_ctx = { 0 };
-	uint8_t digest[SHA_DIGEST_LENGTH];
+	return CryptoManager::calculateSha1(aVersionFilePath);
+}
 
-	res = SHA1_Init(&sha_ctx);
-	if(res != 1)
-		return;
-	res = SHA1_Update(&sha_ctx, versionData.c_str(), versionData.size());
-	if(res != 1)
-		return;
-	res = SHA1_Final(digest, &sha_ctx);
-	if(res != 1)
-		return;
+bool UpdaterCreator::signVersionFile(const string& aVersionFilePath, const string& aPrivateKeyFilePath, const ErrorF& aErrorF, bool aMakeHeader) {
+	auto versionSha1 = calculateFileSha1(aVersionFilePath, aErrorF);
+	if (!versionSha1) {
+		aErrorF("Could not generate version SHA1 hash");
+		return false;
+	}
 
-	// sign hash
-	auto sig = boost::shared_array<uint8_t>(new uint8_t[RSA_size(rsa)]);
-	RSA_sign(NID_sha1, digest, sizeof(digest), sig.get(), &sig_len, rsa);
+	auto signatureData = signDigest(*versionSha1, aPrivateKeyFilePath, aErrorF);
+	if (!signatureData) {
+		return false;
+	}
 
-	if (sig_len > 0) {
-		string c_key = Util::emptyString;
+	auto& [sig, publicKey] = *signatureData;
+	if (aMakeHeader) {
+		writePublicKey(PathUtil::getFilePath(aVersionFilePath) + "pubkey.h", publicKey, aErrorF);
+	}
 
-		if (aMakeHeader) {
-			int buf_size = i2d_RSAPublicKey(rsa, 0);
-			auto buf = boost::shared_array<uint8_t>(new uint8_t[buf_size]);
+	try {
+		// Write signature file
+		File outSig(aVersionFilePath + ".sign", File::WRITE, File::TRUNCATE | File::CREATE);
+		outSig.write(sig.data(), sig.size());
+	} catch(const FileException&) {
+		aErrorF("Could not write private key");
+		return false;
+	}
 
-			{
-				uint8_t* buf_ptr = buf.get();
-				i2d_RSAPublicKey(rsa, &buf_ptr);
-			}
+	auto isValid = CryptoManager::verifyDigest(*versionSha1, sig, publicKey.data(), publicKey.size());
+	if (!isValid) {
+		dcassert(0);
+		aErrorF("Private key verification failed");
+		return false;
+	}
 
-			c_key = "// Automatically generated file, DO NOT EDIT!" NATIVE_NL NATIVE_NL;
-			c_key += "#ifndef PUBKEY_H" NATIVE_NL "#define PUBKEY_H" NATIVE_NL NATIVE_NL;
+	return true;
+}
 
-			c_key += "uint8_t dcpp::UpdateManager::publicKey[] = { " NATIVE_NL "\t";
-			for(int i = 0; i < buf_size; ++i) {
-				c_key += (dcpp_fmt("0x%02X") % (unsigned int)buf[i]).str();
-				if(i < buf_size - 1) {
-					c_key += ", ";
-					if((i+1) % 15 == 0) c_key += NATIVE_NL "\t";
-				} else c_key += " " NATIVE_NL "};" NATIVE_NL NATIVE_NL;	
-			}
+optional<UpdaterCreator::SignatureData> UpdaterCreator::signDigest(const ByteVector& aDigest, const string& aPrivateKeyFilePath, const ErrorF& aErrorF) {
 
-			c_key += "#endif // PUBKEY_H" NATIVE_NL;
+	FILE* f = dcpp_fopen(aPrivateKeyFilePath.c_str(), "r");
+	if (!f) {
+		aErrorF("Could not open private key file");
+		return nullopt;
+	}
+
+#define CHECK(n) if(!(n)) { aErrorF("Crypto error"); return nullopt; }
+
+	auto pkey = EVP_PKEY_new();
+	CHECK(PEM_read_PrivateKey(f, &pkey, nullptr, nullptr));
+	fclose(f);
+
+	if (!pkey) {
+		aErrorF("Could not read private key");
+		return nullopt;
+	}
+
+	auto ctx = EVP_PKEY_CTX_new(pkey, nullptr /* no engine */);
+	if (!ctx) {
+		CHECK(0);
+	}
+
+	CHECK(EVP_PKEY_sign_init(ctx));
+	CHECK(EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING));
+	CHECK(EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha1()));
+
+	// Determine buffer length
+	size_t siglen = 0;
+	CHECK(EVP_PKEY_sign(ctx, NULL, &siglen, &aDigest[0], aDigest.size()));
+
+
+	ByteVector sig(siglen);
+	CHECK(EVP_PKEY_sign(ctx, sig.data(), &siglen, &aDigest[0], aDigest.size()));
+
+	if (siglen <= 0) {
+		aErrorF("Could not generate signature");
+		return nullopt;
+	}
+
+	auto pubkeyBufferSize = i2d_PublicKey(pkey, NULL);
+	ByteVector publicKey(pubkeyBufferSize);
+
+	{
+		auto buf_ptr = publicKey.data();
+		CHECK(i2d_PublicKey(pkey, &buf_ptr));
+	}
+
+	EVP_PKEY_free(pkey);
+	EVP_PKEY_CTX_free(ctx);
+	return SignatureData({ sig, publicKey });
+}
+
+bool UpdaterCreator::writePublicKey(const string& aOutputPath, const ByteVector& aPubKey, const ErrorF& aErrorF) noexcept {
+	string c_key = Util::emptyString;
+	c_key = "// Automatically generated file, DO NOT EDIT!" NATIVE_NL NATIVE_NL;
+	c_key += "#ifndef PUBKEY_H" NATIVE_NL "#define PUBKEY_H" NATIVE_NL NATIVE_NL;
+
+	c_key += "uint8_t dcpp::UpdateManager::publicKey[] = { " NATIVE_NL "\t";
+	for (int i = 0; i < aPubKey.size(); ++i) {
+		c_key += (dcpp_fmt("0x%02X") % (unsigned int)aPubKey[i]).str();
+		if (i < aPubKey.size() - 1) {
+			c_key += ", ";
+			if ((i + 1) % 15 == 0) c_key += NATIVE_NL "\t";
 		}
-
-		try {
-			// Write signature file
-			{
-				File outSig(aVersionFilePath + ".sign", File::WRITE, File::TRUNCATE | File::CREATE);
-				outSig.write(sig.get(), sig_len);
-			}
-
-			if (!c_key.empty()) {
-				// Write the public key header (openssl probably has something to generate similar file, but couldn't locate it)
-				File pubKey(PathUtil::getFilePath(aVersionFilePath) + "pubkey.h", File::WRITE, File::TRUNCATE | File::CREATE);
-				pubKey.write(c_key);
-			}
-		} catch(const FileException&) { }
+		else c_key += " " NATIVE_NL "};" NATIVE_NL NATIVE_NL;
 	}
 
-	if (rsa) {
-		RSA_free(rsa);
-		rsa = NULL;
+	c_key += "#endif // PUBKEY_H" NATIVE_NL;
+
+	try {
+		// Write the public key header (openssl probably has something to generate similar file, but couldn't locate it)
+		File pubKey(aOutputPath, File::WRITE, File::TRUNCATE | File::CREATE);
+		pubKey.write(c_key);
+	} catch (const FileException&) {
+		aErrorF("Could not write private/public key");
+		return false;
 	}
+
+	return true;
 }
 
 } // namespace dcpp

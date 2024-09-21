@@ -190,6 +190,25 @@ optional<ByteVector> CryptoManager::calculateSha1(const string& aData) noexcept 
 	return ret;
 }
 
+bool CryptoManager::verifyDigest(const ByteVector& aDigest, const ByteVector& aSignature, const uint8_t* aPublicKey, size_t aKeySize) noexcept {
+#define CHECK(n) if(!(n)) { dcassert(0); }
+	EVP_PKEY* pkey = EVP_PKEY_new();
+	CHECK(d2i_PublicKey(EVP_PKEY_RSA, &pkey, &aPublicKey, aKeySize));
+
+	auto verify_ctx = EVP_PKEY_CTX_new(pkey, nullptr);
+	CHECK(EVP_PKEY_verify_init(verify_ctx));
+	CHECK(EVP_PKEY_CTX_set_rsa_padding(verify_ctx, RSA_PKCS1_PADDING));
+	CHECK(EVP_PKEY_CTX_set_signature_md(verify_ctx, EVP_sha1()));
+#undef CHECK
+
+	auto res = EVP_PKEY_verify(verify_ctx, aSignature.data(), aSignature.size(), aDigest.data(), aDigest.size());
+
+	EVP_PKEY_free(pkey);
+	EVP_PKEY_CTX_free(verify_ctx);
+
+	return (res == 1);
+}
+
 bool CryptoManager::TLSOk() const noexcept{
 	return SETTING(TLS_MODE) > 0 && certsLoaded && !keyprint.empty();
 }
@@ -698,6 +717,7 @@ string CryptoManager::encryptSUDP(const uint8_t* aKey, const string& aCmd) {
 	CHECK(EVP_EncryptUpdate(ctx, out.get(), &len, (unsigned char*)inData.c_str(), inData.length()));
 	CHECK(EVP_EncryptFinal_ex(ctx, out.get() + len, &tmpLen));
 	EVP_CIPHER_CTX_free(ctx);
+#undef CHECK
 
 	dcassert((commandLength & 15) == 0);
 
@@ -720,6 +740,7 @@ bool CryptoManager::decryptSUDP(const uint8_t* aKey, const ByteVector& aData, si
 	CHECK(EVP_DecryptUpdate(ctx, out.get(), &len, aData.data(), aDataLen));
 	CHECK(EVP_DecryptFinal_ex(ctx, out.get() + len, &len));
 	EVP_CIPHER_CTX_free(ctx);
+#undef CHECK
 
 	// Validate padding and replace with 0-bytes.
 	int padlen = out[aDataLen - 1];

@@ -155,7 +155,7 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 			auto started = wsm->startup(
 				webErrorF,
 				webResourcePath ? *webResourcePath : Util::emptyString,
-				[&]() { wndMain->shutdown(); }
+				[&wndMain]() { wndMain->shutdown(); }
 			);
 
 			wsm->waitExtensionsLoaded();

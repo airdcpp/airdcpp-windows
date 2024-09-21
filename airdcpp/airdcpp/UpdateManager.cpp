@@ -91,7 +91,7 @@ void UpdateManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 	}
 }
 
-bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVector& aPrivateKey) {
+bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVector& aSignature) {
 	auto digest = CryptoManager::calculateSha1(aVersionData);
 	if (!digest) {
 		return false;
@@ -100,21 +100,7 @@ bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVect
 	const uint8_t* key = UpdateManager::publicKey;
 	auto keySize = sizeof(UpdateManager::publicKey);
 
-#define CHECK(n) if(!(n)) { dcassert(0); }
-	EVP_PKEY* pkey = EVP_PKEY_new();
-	CHECK(d2i_PublicKey(EVP_PKEY_RSA, &pkey, &key, keySize));
-
-	auto verify_ctx = EVP_PKEY_CTX_new(pkey, nullptr);
-	CHECK(EVP_PKEY_verify_init(verify_ctx));
-	CHECK(EVP_PKEY_CTX_set_rsa_padding(verify_ctx, RSA_PKCS1_PADDING));
-	CHECK(EVP_PKEY_CTX_set_signature_md(verify_ctx, EVP_sha1()));
-
-	auto res = EVP_PKEY_verify(verify_ctx, aPrivateKey.data(), aPrivateKey.size(), (*digest).data(), (*digest).size());
-
-	EVP_PKEY_free(pkey);
-	EVP_PKEY_CTX_free(verify_ctx);
-
-	return (res == 1);
+	return CryptoManager::verifyDigest(*digest, aSignature, key, keySize);
 }
 
 void UpdateManager::completeSignatureDownload(bool aManualCheck) {

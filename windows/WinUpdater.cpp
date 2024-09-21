@@ -45,6 +45,11 @@ WinUpdater::WinUpdater() {
 
 }
 
+void updateCreatorErrorF(const string& aMessage) {
+	::MessageBox(NULL, Text::toT(aMessage).c_str(), _T(""), MB_OK | MB_ICONERROR);
+};
+
+
 void WinUpdater::listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept {
 	auto assertFiles = [](const string& title, int minExpected, int added) {
 		if (added < minExpected) {
@@ -76,7 +81,7 @@ void WinUpdater::createUpdater(const StartupParams& aStartupParams) {
 	SplashWindow::create();
 	WinUtil::splash->update("Creating updater");
 
-	auto updaterFilePath = UpdaterCreator::createUpdate([this](auto&&... args) { listUpdaterFiles(args...); });
+	auto updaterFilePath = UpdaterCreator::createUpdate([this](auto&&... args) { listUpdaterFiles(args...); }, updateCreatorErrorF);
 
 	if (aStartupParams.hasParam("/test")) {
 		WinUtil::splash->update("Extracting updater");
@@ -171,7 +176,6 @@ bool WinUpdater::isUpdaterAction(const StartupParams& aStartupParams) noexcept {
 	// Thread::sleep(10000);
 
 	if (aStartupParams.hasParam("/createupdate", 0)) {
-		// addStartupParams();
 		createUpdater(aStartupParams);
 		return true;
 	} else if (aStartupParams.hasParam("/sign", 0)) {
@@ -182,13 +186,16 @@ bool WinUpdater::isUpdaterAction(const StartupParams& aStartupParams) noexcept {
 			auto keyPath = aStartupParams.getParams()[2];
 			bool genHeader = aStartupParams.hasParam("-pubout");
 			if (PathUtil::fileExists(xmlPath) && PathUtil::fileExists(keyPath)) {
-				UpdaterCreator::signVersionFile(xmlPath, keyPath, genHeader);
+				UpdaterCreator::signVersionFile(xmlPath, keyPath, updateCreatorErrorF, genHeader);
+			} else {
+				updateCreatorErrorF("Version file/private key file is missing.");
 			}
+		} else {
+			updateCreatorErrorF("Invalid arguments");
 		}
 
 		return true;
 	} else if (aStartupParams.hasParam("/update", 0)) {
-		// Thread::sleep(10000);
 		// AirDC++.exe /update version_file_path private_key_file_path [-pubout]
 		if (aStartupParams.size() >= 2) {
 			// Install new

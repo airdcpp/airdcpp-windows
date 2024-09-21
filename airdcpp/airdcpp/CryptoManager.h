@@ -74,6 +74,8 @@ public:
 
 	static optional<ByteVector> calculateSha1(const string& aData) noexcept;
 
+	static bool verifyDigest(const ByteVector& aDigest, const ByteVector& aSignature, const uint8_t* aPublicKey, size_t aKeySize) noexcept;
+
 	static string encryptSUDP(const uint8_t* aKey, const string& aCmd);
 	static bool decryptSUDP(const uint8_t* aKey, const ByteVector& aData, size_t aDataLen, string& result_);
 
@@ -87,7 +89,7 @@ private:
 	friend class Singleton<CryptoManager>;
 
 	CryptoManager();
-	~CryptoManager() final;
+	~CryptoManager() override;
 
 	ssl::SSL_CTX clientContext;
 	ssl::SSL_CTX clientVerContext;
