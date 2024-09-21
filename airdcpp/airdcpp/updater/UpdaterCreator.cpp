@@ -25,7 +25,7 @@
 #include <airdcpp/format.h>
 
 #include <airdcpp/AppUtil.h>
-#include <airdcpp/CryptoManager.h>
+#include <airdcpp/CryptoUtil.h>
 #include <airdcpp/File.h>
 #include <airdcpp/HashCalc.h>
 #include <airdcpp/PathUtil.h>
@@ -124,7 +124,7 @@ optional<ByteVector> UpdaterCreator::calculateFileSha1(const string& aVersionFil
 		return nullopt;
 	}
 
-	return CryptoManager::calculateSha1(aVersionFilePath);
+	return CryptoUtil::calculateSha1(aVersionFilePath);
 }
 
 bool UpdaterCreator::signVersionFile(const string& aVersionFilePath, const string& aPrivateKeyFilePath, const ErrorF& aErrorF, bool aMakeHeader) {
@@ -134,18 +134,17 @@ bool UpdaterCreator::signVersionFile(const string& aVersionFilePath, const strin
 		return false;
 	}
 
-	auto signatureData = signDigest(*versionSha1, aPrivateKeyFilePath, aErrorF);
+	// Sign
+	auto signatureData = CryptoUtil::signDigest(*versionSha1, aPrivateKeyFilePath);
 	if (!signatureData) {
+		aErrorF("Could not create signature");
 		return false;
 	}
 
 	auto& [sig, publicKey] = *signatureData;
-	if (aMakeHeader) {
-		writePublicKey(PathUtil::getFilePath(aVersionFilePath) + "pubkey.h", publicKey, aErrorF);
-	}
 
+	// Write signature file
 	try {
-		// Write signature file
 		File outSig(aVersionFilePath + ".sign", File::WRITE, File::TRUNCATE | File::CREATE);
 		outSig.write(sig.data(), sig.size());
 	} catch(const FileException&) {
@@ -153,68 +152,20 @@ bool UpdaterCreator::signVersionFile(const string& aVersionFilePath, const strin
 		return false;
 	}
 
-	auto isValid = CryptoManager::verifyDigest(*versionSha1, sig, publicKey.data(), publicKey.size());
+	// Assertion
+	auto isValid = CryptoUtil::verifyDigest(*versionSha1, sig, publicKey.data(), publicKey.size());
 	if (!isValid) {
 		dcassert(0);
 		aErrorF("Private key verification failed");
 		return false;
 	}
 
+	// Public key (optional)
+	if (aMakeHeader) {
+		writePublicKey(PathUtil::getFilePath(aVersionFilePath) + "pubkey.h", publicKey, aErrorF);
+	}
+
 	return true;
-}
-
-optional<UpdaterCreator::SignatureData> UpdaterCreator::signDigest(const ByteVector& aDigest, const string& aPrivateKeyFilePath, const ErrorF& aErrorF) {
-
-	FILE* f = dcpp_fopen(aPrivateKeyFilePath.c_str(), "r");
-	if (!f) {
-		aErrorF("Could not open private key file");
-		return nullopt;
-	}
-
-#define CHECK(n) if(!(n)) { aErrorF("Crypto error"); return nullopt; }
-
-	auto pkey = EVP_PKEY_new();
-	CHECK(PEM_read_PrivateKey(f, &pkey, nullptr, nullptr));
-	fclose(f);
-
-	if (!pkey) {
-		aErrorF("Could not read private key");
-		return nullopt;
-	}
-
-	auto ctx = EVP_PKEY_CTX_new(pkey, nullptr /* no engine */);
-	if (!ctx) {
-		CHECK(0);
-	}
-
-	CHECK(EVP_PKEY_sign_init(ctx));
-	CHECK(EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING));
-	CHECK(EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha1()));
-
-	// Determine buffer length
-	size_t siglen = 0;
-	CHECK(EVP_PKEY_sign(ctx, NULL, &siglen, &aDigest[0], aDigest.size()));
-
-
-	ByteVector sig(siglen);
-	CHECK(EVP_PKEY_sign(ctx, sig.data(), &siglen, &aDigest[0], aDigest.size()));
-
-	if (siglen <= 0) {
-		aErrorF("Could not generate signature");
-		return nullopt;
-	}
-
-	auto pubkeyBufferSize = i2d_PublicKey(pkey, NULL);
-	ByteVector publicKey(pubkeyBufferSize);
-
-	{
-		auto buf_ptr = publicKey.data();
-		CHECK(i2d_PublicKey(pkey, &buf_ptr));
-	}
-
-	EVP_PKEY_free(pkey);
-	EVP_PKEY_CTX_free(ctx);
-	return SignatureData({ sig, publicKey });
 }
 
 bool UpdaterCreator::writePublicKey(const string& aOutputPath, const ByteVector& aPubKey, const ErrorF& aErrorF) noexcept {

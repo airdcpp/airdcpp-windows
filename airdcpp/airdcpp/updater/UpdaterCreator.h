@@ -51,7 +51,7 @@ private:
 
 	using SignatureData = pair<ByteVector, ByteVector>;
 
-	static optional<SignatureData> signDigest(const ByteVector& aDigest, const string& aPrivateKeyFilePath, const ErrorF& aErrorF);
+	static optional<SignatureData> signDigest(const ByteVector& aDigest, const string& aPrivateKeyFilePath);
 };
 
 #endif

@@ -20,9 +20,7 @@
 #include "UpdateManager.h"
 #include "UpdateDownloader.h"
 
-#include <openssl/rsa.h>
-
-#include "CryptoManager.h"
+#include "CryptoUtil.h"
 #include "GeoManager.h"
 #include "HashCalc.h"
 #include "HttpDownload.h"
@@ -92,7 +90,7 @@ void UpdateManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 }
 
 bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVector& aSignature) {
-	auto digest = CryptoManager::calculateSha1(aVersionData);
+	auto digest = CryptoUtil::calculateSha1(aVersionData);
 	if (!digest) {
 		return false;
 	}
@@ -100,7 +98,7 @@ bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVect
 	const uint8_t* key = UpdateManager::publicKey;
 	auto keySize = sizeof(UpdateManager::publicKey);
 
-	return CryptoManager::verifyDigest(*digest, aSignature, key, keySize);
+	return CryptoUtil::verifyDigest(*digest, aSignature, key, keySize);
 }
 
 void UpdateManager::completeSignatureDownload(bool aManualCheck) {

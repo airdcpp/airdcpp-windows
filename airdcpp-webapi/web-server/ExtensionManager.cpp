@@ -25,7 +25,7 @@
 #include <web-server/WebServerManager.h>
 #include <web-server/WebSocket.h>
 
-#include <airdcpp/CryptoManager.h>
+#include <airdcpp/CryptoUtil.h>
 #include <airdcpp/Encoder.h>
 #include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
@@ -342,7 +342,7 @@ namespace webserver {
 			return true;
 		}
 
-		auto calculatedSha1 = CryptoManager::calculateSha1(aData);
+		auto calculatedSha1 = CryptoUtil::calculateSha1(aData);
 		if (calculatedSha1) {
 			char mdString[SHA_DIGEST_LENGTH * 2 + 1];
 			for (int i = 0; i < SHA_DIGEST_LENGTH; i++)
