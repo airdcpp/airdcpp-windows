@@ -5,10 +5,14 @@ Changed:
 - Change the license to GPLv3
 - Allow the operating system to choose the default listening ports instead of assigning random ones
 - Let the operating system choose the correct file explorer when using "Open folder" (https://github.com/airdcpp-web/airdcpp-webclient/issues/461)
-- Fix the "engname" country format param (https://github.com/airdcpp/airdcpp-windows/issues/88)
 - Add timestamps in the CDM debug frame
 - Lower the default minimum search interval
 - Lower the auto reconnect delay on severe flood
+
+Fixed:
+
+- Show a proper error message for unclean TLS connection closures
+- Fix the "engname" country format param (https://github.com/airdcpp/airdcpp-windows/issues/88)
 
 
 4.21
