@@ -20,6 +20,7 @@
 #define DCPLUSPLUS_WEBSERVER_LISTVIEW_H
 
 #include <web-server/JsonUtil.h>
+#include <web-server/Session.h>
 #include <web-server/SessionListener.h>
 #include <web-server/Timer.h>
 #include <web-server/WebServerManager.h>

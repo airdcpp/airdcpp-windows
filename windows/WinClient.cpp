@@ -43,6 +43,7 @@
 #include <web-server/ExtensionManager.h>
 #include <web-server/NpmRepository.h>
 #include <web-server/WebServerManager.h>
+#include <web-server/WebServerSettings.h>
 
 #include <future>
 

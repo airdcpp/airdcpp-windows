@@ -40,7 +40,7 @@ public:
 	typedef MDITabChildWindowImpl<ExtensionsFrame> baseClass;
 
 	ExtensionsFrame();
-	~ExtensionsFrame() { };
+	~ExtensionsFrame() = default;
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("ExtensionsFrame"), IDR_EXTENSIONS, 0, COLOR_3DFACE);
 
@@ -50,7 +50,7 @@ public:
 		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, LVN_COLUMNCLICK, ctrlList.onColumnClick)
 		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, LVN_GETINFOTIP, ctrlList.onInfoTip)
 		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, LVN_ITEMCHANGED, onItemChanged)
-		// NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_DBLCLK, onDoubleClick)
+		// NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, NM_CUSTOMDRAW, onCustomDraw)
 
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
@@ -129,11 +129,11 @@ private:
 
 	class ItemInfo {
 	public:
-		ItemInfo(const webserver::ExtensionPtr& aExtension) : ext(aExtension) { }
+		explicit ItemInfo(const webserver::ExtensionPtr& aExtension) : ext(aExtension) { }
 		ItemInfo(const string& aName, const string& aDescription, const string& aVersion, const string& aHomepage) { 
 			setCatalogItem(aName, aDescription, aVersion, aHomepage);
 		}
-		~ItemInfo() { }
+		~ItemInfo() = default;
 
 		const string& getName() const noexcept;
 		const string& getDescription() const noexcept;
@@ -152,12 +152,11 @@ private:
 
 		webserver::ExtensionPtr ext = nullptr;
 		unique_ptr<ExtensionCatalogItem> catalogItem = nullptr;
-	private:
 	};
 
-	typedef unordered_map<string, unique_ptr<ItemInfo>> ItemInfoMap;
+	using ItemInfoMap = unordered_map<string, unique_ptr<ItemInfo>>;
 	ItemInfoMap itemInfos;
-	typedef vector<const ItemInfo*> ItemInfoList;
+	using ItemInfoList = vector<const ItemInfo *>;
 
 	enum {
 		COLUMN_FIRST,
@@ -208,7 +207,6 @@ private:
 
 	CButton ctrlInstall, ctrlActions, ctrlReadMore, ctrlReload, ctrlOptions, ctrlConfigure;
 
-	string getData(const string& aData, const string& aEntry, size_t& pos) noexcept;
 	void updateStatusAsync(const tstring& aMessage, uint8_t aSeverity) noexcept;
 
 	unique_ptr<HttpDownload> httpDownload;

@@ -26,6 +26,8 @@
 #include "WebserverPage.h"
 #include "WebUserDlg.h"
 
+#include <web-server/FileServer.h>
+#include <web-server/HttpManager.h>
 #include <web-server/WebServerSettings.h>
 #include <web-server/WebUserManager.h>
 
@@ -206,7 +208,7 @@ LRESULT WebServerPage::onServerState(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	} else {
 		lastError.clear();
 
-		MainFrame::getMainFrame()->addThreadedTask([this] {
+		MainFrame::getMainFrame()->addThreadedTask([] {
 			webserver::WebServerManager::getInstance()->stop();
 		});
 	}
@@ -215,18 +217,18 @@ LRESULT WebServerPage::onServerState(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 void WebServerPage::on(webserver::WebServerManagerListener::Started) noexcept {
-	callAsync([=] {
+	callAsync([this] {
 		updateState(STATE_STARTED);
 	});
 }
 void WebServerPage::on(webserver::WebServerManagerListener::Stopped) noexcept {
-	callAsync([=] {
+	callAsync([this] {
 		updateState(STATE_STOPPED);
 	});
 }
 
 void WebServerPage::on(webserver::WebServerManagerListener::Stopping) noexcept {
-	callAsync([=] {
+	callAsync([this] {
 		updateState(STATE_STOPPING);
 	});
 }
@@ -283,7 +285,7 @@ LRESULT WebServerPage::onRemoveUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 void WebServerPage::setLastError(const string& aError) noexcept {
-	callAsync([=] {
+	callAsync([aError, this] {
 		lastError = Text::toT(aError);
 	});
 }
@@ -299,7 +301,7 @@ LRESULT WebServerPage::onSelChange(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHa
 	return 0;
 }
 LRESULT WebServerPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
-	NMLVKEYDOWN* kd = (NMLVKEYDOWN*)pnmh;
+	auto kd = (NMLVKEYDOWN*)pnmh;
 	switch (kd->wVKey) {
 	case VK_INSERT:
 		PostMessage(WM_COMMAND, IDC_WEBSERVER_ADD_USER, 0);
@@ -314,7 +316,7 @@ LRESULT WebServerPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 }
 
 LRESULT WebServerPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	NMITEMACTIVATE* item = (NMITEMACTIVATE*)pnmh;
+	auto item = (NMITEMACTIVATE*)pnmh;
 
 	if (item->iItem >= 0) {
 		PostMessage(WM_COMMAND, IDC_WEBSERVER_CHANGE, 0);
@@ -337,7 +339,7 @@ void WebServerPage::updateState(ServerState aNewState) noexcept {
 
 		statusText += TSTRING(WEB_SERVER_RUNNING);
 
-		if (File::isDirectory(webMgr->getResourcePath())) {
+		if (File::isDirectory(webMgr->getHttpManager().getFileServer().getResourcePath())) {
 			statusText += _T(". ") + TSTRING_F(WEB_UI_ACCESS_URL, Text::toT(webMgr->getLocalServerHttpUrl()));
 		}
 	} else if(aNewState == STATE_STOPPING) {
@@ -376,13 +378,13 @@ void WebServerPage::addListItem(const webserver::WebUserPtr& aUser) noexcept {
 webserver::WebUserList::iterator WebServerPage::getListUser(int aPos) noexcept {
 	auto data = reinterpret_cast<webserver::WebUser*>(ctrlWebUsers.GetItemData(aPos));
 
-	return find_if(webUserList.begin(), webUserList.end(), [&data](const webserver::WebUserPtr& aUser) { 
+	return ranges::find_if(webUserList, [&data](const webserver::WebUserPtr& aUser) { 
 		return aUser.get() == data; 
 	});
 }
 
 Dispatcher::F WebServerPage::getThreadedTask() {
-	return Dispatcher::F([=] {
+	return Dispatcher::F([this] {
 		const auto errorF = [](const string& aError) {
 			LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR, STRING(WEB_SERVER));
 		};
@@ -391,10 +393,10 @@ Dispatcher::F WebServerPage::getThreadedTask() {
 
 		if (needsRestartTask) {
 			if (webMgr->isRunning()) {
-				webMgr->getInstance()->stop();
+				webMgr->stop();
 			}
 
-			webMgr->getInstance()->start(errorF);
+			webMgr->start(errorF);
 		}
 	});
 }

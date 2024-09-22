@@ -25,6 +25,9 @@
 #include "BrowseDlg.h"
 #include "WinUtil.h"
 
+#include <airdcpp/Text.h>
+#include <airdcpp/Util.h>
+
 #include <api/common/SettingUtils.h>
 #include <web-server/JsonUtil.h>
 #include <web-server/WebServerManager.h>

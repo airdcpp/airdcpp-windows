@@ -90,10 +90,13 @@ namespace webserver {
 		}
 
 		void reportError(const string& aError) noexcept;
+		bool isTimeout(uint64_t aTick) const noexcept;
 	private:
 		const uint64_t maxInactivity;
 		const time_t started;
+
 		uint64_t lastActivity;
+		bool hasSocket = false;
 
 		const LocalSessionId id;
 		const std::string token;

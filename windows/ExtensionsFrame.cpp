@@ -32,6 +32,8 @@
 #include <airdcpp/ScopedFunctor.h>
 
 #include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerSettings.h>
+
 #include <api/common/SettingUtils.h>
 
 namespace wingui {
@@ -108,7 +110,7 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	getExtensionManager().addListener(this);
 	initLocalExtensions();
 
-	callAsync([=] {
+	callAsync([this] {
 		updateList(); 
 		downloadExtensionList(); 
 	});
@@ -182,12 +184,11 @@ const string& ExtensionsFrame::ItemInfo::getDescription() const noexcept {
 }
 
 void ExtensionsFrame::ItemInfo::setCatalogItem(const string& aName, const string& aDescription, const string& aVersion, const string& aHomepage) noexcept {
-	catalogItem = make_unique<ExtensionCatalogItem>(ExtensionCatalogItem({
-		aName,
+	catalogItem = make_unique<ExtensionCatalogItem>(aName,
 		aDescription,
 		aVersion,
 		aHomepage
-	}));
+	);
 }
 
 bool ExtensionsFrame::ItemInfo::hasUpdate() const noexcept {
@@ -640,16 +641,7 @@ void ExtensionsFrame::onExtensionInfoDownloaded() noexcept {
 	}
 
 }
-string ExtensionsFrame::getData(const string& aData, const string& aEntry, size_t& pos) noexcept {
-	pos = aData.find(aEntry, pos);
-	if (pos == string::npos)
-		return Util::emptyString;
 
-	pos += aEntry.length();
-	size_t iend = aData.find(",", pos);
-	return aData.substr(pos, iend-1 - pos);
-
-}
 LRESULT ExtensionsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!closed) {
 		SettingsManager::getInstance()->removeListener(this);
@@ -780,7 +772,7 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionAdded, co
 		if (i == itemInfos.end()) {
 			itemInfos.emplace(e->getName(), make_unique<ItemInfo>(e));
 		} else {
-			auto& ii = i->second;
+			const auto& ii = i->second;
 			ii->ext = e;
 		}
 
@@ -793,7 +785,7 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionStateUpda
 	callAsync([this, extensionName = aExtension->getName()] {
 		auto i = itemInfos.find(extensionName);
 		if (i != itemInfos.end()) {
-			auto& ii = i->second;
+			const auto& ii = i->second;
 			updateEntry(ii.get());
 		}
 
