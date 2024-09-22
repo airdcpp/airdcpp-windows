@@ -8,11 +8,22 @@ Changed:
 - Add timestamps in the CDM debug frame
 - Lower the default minimum search interval
 - Lower the auto reconnect delay on severe flood
+- Idle (finished) download connections can now be forced
 
 Fixed:
 
 - Show a proper error message for unclean TLS connection closures
+- Fix possible issues with duplicate CIDs being generated for different clients
+- Ensure that the hub column stays up-to-date for transfer
+- Don't attempt to start filelist downloads via an incorrect hub when the user comes online
+- Filelist-related bug and crash fixes
+- Fix an incorrect error message when removing NAT-PMP port mappings
+- Add/remove port mappings when the auto detection mode is enabled/disabled
 - Fix the "engname" country format param (https://github.com/airdcpp/airdcpp-windows/issues/88)
+
+Removed:
+
+- Partial file sharing is no longer supported in NMDC hubs
 
 
 4.21
