@@ -25,6 +25,7 @@
 #include <web-server/ExtensionManager.h>
 #include <web-server/HttpManager.h>
 #include <web-server/SocketManager.h>
+#include <web-server/Timer.h>
 #include <web-server/WebServerSettings.h>
 #include <web-server/WebUserManager.h>
 

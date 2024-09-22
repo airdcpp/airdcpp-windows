@@ -19,6 +19,8 @@
 #include "stdinc.h"
 
 #include <web-server/WebUserManager.h>
+
+#include <web-server/Timer.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
 

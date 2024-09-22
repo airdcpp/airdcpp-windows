@@ -26,7 +26,6 @@
 #include <airdcpp/Speaker.h>
 
 #include <web-server/Session.h>
-#include <web-server/Timer.h>
 #include <web-server/WebServerManagerListener.h>
 #include <web-server/WebUserManagerListener.h>
 #include <web-server/WebUser.h>

@@ -24,6 +24,7 @@
 #include <api/common/FileSearchParser.h>
 
 #include <web-server/WebServerSettings.h>
+#include <web-server/WebUser.h>
 
 #include <airdcpp/QueueAddInfo.h>
 #include <airdcpp/ClientManager.h>
