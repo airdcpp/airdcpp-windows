@@ -203,7 +203,9 @@ public:
 	static bool getVersionInfo(OSVERSIONINFOEX& ver);
 
 	static COLORREF getDupeColor(DupeType aType);
+	static COLORREF getDupeBackgroundColor(DupeType aType);
 	static pair<COLORREF, COLORREF> getDupeColors(DupeType aType);
+
 	static COLORREF blendColors(COLORREF aForeGround, COLORREF aBackGround);
 
 	static void showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force = false);

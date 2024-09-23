@@ -257,29 +257,4 @@ void ListLoader::runHooksRecursive(const DirectoryListing::DirectoryPtr& aDir) n
 	}
 }
 
-/*DupeType ListLoader::checkDupesRecursive(const DirectoryListing::DirectoryPtr& aDir) noexcept {
-	if (aDir->getType() == DirectoryListing::Directory::TYPE_NORMAL) {
-		// The content is known
-		set<DupeType> dupeSet;
-
-		for (const auto& d : aDir->directories | views::values) {
-			dupeSet.emplace(checkDupesRecursive(d));
-		}
-
-		for (const auto& f : aDir->files) {
-			auto fileDupe = DupeUtil::checkFileDupe(f->getTTH());
-			f->setDupe(fileDupe);
-			dupeSet.emplace(fileDupe);
-		}
-
-		aDir->setDupe(DupeUtil::parseDirectoryContentDupe(dupeSet));
-	}
-	else {
-		// Content unknown
-		aDir->setDupe(DupeUtil::checkAdcDirectoryDupe(aDir->getAdcPathUnsafe(), aDir->getPartialSize()));
-	}
-
-	return aDir->getDupe();
-}*/
-
 } // namespace dcpp

@@ -145,13 +145,13 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 	TextStyles[ TS_DUPE_SHARE ].Init(this, settings, 
 		STRING(PROPPAGE_DUPE_SHARE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
-		SettingsManager::TEXT_DUPE_BACK_COLOR, SettingsManager::DUPE_COLOR,
+		SettingsManager::TEXT_SHARE_DUPE_BACK_COLOR, SettingsManager::SHARE_DUPE_COLOR,
 		SettingsManager::TEXT_DUPE_BOLD, SettingsManager::TEXT_DUPE_ITALIC
 	);
 
 	TextStyles[ TS_DUPE_QUEUE ].Init(this, settings, 
 		STRING(PROPPAGE_DUPE_QUEUE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
-		SettingsManager::TEXT_QUEUE_BACK_COLOR, SettingsManager::QUEUE_COLOR,
+		SettingsManager::TEXT_QUEUE_DUPE_BACK_COLOR, SettingsManager::QUEUE_DUPE_COLOR,
 		SettingsManager::TEXT_QUEUE_BOLD, SettingsManager::TEXT_QUEUE_ITALIC
 	);
 
@@ -515,8 +515,8 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 		importData("TextURLForeColor", TEXT_URL_FORE_COLOR);
 		importData("TextURLBold", TEXT_URL_BOLD);
 		importData("TextURLItalic", TEXT_URL_ITALIC);
-		importData("TextDupeBackColor", TEXT_DUPE_BACK_COLOR);
-		importData("TextDupeColor", DUPE_COLOR);
+		importData("TextDupeBackColor", TEXT_SHARE_DUPE_BACK_COLOR);
+		importData("TextDupeColor", SHARE_DUPE_COLOR);
 		importData("TextDupeBold", TEXT_DUPE_BOLD);
 		importData("TextDupeItalic", TEXT_DUPE_ITALIC);
 		importData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
@@ -550,8 +550,8 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 		importData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
 		importData("UnderlineLinks", UNDERLINE_LINKS);
 		importData("UnderlineDupes", UNDERLINE_DUPES);
-		importData("TextQueueBackColor", TEXT_QUEUE_BACK_COLOR);
-		importData("QueueColor", QUEUE_COLOR);
+		importData("TextQueueBackColor", TEXT_QUEUE_DUPE_BACK_COLOR);
+		importData("QueueColor", QUEUE_DUPE_COLOR);
 		importData("TextQueueBold", TEXT_QUEUE_BOLD);
 		importData("TextQueueItalic", TEXT_QUEUE_ITALIC);
 		importData("UnderlineQueue", UNDERLINE_QUEUE);
@@ -698,12 +698,12 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 	exportData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
 	exportData("UnderlineLinks", UNDERLINE_LINKS);
 	exportData("UnderlineDupes", UNDERLINE_DUPES);
-	exportData("TextDupeBackColor", TEXT_DUPE_BACK_COLOR);
-	exportData("TextDupeColor", DUPE_COLOR);
+	exportData("TextDupeBackColor", TEXT_SHARE_DUPE_BACK_COLOR);
+	exportData("TextDupeColor", SHARE_DUPE_COLOR);
 	exportData("TextDupeBold", TEXT_DUPE_BOLD);
 	exportData("TextDupeItalic", TEXT_DUPE_ITALIC);
-	exportData("TextQueueBackColor", TEXT_QUEUE_BACK_COLOR);
-	exportData("QueueColor", QUEUE_COLOR);
+	exportData("TextQueueBackColor", TEXT_QUEUE_DUPE_BACK_COLOR);
+	exportData("QueueColor", QUEUE_DUPE_COLOR);
 	exportData("TextQueueBold", TEXT_QUEUE_BOLD);
 	exportData("TextQueueItalic", TEXT_QUEUE_ITALIC);
 	exportData("UnderlineQueue", UNDERLINE_QUEUE);

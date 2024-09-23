@@ -197,7 +197,7 @@ string DupeUtil::getTitle(const string& searchTerm) noexcept {
 }
 
 DupeType DupeUtil::parseDirectoryContentDupe(const DupeSet& aDupeSet) noexcept {
-	if (ranges::all_of(aDupeSet, [](auto d) { return d == DupeType::DUPE_NONE; })) {
+	if (aDupeSet.empty() || ranges::all_of(aDupeSet, [](auto d) { return d == DupeType::DUPE_NONE; })) {
 		// None
 		return DUPE_NONE;
 	}
@@ -216,20 +216,32 @@ DupeType DupeUtil::parseDirectoryContentDupe(const DupeSet& aDupeSet) noexcept {
 	}
 
 	// Partial dupes
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isShareDupe(d) || DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isShareDupe(d) || d == DupeType::DUPE_NONE; })) {
 		return DUPE_SHARE_PARTIAL;
 	}
 
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueDupe(d) || DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueDupe(d) || d == DupeType::DUPE_NONE; })) {
 		return DUPE_QUEUE_PARTIAL;
 	}
 
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || d == DupeType::DUPE_NONE; })) {
 		return DUPE_FINISHED_PARTIAL;
 	}
 
 	// Mixed
-	return DUPE_SHARE_QUEUE;
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || DupeUtil::isQueueDupe(d) || d == DUPE_QUEUE_FINISHED || d == DupeType::DUPE_NONE; })) {
+		return DUPE_QUEUE_FINISHED;
+	}
+
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || DupeUtil::isShareDupe(d) || d == DUPE_SHARE_FINISHED || d == DupeType::DUPE_NONE; })) {
+		return DUPE_SHARE_FINISHED;
+	}
+
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueDupe(d) || DupeUtil::isShareDupe(d) || d == DUPE_SHARE_QUEUE || d == DupeType::DUPE_NONE; })) {
+		return DUPE_SHARE_QUEUE;
+	}
+
+	return DUPE_SHARE_QUEUE_FINISHED;
 }
 
 }

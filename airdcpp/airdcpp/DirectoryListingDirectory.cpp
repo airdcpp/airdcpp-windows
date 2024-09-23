@@ -311,22 +311,25 @@ bool DirectoryListing::File::isInQueue() const noexcept {
 }
 
 DupeType DirectoryListing::Directory::checkDupesRecursive() noexcept {
-	if (type == TYPE_NORMAL) {
-		// The content is known
-		set<DupeType> dupeSet;
+	// Go through the files even if the directory is incomplete 
+	// (some of the children may still be available)
+	DupeUtil::DupeSet dupeSet;
 
-		for (const auto& d : directories | views::values) {
-			dupeSet.emplace(d->checkDupesRecursive());
-		}
+	// Children
+	for (const auto& d : directories | views::values) {
+		dupeSet.emplace(d->checkDupesRecursive());
+	}
 
-		for (const auto& f : files) {
-			auto fileDupe = DupeUtil::checkFileDupe(f->getTTH());
-			f->setDupe(fileDupe);
-			dupeSet.emplace(fileDupe);
-		}
+	// Files
+	for (const auto& f : files) {
+		auto fileDupe = DupeUtil::checkFileDupe(f->getTTH());
+		f->setDupe(fileDupe);
+		dupeSet.emplace(fileDupe);
+	}
 
-		setDupe(DupeUtil::parseDirectoryContentDupe(dupeSet));
-	} else {
+	setDupe(DupeUtil::parseDirectoryContentDupe(dupeSet));
+
+	if (dupe == DUPE_NONE && !isComplete()) {
 		// Content unknown
 		setDupe(DupeUtil::checkAdcDirectoryDupe(getAdcPathUnsafe(), partialSize));
 	}

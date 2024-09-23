@@ -671,7 +671,9 @@ void DirectoryListingFrame::convertToFull() {
 		try {
 			auto listData = FilelistAddData(dl->getHintedUser(), this, ADC_ROOT_STR);
 			QueueManager::getInstance()->addListHooked(listData, QueueItem::FLAG_CLIENT_VIEW);
-		} catch (...) {}
+		} catch (const Exception& e) {
+			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+		}
 	});
 }
 
@@ -2369,7 +2371,9 @@ void DirectoryListingFrame::onComboSelChanged(bool aUserChange) {
 								auto flags = (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW;
 								auto listData = FilelistAddData(HintedUser(dl->getUser(), newHub.hubUrl), this, ADC_ROOT_STR);
 								QueueManager::getInstance()->addListHooked(listData, flags);
-							} catch (...) {}
+							} catch (const Exception& e) {
+								ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+							}
 						});
 					}
 				}

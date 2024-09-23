@@ -33,7 +33,6 @@ namespace dcpp {
 
 class SearchQuery;
 
-class DirectoryListing::Directory;
 class DirectoryListing::File: public boost::noncopyable {
 
 public:

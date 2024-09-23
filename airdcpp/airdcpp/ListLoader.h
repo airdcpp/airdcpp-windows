@@ -43,7 +43,6 @@ public:
 	int getLoadedDirs() const noexcept { return dirsLoaded; }
 private:
 	void runHooksRecursive(const DirectoryListing::DirectoryPtr& aDir) noexcept;
-	// DupeType checkDupesRecursive(const DirectoryListing::DirectoryPtr& aDir) noexcept;
 
 	static DirectoryListing::Directory::DirType parseDirectoryType(bool aIncomplete, const DirectoryContentInfo& aContentInfo) noexcept;
 	static void validateName(const string_view& aName);

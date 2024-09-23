@@ -345,7 +345,7 @@ void DirectoryListing::getLocalPathsUnsafe(const DirectoryPtr& d, StringList& re
 	return d->getLocalPathsUnsafe(ret, getShareProfile());
 }
 
-void DirectoryListing::checkShareDupes() noexcept {
+void DirectoryListing::checkDupes() noexcept {
 	root->checkDupesRecursive();
 	root->setDupe(DUPE_NONE); //never show the root as a dupe or partial dupe.
 }
@@ -459,7 +459,7 @@ void DirectoryListing::loadFileImpl(const string& aInitialDir) {
 
 void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aLoadedPath, const string& aCurrentPath, bool aBackgroundTask) noexcept {
 	if (!isOwnList && SETTING(DUPES_IN_FILELIST) && isClientView) {
-		checkShareDupes();
+		checkDupes();
 	}
 
 	auto loadedDir = findDirectoryUnsafe(aLoadedPath);

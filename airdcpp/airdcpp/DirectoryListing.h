@@ -235,7 +235,7 @@ private:
 	HintedUser hintedUser;
 	bool read = false;
 
-	void checkShareDupes() noexcept;
+	void checkDupes() noexcept;
 	void onLoadingFinished(int64_t aStartTime, const string& aLoadedPath, const string& aCurrentPath, bool aBackgroundTask) noexcept;
 
 	DispatcherQueue tasks;

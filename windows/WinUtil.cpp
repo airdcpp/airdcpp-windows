@@ -519,8 +519,8 @@ void WinUtil::initColors() {
 		m_TextStyleURL.dwMask |= CFE_UNDERLINE;
 
 	m_TextStyleDupe = cf;
-	m_TextStyleDupe.crBackColor = SETTING(TEXT_DUPE_BACK_COLOR);
-	m_TextStyleDupe.crTextColor = SETTING(DUPE_COLOR);
+	m_TextStyleDupe.crBackColor = SETTING(TEXT_SHARE_DUPE_BACK_COLOR);
+	m_TextStyleDupe.crTextColor = SETTING(SHARE_DUPE_COLOR);
 	m_TextStyleDupe.dwEffects = CFE_LINK | CFE_UNDERLINE;
 	if(SETTING(TEXT_DUPE_BOLD))
 		m_TextStyleDupe.dwEffects |= CFE_BOLD;
@@ -530,8 +530,8 @@ void WinUtil::initColors() {
 		m_TextStyleDupe.dwMask |= CFE_UNDERLINE;
 
 	m_TextStyleQueue = cf;
-	m_TextStyleQueue.crBackColor = SETTING(TEXT_QUEUE_BACK_COLOR);
-	m_TextStyleQueue.crTextColor = SETTING(QUEUE_COLOR);
+	m_TextStyleQueue.crBackColor = SETTING(TEXT_QUEUE_DUPE_BACK_COLOR);
+	m_TextStyleQueue.crTextColor = SETTING(QUEUE_DUPE_COLOR);
 	m_TextStyleQueue.dwEffects = CFE_LINK | CFE_UNDERLINE;
 	if(SETTING(TEXT_QUEUE_BOLD))
 		m_TextStyleQueue.dwEffects |= CFE_BOLD;
@@ -1229,43 +1229,58 @@ void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF tex
 /* Only returns the text color */
 COLORREF WinUtil::getDupeColor(DupeType aType) {
 	if (aType == DUPE_SHARE_FULL) {
-		return SETTING(DUPE_COLOR);
+		return SETTING(SHARE_DUPE_COLOR);
 	} else if (aType == DUPE_FINISHED_FULL) {
-		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
+		return blendColors(SETTING(QUEUE_DUPE_COLOR), SETTING(BACKGROUND_COLOR));
 	} else if (aType == DUPE_FINISHED_PARTIAL) {
-		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
+		return blendColors(SETTING(QUEUE_DUPE_COLOR), SETTING(BACKGROUND_COLOR));
 	} else if (aType == DUPE_QUEUE_FULL) {
-		return SETTING(QUEUE_COLOR);
+		return SETTING(QUEUE_DUPE_COLOR);
 	} else if(aType == DUPE_SHARE_PARTIAL) {
-		return blendColors(SETTING(DUPE_COLOR), SETTING(BACKGROUND_COLOR));
+		return blendColors(SETTING(SHARE_DUPE_COLOR), SETTING(BACKGROUND_COLOR));
 	} else if(aType == DUPE_QUEUE_PARTIAL) {
-		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
-	} else if(aType == DUPE_SHARE_QUEUE) {
-		return blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR));
+		return blendColors(SETTING(QUEUE_DUPE_COLOR), SETTING(BACKGROUND_COLOR));
+	} else if (aType == DUPE_SHARE_FINISHED) {
+		return blendColors(blendColors(SETTING(QUEUE_DUPE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(SHARE_DUPE_COLOR));
+	} else if (aType == DUPE_QUEUE_FINISHED) {
+		return blendColors(blendColors(SETTING(QUEUE_DUPE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(QUEUE_DUPE_COLOR));
+	} else if (aType == DUPE_SHARE_QUEUE) {
+		return blendColors(SETTING(QUEUE_DUPE_COLOR), SETTING(SHARE_DUPE_COLOR));
+	} else if (aType == DUPE_SHARE_QUEUE_FINISHED) {
+		// Use the same for now
+		return blendColors(SETTING(QUEUE_DUPE_COLOR), SETTING(SHARE_DUPE_COLOR));
 	}
 
 	return SETTING(TEXT_COLOR);
 }
 
-/* Text + the background color */
-pair<COLORREF, COLORREF> WinUtil::getDupeColors(DupeType aType) {
+COLORREF WinUtil::getDupeBackgroundColor(DupeType aType) {
 	if (aType == DUPE_SHARE_FULL) {
-		return make_pair(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR));
+		return SETTING(TEXT_SHARE_DUPE_BACK_COLOR);
 	} else if (aType == DUPE_FINISHED_FULL) {
-		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
+		return SETTING(TEXT_QUEUE_DUPE_BACK_COLOR);
 	} else if (aType == DUPE_FINISHED_PARTIAL) {
-		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
+		return SETTING(TEXT_QUEUE_DUPE_BACK_COLOR);
 	} else if (aType == DUPE_QUEUE_FULL) {
-		return make_pair(SETTING(QUEUE_COLOR), SETTING(TEXT_QUEUE_BACK_COLOR));
+		return SETTING(TEXT_QUEUE_DUPE_BACK_COLOR);
 	} else if(aType == DUPE_SHARE_PARTIAL) {
-		return make_pair(blendColors(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));
+		return SETTING(TEXT_SHARE_DUPE_BACK_COLOR);
 	} else if(aType == DUPE_QUEUE_PARTIAL) {
-		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(TEXT_QUEUE_BACK_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
-	} else if(aType == DUPE_SHARE_QUEUE) {
-		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));
+		return SETTING(TEXT_QUEUE_DUPE_BACK_COLOR);
+	} else if(aType == DUPE_SHARE_QUEUE || aType == DUPE_SHARE_QUEUE_FINISHED) {
+		return SETTING(TEXT_SHARE_DUPE_BACK_COLOR);
+	} else if (aType == DUPE_SHARE_FINISHED) {
+		return SETTING(TEXT_SHARE_DUPE_BACK_COLOR);
+	} else if (aType == DUPE_QUEUE_FINISHED) {
+		return SETTING(TEXT_QUEUE_DUPE_BACK_COLOR);
 	}
 
-	return make_pair(SETTING(TEXT_COLOR), SETTING(BACKGROUND_COLOR));
+	return SETTING(BACKGROUND_COLOR);
+}
+
+/* Text + the background color */
+pair<COLORREF, COLORREF> WinUtil::getDupeColors(DupeType aType) {
+	return make_pair(getDupeColor(aType), getDupeBackgroundColor(aType));
 }
 
 COLORREF WinUtil::blendColors(COLORREF aForeGround, COLORREF aBackGround) {
