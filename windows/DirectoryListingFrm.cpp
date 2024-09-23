@@ -217,13 +217,13 @@ bool DirectoryListingFrame::allowPopup() const {
 }
 
 DirectoryListingFrame::DirectoryListingFrame(const DirectoryListingPtr& aList) :
+	UserInfoBaseHandler(true, false),
 	treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),
-	browserBar(this, [this](const string& a, bool b) { handleHistoryClick(a, b); }, [this] { up(); }),
-	dl(aList), 
-	UserInfoBaseHandler(true, false), 
-	ctrlTree(this), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), 
-	ctrlFiles(this, COLUMN_LAST, [this] { callAsync([this] { filterList(); }); }, filterSettings, COLUMN_LAST),
+	ctrlTree(this), 
+	ctrlFiles(this, COLUMN_LAST, [this] { callAsync([this] { filterList(); }); }, filterSettings, COLUMN_LAST), 
+	browserBar(this, [this](const string& a, bool b) { handleHistoryClick(a, b); }, [this] { up(); }), dl(aList), 
+	selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP),
 	matchADL(SETTING(USE_ADLS) && !aList->getPartialList())
 {
 	dl->addListener(this);
@@ -259,9 +259,9 @@ void DirectoryListingFrame::enableBrowserLayout(bool redraw) {
 void DirectoryListingFrame::changeWindowState(bool aEnabled, bool redraw) {
 	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, aEnabled && !dl->isMyCID());
 	ctrlToolbar.EnableButton(IDC_MATCH_ADL, aEnabled);
-	ctrlToolbar.EnableButton(IDC_FIND, aEnabled && !dl->getIsOwnList());
-	ctrlToolbar.EnableButton(IDC_NEXT, aEnabled && dl->curSearch ? TRUE : FALSE);
-	ctrlToolbar.EnableButton(IDC_PREV, aEnabled && dl->curSearch ? TRUE : FALSE);
+	ctrlToolbar.EnableButton(IDC_FIND, aEnabled /* && !dl->getIsOwnList()*/);
+	ctrlToolbar.EnableButton(IDC_NEXT, aEnabled && search ? TRUE : FALSE);
+	ctrlToolbar.EnableButton(IDC_PREV, aEnabled && search ? TRUE : FALSE);
 	ctrlToolbar.EnableButton(IDC_FILELIST_DIFF, aEnabled && dl->getPartialList() && !dl->getIsOwnList() ? false : aEnabled);
 
 	browserBar.changeWindowState(aEnabled);
@@ -345,6 +345,22 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	});*/
 }
 
+bool DirectoryListingFrame::checkSearchDirectoryLoading(const string& aPath) noexcept {
+	auto searching = search && search->isCurrentSearchPath(aPath);
+	if (searching) {
+		ctrlFiles.filter.clear();
+	} else if (search) {
+		search.reset();
+	}
+
+	return searching;
+}
+
+void DirectoryListingFrame::onSearchDirectoryLoaded() noexcept {
+	findSearchHit(true);
+	updateStatus(TSTRING_F(X_RESULTS_FOUND, search->getResultCount()));
+}
+
 void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aPath, uint8_t aType) {
 
 	// Get ownership of all item infos so that they won't be deleted before we finish loading
@@ -369,9 +385,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aPat
 		if (!dl->getPartialList())
 			updateStatus(CTSTRING(UPDATING_VIEW));
 
-		auto searching = dl->isCurrentSearchPath(aPath);
-		if (searching)
-			ctrlFiles.filter.clear();
+		auto searching = checkSearchDirectoryLoading(aPath);
 
 		refreshTree(aPath, static_cast<DirectoryListing::DirectoryLoadType>(aType) != DirectoryListing::DirectoryLoadType::LOAD_CONTENT);
 
@@ -393,8 +407,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aPat
 			//notify the user that we've loaded the list
 			setDirty();
 		} else {
-			findSearchHit(true);
-			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
+			onSearchDirectoryLoaded();
 		}
 
 		if (getActive()) { //Don't let it steal focus from other windows
@@ -460,28 +473,31 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchStarted) noexcept
 	changeWindowState(false);
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept {
+void DirectoryListingFrame::onSearchFailed(bool aTimedOut) noexcept {
 	callAsync([=] {
 		tstring msg;
-		if (timedOut) {
+		if (aTimedOut) {
 			msg = dl->supportsASCH() ? TSTRING(SEARCH_TIMED_OUT) : TSTRING(NO_RESULTS_SPECIFIED_TIME);
-		} else {
+		}
+		else {
 			msg = TSTRING(NO_RESULTS_FOUND);
 		}
-		updateStatus(msg); 
+		updateStatus(msg);
 	});
 
+	search.reset();
 	changeWindowState(true);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool aTimedOut) noexcept {
+	onSearchFailed(aTimedOut);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aNewPath, uint8_t /*aChangeType*/) noexcept {
 	//dcdebug("DirectoryListingListener::ChangeDirectory %s\n", aDir.c_str());
 
-	auto searching = dl->isCurrentSearchPath(aNewPath);
 	callAsync([=] {
-		if (searching) {
-			ctrlFiles.filter.clear();
-		}
+		auto searching = checkSearchDirectoryLoading(aNewPath);
 
 		auto loadedTreeItem = selectItem(aNewPath);
 		if (loadedTreeItem) {
@@ -490,8 +506,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 		}
 
 		if (searching) {
-			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
-			findSearchHit(true);
+			onSearchDirectoryLoaded();
 		}
 	});
 
@@ -816,18 +831,32 @@ LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, B
 	return 0;
 }
 
-void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
-	auto& search = dl->curSearch;
-	if (!search)
-		return;
-
-	bool found = false;
-	if (!ctrlTree.getSelectedItemData()->dir->isComplete()) {
+void DirectoryListingFrame::findSearchHit(bool aNewDir /*false*/) {
+	if (!search) {
 		return;
 	}
 
+	const auto& searchQuery = search->curSearch;
+	if (!searchQuery)
+		return;
+
+	{
+		auto dir = ctrlTree.getSelectedItemData()->dir;
+		if (!dir->isComplete()) {
+			return;
+		}
+
+		if (!search->isCurrentSearchPath(dir->getAdcPathUnsafe())) {
+			//auto searchPath = search->getCurrentSearchPath();
+			//if (!searchPath.empty()) {
+			//	selectItem(searchPath);
+			//}
+			return;
+		}
+	}
+
 	// set the starting position for the search
-	if (newDir) {
+	if (aNewDir) {
 		searchPos = gotoPrev ? ctrlFiles.list.GetItemCount()-1 : 0;
 	} else if (gotoPrev) {
 		searchPos--;
@@ -835,16 +864,18 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 		searchPos++;
 	}
 
+	bool found = false;
+
 	// Check file names in list pane
 	while(searchPos < ctrlFiles.list.GetItemCount() && searchPos >= 0) {
 		const ItemInfo* ii = ctrlFiles.list.getItemData(searchPos);
 		if(ii->type == ItemInfo::FILE) {
-			if(search->matchesFile(ii->file->getName(), ii->file->getSize(), ii->file->getRemoteDate(), ii->file->getTTH())) {
+			if(searchQuery->matchesFile(ii->file->getName(), ii->file->getSize(), ii->file->getRemoteDate(), ii->file->getTTH())) {
 				found = true;
 				break;
 			}
-		} else if(ii->type == ItemInfo::DIRECTORY && search->matchesDirectory(ii->dir->getName())) {
-			if (search->matchesSize(ii->dir->getTotalSize(false))) {
+		} else if(ii->type == ItemInfo::DIRECTORY && searchQuery->matchesDirectory(ii->dir->getName())) {
+			if (searchQuery->matchesSize(ii->dir->getTotalSize(false))) {
 				found = true;
 				break;
 			}
@@ -870,8 +901,8 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 		updateStatus();
 	} else {
 		//move to next dir (if there are any)
-		dcassert(!newDir);
-		if (!dl->nextResult(gotoPrev)) {
+		dcassert(!aNewDir);
+		if (!search->nextResult(gotoPrev)) {
 			MessageBox(CTSTRING(NO_ADDITIONAL_MATCHES), CTSTRING(SEARCH_FOR_FILE));
 		}
 	}
@@ -910,7 +941,11 @@ void DirectoryListingFrame::onFind() {
 		s->path = getCurrentListPath();
 	}
 
-	dl->addSearchTask(s);
+	updateStatus(TSTRING(SEARCHING));
+	changeWindowState(false);
+
+	search = make_unique<DirectoryListingSearch>(dl, std::bind_front(&DirectoryListingFrame::onSearchFailed, this));
+	search->addSearchTask(s);
 }
 
 LRESULT DirectoryListingFrame::onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -945,7 +980,7 @@ void DirectoryListingFrame::updateStatus() noexcept {
 	updateStatus(ii->dir);
 }
 
-void DirectoryListingFrame::updateStatus(const DirectoryListing::Directory::Ptr& aCurrentDir) noexcept {
+void DirectoryListingFrame::updateStatus(const DirectoryListing::DirectoryPtr& aCurrentDir) noexcept {
 	if (updating || !ctrlStatus.IsWindow()) {
 		return;
 	}
@@ -1170,7 +1205,7 @@ void DirectoryListingFrame::insertItems(const string& aPath, const optional<stri
 	}
 }
 
-void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& d) {
+void DirectoryListingFrame::updateItems(const DirectoryListing::DirectoryPtr& d) {
 	ctrlFiles.list.SetRedraw(FALSE);
 	updating = true;
 	if (!itemInfos.contains(d->getAdcPathUnsafe())) {
@@ -1733,7 +1768,7 @@ void DirectoryListingFrame::handleOpenFile() {
 		}
 	});
 }
-void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) {
+void DirectoryListingFrame::openDupe(const DirectoryListing::DirectoryPtr& d) {
 	try {
 		StringList paths;
 		dl->getLocalPathsUnsafe(d, paths);
@@ -1745,7 +1780,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) 
 	}
 }
 
-void DirectoryListingFrame::openDupe(const DirectoryListing::File::Ptr& f, bool openDir) noexcept {
+void DirectoryListingFrame::openDupe(const DirectoryListing::FilePtr& f, bool openDir) noexcept {
 	try {
 		StringList paths;
 		dl->getLocalPathsUnsafe(f, paths);
@@ -2043,11 +2078,11 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 	}
 }
 
-DirectoryListingFrame::ItemInfo::ItemInfo(const DirectoryListing::File::Ptr& f) : type(FILE), file(f), name(Text::toT(f->getName())) { 
+DirectoryListingFrame::ItemInfo::ItemInfo(const DirectoryListing::FilePtr& f) : type(FILE), file(f), name(Text::toT(f->getName())) { 
 	//dcdebug("ItemInfo (file) %s was created\n", f->getName().c_str());
 }
 
-DirectoryListingFrame::ItemInfo::ItemInfo(const DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {
+DirectoryListingFrame::ItemInfo::ItemInfo(const DirectoryListing::DirectoryPtr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {
 	//dcdebug("ItemInfo (directory) %s was created\n", d->getName().c_str());
 }
 

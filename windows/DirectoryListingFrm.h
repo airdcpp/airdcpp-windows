@@ -32,6 +32,7 @@
 #include <airdcpp/concurrency.h>
 #include <airdcpp/DirectoryListing.h>
 #include <airdcpp/DirectoryListingListener.h>
+#include <airdcpp/modules/DirectoryListingSearch.h>
 
 #include <airdcpp/User.h>
 #include <airdcpp/FastAlloc.h>
@@ -449,6 +450,10 @@ protected:
 	size_t getTotalListItemCount() const noexcept;
 
 private:
+	void onSearchFailed(bool aTimedOut) noexcept;
+	bool checkSearchDirectoryLoading(const string& aPath) noexcept;
+	void onSearchDirectoryLoaded() noexcept;
+
 	enum WindowState {
 		STATE_ENABLED,
 		STATE_DISABLED,
@@ -467,6 +472,8 @@ private:
 #ifdef _DEBUG
 	void validateTreeDebug();
 #endif
+
+	unique_ptr<DirectoryListingSearch> search;
 };
 
 }

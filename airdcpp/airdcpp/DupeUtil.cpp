@@ -196,4 +196,40 @@ string DupeUtil::getTitle(const string& searchTerm) noexcept {
 	return ret;
 }
 
+DupeType DupeUtil::parseDirectoryContentDupe(const DupeSet& aDupeSet) noexcept {
+	if (ranges::all_of(aDupeSet, [](auto d) { return d == DupeType::DUPE_NONE; })) {
+		// None
+		return DUPE_NONE;
+	}
+
+	// Full dupes
+	if (ranges::all_of(aDupeSet, [](auto d) { return d == DupeType::DUPE_SHARE_FULL; })) {
+		return DUPE_SHARE_FULL;
+	}
+
+	if (ranges::all_of(aDupeSet, [](auto d) { return d == DupeType::DUPE_QUEUE_FULL; })) {
+		return DUPE_QUEUE_FULL;
+	}
+
+	if (ranges::all_of(aDupeSet, [](auto d) { return d == DupeType::DUPE_FINISHED_FULL; })) {
+		return DUPE_FINISHED_FULL;
+	}
+
+	// Partial dupes
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isShareDupe(d) || DupeType::DUPE_NONE; })) {
+		return DUPE_SHARE_PARTIAL;
+	}
+
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueDupe(d) || DupeType::DUPE_NONE; })) {
+		return DUPE_QUEUE_PARTIAL;
+	}
+
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || DupeType::DUPE_NONE; })) {
+		return DUPE_FINISHED_PARTIAL;
+	}
+
+	// Mixed
+	return DUPE_SHARE_QUEUE;
+}
+
 }

@@ -60,8 +60,8 @@ public:
 	END_MSG_MAP();*/
 
 	LRESULT OnGetChildInfo(int /*idCtrl*/, NMHDR* pNMHDR, BOOL &bHandled) const noexcept {
-		NMTVDISPINFO *pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);
-		TVITEM* pItem = &(pDispInfo)->item;
+		auto pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);
+		TVITEM* pItem = &pDispInfo->item;
     
 		if ( pItem->mask & TVIF_CHILDREN ) {
 			pItem->cChildren = getChildrenState(pItem) > 0 ? 1 : 0 ;
@@ -81,8 +81,8 @@ public:
 	}
 
 	LRESULT OnGetItemDispInfo(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) const noexcept {
-		NMTVDISPINFO *pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);
-		TVITEM* pItem = &(pDispInfo)->item;
+		auto pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);
+		TVITEM* pItem = &pDispInfo->item;
     
 		if (pItem->mask & TVIF_TEXT) {
 			//pItem->mask |= TVIF_DI_SETITEM;
@@ -94,7 +94,7 @@ public:
 		}
 
 		if (pItem->mask & TVIF_SELECTEDIMAGE) {
-			pItem->iSelectedImage = parent->getIconIndex(((T*)pItem->lParam));
+			pItem->iSelectedImage = parent->getIconIndex((T*)pItem->lParam);
 		}
 
 		if ( pItem->mask & TVIF_CHILDREN) {
@@ -106,8 +106,8 @@ public:
 	}
 
 	LRESULT OnItemExpanding(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) noexcept {
-		NMTREEVIEW *pNMTreeView = (NMTREEVIEW*)pNMHDR;
-		if(pNMTreeView->action == TVE_COLLAPSE || pNMTreeView->action == TVE_COLLAPSERESET) {
+		auto pNMTreeView = (NMTREEVIEW*)pNMHDR;
+		if (pNMTreeView->action == TVE_COLLAPSE || pNMTreeView->action == TVE_COLLAPSERESET) {
 			//Get the currently selected item
 			auto selectedItemData = getSelectedItemData();
 			auto childSelected = false;
@@ -122,7 +122,7 @@ public:
 			auto collapse = childSelected && getChildrenState(&pNMTreeView->itemNew) == CHILDREN_PART_PENDING;
 			this->Expand(pNMTreeView->itemNew.hItem, collapse ? TVE_COLLAPSE | TVE_COLLAPSERESET : pNMTreeView->action);
 		} else if (pNMTreeView->action == TVE_EXPAND && !(pNMTreeView->itemNew.state & TVIS_EXPANDEDONCE)) {
-			T* curDir = (T*)pNMTreeView->itemNew.lParam;
+			auto curDir = (T*)pNMTreeView->itemNew.lParam;
 
 			ChildrenState state = parent->getChildrenState(curDir);
 			/* now create the children */
@@ -223,7 +223,6 @@ public:
 		// make sure that all tree subitems are removed and expand again if needed
 		this->Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
 		dcassert(!this->IsExpanded(ht));
-		// dcassert(!isExpanded || result != 0);
 
 		if (shouldExpand) {
 			this->Expand(ht);
@@ -245,7 +244,7 @@ private:
 
 	void getTreeItemPaths(HTREEITEM ht, StringList& paths_) const noexcept {
 		for (HTREEITEM child = this->GetChildItem(ht); child != NULL; child = this->GetNextSiblingItem(child)) {
-			T* d = (T*)this->GetItemData(child);
+			auto d = (T*)this->GetItemData(child);
 			auto path = d->getAdcPath();
 			paths_.push_back(path);
 
@@ -263,7 +262,7 @@ private:
 		}
 
 		for (HTREEITEM child = this->GetChildItem(ht); child != NULL; child = this->GetNextSiblingItem(child)) {
-			T* d = (T*)this->GetItemData(child);
+			auto d = (T*)this->GetItemData(child);
 			if (compare(d->getNameW(), aPath.substr(1, i - 1)) == 0) {
 				return findItem(child, aPath.substr(i), true);
 			}
