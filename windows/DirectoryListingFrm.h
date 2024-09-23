@@ -399,8 +399,7 @@ private:
 	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept override;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept override;
 	void on(DirectoryListingListener::Close) noexcept override;
-	void on(DirectoryListingListener::SearchStarted) noexcept override;
-	void on(DirectoryListingListener::SearchFailed, bool aTimedOut) noexcept override;
+
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, uint8_t aChangeType) noexcept override;
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept override;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept override;

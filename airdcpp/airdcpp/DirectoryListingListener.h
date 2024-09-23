@@ -34,9 +34,6 @@ public:
 	typedef X<3> QueueMatched;
 	typedef X<4> Close;
 
-	typedef X<5> SearchStarted;
-	typedef X<6> SearchFailed;
-
 	typedef X<7> ChangeDirectory;
 	typedef X<8> UpdateStatusMessage;
 	typedef X<9> RemovedQueue;
@@ -50,9 +47,6 @@ public:
 	virtual void on(LoadingStarted, bool /* changeDir */) noexcept { }
 	virtual void on(QueueMatched, const string&) noexcept { }
 	virtual void on(Close) noexcept { }
-
-	virtual void on(SearchStarted) noexcept { }
-	virtual void on(SearchFailed, bool) noexcept { }
 
 	virtual void on(ChangeDirectory, const string& /*aPath*/, uint8_t /*aChangeType*/) noexcept { }
 	virtual void on(UpdateStatusMessage, const string&) noexcept { }

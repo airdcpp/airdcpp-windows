@@ -468,11 +468,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::Close) noexcept {
 	callAsync([this] { PostMessage(WM_CLOSE, 0, 0); });
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::SearchStarted) noexcept {
-	callAsync([=] { updateStatus(TSTRING(SEARCHING)); });
-	changeWindowState(false);
-}
-
 void DirectoryListingFrame::onSearchFailed(bool aTimedOut) noexcept {
 	callAsync([=] {
 		tstring msg;
@@ -487,10 +482,6 @@ void DirectoryListingFrame::onSearchFailed(bool aTimedOut) noexcept {
 
 	search.reset();
 	changeWindowState(true);
-}
-
-void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool aTimedOut) noexcept {
-	onSearchFailed(aTimedOut);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aNewPath, uint8_t /*aChangeType*/) noexcept {
