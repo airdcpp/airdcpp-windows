@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}</ProjectGuid>
     <RootNamespace>webserver</RootNamespace>
-    <ProjectName>webapi</ProjectName>
+    <ProjectName>airdcpp-webapi</ProjectName>
     <UseNativeEnvironment>true</UseNativeEnvironment>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

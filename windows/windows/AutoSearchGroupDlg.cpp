@@ -1,0 +1,252 @@
+
+/*
+* Copyright (C) 2011-2024 AirDC++ Project
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*/
+
+#include <windows/stdafx.h>
+#include <airdcpp/modules/AutoSearchManager.h>
+
+#include <windows/WinUtil.h>
+#include <windows/AutoSearchGroupDlg.h>
+
+namespace wingui {
+LRESULT AsGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlGroups.Attach(GetDlgItem(IDC_GROUPS));
+
+	uint32_t width;
+	{
+		CRect rc;
+		ctrlGroups.GetClientRect(rc);
+		width = rc.Width() - 20; // for scroll
+	}
+
+	// Translate dialog
+	SetWindowText(CTSTRING(MANAGE_GROUPS));
+	SetDlgItemText(IDC_ADD, CTSTRING(ADD));
+	SetDlgItemText(IDC_REMOVE, CTSTRING(REMOVE));
+	SetDlgItemText(IDC_UPDATE, CTSTRING(UPDATE));
+	SetDlgItemText(IDCANCEL, CTSTRING(CLOSE));
+	SetDlgItemText(IDC_MOVE_UP, CTSTRING(MOVE_UP));
+	SetDlgItemText(IDC_MOVE_DOWN, CTSTRING(MOVE_DOWN));
+	SetDlgItemText(IDC_NAME_STATIC, CTSTRING(NAME));
+
+	ctrlGroups.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, WinUtil::percent(width, 100), 0);
+	ctrlGroups.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+
+	const auto groups = AutoSearchManager::getInstance()->getGroups();
+	for (auto i : groups) {
+		addItem(Text::toT(i),ctrlGroups.GetItemCount());
+	}
+	updateSelectedGroup(true);
+	return 0;
+}
+
+LRESULT AsGroupsDlg::onClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	save();
+	ctrlGroups.Detach();
+	EndDialog(FALSE);
+	return 0;
+}
+
+LRESULT AsGroupsDlg::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	updateSelectedGroup();
+	return 0;
+}
+
+void AsGroupsDlg::save() {
+	vector<string> groups;
+
+	for (int i = 0; i < ctrlGroups.GetItemCount(); ++i) {
+		groups.emplace_back(Text::fromT(getText(0, i)));
+	}
+	AutoSearchManager::getInstance()->setGroups(groups);
+	AutoSearchManager::getInstance()->save();
+}
+
+int AsGroupsDlg::findGroup(LPCTSTR name) {
+	TCHAR buf[4096] = { 0 };
+	for (int i = 0; i < ctrlGroups.GetItemCount(); ++i) {
+		ctrlGroups.GetItemText(i, 0, buf, 4096);
+		if (wcscmp(buf, name) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void AsGroupsDlg::addItem(const tstring& name, int pos, bool select /*= false*/) {
+	int32_t item = ctrlGroups.InsertItem(pos, name.c_str());
+	if (select)
+		ctrlGroups.SelectItem(item);
+}
+
+bool AsGroupsDlg::getItem(tstring& name, bool checkSel) {
+	{
+		CEdit wnd;
+		wnd.Attach(GetDlgItem(IDC_NAME));
+		name = WinUtil::getEditText(wnd);
+		wnd.Detach();
+		if (name.empty()) {
+			MessageBox(_T("You must enter a group name!"), CTSTRING(MANAGE_GROUPS), MB_ICONERROR);
+			return false;
+		}
+		else {
+			int32_t pos = findGroup(name.c_str());
+			if (pos != -1 && (checkSel == false || pos != ctrlGroups.GetSelectedIndex())) {
+				MessageBox(_T("Item already exists!"), CTSTRING(MANAGE_GROUPS), MB_ICONERROR);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+tstring AsGroupsDlg::getText(int column, int item /*= -1*/) const {
+	tstring buf;
+	int32_t selection = item == -1 ? ctrlGroups.GetSelectedIndex() : item;
+	if (selection >= 0) {
+		buf.resize(4096);
+		buf.resize(ctrlGroups.GetItemText(selection, column, &buf[0], buf.size()));
+	}
+	return buf;
+}
+
+void AsGroupsDlg::updateSelectedGroup(bool forceClean /*= false*/) {
+	tstring name;
+	bool enableButtons = false;
+
+	if (ctrlGroups.GetSelectedIndex() != -1) {
+		if (forceClean == false) {
+			name = getText(0);
+		}
+		enableButtons = true;
+	}
+
+	{
+		CWindow wnd;
+		wnd.Attach(GetDlgItem(IDC_REMOVE));
+		wnd.EnableWindow(enableButtons);
+		wnd.Detach();
+
+		wnd.Attach(GetDlgItem(IDC_UPDATE));
+		wnd.EnableWindow(enableButtons);
+		wnd.Detach();
+
+		wnd.Attach(GetDlgItem(IDC_MOVE_DOWN));
+		wnd.EnableWindow(enableButtons);
+		wnd.Detach();
+
+		wnd.Attach(GetDlgItem(IDC_MOVE_UP));
+		wnd.EnableWindow(enableButtons);
+		wnd.Detach();
+	}
+	{
+		CEdit wnd;
+		wnd.Attach(GetDlgItem(IDC_NAME));
+		wnd.SetWindowText(name.c_str());
+		wnd.Detach();
+	}
+}
+
+LRESULT AsGroupsDlg::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring name;
+	if (getItem(name, false)) {
+		addItem(name, ctrlGroups.GetItemCount(), true);
+		updateSelectedGroup(true);
+	}
+	return 0;
+}
+
+LRESULT AsGroupsDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int32_t pos = ctrlGroups.GetSelectedIndex();
+	if (pos < 0)
+		return 0;
+
+	AutoSearchList removeLst;
+	{
+		tstring name = getText(0, pos);
+		WLock l(AutoSearchManager::getInstance()->getCS());
+		auto lst = AutoSearchManager::getInstance()->getSearchItems();
+		bool remove = MessageBox(CTSTRING(GROUP_REMOVE_ITEMS), CTSTRING(REMOVE_GROUP), MB_ICONQUESTION | MB_YESNO) == IDYES;
+
+		for (auto as : lst | views::values) {
+			if (as->getGroup() != Text::fromT(name))
+				continue;
+			if (remove)
+				removeLst.push_back(as);
+			else
+				as->setGroup(Util::emptyString);
+		}
+		ctrlGroups.DeleteItem(pos);
+		updateSelectedGroup(true);
+	}
+
+	ranges::for_each(removeLst, [&](AutoSearchPtr a) { AutoSearchManager::getInstance()->removeAutoSearch(a); });
+	return 0;
+}
+
+LRESULT AsGroupsDlg::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int id = ctrlGroups.GetSelectedIndex();
+	if (id != -1) {
+		switch (wID) {
+		case IDC_MOVE_UP:
+			if (id != 0) {
+				ctrlGroups.moveItem(id, id - 1);
+				ctrlGroups.SelectItem(id - 1);
+			}
+			break;
+		case IDC_MOVE_DOWN:
+			if (id != ctrlGroups.GetItemCount() - 1) {
+				ctrlGroups.moveItem(id, id + 1);
+				ctrlGroups.SelectItem(id + 1);
+			}
+			break;
+		}
+	}
+	return 0;
+}
+
+
+LRESULT AsGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto item = ctrlGroups.GetSelectedIndex();
+	if (item >= 0) {
+		tstring name;
+		tstring oldName = getText(0);
+		if (getItem(name, true)) {
+			if (oldName == name)
+				return 0;
+			{
+				WLock l(AutoSearchManager::getInstance()->getCS());
+				auto lst = AutoSearchManager::getInstance()->getSearchItems();
+
+				for (auto as : lst | views::values) {
+					if (as->getGroup() == Text::fromT(oldName))
+						as->setGroup(Text::fromT(name));
+				}
+			}
+
+			if (Text::fromT(oldName) == SETTING(AS_FAILED_DEFAULT_GROUP))
+				SettingsManager::getInstance()->set(SettingsManager::AS_FAILED_DEFAULT_GROUP, Text::fromT(name));
+
+			ctrlGroups.DeleteItem(item);
+			addItem(name, item, true);
+			updateSelectedGroup();
+		}
+	}
+	return 0;
+}
+}
