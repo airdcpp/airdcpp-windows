@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,8 +22,8 @@
 #include <api/common/Format.h>
 #include <api/common/Serializer.h>
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Bundle.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/QueueManager.h>
 
@@ -59,7 +59,7 @@ namespace webserver {
 		case PROP_TARGET: return b->getTarget();
 		case PROP_TYPE: return formatBundleType(b);
 		case PROP_STATUS: return b->getStatusString();
-		case PROP_PRIORITY: return AirUtil::getPrioText(b->getPriority());
+		case PROP_PRIORITY: return Util::formatPriority(b->getPriority());
 		case PROP_SOURCES: return formatBundleSources(b);
 		default: dcassert(0); return Util::emptyString;
 		}
@@ -77,18 +77,18 @@ namespace webserver {
 		dcassert(b->getSize() != 0);
 		switch (aPropertyName) {
 		case PROP_SIZE: return (double)b->getSize();
-		case PROP_BYTES_DOWNLOADED: return (double)b->getDownloadedBytes();
 		case PROP_PRIORITY: return (double)b->getPriority();
 		case PROP_TIME_ADDED: return (double)b->getTimeAdded();
 		case PROP_TIME_FINISHED: return (double)b->getTimeFinished();
+		case PROP_BYTES_DOWNLOADED: return (double)b->getDownloadedBytes();
 		case PROP_SPEED: return (double)b->getSpeed();
 		case PROP_SECONDS_LEFT: return (double)b->getSecondsLeft();
 		default: dcassert(0); return 0;
 		}
 	}
 
-#define COMPARE_IS_DOWNLOADED(a, b) if (a->isDownloaded() != b->isDownloaded()) return a->isDownloaded() ? 1 : -1;
-#define COMPARE_TYPE(a, b) if (a->isFileBundle() != b->isFileBundle()) return a->isFileBundle() ? 1 : -1;
+#define COMPARE_IS_DOWNLOADED(a, b) if (a->isDownloaded() != b->isDownloaded()) return a->isDownloaded() ? 1 : -1
+#define COMPARE_TYPE(a, b) if (a->isFileBundle() != b->isFileBundle()) return a->isFileBundle() ? 1 : -1
 
 	int QueueBundleUtils::compareBundles(const BundlePtr& a, const BundlePtr& b, int aPropertyName) noexcept {
 		switch (aPropertyName) {
@@ -105,10 +105,10 @@ namespace webserver {
 				auto contentA = QueueManager::getInstance()->getBundleContent(a);
 				auto contentB = QueueManager::getInstance()->getBundleContent(b);
 
-				return Util::directoryContentSort(contentA, contentB);
+				return DirectoryContentInfo::Sort(contentA, contentB);
 			}
 
-			return Util::stricmp(Util::getFileExt(a->getTarget()), Util::getFileExt(b->getTarget()));
+			return Util::stricmp(PathUtil::getFileExt(a->getTarget()), PathUtil::getFileExt(b->getTarget()));
 		}
 		case PROP_PRIORITY: {
 			COMPARE_IS_DOWNLOADED(a, b);

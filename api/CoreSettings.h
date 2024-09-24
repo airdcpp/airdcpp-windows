@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -47,7 +47,7 @@ namespace webserver {
 
 		{ "use_main_chat_notify", SettingsManager::SHOW_CHAT_NOTIFY, ResourceManager::CHAT_NOTIFY },
 		{ "show_joins", SettingsManager::SHOW_JOINS, ResourceManager::SETTINGS_SHOW_JOINS },
-		{ "fav_show_joins", SettingsManager::FAV_SHOW_JOINS, ResourceManager::FAV_SHOW_JOIN },
+		{ "fav_show_joins", SettingsManager::FAV_SHOW_JOINS, ResourceManager::SETTINGS_FAV_SHOW_JOINS },
 
 		//{ ResourceManager::SETTINGS_DOWNLOADS },
 		{ "download_directory", SettingsManager::DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY, ApiSettingItem::TYPE_DIRECTORY_PATH },

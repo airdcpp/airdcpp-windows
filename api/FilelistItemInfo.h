@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,14 +21,14 @@
 
 #include <airdcpp/typedefs.h>
 
-#include <airdcpp/DirectoryListing.h>
+#include <airdcpp/DirectoryListingDirectory.h>
 
 
 namespace webserver {
 	class FilelistItemInfo : public FastAlloc<FilelistItemInfo> {
 	public:
-		typedef shared_ptr<FilelistItemInfo> Ptr;
-		typedef vector<Ptr> List;
+		using Ptr = shared_ptr<FilelistItemInfo>;
+		using List = vector<Ptr>;
 
 		enum ItemType {
 			FILE,
@@ -40,19 +40,27 @@ namespace webserver {
 			const DirectoryListing::Directory::Ptr dir;
 		};
 
-		FilelistItemInfo(const DirectoryListing::File::Ptr& f);
-		FilelistItemInfo(const DirectoryListing::Directory::Ptr& d);
+		FilelistItemInfo(const DirectoryListing::File::Ptr& f, const OptionalProfileToken aShareProfileToken);
+		FilelistItemInfo(const DirectoryListing::Directory::Ptr& d, const OptionalProfileToken aShareProfileToken);
 		~FilelistItemInfo();
 
-		DupeType getDupe() const noexcept { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
+		DupeType getDupe() const noexcept {
+			if (shareProfileToken) {
+				// Own filelist
+				return DUPE_SHARE_FULL;
+			}
+
+			return type == DIRECTORY ? dir->getDupe() : file->getDupe(); 
+		}
 		const string& getName() const noexcept { return type == DIRECTORY ? dir->getName() : file->getName(); }
-		string getAdcPath() const noexcept { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
+		string getAdcPath() const noexcept { return type == DIRECTORY ? dir->getAdcPathUnsafe() : file->getAdcPathUnsafe(); } // TODO
 		bool isComplete() const noexcept { return type == DIRECTORY ? dir->isComplete() : true; }
+		void getLocalPathsThrow(StringList& paths_) const;
 
 		time_t getDate() const noexcept { return type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate(); }
 		int64_t getSize() const noexcept { return type == DIRECTORY ? dir->getTotalSize(false) : file->getSize(); }
 
-		DirectoryListingToken getToken() const noexcept;
+		DirectoryListingItemToken getToken() const noexcept;
 
 		ItemType getType() const noexcept {
 			return type;
@@ -62,10 +70,11 @@ namespace webserver {
 			return type == DIRECTORY;
 		}
 	private:
+		const OptionalProfileToken shareProfileToken;
 		const ItemType type;
 	};
 
-	typedef FilelistItemInfo::Ptr FilelistItemInfoPtr;
+	using FilelistItemInfoPtr = FilelistItemInfo::Ptr;
 }
 
 #endif

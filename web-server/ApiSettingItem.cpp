@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,22 +21,24 @@
 #include <web-server/ApiSettingItem.h>
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/AutoLimitUtil.h>
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/Localization.h>
+#include <airdcpp/NetworkUtil.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SettingHolder.h>
 #include <airdcpp/SettingItem.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/SystemUtil.h>
 
 namespace webserver {
 	string ApiSettingItem::formatTitle(const string& aDesc, ResourceManager::Strings aUnit) noexcept {
 		auto title = aDesc;
 		if (aUnit != ResourceManager::LAST) {
-			title += " (" + ResourceManager::getInstance()->getString(aUnit) + ")";
+			title += " (" + STRING_I(aUnit) + ")";
 		}
 
 		return title;
@@ -71,8 +73,8 @@ namespace webserver {
 	JsonSettingItem::JsonSettingItem(const string& aKey, const json& aDefaultValue, Type aType,
 		bool aOptional, const MinMax& aMinMax, Type aItemType, const EnumOption::List& aEnumOptions) :
 
-		ApiSettingItem(aKey, aType, aItemType), defaultValue(aDefaultValue),
-		optional(aOptional), minMax(aMinMax), enumOptions(aEnumOptions)
+		ApiSettingItem(aKey, aType, aItemType), enumOptions(aEnumOptions),
+		minMax(aMinMax), optional(aOptional), defaultValue(aDefaultValue)
 	{
 		dcassert(aType != TYPE_NUMBER || minMax.min != minMax.max);
 	}
@@ -91,8 +93,7 @@ namespace webserver {
 	}
 
 	string ServerSettingItem::getTitle() const noexcept {
-		auto title = ResourceManager::getInstance()->getString(titleKey);
-		return ApiSettingItem::formatTitle(title, unitKey);
+		return ApiSettingItem::formatTitle(STRING_I(titleKey), unitKey);
 	}
 
 	const string& ServerSettingItem::getHelpStr() const noexcept {
@@ -100,7 +101,7 @@ namespace webserver {
 			return Util::emptyString;
 		}
 
-		return ResourceManager::getInstance()->getString(helpKey);
+		return STRING_I(helpKey);
 	}
 
 	ExtensionSettingItem::ExtensionSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType,
@@ -190,10 +191,10 @@ namespace webserver {
 		return minMax;
 	}
 
-	map<int, CoreSettingItem::MinMax> minMaxMappings = {
-		{ SettingsManager::TCP_PORT, { 1, 65535 } },
-		{ SettingsManager::UDP_PORT, { 1, 65535 } },
-		{ SettingsManager::TLS_PORT, { 1, 65535 } },
+	const map<int, CoreSettingItem::MinMax> minMaxMappings = {
+		{ SettingsManager::TCP_PORT, { 0, 65535 } },
+		{ SettingsManager::UDP_PORT, { 0, 65535 } },
+		{ SettingsManager::TLS_PORT, { 0, 65535 } },
 		{ SettingsManager::SOCKS_PORT, { 1, 65535 } },
 
 		{ SettingsManager::MAX_HASHING_THREADS, { 1, 100 } },
@@ -219,7 +220,7 @@ namespace webserver {
 		{ SettingsManager::INCOMING_CONNECTIONS6, { SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_LAST } },
 	};
 
-	set<int> optionalSettingKeys = {
+	const set<int> optionalSettingKeys = {
 		SettingsManager::DESCRIPTION,
 		SettingsManager::EMAIL,
 
@@ -239,7 +240,7 @@ namespace webserver {
 		SettingsManager::LANGUAGE_FILE,
 	};
 
-	map<int, CoreSettingItem::Group> groupMappings = {
+	const map<int, CoreSettingItem::Group> groupMappings = {
 		{ SettingsManager::TCP_PORT, CoreSettingItem::GROUP_CONN_GEN },
 		{ SettingsManager::UDP_PORT, CoreSettingItem::GROUP_CONN_GEN },
 		{ SettingsManager::TLS_PORT, CoreSettingItem::GROUP_CONN_GEN },
@@ -269,7 +270,7 @@ namespace webserver {
 	};
 
 	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, ResourceManager::Strings aUnit) :
-		ApiSettingItem(aName, parseAutoType(aType, aKey), ApiSettingItem::TYPE_LAST), si({ aKey, aDesc }), unit(aUnit) {
+		ApiSettingItem(aName, parseAutoType(aType, aKey), ApiSettingItem::TYPE_LAST), unit(aUnit), si({ aKey, aDesc }) {
 
 	}
 
@@ -329,15 +330,15 @@ namespace webserver {
 			case SettingsManager::IP_UPDATE6: 
 			case SettingsManager::NO_IP_OVERRIDE6: return ConnectivityManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(si.key));
 
-			case SettingsManager::DOWNLOAD_SLOTS: return AirUtil::getSlots(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
-			case SettingsManager::MAX_DOWNLOAD_SPEED: return AirUtil::getSpeedLimit(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
+			case SettingsManager::DOWNLOAD_SLOTS: return AutoLimitUtil::getSlots(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
+			case SettingsManager::MAX_DOWNLOAD_SPEED: return AutoLimitUtil::getSpeedLimitKbps(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
 
-			case SettingsManager::UPLOAD_SLOTS: return AirUtil::getSlots(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
-			case SettingsManager::MIN_UPLOAD_SPEED: return AirUtil::getSpeedLimit(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
-			case SettingsManager::AUTO_SLOTS: return AirUtil::getMaxAutoOpened(Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::UPLOAD_SLOTS: return AutoLimitUtil::getSlots(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::MIN_UPLOAD_SPEED: return AutoLimitUtil::getSpeedLimitKbps(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::AUTO_SLOTS: return AutoLimitUtil::getMaxAutoOpened(Util::toDouble(SETTING(UPLOAD_SPEED)));
 
-			case SettingsManager::MAX_MCN_DOWNLOADS: return AirUtil::getSlotsPerUser(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
-			case SettingsManager::MAX_MCN_UPLOADS: return AirUtil::getSlotsPerUser(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::MAX_MCN_DOWNLOADS: return AutoLimitUtil::getSlotsPerUser(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
+			case SettingsManager::MAX_MCN_UPLOADS: return AutoLimitUtil::getSlotsPerUser(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
 		}
 
 		return ApiSettingItem::getAutoValue();
@@ -349,7 +350,7 @@ namespace webserver {
 	}
 
 	bool CoreSettingItem::isOptional() const noexcept {
-		return optionalSettingKeys.find(si.key) != optionalSettingKeys.end();
+		return optionalSettingKeys.contains(si.key);
 	}
 
 	ApiSettingItem::PtrList CoreSettingItem::getListObjectFields() const noexcept {
@@ -392,23 +393,23 @@ namespace webserver {
 
 		auto enumStrings = SettingsManager::getEnumStrings(si.key, false);
 		if (!enumStrings.empty()) {
-			for (const auto& i : enumStrings) {
-				ret.emplace_back(EnumOption({ i.first, ResourceManager::getInstance()->getString(i.second) }));
+			for (const auto& [value, nameKey] : enumStrings) {
+				ret.emplace_back(value, STRING_I(nameKey));
 			}
 		} else if (si.key == SettingsManager::BIND_ADDRESS || si.key == SettingsManager::BIND_ADDRESS6) {
-			auto bindAddresses = AirUtil::getCoreBindAdapters(si.key == SettingsManager::BIND_ADDRESS6);
+			auto bindAddresses = NetworkUtil::getCoreBindAdapters(si.key == SettingsManager::BIND_ADDRESS6);
 			for (const auto& adapter : bindAddresses) {
 				auto title = adapter.ip + (!adapter.adapterName.empty() ? " (" + adapter.adapterName + ")" : Util::emptyString);
-				ret.emplace_back(EnumOption({ adapter.ip, title }));
+				ret.emplace_back(adapter.ip, title);
 			}
 		} else if (si.key == SettingsManager::MAPPER) {
 			auto mappers = ConnectivityManager::getInstance()->getMappers(false);
 			for (const auto& mapper : mappers) {
-				ret.emplace_back(EnumOption({ mapper, mapper }));
+				ret.emplace_back(mapper, mapper);
 			}
 		} else if (si.key == SettingsManager::LANGUAGE_FILE) {
 			for (const auto& language: Localization::getLanguages()) {
-				ret.emplace_back(EnumOption({ language.getLanguageSettingValue(), language.getLanguageName() }));
+				ret.emplace_back(language.getLanguageSettingValue(), language.getLanguageName());
 			}
 		}
 
@@ -416,7 +417,7 @@ namespace webserver {
 	}
 
 	string CoreSettingItem::getTitle() const noexcept {
-		auto title = ResourceManager::getInstance()->getString(si.desc);
+		const auto& title = STRING_I(si.desc);
 		return ApiSettingItem::formatTitle(title, unit);
 	}
 

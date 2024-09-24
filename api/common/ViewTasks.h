@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -61,7 +61,7 @@ public:
 		}
 	};
 
-	typedef map<T, MergeTask> TaskMap;
+	using TaskMap = map<T, MergeTask>;
 
 	void addItem(const T& aItem) {
 		WLock l(cs);
@@ -98,7 +98,7 @@ private:
 			return;
 		}
 
-		tasks.emplace(aItem, move(aData));
+		tasks.emplace(aItem, std::move(aData));
 	}
 
 	PropertyIdSet updatedProperties;

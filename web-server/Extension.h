@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -30,11 +30,11 @@
 #include <airdcpp/Util.h>
 
 namespace webserver {
-#define EXTENSION_DIR_ROOT Util::getPath(Util::PATH_USER_CONFIG) + "extensions" + PATH_SEPARATOR_STR
+#define EXTENSION_DIR_ROOT AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "extensions" + PATH_SEPARATOR_STR
 
 	class Extension : public Speaker<ExtensionListener> {
 	public:
-		typedef std::function<void(const Extension*, uint32_t /*exitCode*/)> ErrorF;
+		using ErrorF = std::function<void (const Extension*, uint32_t /*exitCode*/)>;
 
 		// Managed extension
 		// Throws on errors
@@ -44,7 +44,7 @@ namespace webserver {
 		// Throws on errors
 		Extension(const SessionPtr& aSession, const json& aPackageJson);
 
-		~Extension();
+		~Extension() override;
 
 		// Reload package.json from the supplied path
 		// Throws on errors
@@ -59,7 +59,7 @@ namespace webserver {
 
 		// Check that the extension is compatible with the current API
 		// Throws on errors
-		void checkCompatibilityThrow();
+		void checkCompatibilityThrow() const;
 
 #define EXT_ENGINE_NODE "node"
 
@@ -104,11 +104,11 @@ namespace webserver {
 		void resetSettings() noexcept;
 		void resetSession() noexcept;
 
-		typedef map<string, json> SettingValueMap;
+		using SettingValueMap = map<string, json>;
 
 		// Values and keys should have been validated earlier
 		void setValidatedSettingValues(const SettingValueMap& aValues, const UserList& aUserReferences) noexcept;
-		SettingValueMap getSettingValues() noexcept;
+		SettingValueMap getSettingValues() const noexcept;
 
 		void swapSettingDefinitions(ExtensionSettingItem::List& aDefinitions) noexcept;
 
@@ -177,7 +177,7 @@ namespace webserver {
 		static int getAppPid() noexcept;
 	};
 
-	inline bool operator==(const ExtensionPtr& a, const string& b) { return Util::stricmp(a->getName(), b) == 0; }
+	inline bool operator==(const ExtensionPtr& a, const string& b) noexcept { return Util::stricmp(a->getName(), b) == 0; }
 }
 
 #endif

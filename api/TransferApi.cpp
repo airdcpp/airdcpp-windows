@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -29,6 +29,7 @@
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/ThrottleManager.h>
+#include <airdcpp/TransferInfoManager.h>
 #include <airdcpp/UploadManager.h>
 
 
@@ -154,7 +155,7 @@ namespace webserver {
 			{ "speed_up", upSpeed },
 			{ "limit_down", ThrottleManager::getDownLimit() },
 			{ "limit_up", ThrottleManager::getUpLimit() },
-			{ "upload_bundles", UploadManager::getInstance()->getRunningBundleCount() },
+			{ "upload_bundles", 0 }, // API doesn't use upload bundles at the moment
 			{ "download_bundles", DownloadManager::getInstance()->getRunningBundleCount() },
 			{ "uploads", uploads },
 			{ "downloads", downloads },
@@ -208,6 +209,8 @@ namespace webserver {
 			updatedProps.insert(TransferUtils::PROP_IP);
 		if (aUpdatedProperties & TransferInfo::UpdateFlags::FLAGS)
 			updatedProps.insert(TransferUtils::PROP_FLAGS);
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::SUPPORTS)
+			updatedProps.insert(TransferUtils::PROP_SUPPORTS);
 		if (aUpdatedProperties & TransferInfo::UpdateFlags::ENCRYPTION)
 			updatedProps.insert(TransferUtils::PROP_ENCRYPTION);
 		if (aUpdatedProperties & TransferInfo::UpdateFlags::QUEUE_ID)

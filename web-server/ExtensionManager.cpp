@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,18 +21,24 @@
 #include <web-server/ExtensionManager.h>
 #include <web-server/Extension.h>
 #include <web-server/NpmRepository.h>
+#include <web-server/Session.h>
+#include <web-server/SocketManager.h>
 #include <web-server/TarFile.h>
 #include <web-server/WebServerManager.h>
+#include <web-server/WebServerSettings.h>
 #include <web-server/WebSocket.h>
 
-#include <airdcpp/CryptoManager.h>
+#include <airdcpp/CryptoUtil.h>
 #include <airdcpp/Encoder.h>
+#include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/SystemUtil.h>
 #include <airdcpp/Thread.h>
 #include <airdcpp/TimerManager.h>
 #include <airdcpp/UpdateManager.h>
@@ -44,8 +50,8 @@ namespace webserver {
 		wsm->addListener(this);
 
 		npmRepository = make_unique<NpmRepository>(
-			std::bind(&ExtensionManager::downloadExtension, this, placeholders::_1, placeholders::_2, placeholders::_3),
-			std::bind(&ExtensionManager::log, this, placeholders::_1, placeholders::_2)
+			std::bind_front(&ExtensionManager::downloadExtension, this),
+			std::bind_front(&ExtensionManager::log, this)
 		);
 	}
 
@@ -54,11 +60,12 @@ namespace webserver {
 	}
 
 	void ExtensionManager::log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
-		// wsm->log(aMsg, aSeverity);
 		LogManager::getInstance()->message(aMsg, aSeverity, STRING(EXTENSIONS));
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Started) noexcept {
+		wsm->getSocketManager().addListener(this);
+
 		// Don't add in the constructor as core may not have been initialized at that point
 		UpdateManager::getInstance()->addListener(this);
 
@@ -88,6 +95,8 @@ namespace webserver {
 			}
 		}
 
+		wsm->getSocketManager().removeListener(this);
+
 		UpdateManager::getInstance()->removeListener(this);
 		fire(ExtensionManagerListener::Stopped());
 	}
@@ -105,23 +114,22 @@ namespace webserver {
 		}
 
 		WLock l(cs);
-		dcassert(all_of(extensions.begin(), extensions.end(), [](const ExtensionPtr& aExtension) { return !aExtension->getSession(); }));
+		dcassert(ranges::all_of(extensions, [](const ExtensionPtr& aExtension) { return !aExtension->getSession(); }));
 		extensions.clear();
 	}
 
-	void ExtensionManager::on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept {
+	void ExtensionManager::on(SocketManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept {
 		if (!aSocket->getSession()) {
 			return;
 		}
 
-		const auto session = aSocket->getSession();
-		aSocket->getSession()->getServer()->addAsyncTask([session, this] {
+		aSocket->getSession()->getServer()->addAsyncTask([session = aSocket->getSession(), this] {
 			ExtensionPtr extension = nullptr;
 
 			// Remove possible unmanaged extensions matching this session
 			{
 				RLock l(cs);
-				auto i = find_if(extensions.begin(), extensions.end(), [&](const ExtensionPtr& aExtension) {
+				auto i = ranges::find_if(extensions, [&](const ExtensionPtr& aExtension) {
 					return aExtension->getSession() == session;
 				});
 
@@ -166,7 +174,7 @@ namespace webserver {
 
 					{
 						WLock l(cs);
-						blockedExtensions.emplace(name, reason);
+						blockedExtensions.try_emplace(name, reason);
 					}
 				}
 
@@ -192,10 +200,10 @@ namespace webserver {
 			}
 		}
 
-		for (const auto& blockedInfo: toRemove) {
+		for (const auto& [ext, message] : toRemove) {
 			try {
-				log(STRING_F(WEB_EXTENSION_UNINSTALL_BLOCKED, blockedInfo.first->getName() % blockedInfo.second), LogMessage::SEV_WARNING);
-				uninstallLocalExtensionThrow(blockedInfo.first, true);
+				log(STRING_F(WEB_EXTENSION_UNINSTALL_BLOCKED, ext->getName() % message), LogMessage::SEV_WARNING);
+				uninstallLocalExtensionThrow(ext, true);
 			} catch (const Exception& e) {
 				log(e.what(), LogMessage::SEV_ERROR);
 			}
@@ -242,7 +250,7 @@ namespace webserver {
 		while (GET_TICK() < timeout) {
 			{
 				RLock l(cs);
-				if (all_of(extensions.begin(), extensions.end(), isReady)) {
+				if (ranges::all_of(extensions, isReady)) {
 					return true;
 				}
 			}
@@ -276,7 +284,7 @@ namespace webserver {
 	bool ExtensionManager::removeExtension(const ExtensionPtr& aExtension) noexcept {
 		{
 			WLock l(cs);
-			auto i = find(extensions.begin(), extensions.end(), aExtension);
+			auto i = ranges::find(extensions, aExtension);
 			if (i != extensions.end()) {
 				extensions.erase(i);
 			} else {
@@ -299,7 +307,7 @@ namespace webserver {
 			aExtension->stopThrow();
 		} catch (const Exception& e) {
 			if (!aForced) {
-				throw e;
+				throw;
 			}
 
 			// Try to continue in any case...
@@ -328,15 +336,34 @@ namespace webserver {
 		fire(ExtensionManagerListener::InstallationStarted(), aInstallId);
 
 		WLock l(cs);
-		auto ret = httpDownloads.emplace(aUrl, make_shared<HttpDownload>(aUrl, [=]() {
+		auto [_, added] = httpDownloads.try_emplace(aUrl, make_shared<HttpDownload>(aUrl, [aInstallId, aUrl, aSha1, this]() {
 			onExtensionDownloadCompleted(aInstallId, aUrl, aSha1);
 		}));
 
-		return ret.second;
+		return added;
+	}
+
+	bool ExtensionManager::validateSha1(const string& aData, const string& aSha1) noexcept {
+		if (aSha1.empty()) {
+			return true;
+		}
+
+		auto calculatedSha1 = CryptoUtil::calculateSha1(aData);
+		if (calculatedSha1) {
+			char mdString[SHA_DIGEST_LENGTH * 2 + 1];
+			for (int i = 0; i < SHA_DIGEST_LENGTH; i++)
+				snprintf(&mdString[i * 2], sizeof(mdString), "%02x", (*calculatedSha1)[i]);
+
+			if (compare(string(mdString), aSha1) == 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	void ExtensionManager::onExtensionDownloadCompleted(const string& aInstallId, const string& aUrl, const string& aSha1) noexcept {
-		auto tempFile = Util::getPath(Util::PATH_TEMP) + Util::validateFileName(aUrl) + ".tmp";
+		auto tempFile = AppUtil::getPath(AppUtil::PATH_TEMP) + PathUtil::validateFileName(aUrl) + ".tmp";
 
 		// Don't allow the same download to be initiated again until the installation has finished
 		ScopedFunctor([&]() {
@@ -367,18 +394,9 @@ namespace webserver {
 			}
 
 			// Validate the possible checksum
-			if (!aSha1.empty()) {
-				auto calculatedSha1 = CryptoManager::calculateSha1(download->buf);
-				if (calculatedSha1) {
-					char mdString[SHA_DIGEST_LENGTH * 2 + 1];
-					for (int i = 0; i < SHA_DIGEST_LENGTH; i++)
-						sprintf(&mdString[i * 2], "%02x", (*calculatedSha1)[i]);
-
-					if (compare(string(mdString), aSha1) != 0) {
-						failInstallation(aInstallId, STRING(WEB_EXTENSION_DOWNLOAD_FAILED), STRING(WEB_EXTENSION_CHECKSUM_MISMATCH));
-						return;
-					}
-				}
+			if (!validateSha1(download->buf, aSha1)) {
+				failInstallation(aInstallId, STRING(WEB_EXTENSION_DOWNLOAD_FAILED), STRING(WEB_EXTENSION_CHECKSUM_MISMATCH));
+				return;
 			}
 
 			// Save on disk
@@ -408,7 +426,7 @@ namespace webserver {
 			return;
 		}
 
-		string tempRoot = Util::getPath(Util::PATH_TEMP) + "extension_" + Util::getFileName(aInstallFilePath) + PATH_SEPARATOR_STR;
+		string tempRoot = AppUtil::getPath(AppUtil::PATH_TEMP) + "extension_" + PathUtil::getFileName(aInstallFilePath) + PATH_SEPARATOR_STR;
 		ScopedFunctor([&tempRoot]() {
 			try {
 				File::removeDirectoryForced(tempRoot);
@@ -478,16 +496,16 @@ namespace webserver {
 			}
 
 			try {
-				File::removeDirectoryForced(Util::joinDirectory(extension->getRootPath(), EXT_PACKAGE_DIR));
+				File::removeDirectoryForced(PathUtil::joinDirectory(extension->getRootPath(), EXT_PACKAGE_DIR));
 			} catch (const FileException& e) {
-				failInstallation(aInstallId, "Failed to remove the old extension package directory " + Util::joinDirectory(extension->getRootPath(), EXT_PACKAGE_DIR), e.getError());
+				failInstallation(aInstallId, "Failed to remove the old extension package directory " + PathUtil::joinDirectory(extension->getRootPath(), EXT_PACKAGE_DIR), e.getError());
 				return;
 			}
 		}
 
 		try {
 			// Move files to final destination directory
-			File::moveDirectory(tempPackageDirectory, Util::joinDirectory(Extension::getRootPath(extensionName), EXT_PACKAGE_DIR));
+			File::moveDirectory(tempPackageDirectory, PathUtil::joinDirectory(Extension::getRootPath(extensionName), EXT_PACKAGE_DIR));
 		} catch (const FileException& e) {
 			failInstallation(aInstallId, "Failed to move extension files to the final destination directory", e.what());
 			return;
@@ -587,8 +605,8 @@ namespace webserver {
 	void ExtensionManager::onExtensionFailed(const Extension* aExtension, uint32_t aExitCode) noexcept {
 		if (aExitCode == EXIT_CODE_TIMEOUT || aExitCode == EXIT_CODE_IO_ERROR || aExitCode == EXIT_CODE_TEMP_ERROR) {
 			// Attempt to restart it (but outside of extension's timer thread)
-			auto name = aExtension->getName();
-			wsm->addAsyncTask([=] {
+			const auto& name = aExtension->getName();
+			wsm->addAsyncTask([aExtension, name, this] {
 				// Wait for the log file handles to get closed
 				Thread::sleep(3000);
 
@@ -617,8 +635,8 @@ namespace webserver {
 		ExtensionPtr ext = nullptr;
 		try {
 			ext = std::make_shared<Extension>(
-				Util::joinDirectory(aPath, EXT_PACKAGE_DIR),
-				std::bind(&ExtensionManager::onExtensionFailed, this, std::placeholders::_1, std::placeholders::_2)
+				PathUtil::joinDirectory(aPath, EXT_PACKAGE_DIR),
+				std::bind_front(&ExtensionManager::onExtensionFailed, this)
 			);
 		} catch (const Exception& e) {
 			log(STRING_F(WEB_EXTENSION_LOAD_ERROR_X, aPath % e.what()), LogMessage::SEV_ERROR);
@@ -657,7 +675,7 @@ namespace webserver {
 		string lastError;
 		for (const auto& supportedExtEngine: aSupportedExtEngines) {
 			// Find an installed engine that can run this extension
-			auto engineIter = find_if(aInstalledEngines.begin(), aInstalledEngines.end(), [&supportedExtEngine](const auto& e) { return e.name == supportedExtEngine; });
+			auto engineIter = ranges::find_if(aInstalledEngines, [&supportedExtEngine](const auto& e) { return e.name == supportedExtEngine; });
 			if (engineIter == aInstalledEngines.end()) {
 				lastError = STRING_F(WEB_EXTENSION_ENGINE_NO_CONFIG, supportedExtEngine);
 				continue;
@@ -685,13 +703,13 @@ namespace webserver {
 		for (const auto& token: tokens.getTokens()) {
 			if (File::isAbsolutePath(token)) {
 				// Full path
-				if (Util::fileExists(token)) {
+				if (PathUtil::fileExists(token)) {
 					return token;
 				}
 			} else if (token.length() >= 2 && token.compare(0, 2, "./") == 0) {
 				// Relative path
-				auto fullPath = Util::getAppFilePath() + token.substr(2);
-				if (Util::fileExists(fullPath)) {
+				auto fullPath = AppUtil::getAppFilePath() + token.substr(2);
+				if (PathUtil::fileExists(fullPath)) {
 					return fullPath;
 				}
 			} else {
@@ -699,11 +717,11 @@ namespace webserver {
 #ifdef _WIN32
 				string testCommand = "where";
 #else
-				string testCommand = "which";
+				string testCommand = "command -v";
 #endif
 				testCommand += " " + token;
 
-				if (Util::runSystemCommand(testCommand) == 0) {
+				if (dcpp::SystemUtil::runSystemCommand(testCommand) == 0) {
 					return token;
 				}
 			}

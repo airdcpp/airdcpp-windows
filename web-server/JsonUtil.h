@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -48,7 +48,7 @@ namespace webserver {
 		template <typename T, typename JsonT>
 		static optional<T> getOptionalEnumField(const string& aFieldName, const JsonT& aJson, bool aRequired, const std::vector<T>& aAllowedValues) {
 			auto value = getOptionalField<T, JsonT>(aFieldName, aJson, aRequired);
-			if (value && find(aAllowedValues.begin(), aAllowedValues.end(), *value) == aAllowedValues.end()) {
+			if (value && ranges::find(aAllowedValues, *value) == aAllowedValues.end()) {
 				string allowedValuesStr;
 				for (const auto& v: aAllowedValues) {
 					if (!allowedValuesStr.empty()) {
@@ -142,7 +142,11 @@ namespace webserver {
 
 		template <typename JsonT>
 		static const json& getArrayField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty) {
-			const auto& ret = getRawValue<JsonT>(aFieldName, aJson, true);
+			const auto& ret = getRawValue<JsonT>(aFieldName, aJson, !aAllowEmpty);
+			if (ret.is_null() && aAllowEmpty) {
+				return ret;
+			}
+
 			if (!ret.is_array()) {
 				throwError(aFieldName, ERROR_INVALID, "Field must be an array");
 			}
@@ -252,36 +256,36 @@ namespace webserver {
 		}
 
 		template <class T, typename JsonT>
-		static bool isEmpty(const typename std::enable_if<std::is_same<std::string, T>::value, T>::type& aStr, const JsonT&) {
+		static bool isEmpty(const typename std::enable_if_t<std::is_same_v<std::string, T>, T>& aStr, const JsonT&) {
 			return aStr.empty();
 		}
 
 		template <class T, typename JsonT>
-		static bool isEmpty(const typename std::enable_if<!std::is_same<std::string, T>::value, T>::type&, const JsonT& aJson) {
+		static bool isEmpty(const typename std::enable_if_t<!std::is_same_v<std::string, T>, T>&, const JsonT& aJson) {
 			return aJson.empty();
 		}
 
 		// Non-integral types should be initialized with the default constructor
 		template <class T>
-		static typename std::enable_if<!std::is_integral<T>::value, T>::type convertNullValue(const string&) {
+		static typename std::enable_if_t<!std::is_integral_v<T>, T> convertNullValue(const string&) {
 			return T();
 		}
 
 		template <class T>
-		static typename std::enable_if<std::is_integral<T>::value, T>::type convertNullValue(const string& aFieldName) {
+		static typename std::enable_if_t<std::is_integral_v<T>, T> convertNullValue(const string& aFieldName) {
 			throwError(aFieldName, ERROR_INVALID, "Field can't be empty");
 			return T(); // Not used
 		}
 
 
 		template <class T>
-		static void validateValue(typename std::enable_if<std::is_same<std::string, T>::value, T>::type& value_) {
+		static void validateValue(typename std::enable_if_t<std::is_same_v<std::string, T>, T>& value_) {
 			// Remove null characters as they may cause issues as string terminators
-			value_.erase(std::find(value_.begin(), value_.end(), '\0'), value_.end());
+			value_.erase(ranges::find(value_, '\0'), value_.end());
 		}
 
 		template <class T>
-		static void validateValue(typename std::enable_if<!std::is_same<std::string, T>::value, T>::type&) {
+		static void validateValue(typename std::enable_if_t<!std::is_same_v<std::string, T>, T>&) {
 
 		}
 

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -23,6 +23,8 @@
 #include <api/common/Deserializer.h>
 #include <api/common/MessageUtils.h>
 #include <api/common/Serializer.h>
+
+#include <web-server/WebServerSettings.h>
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/PrivateChatManager.h>
@@ -67,16 +69,20 @@ namespace webserver {
 
 		PrivateChatManager::getInstance()->addListener(this);
 
-		createHook("private_chat_incoming_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook("private_chat_incoming_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
 			return ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(PrivateChatApi::incomingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->incomingPrivateMessageHook.removeSubscriber(aId);
+		}, [this] {
+			return ClientManager::getInstance()->incomingPrivateMessageHook.getSubscribers();
 		});
 
-		createHook("private_chat_outgoing_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook("private_chat_outgoing_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
 			return ClientManager::getInstance()->outgoingPrivateMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(PrivateChatApi::outgoingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->outgoingPrivateMessageHook.removeSubscriber(aId);
+		}, [this] {
+			return ClientManager::getInstance()->outgoingPrivateMessageHook.getSubscribers();
 		});
 
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(),								PrivateChatApi::handlePostChat);
@@ -84,7 +90,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),	PrivateChatApi::handlePostMessage);
 
 		auto rawChats = PrivateChatManager::getInstance()->getChats();
-		for (const auto& c : rawChats | map_values) {
+		for (const auto& c : rawChats | views::values) {
 			addChat(c);
 		}
 	}
@@ -122,7 +128,7 @@ namespace webserver {
 			complete = aRequest.defer()
 		] {
 			string error_;
-			if (!ClientManager::getInstance()->privateMessageHooked(user, OutgoingChatMessage(message.first, callerPtr, message.second), error_, echo)) {
+			if (!ClientManager::getInstance()->privateMessageHooked(user, OutgoingChatMessage(message.message, callerPtr, Util::emptyString, message.thirdPerson), error_, echo)) {
 				complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error_));
 			} else {
 				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);

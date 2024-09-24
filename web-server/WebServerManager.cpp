@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -18,26 +18,26 @@
 
 #include "stdinc.h"
 
+#include <web-server/WebServerManager.h>
+
 #include <web-server/ApiSettingItem.h>
 #include <web-server/ContextMenuManager.h>
 #include <web-server/ExtensionManager.h>
+#include <web-server/HttpManager.h>
+#include <web-server/SocketManager.h>
+#include <web-server/Timer.h>
 #include <web-server/WebServerSettings.h>
-#include <web-server/WebServerManager.h>
 #include <web-server/WebUserManager.h>
 
 #include <airdcpp/typedefs.h>
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/NetworkUtil.h>
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/SimpleXML.h>
 #include <airdcpp/TimerManager.h>
 
-#define LEGACY_CONFIG_NAME_XML "WebServer.xml"
-#define CONFIG_DIR Util::PATH_USER_CONFIG
-
-#define AUTHENTICATION_TIMEOUT 60 // seconds
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
 #define HANDSHAKE_TIMEOUT 0 // disabled, affects HTTP downloads
 
@@ -48,13 +48,12 @@ namespace webserver {
 		tasks(4),
 		work(tasks)
 	{
-
-		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);
-
 		settingsManager = make_unique<WebServerSettings>(this);
 		extManager = make_unique<ExtensionManager>(this);
 		userManager = make_unique<WebUserManager>(this);
 		contextMenuManager = make_unique<ContextMenuManager>();
+		socketManager = make_unique<SocketManager>(this);
+		httpManager = make_unique<HttpManager>(this);
 
 		plainServerConfig = make_unique<ServerConfig>(settingsManager->getSettingItem(WebServerSettings::PLAIN_PORT), settingsManager->getSettingItem(WebServerSettings::PLAIN_BIND));
 		tlsServerConfig = make_unique<ServerConfig>(settingsManager->getSettingItem(WebServerSettings::TLS_PORT), settingsManager->getSettingItem(WebServerSettings::TLS_BIND));
@@ -81,11 +80,11 @@ namespace webserver {
 	private:
 		class dbgview_buffer : public std::stringbuf {
 		public:
-			~dbgview_buffer() {
+			~dbgview_buffer() override {
 				sync(); // can be avoided
 			}
 
-			int sync() {
+			int sync() override {
 				OutputDebugString(Text::toT(str()).c_str());
 				str("");
 				return 0;
@@ -114,20 +113,22 @@ namespace webserver {
 		aEndpoint.get_elog().set_ostream(&aStream);
 	}
 
+	template<class T>
+	void disableEndpointLogging(T& aEndpoint) {
+		aEndpoint.clear_access_channels(websocketpp::log::alevel::all);
+		aEndpoint.clear_error_channels(websocketpp::log::elevel::all);
+	}
+
 
 	template<class T>
 	void setEndpointOptions(T& aEndpoint) {
 		aEndpoint.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
 		aEndpoint.set_pong_timeout(WEBCFG(PING_TIMEOUT).num() * 1000);
-
-		// Workaround for https://github.com/zaphoyd/websocketpp/issues/549
-		aEndpoint.set_listen_backlog(boost::asio::socket_base::max_connections);
 	}
 
 	bool WebServerManager::startup(const MessageCallback& errorF, const string& aWebResourcePath, const Callback& aShutdownF) {
-		if (!aWebResourcePath.empty()) {
-			fileServer.setResourcePath(aWebResourcePath);
-		}
+		httpManager->start(aWebResourcePath);
+		socketManager->start();
 
 		shutdownF = aShutdownF;
 		return start(errorF);
@@ -161,9 +162,7 @@ namespace webserver {
 			// initialize asio with our external io_service rather than an internal one
 			endpoint_plain.init_asio(&ios);
 			endpoint_tls.init_asio(&ios);
-
-			//endpoint_plain.set_pong_handler(std::bind(&WebServerManager::onPongReceived, this, _1, _2));
-		} catch (const std::exception& e) {
+		} catch (const websocketpp::exception& e) {
 			if (errorF) {
 				errorF(e.what());
 			}
@@ -172,25 +171,33 @@ namespace webserver {
 		}
 
 		// Handlers
-		setEndpointHandlers(endpoint_plain, false, this);
-		setEndpointHandlers(endpoint_tls, true, this);
+		socketManager->setEndpointHandlers(endpoint_plain, false);
+		socketManager->setEndpointHandlers(endpoint_tls, true);
+
+		httpManager->setEndpointHandlers(endpoint_plain, false);
+		httpManager->setEndpointHandlers(endpoint_tls, true);
 
 		// Misc options
 		setEndpointOptions(endpoint_plain);
 		setEndpointOptions(endpoint_tls);
 
 		// TLS endpoint has an extra handler for the tls init
-		endpoint_tls.set_tls_init_handler(std::bind(&WebServerManager::handleInitTls, this, _1));
+		endpoint_tls.set_tls_init_handler(std::bind_front(&WebServerManager::handleInitTls, this));
 
 		// Logging
-		setEndpointLogSettings(endpoint_plain, debugStreamPlain);
-		setEndpointLogSettings(endpoint_tls, debugStreamTls);
+		if (enableSocketLogging) {
+			setEndpointLogSettings(endpoint_plain, debugStreamPlain);
+			setEndpointLogSettings(endpoint_tls, debugStreamTls);
+		} else {
+			disableEndpointLogging(endpoint_plain);
+			disableEndpointLogging(endpoint_tls);
+		}
 
 		return true;
 	}
 
 	boost::asio::ip::tcp WebServerManager::getDefaultListenProtocol() noexcept {
-		auto v6Supported = !AirUtil::getLocalIp(true).empty();
+		auto v6Supported = !NetworkUtil::getLocalIp(true).empty();
 		return v6Supported ? boost::asio::ip::tcp::v6() : boost::asio::ip::tcp::v4();
 	}
 
@@ -271,88 +278,23 @@ namespace webserver {
 				30 * 1000
 			);
 
-			socketPingTimer = addTimer(
-				[this] {
-					pingTimer();
-				},
-				WEBCFG(PING_INTERVAL).num() * 1000
-			);
-
 			minuteTimer->start(false);
-			socketPingTimer->start(false);
 		}
 
 		fire(WebServerManagerListener::Started());
 		return true;
 	}
 
-	WebSocketPtr WebServerManager::getSocket(websocketpp::connection_hdl hdl) const noexcept {
-		RLock l(cs);
-		auto s = sockets.find(hdl);
-		if (s != sockets.end()) {
-			return s->second;
-		}
-
-		return nullptr;
-	}
-
 	void WebServerManager::onData(const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept {
 		// Avoid possible deadlocks due to possible simultaneous disconnected/server state listener events
-		addAsyncTask([=] {
+		addAsyncTask([=, this] {
 			fire(WebServerManagerListener::Data(), aData, aType, aDirection, aIP);
 		});
 	}
 
-	// For debugging only
-	void WebServerManager::handlePongReceived(websocketpp::connection_hdl hdl, const string& /*aPayload*/) {
-		auto socket = getSocket(hdl);
-		if (!socket) {
-			return;
-		}
-
-		socket->debugMessage("PONG succeed");
-	}
-
-	void WebServerManager::handlePongTimeout(websocketpp::connection_hdl hdl, const string&) {
-		auto socket = getSocket(hdl);
-		if (!socket) {
-			return;
-		}
-
-		if (socket->getSession() && socket->getSession()->getSessionType() == Session::SessionType::TYPE_EXTENSION && WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
-			log("Disconnecting extension " + socket->getSession()->getUser()->getUserName() + " because of ping timeout", LogMessage::SEV_INFO);
-		}
-
-		socket->debugMessage("PONG timed out");
-
-		socket->close(websocketpp::close::status::internal_endpoint_error, "PONG timed out");
-	}
-
-	void WebServerManager::pingTimer() noexcept {
-		vector<WebSocketPtr> inactiveSockets;
-		auto tick = GET_TICK();
-
-		{
-			RLock l(cs);
-			for (const auto& socket : sockets | map_values) {
-				//socket->debugMessage("PING");
-				socket->ping();
-
-				// Disconnect sockets without a session after one minute
-				if (!socket->getSession() && socket->getTimeCreated() + AUTHENTICATION_TIMEOUT * 1000ULL < tick) {
-					inactiveSockets.push_back(socket);
-				}
-			}
-		}
-
-		for (const auto& s : inactiveSockets) {
-			s->close(websocketpp::close::status::policy_violation, "Authentication timeout");
-		}
-	}
-
 	context_ptr WebServerManager::handleInitTls(websocketpp::connection_hdl hdl) {
 		//std::cout << "on_tls_init called with hdl: " << hdl.lock().get() << std::endl;
-		context_ptr ctx(new boost::asio::ssl::context(boost::asio::ssl::context::tls));
+		auto ctx = make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tls);
 
 		try {
 			ctx->set_options(boost::asio::ssl::context::default_workarounds |
@@ -371,29 +313,17 @@ namespace webserver {
 
 			ctx->use_certificate_file(useCustom ? customCert : SETTING(TLS_CERTIFICATE_FILE), boost::asio::ssl::context::pem);
 			ctx->use_private_key_file(useCustom ? customKey : SETTING(TLS_PRIVATE_KEY_FILE), boost::asio::ssl::context::pem);
-
-			CryptoManager::setContextOptions(ctx->native_handle(), true);
-		} catch (std::exception& e) {
+		} catch (const boost::system::system_error& e) {
 			dcdebug("TLS init failed: %s", e.what());
 		}
 
+		CryptoManager::setContextOptions(ctx->native_handle(), true);
 		return ctx;
 	}
 
-	void WebServerManager::disconnectSockets(const string& aMessage) noexcept {
-		RLock l(cs);
-		for (const auto& socket : sockets | map_values) {
-			socket->close(websocketpp::close::status::going_away, aMessage);
-		}
-	}
-
 	void WebServerManager::stop() noexcept {
-		fileServer.stop();
-
 		if (minuteTimer)
 			minuteTimer->stop(true);
-		if (socketPingTimer)
-			socketPingTimer->stop(true);
 
 		fire(WebServerManagerListener::Stopping());
 
@@ -402,18 +332,8 @@ namespace webserver {
 		if(endpoint_tls.is_listening())
 			endpoint_tls.stop_listening();
 
-		disconnectSockets(STRING(WEB_SERVER_SHUTTING_DOWN));
-
-		for (;;) {
-			{
-				RLock l(cs);
-				if (sockets.empty()) {
-					break;
-				}
-			}
-
-			Thread::sleep(50);
-		}
+		httpManager->stop();
+		socketManager->stop();
 
 		ios.stop();
 		tasks.stop();
@@ -430,55 +350,12 @@ namespace webserver {
 		fire(WebServerManagerListener::Stopped());
 	}
 
-	WebSocketPtr WebServerManager::getSocket(LocalSessionId aSessionToken) noexcept {
-		RLock l(cs);
-		auto i = find_if(sockets | map_values, [&](const WebSocketPtr& s) {
-			return s->getSession() && s->getSession()->getId() == aSessionToken;
-		});
-
-		return i.base() == sockets.end() ? nullptr : *i;
-	}
-
 	TimerPtr WebServerManager::addTimer(Callback&& aCallback, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper) noexcept {
-		return make_shared<Timer>(move(aCallback), tasks, aIntervalMillis, aCallbackWrapper);
+		return make_shared<Timer>(std::move(aCallback), tasks, aIntervalMillis, aCallbackWrapper);
 	}
 
 	void WebServerManager::addAsyncTask(Callback&& aCallback) noexcept {
-		tasks.post(aCallback);
-	}
-
-	void WebServerManager::addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept {
-		{
-			WLock l(cs);
-			sockets.emplace(hdl, aSocket);
-		}
-
-		fire(WebServerManagerListener::SocketConnected(), aSocket);
-	}
-
-	void WebServerManager::handleSocketDisconnected(websocketpp::connection_hdl hdl) {
-		WebSocketPtr socket = getSocket(hdl);
-		if (!socket) {
-			dcassert(0);
-			return;
-		}
-
-		// Process all listener events before removing the socket from the list to avoid issues on shutdown
-		dcdebug("Socket disconnected: %s\n", socket->getSession() ? socket->getSession()->getAuthToken().c_str() : "(no session)");
-		fire(WebServerManagerListener::SocketDisconnected(), socket);
-
-		{
-			WLock l(cs);
-			auto s = sockets.find(hdl);
-			dcassert(s != sockets.end());
-			if (s == sockets.end()) {
-				return;
-			}
-
-			sockets.erase(s);
-		}
-
-		dcassert(socket.use_count() == 1);
+		tasks.post(std::move(aCallback));
 	}
 
 	void WebServerManager::log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
@@ -498,7 +375,7 @@ namespace webserver {
 
 	string WebServerManager::getLocalServerHttpUrl() noexcept {
 		bool isPlain = isListeningPlain();
-		decltype(auto) config = isPlain ? plainServerConfig : tlsServerConfig;
+		const auto& config = isPlain ? plainServerConfig : tlsServerConfig;
 		return (isPlain ? "http://" : "https://") + getLocalServerAddress(*config);
 	}
 
@@ -573,20 +450,6 @@ namespace webserver {
 	}
 
 	bool WebServerManager::load(const MessageCallback& aErrorF) noexcept {
-		const auto legacyXmlPath = Util::getPath(CONFIG_DIR) + LEGACY_CONFIG_NAME_XML;
-		if (Util::fileExists(legacyXmlPath)) {
-			SettingsManager::loadSettingFile(CONFIG_DIR, LEGACY_CONFIG_NAME_XML, [this](SimpleXML& xml) {
-				if (xml.findChild("WebServer")) {
-					xml.stepIn();
-
-					fire(WebServerManagerListener::LoadLegacySettings(), xml);
-					xml.stepOut();
-				}
-			}, aErrorF);
-
-			File::deleteFile(legacyXmlPath);
-		}
-
 		fire(WebServerManagerListener::LoadSettings(), aErrorF);
 		return hasValidServerConfig();
 	}

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,7 +21,7 @@
 
 
 namespace webserver {
-	typedef int8_t AccessType;
+	using AccessType = int8_t;
 
 	// Remember to edit WebUser::accessStrings as well
 	enum class Access: AccessType {
@@ -65,8 +65,8 @@ namespace webserver {
 		LAST,
 	};
 
-	typedef map<Access, bool> AccessMap;
-	typedef vector<Access> AccessList;
+	using AccessMap = std::map<Access, bool>;
+	using AccessList = std::vector<Access>;
 }
 
 #endif

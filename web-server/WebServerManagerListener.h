@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2012-2021 AirDC++ Project
+* Copyright (C) 2012-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@
 #define DCPLUSPLUS_WEBSERVER_WEBSERVERMANAGER_LISTENER_H
 
 #include "forward.h"
+#include "stdinc.h"
 
 #include <airdcpp/forward.h>
 
@@ -43,25 +44,17 @@ namespace webserver {
 		typedef X<2> Stopped;
 
 		typedef X<3> LoadSettings;
-		typedef X<4> LoadLegacySettings;
-		typedef X<5> SaveSettings;
+		typedef X<4> SaveSettings;
 
-		typedef X<7> SocketConnected;
-		typedef X<8> SocketDisconnected;
-
-		typedef X<9> Data;
+		typedef X<5> Data;
 
 
 		virtual void on(Started) noexcept { }
 		virtual void on(Stopping) noexcept { }
 		virtual void on(Stopped) noexcept { }
 
-		virtual void on(LoadLegacySettings, SimpleXML&) noexcept { }
 		virtual void on(LoadSettings, const MessageCallback&) noexcept { }
 		virtual void on(SaveSettings, const MessageCallback&) noexcept { }
-
-		virtual void on(SocketConnected, const WebSocketPtr&) noexcept { }
-		virtual void on(SocketDisconnected, const WebSocketPtr&) noexcept { }
 
 		virtual void on(Data, const string& /*aData*/, TransportType, Direction, const string& /*aIP*/) noexcept { }
 	};

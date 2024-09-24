@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -34,7 +34,7 @@ namespace webserver {
 	public:
 		static const string repository;
 
-		typedef std::function<void(const string& aInstallId, const string& aUrl, const string& aSha1)> InstallF;
+		using InstallF = std::function<void (const string& /*id*/, const string& /*url*/, const string& /*sha*/)>;
 
 		NpmRepository(InstallF&& aInstallF, ModuleLogger&& aLoggerF);
 		~NpmRepository();
@@ -46,9 +46,9 @@ namespace webserver {
 		NpmRepository& operator=(NpmRepository&) = delete;
 	private:
 		void onPackageInfoDownloaded(const string& aName, const string& aCurrentVersion) noexcept;
-		void checkPackageData(const string& aPackageData, const string& aName, const string& aCurrentVersion);
+		void checkPackageData(const string& aPackageData, const string& aName, const string& aCurrentVersion) const;
 
-		typedef map<string, shared_ptr<HttpDownload>> HttpDownloadMap;
+		using HttpDownloadMap = map<string, shared_ptr<HttpDownload>>;
 		HttpDownloadMap httpDownloads;
 
 		mutable SharedMutex cs;

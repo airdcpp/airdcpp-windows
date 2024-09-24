@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -26,10 +26,6 @@
 #include <airdcpp/GetSet.h>
 
 namespace webserver {
-	class WebUser;
-	typedef std::shared_ptr<WebUser> WebUserPtr;
-	typedef vector<WebUserPtr> WebUserList;
-
 	class WebUser {
 	public:
 		WebUser(const std::string& aUserName, const std::string& aPasswordHashOrPlain, bool aIsAdmin = false);
@@ -44,7 +40,7 @@ namespace webserver {
 		WebUser(WebUser&) = delete;
 		WebUser& operator=(WebUser&) = delete;
 
-		// Sesszions
+		// Sessions
 		int getActiveSessions() const noexcept {
 			return activeSessions;
 		}
@@ -76,7 +72,7 @@ namespace webserver {
 
 		static bool validateUsername(const string& aUsername) noexcept;
 
-		bool matchPassword(const string& aPasswordPlain) noexcept;
+		bool matchPassword(const string& aPasswordPlain) const noexcept;
 		void setPassword(const std::string& aPasswordHashOrPlain) noexcept;
 		const string& getPasswordHash() const noexcept {
 			return passwordHash;

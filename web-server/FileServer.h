@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -26,16 +26,19 @@
 
 
 namespace webserver {
+	struct HttpRequest;
 	class FileServer {
 	public:
 		FileServer();
 		~FileServer();
 
 		void setResourcePath(const string& aPath) noexcept;
+
+		// Get location of the file server root directory (Web UI files)
 		const string& getResourcePath() const noexcept;
 
-		websocketpp::http::status_code::value handleRequest(const websocketpp::http::parser::request& aRequest, 
-			std::string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF);
+		websocketpp::http::status_code::value handleRequest(const HttpRequest& aRequest, 
+			std::string& output_, StringPairList& headers_, const FileDeferredHandler& aDeferF);
 
 		string getTempFilePath(const string& fileId) const noexcept;
 		void stop() noexcept;

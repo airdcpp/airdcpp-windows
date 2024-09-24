@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,18 +20,17 @@
 
 #include "Format.h"
 
-#include <airdcpp/ResourceManager.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/GeoManager.h>
-
-#include <boost/range/algorithm/copy.hpp>
+#include <airdcpp/HintedUser.h>
+#include <airdcpp/ResourceManager.h>
 
 namespace webserver {
-	std::string Format::formatNicks(const HintedUser& aUser) noexcept {
+	std::string Format::nicksToString(const HintedUser& aUser) noexcept {
 		return Util::listToString(ClientManager::getInstance()->getNicks(aUser));
 	}
 
-	std::string Format::formatHubs(const HintedUser& aUser) noexcept {
+	std::string Format::hubsToString(const HintedUser& aUser) noexcept {
 		return Util::listToString(ClientManager::getInstance()->getHubNames(aUser));
 	}
 

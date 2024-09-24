@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,18 +21,20 @@
 
 #include "forward.h"
 
+#include <airdcpp/debug.h>
+
 namespace webserver {
-	class Timer : boost::noncopyable {
+	class Timer : public boost::noncopyable {
 	public:
-		typedef std::function<void(const Callback&)> CallbackWrapper;
+		using CallbackWrapper = std::function<void (const Callback &)>;
 
 		// CallbackWrapper is meant to ensure the lifetime of the timer
 		// (which necessary only if the timer is called from a class that can be deleted, such as sessions)
 		Timer(Callback&& aCallback, boost::asio::io_service& aIO, time_t aIntervalMillis, const CallbackWrapper& aWrapper) :
-			cb(move(aCallback)),
-			interval(aIntervalMillis),
+			cb(std::move(aCallback)),
+			cbWrapper(aWrapper),
 			timer(aIO),
-			cbWrapper(aWrapper)
+			interval(aIntervalMillis)
 		{
 			dcdebug("Timer %p was created\n", this);
 		}
@@ -71,7 +73,7 @@ namespace webserver {
 
 			if (cbWrapper) {
 				// We must ensure that the timer still exists when a new start call is performed
-				cbWrapper(bind(&Timer::runTask, aTimer));
+				cbWrapper(std::bind(&Timer::runTask, aTimer));
 			} else {
 				aTimer->runTask();
 			}
@@ -101,7 +103,7 @@ namespace webserver {
 		bool shutdown = false;
 	};
 
-	typedef shared_ptr<Timer> TimerPtr;
+	using TimerPtr = shared_ptr<Timer>;
 }
 
 #endif

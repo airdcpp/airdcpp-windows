@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,11 +21,20 @@
 #include <api/FilelistApi.h>
 
 #include <api/common/Deserializer.h>
-#include <web-server/JsonUtil.h>
+#include <api/common/Validation.h>
 
+#include <web-server/JsonUtil.h>
+#include <web-server/WebServerSettings.h>
+
+#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 
 namespace webserver {
+
+#define HOOK_LOAD_DIRECTORY "filelist_load_directory"
+#define HOOK_LOAD_FILE "filelist_load_file"
+
 	StringList FilelistApi::subscriptionList = {
 		"filelist_created",
 		"filelist_removed",
@@ -36,12 +45,29 @@ namespace webserver {
 	};
 
 	FilelistApi::FilelistApi(Session* aSession) : 
-		ParentApiModule(CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList,
-			FilelistInfo::subscriptionList, 
+		ParentApiModule(CID_PARAM, Access::FILELISTS_VIEW, aSession, subscriptionList, FilelistInfo::subscriptionList, 
 			[](const string& aId) { return Deserializer::parseCID(aId); },
-			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); }
+			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); },
+			Access::FILELISTS_EDIT
 		) 
 	{
+
+		HookApiModule::createHook(HOOK_LOAD_DIRECTORY, [this](ActionHookSubscriber&& aSubscriber) {
+			return DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(FilelistApi::directoryLoadHook));
+		}, [](const string& aId) {
+			DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.removeSubscriber(aId);
+		}, [] {
+			return DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.getSubscribers();
+		});
+
+		HookApiModule::createHook(HOOK_LOAD_FILE, [this](ActionHookSubscriber&& aSubscriber) {
+			return DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(FilelistApi::fileLoadHook));
+		}, [](const string& aId) {
+			DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.removeSubscriber(aId);
+		}, [] {
+			return DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.getSubscribers();
+		});
+
 
 		DirectoryListingManager::getInstance()->addListener(this);;
 
@@ -56,13 +82,39 @@ namespace webserver {
 		METHOD_HANDLER(Access::QUEUE_EDIT,		METHOD_POST,	(EXACT_PARAM("match_queue")),						FilelistApi::handleMatchQueue);
 
 		auto rawLists = DirectoryListingManager::getInstance()->getLists();
-		for (const auto& list : rawLists | map_values) {
+		for (const auto& list : rawLists | views::values) {
 			addList(list);
 		}
 	}
 
 	FilelistApi::~FilelistApi() {
 		DirectoryListingManager::getInstance()->removeListener(this);
+	}
+
+	ActionHookResult<> FilelistApi::directoryLoadHook(const DirectoryListing::Directory::Ptr& aDirectory, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook(HOOK_LOAD_DIRECTORY, WEBCFG(FILELIST_LOAD_DIRECTORY_HOOK_TIMEOUT).num(), [&]() {
+				auto info = std::make_shared<FilelistItemInfo>(aDirectory, aList.getShareProfile());
+
+				return json({
+					{ "directory", Serializer::serializeItem(info, FilelistUtils::propertyHandler) },
+					{ "filelist_id", aList.getToken().toBase32() },
+				});
+			}),
+			aResultGetter
+		);
+	}
+	ActionHookResult<> FilelistApi::fileLoadHook(const DirectoryListing::File::Ptr& aFile, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook(HOOK_LOAD_FILE, WEBCFG(FILELIST_LOAD_FILE_HOOK_TIMEOUT).num(), [&]() {
+				auto info = std::make_shared<FilelistItemInfo>(aFile, aList.getShareProfile());
+				return json({
+					{ "file", Serializer::serializeItem(info, FilelistUtils::propertyHandler) },
+					{ "filelist_id", aList.getToken().toBase32() },
+				});
+			}),
+			aResultGetter
+		);
 	}
 
 	void FilelistApi::addList(const DirectoryListingPtr& aList) noexcept {
@@ -73,7 +125,7 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 		addAsyncTask([
 			hintedUser = Deserializer::deserializeHintedUser(reqJson),
-			directory = JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR),
+			directory = Validation::validateAdcDirectoryPath(JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR)),
 			complete = aRequest.defer(),
 			caller = aRequest.getOwnerPtr()
 		]{
@@ -102,7 +154,7 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 		addAsyncTask([
 			hintedUser = Deserializer::deserializeHintedUser(reqJson),
-			directory = JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR),
+			directory = Validation::validateAdcDirectoryPath(JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR)),
 			complete = aRequest.defer(),
 			caller = aRequest.getOwnerPtr()
 		] {
@@ -205,11 +257,11 @@ namespace webserver {
 	}
 
 	json FilelistApi::serializeShareProfile(const DirectoryListingPtr& aList) noexcept {
-		if (!aList->getIsOwnList()) {
+		if (!aList->getShareProfile()) {
 			return nullptr;
 		}
 
-		return Serializer::serializeShareProfileSimple(aList->getShareProfile());
+		return Serializer::serializeShareProfileSimple(*aList->getShareProfile());
 	}
 
 	json FilelistApi::serializeList(const DirectoryListingPtr& aList) noexcept {
@@ -251,9 +303,9 @@ namespace webserver {
 
 	api_return FilelistApi::handlePostDirectoryDownload(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
-		auto listPath = JsonUtil::getField<string>("list_path", aRequest.getRequestBody(), false);
+		auto listPath = Validation::validateAdcDirectoryPath(JsonUtil::getField<string>("list_path", aRequest.getRequestBody(), false));
 
-		string targetDirectory, targetBundleName = Util::getAdcLastDir(listPath);
+		string targetDirectory, targetBundleName = PathUtil::getAdcLastDir(listPath);
 		Priority prio;
 		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession().get(), targetDirectory, targetBundleName, prio);
 

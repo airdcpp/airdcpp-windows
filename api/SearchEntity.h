@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@
 
 #include <api/SearchUtils.h>
 
+#include <api/base/HookApiModule.h>
 #include <api/base/HierarchicalApiModule.h>
 #include <api/common/ListViewController.h>
 
@@ -29,11 +30,11 @@
 
 
 namespace webserver {
-	class SearchEntity : public SubApiModule<SearchInstanceToken, SearchEntity, SearchInstanceToken>, private SearchInstanceListener {
+	class SearchEntity : public SubApiModule<SearchInstanceToken, SearchEntity, SearchInstanceToken, HookApiModule>, private SearchInstanceListener {
 	public:
 		static const StringList subscriptionList;
 
-		typedef ParentApiModule<SearchInstanceToken, SearchEntity> ParentType;
+		typedef ParentApiModule<SearchInstanceToken, SearchEntity, HookApiModule> ParentType;
 		typedef shared_ptr<SearchEntity> Ptr;
 
 		SearchEntity(ParentType* aParentModule, const SearchInstancePtr& aSearch);
@@ -48,12 +49,12 @@ namespace webserver {
 		void init() noexcept override;
 
 		static json serializeSearchQuery(const SearchPtr& aQuery) noexcept;
+		static json serializeSearchResult(const SearchResultPtr& aSR) noexcept;
 	private:
 		const SearchInstancePtr search;
 
 		GroupedSearchResultList getResultList() noexcept;
 
-		static json serializeSearchResult(const SearchResultPtr& aSR) noexcept;
 		json serializeSearchQueueInfo(uint64_t aQueueItem, size_t aQueueCount) noexcept;
 
 		api_return handlePostHubSearch(ApiRequest& aRequest);

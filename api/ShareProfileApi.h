@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,10 +22,14 @@
 #include <api/base/ApiModule.h>
 
 #include <airdcpp/typedefs.h>
-#include <airdcpp/ShareManagerListener.h>
+#include <airdcpp/ShareProfileManagerListener.h>
+
+namespace dcpp {
+	class ShareProfileManager;
+}
 
 namespace webserver {
-	class ShareProfileApi : public SubscribableApiModule, private ShareManagerListener {
+	class ShareProfileApi : public SubscribableApiModule, private ShareProfileManagerListener {
 	public:
 		ShareProfileApi(Session* aSession);
 		~ShareProfileApi();
@@ -44,11 +48,13 @@ namespace webserver {
 
 		void updateProfileProperties(ShareProfilePtr& aProfile, const json& j);
 
-		void on(ShareManagerListener::ProfileAdded, ProfileToken aProfile) noexcept override;
-		void on(ShareManagerListener::ProfileUpdated, ProfileToken aProfile, bool aIsMajorChange) noexcept override;
-		void on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept override;
+		void on(ShareProfileManagerListener::ProfileAdded, ProfileToken aProfile) noexcept override;
+		void on(ShareProfileManagerListener::ProfileUpdated, ProfileToken aProfile, bool aIsMajorChange) noexcept override;
+		void on(ShareProfileManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept override;
 
 		ShareProfilePtr parseProfileToken(ApiRequest& aRequest, bool aAllowHidden);
+
+		ShareProfileManager& mgr;
 	};
 }
 

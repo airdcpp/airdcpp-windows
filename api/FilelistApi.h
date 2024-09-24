@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,19 +20,20 @@
 #define DCPLUSPLUS_DCPP_FILELISTAPI_H
 
 #include <api/base/HierarchicalApiModule.h>
+#include <api/base/HookApiModule.h>
 #include <api/FilelistInfo.h>
 
 #include <airdcpp/typedefs.h>
-#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/DirectoryListingManagerListener.h>
 #include <airdcpp/QueueItem.h>
 
 namespace webserver {
-	class FilelistApi : public ParentApiModule<CID, FilelistInfo>, private DirectoryListingManagerListener {
+	class FilelistApi : public ParentApiModule<CID, FilelistInfo, HookApiModule>, private DirectoryListingManagerListener {
 	public:
 		static StringList subscriptionList;
 
-		FilelistApi(Session* aSession);
-		~FilelistApi();
+		explicit FilelistApi(Session* aSession);
+		~FilelistApi() override;
 	private:
 		void addList(const DirectoryListingPtr& aList) noexcept;
 
@@ -57,6 +58,9 @@ namespace webserver {
 
 		static json serializeList(const DirectoryListingPtr& aList) noexcept;
 		static json serializeShareProfile(const DirectoryListingPtr& aList) noexcept;
+
+		ActionHookResult<> directoryLoadHook(const DirectoryListing::Directory::Ptr& aDirectory, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> fileLoadHook(const DirectoryListing::File::Ptr& aFile, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept;
 	};
 }
 

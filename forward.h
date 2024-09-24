@@ -3,7 +3,7 @@
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -32,30 +32,38 @@ namespace webserver {
 	class ApiRequest;
 
 	class ContextMenuItem;
-	typedef std::shared_ptr<ContextMenuItem> ContextMenuItemPtr;
-	typedef std::vector<ContextMenuItemPtr> ContextMenuItemList;
+	using ContextMenuItemPtr = std::shared_ptr<ContextMenuItem>;
+	using ContextMenuItemList = std::vector<ContextMenuItemPtr>;
+	struct ContextMenuItemClickData;
+
+	class GroupedContextMenuItem;
+	using GroupedContextMenuItemPtr = std::shared_ptr<GroupedContextMenuItem>;
+	using GroupedContextMenuItemList = std::vector<GroupedContextMenuItemPtr>;
 
 	class Extension;
-	typedef std::shared_ptr<Extension> ExtensionPtr;
-	typedef std::vector<ExtensionPtr> ExtensionList;
+	using ExtensionPtr = std::shared_ptr<Extension>;
+	using ExtensionList = std::vector<ExtensionPtr>;
 
 	class Session;
-	typedef std::shared_ptr<Session> SessionPtr;
-	typedef std::vector<SessionPtr> SessionList;
-	typedef uint32_t LocalSessionId;
-
-	// typedef std::map<string, json> SettingValueMap;
+	using SessionPtr = std::shared_ptr<Session>;
+	using SessionList = std::vector<SessionPtr>;
+	using SessionCallback = std::function<void(const SessionPtr&)>;
+	using LocalSessionId = uint32_t;
 
 	class Timer;
-	typedef std::shared_ptr<Timer> TimerPtr;
+	using TimerPtr = std::shared_ptr<Timer>;
 
 	class WebSocket;
-	typedef std::shared_ptr<WebSocket> WebSocketPtr;
+	using WebSocketPtr = std::shared_ptr<WebSocket>;
 
 	class WebServerManager;
 
-	typedef std::function<void()> Callback;
-	typedef std::function<void(const std::string&)> MessageCallback;
+	using Callback = std::function<void ()>;
+	using MessageCallback = std::function<void (const std::string &)>;
+
+	class WebUser;
+	using WebUserPtr = std::shared_ptr<WebUser>;
+	using WebUserList = std::vector<WebUserPtr>;
 
 	using json = nlohmann::json;
 }

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,10 +20,12 @@
 
 #include <api/common/Deserializer.h>
 #include <api/common/FileSearchParser.h>
+#include <api/common/Validation.h>
 #include <web-server/JsonUtil.h>
 
 #include <airdcpp/Encoder.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 
 namespace webserver {
 	SearchPtr FileSearchParser::parseSearch(const json& aJson, bool aIsDirectSearch, const string& aToken) {
@@ -51,7 +53,8 @@ namespace webserver {
 		if (fileTypeStr) {
 			try {
 				string name;
-				SearchManager::getInstance()->getSearchType(parseSearchType(*fileTypeStr), aSearch->fileType, aSearch->exts, name);
+				const auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+				typeManager.getSearchType(parseSearchType(*fileTypeStr), aSearch->fileType, aSearch->exts, name);
 			} catch (...) {
 				throw std::domain_error("Invalid file type");
 			}
@@ -96,11 +99,7 @@ namespace webserver {
 	}
 
 	void FileSearchParser::parseOptions(const json& aJson, const SearchPtr& aSearch) {
-		aSearch->path = JsonUtil::getOptionalFieldDefault<string>("path", aJson, ADC_ROOT_STR);
-		if (!Util::isAdcDirectoryPath(aSearch->path)) {
-			JsonUtil::throwError("Path", JsonUtil::ERROR_INVALID, "Path " + aSearch->path + " isn't a valid ADC directory path");
-		}
-
+		aSearch->path = Validation::validateAdcDirectoryPath(JsonUtil::getOptionalFieldDefault<string>("path", aJson, ADC_ROOT_STR));
 		aSearch->maxResults = JsonUtil::getOptionalFieldDefault<int>("max_results", aJson, 5);
 		aSearch->returnParents = JsonUtil::getOptionalFieldDefault<bool>("return_parents", aJson, false);
 		aSearch->requireReply = true;
@@ -137,7 +136,7 @@ namespace webserver {
 	}
 
 	string FileSearchParser::serializeSearchType(const string& aType) {
-		auto i = boost::find(fileTypeMappings | map_values, aType);
+		auto i = ranges::find(fileTypeMappings | views::values, aType);
 		return i.base() != fileTypeMappings.end() ? i.base()->first : aType;
 	}
 }

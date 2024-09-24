@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -18,6 +18,7 @@
 
 #include "stdinc.h"
 
+#include <web-server/SocketManager.h>
 #include <web-server/WebSocket.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebUserManager.h>
@@ -100,15 +101,15 @@ namespace webserver {
 	}
 
 	TimerPtr ApiModule::getTimer(Callback&& aTask, time_t aIntervalMillis) {
-		return session->getServer()->addTimer(move(aTask), aIntervalMillis,
+		return session->getServer()->addTimer(std::move(aTask), aIntervalMillis,
 			std::bind(&ApiModule::asyncRunWrapper, std::placeholders::_1, session->getId())
 		);
 	}
 
 	Callback ApiModule::getAsyncWrapper(Callback&& aTask) noexcept {
 		auto sessionId = session->getId();
-		return [aTask, sessionId] {
-			return asyncRunWrapper(aTask, sessionId);
+		return [task = std::move(aTask), sessionId] {
+			return asyncRunWrapper(task, sessionId);
 		};
 	}
 
@@ -123,12 +124,12 @@ namespace webserver {
 	}
 
 	void ApiModule::addAsyncTask(Callback&& aTask) {
-		session->getServer()->addAsyncTask(getAsyncWrapper(move(aTask)));
+		session->getServer()->addAsyncTask(getAsyncWrapper(std::move(aTask)));
 	}
 
 
 	SubscribableApiModule::SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions) : ApiModule(aSession), subscriptionAccess(aSubscriptionAccess) {
-		socket = WebServerManager::getInstance()->getSocket(aSession->getId());
+		socket = aSession->getServer()->getSocketManager().getSocket(aSession->getId());
 
 		for (const auto& s: aSubscriptions) {
 			subscriptions.emplace(s, false);
@@ -151,8 +152,8 @@ namespace webserver {
 
 	void SubscribableApiModule::on(SessionListener::SocketDisconnected) noexcept {
 		// Disable all subscriptions
-		for (auto& s : subscriptions) {
-			s.second = false;
+		for (auto& [_, enabled] : subscriptions) {
+			enabled = false;
 		}
 
 		socket = nullptr;
@@ -194,7 +195,7 @@ namespace webserver {
 
 		try {
 			s->sendPlain(aJson);
-		} catch (const std::exception&) {
+		} catch (const json::exception&) {
 			// Ignore JSON errors...
 			return false;
 		}
@@ -209,7 +210,7 @@ namespace webserver {
 		});
 	}
 
-	bool SubscribableApiModule::maybeSend(const string& aSubscription, JsonCallback aCallback) {
+	bool SubscribableApiModule::maybeSend(const string& aSubscription, const JsonCallback& aCallback) {
 		if (!subscriptionActive(aSubscription)) {
 			return false;
 		}

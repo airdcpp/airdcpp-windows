@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,6 +22,8 @@
 
 #include <api/common/Format.h>
 #include <api/common/Serializer.h>
+
+#include <airdcpp/PathUtil.h>
 
 
 namespace webserver {
@@ -55,11 +57,18 @@ namespace webserver {
 			}
 			case PROP_DUPE:
 			{
-				if (aItem->isDirectory()) {
-					return Serializer::serializeDirectoryDupe(aItem->getDupe(), aItem->getAdcPath());
+				if (aItem->getDupe() == DUPE_NONE) {
+					return nullptr;
 				}
 
-				return Serializer::serializeFileDupe(aItem->getDupe(), aItem->file->getTTH());
+				StringList paths;
+				try {
+					aItem->getLocalPathsThrow(paths);
+				} catch (const ShareException&) {
+					// Hmm...
+				}
+
+				return Serializer::serializeDupe(aItem->getDupe(), std::move(paths));
 			}
 			default: dcassert(0); return nullptr;
 		}
@@ -81,10 +90,10 @@ namespace webserver {
 			}
 
 			if (a->isDirectory() && b->isDirectory()) {
-				return Util::directoryContentSort(a->dir->getContentInfo(), b->dir->getContentInfo());
+				return DirectoryContentInfo::Sort(a->dir->getContentInfo(), b->dir->getContentInfo());
 			}
 
-			return Util::DefaultSort(Util::getFileExt(a->getName()), Util::getFileExt(b->getName()));
+			return Util::DefaultSort(PathUtil::getFileExt(a->getName()), PathUtil::getFileExt(b->getName()));
 		}
 		default: dcassert(0); return 0;
 		}

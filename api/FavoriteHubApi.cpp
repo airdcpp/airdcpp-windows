@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,8 +22,8 @@
 
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/LinkUtil.h>
 #include <airdcpp/ShareManager.h>
 
 
@@ -80,11 +80,11 @@ namespace webserver {
 
 		// Optional values
 		for (const auto& i : j.items()) {
-			auto key = i.key();
+			const auto& key = i.key();
 			if (key == "share_profile") {
 				auto shareProfileToken = JsonUtil::getOptionalFieldDefault("share_profile", j, HUB_SETTING_DEFAULT_INT);
 				if (shareProfileToken != HUB_SETTING_DEFAULT_INT) {
-					if (!AirUtil::isAdcHub(aEntry->getServer()) && shareProfileToken != SETTING(DEFAULT_SP) && shareProfileToken != SP_HIDDEN) {
+					if (!LinkUtil::isAdcHub(aEntry->getServer()) && shareProfileToken != SETTING(DEFAULT_SP) && shareProfileToken != SP_HIDDEN) {
 						JsonUtil::throwError("share_profile", JsonUtil::ERROR_INVALID, "Share profiles can't be changed for NMDC hubs");
 					}
 

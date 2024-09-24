@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,6 +20,7 @@
 
 #include <web-server/HttpUtil.h>
 
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/Util.h>
 
@@ -30,7 +31,7 @@ namespace webserver {
 	using namespace dcpp;
 
 	struct mime { const char* ext; const char* type; };
-	struct mime mimes[] = {
+	const struct mime mimes[] = {
 		{ "exe", "application/octet-stream" },
 		{ "pdf", "application/pdf" },
 		{ "zip", "application/zip" },
@@ -101,12 +102,12 @@ namespace webserver {
 		{ "html", "text/html; charset=utf-8" },
 		{ "txt", "text/plain" },
 		{ "xml", "text/xml" },
-		{ NULL, NULL }
+		{ nullptr, nullptr }
 	};
 
 	const char* HttpUtil::getMimeType(const string& aFileName) noexcept {
 		auto extension = getExtension(aFileName);
-		for (int i = 0; mimes[i].ext != NULL; i++) {
+		for (int i = 0; mimes[i].ext; i++) {
 			if (extension == mimes[i].ext) {
 				return mimes[i].type;
 			}
@@ -116,7 +117,7 @@ namespace webserver {
 	}
 
 	string HttpUtil::getExtension(const string& aResource) noexcept {
-		auto extension = Util::getFileExt(aResource);
+		auto extension = PathUtil::getFileExt(aResource);
 		if (!extension.empty()) {
 			// Strip the dot
 			extension = extension.substr(1);
@@ -175,7 +176,7 @@ namespace webserver {
 		return true;
 	}
 
-	bool HttpUtil::unespaceUrl(const std::string& in, std::string& out) noexcept {
+	bool HttpUtil::unescapeUrl(const std::string& in, std::string& out) noexcept {
 		out.clear();
 		out.reserve(in.size());
 		for (std::size_t i = 0; i < in.size(); ++i) {

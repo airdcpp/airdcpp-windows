@@ -285,9 +285,6 @@
     <ClInclude Include="microtar\microtar.h">
       <Filter>Header Files\microtar</Filter>
     </ClInclude>
-    <ClInclude Include="web-server\FloodCounter.h">
-      <Filter>Header Files\web-server</Filter>
-    </ClInclude>
     <ClInclude Include="stdinc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -314,6 +311,30 @@
     </ClInclude>
     <ClInclude Include="json.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="api\common\Validation.h">
+      <Filter>Header Files\api\common</Filter>
+    </ClInclude>
+    <ClInclude Include="api\AdcCommandApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\HttpRequest.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ContextMenuItem.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ContextMenuManagerListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\SocketManager.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\SocketManagerListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\HttpManager.h">
+      <Filter>Header Files\web-server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -497,9 +518,6 @@
     <ClCompile Include="microtar\microtar.c">
       <Filter>Source Files\microtar</Filter>
     </ClCompile>
-    <ClCompile Include="web-server\FloodCounter.cpp">
-      <Filter>Source Files\web-server</Filter>
-    </ClCompile>
     <ClCompile Include="stdinc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -522,6 +540,18 @@
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
     <ClCompile Include="web-server\NpmRepository.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\common\Validation.cpp">
+      <Filter>Source Files\api\common</Filter>
+    </ClCompile>
+    <ClCompile Include="api\AdcCommandApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\SocketManager.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\HttpManager.cpp">
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
   </ItemGroup>

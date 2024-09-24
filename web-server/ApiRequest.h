@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,7 +20,7 @@
 #define DCPLUSPLUS_WEBSERVER_APIREQUEST_H
 
 #include "forward.h"
-#include "json.h"
+#include "stdinc.h"
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
@@ -44,10 +44,10 @@ namespace webserver {
 
 	class ApiRequest {
 	public:
-		typedef std::deque<std::string> PathTokenList;
-		typedef std::map<std::string, std::string> NamedParamMap;
+		using PathTokenList = std::deque<std::string>;
+		using NamedParamMap = std::map<std::string, std::string>;
 
-		// Throws on errors
+		// Throws std::invalid_argument on validation errors
 		ApiRequest(const std::string& aUrl, const std::string& aMethod, json&& aBody, const SessionPtr& aSession, const ApiDeferredHandler& aDeferredHandler, json& output_, json& error_);
 
 		int getApiVersion() const noexcept {
@@ -82,7 +82,7 @@ namespace webserver {
 		CID getCIDParam(const string& aName = CID_PARAM_ID) const;
 
 		// Use different naming to avoid accidentally using wrong conversion...
-		uint32_t getTokenParam(const string& aName = TOKEN_PARAM_ID) const noexcept;
+		size_t getTokenParam(const string& aName = TOKEN_PARAM_ID) const noexcept;
 		int getRangeParam(const string& aName) const noexcept;
 		int64_t getSizeParam(const string& aName) const noexcept;
 
@@ -120,7 +120,7 @@ namespace webserver {
 			return session;
 		}
 
-		const void* getOwnerPtr() const noexcept {
+		CallerPtr getOwnerPtr() const noexcept {
 			return session.get();
 		}
 
@@ -130,7 +130,7 @@ namespace webserver {
 
 		void setNamedParams(const NamedParamMap& aParams) noexcept;
 
-		ApiCompletionF defer();
+		ApiCompletionF defer() const noexcept;
 	private:
 		SessionPtr session;
 		void validate();
@@ -149,6 +149,13 @@ namespace webserver {
 		json& responseJsonData;
 		json& responseJsonError;
 		ApiDeferredHandler deferredHandler;
+	};
+
+	struct RouterRequest {
+		ApiRequest& apiRequest;
+		const bool isSecure;
+		const SessionCallback& authenticationCallback;
+		const string& ip;
 	};
 }
 

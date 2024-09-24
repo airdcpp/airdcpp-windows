@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -26,8 +26,8 @@ namespace webserver {
 	class ApiSettingItem;
 	class SettingApi : public ApiModule {
 	public:
-		SettingApi(Session* aSession);
-		~SettingApi();
+		explicit SettingApi(Session* aSession);
+		~SettingApi() override;
 	private:
 		api_return handleGetDefinitions(ApiRequest& aRequest);
 		api_return handleGetValues(ApiRequest& aRequest);
@@ -36,11 +36,11 @@ namespace webserver {
 		api_return handleGetDefaultValues(ApiRequest& aRequest);
 		api_return handleSetDefaultValues(ApiRequest& aRequest);
 
-		typedef function<void(ApiSettingItem&)> KeyParserF;
-		void parseSettingKeys(const json& aJson, KeyParserF aHandler, WebServerManager* aWsm);
+		using KeyParserF = function<void (ApiSettingItem &)>;
+		void parseSettingKeys(const json& aJson, const KeyParserF& aHandler, WebServerManager* aWsm);
 
-		typedef function<void(ApiSettingItem&, const json& aValue)> ValueParserF;
-		void parseSettingValues(const json& aJson, ValueParserF aHandler, WebServerManager* aWsm);
+		using ValueParserF = function<void (ApiSettingItem &, const json &)>;
+		void parseSettingValues(const json& aJson, const ValueParserF& aHandler, WebServerManager* aWsm);
 
 		static ApiSettingItem* getSettingItem(const string& aKey, WebServerManager* aWsm) noexcept;
 	};

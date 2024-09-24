@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -23,7 +23,6 @@
 
 #include <web-server/LazyInitWrapper.h>
 #include <web-server/SessionListener.h>
-#include <web-server/WebUser.h>
 
 #include <api/base/ApiModule.h>
 
@@ -44,7 +43,7 @@ namespace webserver {
 		};
 
 		Session(const WebUserPtr& aUser, const std::string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, const string& aIP);
-		~Session();
+		~Session() override;
 
 		const std::string& getAuthToken() const noexcept {
 			return token;
@@ -90,11 +89,13 @@ namespace webserver {
 		}
 
 		void reportError(const string& aError) noexcept;
-	private:
+		bool isTimeout(uint64_t aTick) const noexcept;
 	private:
 		const uint64_t maxInactivity;
 		const time_t started;
+
 		uint64_t lastActivity;
+		bool hasSocket = false;
 
 		const LocalSessionId id;
 		const std::string token;
@@ -106,7 +107,7 @@ namespace webserver {
 
 		mutable CriticalSection cs;
 
-		typedef LazyInitWrapper<ApiModule> LazyModuleWrapper;
+		using LazyModuleWrapper = LazyInitWrapper<ApiModule>;
 		std::map<std::string, LazyModuleWrapper> apiHandlers;
 	};
 }

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,15 +22,15 @@
 
 
 namespace webserver {
-	DirectoryListingToken FilelistItemInfo::getToken() const noexcept {
-		return hash<string>()(type == DIRECTORY ? dir->getName() : file->getName());
+	DirectoryListingItemToken FilelistItemInfo::getToken() const noexcept {
+		return type == DIRECTORY ? dir->getToken() : file->getToken();
 	}
 
-	FilelistItemInfo::FilelistItemInfo(const DirectoryListing::File::Ptr& f) : type(FILE), file(f) {
+	FilelistItemInfo::FilelistItemInfo(const DirectoryListing::File::Ptr& f, const OptionalProfileToken aShareProfileToken) : file(f), shareProfileToken(aShareProfileToken), type(FILE) {
 		//dcdebug("FilelistItemInfo (file) %s was created\n", f->getName().c_str());
 	}
 
-	FilelistItemInfo::FilelistItemInfo(const DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d) {
+	FilelistItemInfo::FilelistItemInfo(const DirectoryListing::Directory::Ptr& d, const OptionalProfileToken aShareProfileToken) : dir(d), shareProfileToken(aShareProfileToken), type(DIRECTORY) {
 		//dcdebug("FilelistItemInfo (directory) %s was created\n", d->getName().c_str());
 	}
 
@@ -42,6 +42,15 @@ namespace webserver {
 			file.~shared_ptr();
 		} else {
 			dir.~shared_ptr();
+		}
+	}
+
+	void FilelistItemInfo::getLocalPathsThrow(StringList& paths_) const {
+		// TODO
+		if (type == DIRECTORY) {
+			dir->getLocalPathsUnsafe(paths_, shareProfileToken);
+		} else {
+			file->getLocalPathsUnsafe(paths_, shareProfileToken);
 		}
 	}
 }

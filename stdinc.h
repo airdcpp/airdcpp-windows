@@ -3,7 +3,7 @@
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -29,9 +29,6 @@
 #include <websocketpp/config/asio.hpp>
 #include <websocketpp/server.hpp>
 
-#include <boost/range/algorithm/copy.hpp>
-#include <boost/algorithm/cxx11/copy_if.hpp>
-
 #include "json.h"
 
 
@@ -48,8 +45,6 @@ namespace webserver {
 	typedef std::function<ApiCompletionF()> ApiDeferredHandler;
 
 	using namespace dcpp;
-
-	using json = nlohmann::json;
 }
 
 #endif // !defined(DCPLUSPLUS_WEBSERVER_STDINC_H)

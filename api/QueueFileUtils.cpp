@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,8 +22,8 @@
 #include <api/common/Format.h>
 #include <api/common/Serializer.h>
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Bundle.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/QueueManager.h>
 
@@ -65,7 +65,7 @@ namespace webserver {
 		case PROP_TARGET: return aItem->getTarget();
 		case PROP_TYPE: return Util::formatFileType(aItem->getTarget());
 		case PROP_STATUS: return formatDisplayStatus(aItem);
-		case PROP_PRIORITY: return AirUtil::getPrioText(aItem->getPriority());
+		case PROP_PRIORITY: return Util::formatPriority(aItem->getPriority());
 		case PROP_SOURCES: return formatFileSources(aItem);
 		case PROP_TTH: return aItem->getTTH().toBase32();
 		default: dcassert(0); return Util::emptyString;
@@ -99,10 +99,10 @@ namespace webserver {
 	int QueueFileUtils::compareFiles(const QueueItemPtr& a, const QueueItemPtr& b, int aPropertyName) noexcept {
 		switch (aPropertyName) {
 		case PROP_NAME: {
-			return Util::pathSort(a->getTarget(), b->getTarget());
+			return PathUtil::pathSort(a->getTarget(), b->getTarget());
 		}
 		case PROP_TYPE: {
-			return Util::stricmp(Util::getFileExt(a->getTarget()), Util::getFileExt(b->getTarget()));
+			return Util::stricmp(PathUtil::getFileExt(a->getTarget()), PathUtil::getFileExt(b->getTarget()));
 		}
 		case PROP_PRIORITY: {
 			COMPARE_IS_DOWNLOADED(a, b);
@@ -156,7 +156,7 @@ namespace webserver {
 		case PROP_STATUS:
 		{
 			return {
-				{ "id", aFile->isDownloaded() },
+				{ "id", formatStatusId(aFile) },
 				{ "downloaded", aFile->isDownloaded() },
 				{ "completed", aFile->isCompleted() },
 				{ "failed", QueueItem::isFailedStatus(aFile->getStatus()) },

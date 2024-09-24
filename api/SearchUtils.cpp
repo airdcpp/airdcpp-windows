@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,6 +22,8 @@
 
 #include <api/common/Format.h>
 #include <api/common/Serializer.h>
+
+#include <airdcpp/PathUtil.h>
 
 
 namespace webserver {
@@ -92,10 +94,10 @@ namespace webserver {
 			}
 
 			if (a->isDirectory() && b->isDirectory()) {
-				return Util::directoryContentSort(a->getContentInfo(), b->getContentInfo());
+				return DirectoryContentInfo::Sort(a->getContentInfo(), b->getContentInfo());
 			}
 
-			return Util::DefaultSort(Util::getFileExt(a->getAdcPath()), Util::getFileExt(b->getAdcPath()));
+			return Util::DefaultSort(PathUtil::getFileExt(a->getAdcPath()), PathUtil::getFileExt(b->getAdcPath()));
 		}
 		case PROP_SLOTS: {
 			auto slotsA = a->getSlots();
@@ -112,7 +114,7 @@ namespace webserver {
 				return compare(a->getHits(), b->getHits());
 			}
 
-			return Util::DefaultSort(Format::formatNicks(a->getBaseUser()), Format::formatNicks(b->getBaseUser()));
+			return Util::DefaultSort(Format::nicksToString(a->getBaseUser()), Format::nicksToString(b->getBaseUser()));
 		}
 		default: dcassert(0); return 0;
 		}
@@ -121,7 +123,7 @@ namespace webserver {
 		switch (aPropertyName) {
 		case PROP_NAME: return aResult->getFileName();
 		case PROP_PATH: return aResult->getAdcPath();
-		case PROP_USERS: return Format::formatNicks(aResult->getBaseUser());
+		case PROP_USERS: return Format::nicksToString(aResult->getBaseUser());
 		case PROP_TYPE: {
 			if (aResult->isDirectory()) {
 				return Util::formatDirectoryContent(aResult->getContentInfo());

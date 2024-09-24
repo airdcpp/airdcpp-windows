@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -25,17 +25,17 @@
 
 namespace webserver {
 	class PropertyFilter;
-	typedef uint32_t FilterToken;
+	using FilterToken = uint32_t;
 
 
-	class PropertyFilter : boost::noncopyable {
+	class PropertyFilter : public boost::noncopyable {
 	public:
-		typedef std::function<std::string(int)> InfoFunction;
-		typedef std::function<double(int)> NumericFunction;
-		typedef std::function<bool(int, const StringMatch&, double)> CustomFilterFunction;
+		using InfoFunction = std::function<std::string (int)>;
+		using NumericFunction = std::function<double (int)>;
+		using CustomFilterFunction = std::function<bool (int, const StringMatch &, double)>;
 
-		typedef shared_ptr<PropertyFilter> Ptr;
-		typedef vector<Ptr> List;
+		using Ptr = shared_ptr<PropertyFilter>;
+		using List = vector<Ptr>;
 
 
 		// Helper class that will keep a reference to the filter
@@ -61,10 +61,10 @@ namespace webserver {
 			Matcher& operator=(Matcher&) = delete;
 			Matcher& operator=(Matcher&& rhs) = delete;
 
-			typedef Matcher<FilterT> MatcherT;
-			typedef vector<MatcherT> List;
+			using MatcherT = Matcher<FilterT>;
+			using List = vector<MatcherT>;
 			static inline bool match(const List& prep, const NumericFunction& aNumericF, const InfoFunction& aStringF, const CustomFilterFunction& aCustomF) {
-				return std::all_of(prep.begin(), prep.end(), [&](const Matcher& aMatcher) { 
+				return ranges::all_of(prep, [&](const Matcher& aMatcher) { 
 					return aMatcher.filter->match(aNumericF, aStringF, aCustomF); 
 				});
 			}
@@ -76,9 +76,9 @@ namespace webserver {
 			FilterT filter;
 		};
 
-		typedef vector<Matcher<PropertyFilter::Ptr>> MatcherList;
+		using MatcherList = vector<Matcher<PropertyFilter::Ptr>>;
 
-		PropertyFilter(const PropertyList& aPropertyTypes);
+		explicit PropertyFilter(const PropertyList& aPropertyTypes);
 
 		void prepare(const string& aPattern, int aMethod, int aProperty);
 
@@ -99,6 +99,7 @@ namespace webserver {
 		bool match(const NumericFunction& numericF, const InfoFunction& infoF, const CustomFilterFunction& aCustomF) const;
 		bool matchText(int aProperty, const InfoFunction& infoF) const;
 		bool matchNumeric(int aProperty, const NumericFunction& infoF) const;
+		bool matchAnyColumn(const NumericFunction& numericF, const InfoFunction& infoF) const;
 
 		void setPattern(const std::string& aText) noexcept;
 		void setFilterProperty(int aFilterProperty) noexcept;
@@ -111,20 +112,20 @@ namespace webserver {
 		pair<double, bool> prepareTime() const noexcept;
 		pair<double, bool> prepareSpeed() const noexcept;
 
-		StringMatch::Method defMethod;
+		StringMatch::Method defMethod = StringMatch::PARTIAL;
 		int currentFilterProperty;
-		FilterPropertyType type;
+		FilterPropertyType type = FilterPropertyType::TYPE_TEXT;
 
 		const int propertyCount;
 
 		StringMatch matcher;
-		double numericMatcher;
+		double numericMatcher = 0;
 
 		// Hide matching items
-		bool inverse;
+		bool inverse = false;
 
 		// Filtering mode was typed into filtering expression
-		bool usingTypedMethod;
+		bool usingTypedMethod = false;
 
 		enum FilterMode {
 			EQUAL,
@@ -136,7 +137,7 @@ namespace webserver {
 			LAST
 		};
 
-		FilterMode numComparisonMode;
+		FilterMode numComparisonMode = FilterMode::LAST;
 	};
 }
 

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -48,8 +48,11 @@ namespace webserver {
 
 		api_return handleRenamePath(ApiRequest& aRequest);
 
-		void on(HashManagerListener::DirectoryHashed, const string& aPath, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept override;
-		void on(HashManagerListener::HasherFinished, int aDirshashed, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept override;
+		void on(HashManagerListener::FileHashed, const string& aPath, HashedFile& aFileInfo, int aHasherId) noexcept override;
+		void on(HashManagerListener::FileFailed, const string& aFilePath, const string& aErrorId, const string& aMessage, int aHasherId) noexcept override;
+
+		void on(HashManagerListener::DirectoryHashed, const string& aPath, const HasherStats& aStats, int aHasherId) noexcept override;
+		void on(HashManagerListener::HasherFinished, int aDirsHashed, const HasherStats& aStats, int aHasherId) noexcept override;
 
 		void on(HashManagerListener::MaintananceStarted) noexcept override;
 		void on(HashManagerListener::MaintananceFinished) noexcept override;

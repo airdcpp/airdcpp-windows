@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,6 +20,7 @@
 
 #include <web-server/JsonUtil.h>
 #include <web-server/Session.h>
+#include <web-server/WebUser.h>
 
 #include <api/base/HookApiModule.h>
 
@@ -27,6 +28,7 @@ namespace webserver {
 	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions, Access aHookAccess) :
 		SubscribableApiModule(aSession, aSubscriptionAccess, aSubscriptions) 
 	{
+		METHOD_HANDLER(aHookAccess, METHOD_GET, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleListHooks);
 		METHOD_HANDLER(aHookAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleAddHook);
 		METHOD_HANDLER(aHookAccess, METHOD_DELETE, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleRemoveHook);
 		METHOD_HANDLER(aHookAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID), TOKEN_PARAM, EXACT_PARAM("resolve")), HookApiModule::handleResolveHookAction);
@@ -34,13 +36,13 @@ namespace webserver {
 	}
 
 	void HookApiModule::on(SessionListener::SocketDisconnected) noexcept {
-		for (auto& h : hooks | map_values) {
+		for (auto& h : hooks | views::values) {
 			h.disable();
 		}
 
 		{
 			RLock l(cs);
-			for (auto& action : pendingHookActions | map_values) {
+			for (auto& action : pendingHookActions | views::values) {
 				action.semaphore.signal();
 			}
 		}
@@ -75,16 +77,37 @@ namespace webserver {
 		return i->second;
 	}
 
-	bool HookApiModule::HookSubscriber::enable(const void* aOwner, const json& aJson) {
+	api_return HookApiModule::handleListHooks(ApiRequest& aRequest) {
+		const auto& hook = getHookSubscriber(aRequest);
+
+		auto ret = json::array();
+		for (const auto& h: hook.getSubscribers()) {
+			ret.push_back({
+				{ "id", h.getId() },
+				{ "name", h.getName() },
+			});
+		}
+
+		aRequest.setResponseBody(ret);
+		return websocketpp::http::status_code::ok;
+	}
+
+	ActionHookSubscriber HookApiModule::deserializeSubscriber(CallerPtr aOwner, const json& aJson) {
+		auto id = JsonUtil::getField<string>("id", aJson, false);
+		auto name = JsonUtil::getField<string>("name", aJson, false);
+		auto data = JsonUtil::getOptionalRawField("data", aJson);
+		// auto skipOwner = JsonUtil::getOptionalFieldDefault<bool>("skip_owner", aJson, true);
+		auto skipOwner = true;
+		return ActionHookSubscriber(id, name, skipOwner ? aOwner : nullptr);
+	}
+
+	bool HookApiModule::HookSubscriber::enable(ActionHookSubscriber&& aHookSubscriber) {
 		if (active) {
 			return true;
 		}
 
-		auto id = JsonUtil::getField<string>("id", aJson, false);
-		auto name = JsonUtil::getField<string>("name", aJson, false);
-		// auto skipOwner = JsonUtil::getOptionalFieldDefault<bool>("skip_owner", aJson, true);
-		auto skipOwner = true;
-		if (!addHandler(ActionHookSubscriber(id, name, skipOwner ? aOwner : nullptr))) {
+		auto id = aHookSubscriber.getId();
+		if (!addHandler(std::move(aHookSubscriber))) {
 			return false;
 		}
 
@@ -102,6 +125,10 @@ namespace webserver {
 		active = false;
 	}
 
+	bool HookApiModule::addHook(HookSubscriber& aApiSubscriber, ActionHookSubscriber&& aHookSubscriber, const json&) {
+		return aApiSubscriber.enable(std::move(aHookSubscriber));
+	}
+
 	api_return HookApiModule::handleAddHook(ApiRequest& aRequest) {
 		if (!SubscribableApiModule::getSocket()) {
 			aRequest.setResponseErrorStr("Socket required");
@@ -109,7 +136,9 @@ namespace webserver {
 		}
 
 		auto& hook = getHookSubscriber(aRequest);
-		if (!hook.enable(aRequest.getOwnerPtr(), aRequest.getRequestBody())) {
+		auto subscriber = deserializeSubscriber(aRequest.getOwnerPtr(), aRequest.getRequestBody());
+
+		if (!addHook(hook, std::move(subscriber), aRequest.getRequestBody())) {
 			aRequest.setResponseErrorStr("Subscription ID exists already for this hook event");
 			return websocketpp::http::status_code::conflict;
 		}
@@ -133,8 +162,8 @@ namespace webserver {
 		}
 	}
 
-	void HookApiModule::createHook(const string& aSubscription, HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) noexcept {
-		hooks.emplace(aSubscription, HookSubscriber(std::move(aAddHandler), std::move(aRemoveF)));
+	void HookApiModule::createHook(const string& aSubscription, HookAddF&& aAddHandler, HookRemoveF&& aRemoveF, HookListF&& aListF) noexcept {
+		hooks.emplace(aSubscription, HookSubscriber(aSubscription, std::move(aAddHandler), std::move(aRemoveF), std::move(aListF)));
 	}
 
 	api_return HookApiModule::handleResolveHookAction(ApiRequest& aRequest) {
@@ -169,7 +198,7 @@ namespace webserver {
 		return pendingHookIdCounter++;
 	}
 
-	HookApiModule::HookCompletionDataPtr HookApiModule::fireHook(const string& aSubscription, int aTimeoutSeconds, JsonCallback&& aJsonCallback) {
+	HookApiModule::HookCompletionDataPtr HookApiModule::fireHook(const string& aSubscription, int aTimeoutSeconds, const JsonCallback& aJsonCallback) {
 		if (!hookActive(aSubscription)) {
 			return nullptr;
 		}
@@ -185,7 +214,7 @@ namespace webserver {
 		{
 			WLock l(cs);
 			id = getActionId();
-			pendingHookActions.emplace(id, PendingAction({ completionSemaphore, nullptr }));
+			pendingHookActions.try_emplace(id, completionSemaphore, nullptr);
 			//dcdebug("Adding action %d for hook %s, total pending count %d\n", id, aSubscription.c_str(), pendingHookActions.size());
 		}
 

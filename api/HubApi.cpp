@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -24,11 +24,16 @@
 #include <api/common/Serializer.h>
 
 #include <web-server/JsonUtil.h>
+#include <web-server/WebServerSettings.h>
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/HubEntry.h>
 
 namespace webserver {
+
+#define HOOK_INCOMING_MESSAGE "hub_incoming_message_hook"
+#define HOOK_OUTGOING_MESSAGE "hub_outgoing_message_hook"
+
 	StringList HubApi::subscriptionList = {
 		"hub_created",
 		"hub_removed"
@@ -36,7 +41,7 @@ namespace webserver {
 
 	ActionHookResult<MessageHighlightList> HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) {
 		return HookCompletionData::toResult<MessageHighlightList>(
-			fireHook("hub_incoming_message_hook", WEBCFG(INCOMING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
+			fireHook(HOOK_INCOMING_MESSAGE, WEBCFG(INCOMING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
 				return MessageUtils::serializeChatMessage(aMessage);
 			}),
 			aResultGetter,
@@ -46,7 +51,7 @@ namespace webserver {
 
 	ActionHookResult<> HubApi::outgoingMessageHook(const OutgoingChatMessage& aMessage, const Client& aClient, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
-			fireHook("hub_outgoing_message_hook", WEBCFG(OUTGOING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
+			fireHook(HOOK_OUTGOING_MESSAGE, WEBCFG(OUTGOING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "text", aMessage.text },
 					{ "third_person", aMessage.thirdPerson },
@@ -68,16 +73,20 @@ namespace webserver {
 
 		ClientManager::getInstance()->addListener(this);
 
-		createHook("hub_incoming_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook(HOOK_INCOMING_MESSAGE, [this](ActionHookSubscriber&& aSubscriber) {
 			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::incomingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->incomingHubMessageHook.removeSubscriber(aId);
+		}, [this] {
+			return ClientManager::getInstance()->incomingHubMessageHook.getSubscribers();
 		});
 
-		createHook("hub_outgoing_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook(HOOK_OUTGOING_MESSAGE, [this](ActionHookSubscriber&& aSubscriber) {
 			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::outgoingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->outgoingHubMessageHook.removeSubscriber(aId);
+		}, [this] {
+			return ClientManager::getInstance()->outgoingHubMessageHook.getSubscribers();
 		});
 
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(),										HubApi::handleConnect);
@@ -93,7 +102,7 @@ namespace webserver {
 
 			RLock l(cm->getCS());
 			auto rawHubs = cm->getClientsUnsafe();
-			for (const auto& c : rawHubs | map_values) {
+			for (const auto& c : rawHubs | views::values) {
 				addHub(c);
 			}
 		}
@@ -115,8 +124,8 @@ namespace webserver {
 			int succeed = 0;
 			string lastError;
 			for (const auto& url: hubs) {
-				auto c = ClientManager::getInstance()->getClient(url);
-				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.first, callerPtr, message.second), lastError)) {
+				auto c = ClientManager::getInstance()->findClient(url);
+				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.message, callerPtr, Util::emptyString, message.thirdPerson), lastError)) {
 					succeed++;
 				}
 			}
@@ -136,14 +145,21 @@ namespace webserver {
 	api_return HubApi::handlePostStatus(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto message = Deserializer::deserializeStatusMessage(reqJson);
+		auto message = Deserializer::deserializeChatStatusMessage(reqJson);
+		auto label = MessageUtils::parseStatusMessageLabel(aRequest.getSession());
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		int succeed = 0;
 		for (const auto& url : hubs) {
-			auto c = ClientManager::getInstance()->getClient(url);
+			auto c = ClientManager::getInstance()->findClient(url);
 			if (c) {
-				c->statusMessage(message.first, message.second);
+				c->statusMessage(
+					message.message, 
+					message.severity, 
+					message.type,
+					label,
+					message.ownerId
+				);
 				succeed++;
 			}
 		}
@@ -209,7 +225,7 @@ namespace webserver {
 	// Use async tasks because adding/removing HubInfos require calls to ClientListener (which is likely 
 	// to cause deadlocks if done inside ClientManagerListener)
 	void HubApi::on(ClientManagerListener::ClientCreated, const ClientPtr& aClient) noexcept {
-		addAsyncTask([=] {
+		addAsyncTask([this, aClient] {
 			addHub(aClient);
 			if (!subscriptionActive("hub_created")) {
 				return;
@@ -220,7 +236,7 @@ namespace webserver {
 	}
 
 	void HubApi::on(ClientManagerListener::ClientRemoved, const ClientPtr& aClient) noexcept {
-		addAsyncTask([=] {
+		addAsyncTask([this, aClient] {
 			removeSubModule(aClient->getToken());
 
 			if (!subscriptionActive("hub_removed")) {
@@ -248,7 +264,7 @@ namespace webserver {
 
 	api_return HubApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto hub = getSubModule(aRequest);
-		ClientManager::getInstance()->putClient(hub->getId());
+		ClientManager::getInstance()->putClient(hub->getClient());
 		return websocketpp::http::status_code::no_content;
 	}
 

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -27,26 +27,26 @@ namespace webserver {
 	// NOTE: initialization is not thread safe
 	class LazyInitWrapper {
 	public:
-		typedef std::function < unique_ptr<T>() > InitF;
-		LazyInitWrapper(InitF&& aInitF) : initF(move(aInitF)) {}
+		using InitF = std::function<unique_ptr<T> ()>;
+		explicit LazyInitWrapper(InitF&& aInitF) : initF(std::move(aInitF)) {}
 
 		T* operator->() {
 			ensureInit();
-			return module.operator->();
+			return apiModule.operator->();
 		}
 
 		T* get() {
 			ensureInit();
-			return module.get();
+			return apiModule.get();
 		}
 	private:
 		void ensureInit() {
-			if (!module) {
-				module = initF();
+			if (!apiModule) {
+				apiModule = initF();
 			}
 		}
 
-		unique_ptr<T> module;
+		unique_ptr<T> apiModule;
 		InitF initF;
 	};
 }

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -167,6 +167,7 @@ namespace webserver {
 		return {
 			{ "name", aClient->getHubName() },
 			{ "description", aClient->getHubDescription() },
+			{ "supports", aClient->getSupports().getAll() },
 		};
 	}
 
@@ -289,10 +290,6 @@ namespace webserver {
 		});
 	}
 
-	void HubInfo::on(ClientListener::HubTopic, const Client*, const string&) noexcept {
-
-	}
-
 	void HubInfo::sendConnectState() noexcept {
 		onHubUpdated({
 			{ "encryption", Serializer::serializeEncryption(client->getEncryptionInfo(), client->isTrusted()) },
@@ -342,7 +339,7 @@ namespace webserver {
 			OnlineUserUtils::PROP_SHARED, OnlineUserUtils::PROP_DESCRIPTION, 
 			OnlineUserUtils::PROP_TAG, OnlineUserUtils::PROP_UPLOAD_SPEED, 
 			OnlineUserUtils::PROP_DOWNLOAD_SPEED, OnlineUserUtils::PROP_EMAIL, 
-			OnlineUserUtils::PROP_FILES, OnlineUserUtils::PROP_FLAGS,
+			OnlineUserUtils::PROP_FILES, OnlineUserUtils::PROP_FLAGS, OnlineUserUtils::PROP_SUPPORTS,
 			OnlineUserUtils::PROP_UPLOAD_SLOTS
 		});
 	}

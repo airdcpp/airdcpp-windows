@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -34,12 +34,16 @@ namespace webserver {
 	template<class IdType, class ItemType, class BaseType = SubscribableApiModule>
 	class ParentApiModule : public BaseType {
 	public:
-		typedef ParentApiModule<IdType, ItemType, BaseType> Type;
-		typedef std::function<IdType(const string&)> IdConvertF;
-		typedef std::function<json(const ItemType&)> ChildSerializeF;
+		using Type = ParentApiModule<IdType, ItemType, BaseType>;
+		using IdConvertF = std::function<IdType (const string &)>;
+		using ChildSerializeF = std::function<json (const ItemType &)>;
 
 		template<typename... ArgT>
-		ParentApiModule(ApiModule::RequestHandler::Param&& aParamMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF, ArgT&&... args) :
+		ParentApiModule(
+			const ApiModule::RequestHandler::Param& aParamMatcher, Access aAccess, Session* aSession, 
+			const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, 
+			ChildSerializeF aChildSerializeF, ArgT&&... args
+		) :
 			BaseType(aSession, aAccess, aSubscriptions, std::forward<ArgT>(args)...), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id) {
 
 			// Get module
@@ -71,7 +75,7 @@ namespace webserver {
 
 			{
 				WLock l(cs);
-				dcassert(boost::find_if(subModules | map_values, [](const typename ItemType::Ptr& subModule) {
+				dcassert(ranges::find_if(subModules | views::values, [](const auto& subModule) {
 					return subModule.use_count() != 1;
 				}).base() == subModules.end());
 
@@ -108,7 +112,7 @@ namespace webserver {
 
 		// Parse module ID from the request, throws if the module was not found
 		typename ItemType::Ptr getSubModule(ApiRequest& aRequest) {
-			auto id = aRequest.getStringParam(paramId);
+			const auto& id = aRequest.getStringParam(paramId);
 
 			auto sub = findSubModule(idConvertF(id));
 			if (!sub) {
@@ -122,7 +126,7 @@ namespace webserver {
 
 		void forEachSubModule(std::function<void(const ItemType&)> aAction) {
 			RLock l(cs);
-			for (const auto& m : subModules | map_values) {
+			for (const auto& m : subModules | views::values) {
 				aAction(*m.get());
 			}
 		}
@@ -148,7 +152,7 @@ namespace webserver {
 
 		api_return handleGetSubmodules(ApiRequest& aRequest) {
 			auto retJson = json::array();
-			forEachSubModule([&](const ItemType& aInfo) {
+			forEachSubModule([this, &retJson](const ItemType& aInfo) {
 				retJson.push_back(childSerializeF(aInfo));
 			});
 
@@ -165,7 +169,7 @@ namespace webserver {
 
 		virtual api_return handleDeleteSubmodule(ApiRequest& aRequest) = 0;
 	private:
-		typedef map<IdType, typename ItemType::Ptr> SubModuleMap;
+		using SubModuleMap = map<IdType, typename ItemType::Ptr>;
 		SubModuleMap subModules;
 
 		const IdConvertF idConvertF;
@@ -176,7 +180,7 @@ namespace webserver {
 	template<class IdType, class ItemType, class IdJsonType, class ParentBaseType = SubscribableApiModule>
 	class SubApiModule : public SubscribableApiModule {
 	public:
-		typedef ParentApiModule<IdType, ItemType, ParentBaseType> ParentType;
+		using ParentType = ParentApiModule<IdType, ItemType, ParentBaseType>;
 
 		// aId = ID of the entity owning this module
 		// Will inherit access from the parent module
@@ -191,7 +195,7 @@ namespace webserver {
 			});
 		}
 
-		bool maybeSend(const string& aSubscription, SubscribableApiModule::JsonCallback aCallback) override {
+		bool maybeSend(const string& aSubscription, const SubscribableApiModule::JsonCallback& aCallback) override {
 			if (!subscriptionActive(aSubscription)) {
 				return false;
 			}
@@ -222,11 +226,11 @@ namespace webserver {
 		}
 
 		void addAsyncTask(Callback&& aTask) override {
-			SubscribableApiModule::addAsyncTask(getAsyncWrapper(move(aTask)));
+			SubscribableApiModule::addAsyncTask(getAsyncWrapper(std::move(aTask)));
 		}
 
 		TimerPtr getTimer(Callback&& aTask, time_t aIntervalMillis) override {
-			return session->getServer()->addTimer(move(aTask), aIntervalMillis, 
+			return session->getServer()->addTimer(std::move(aTask), aIntervalMillis, 
 				std::bind(&SubApiModule::moduleAsyncRunWrapper<ParentType>, std::placeholders::_1, parentModule, getId(), session->getId())
 			);
 		}
@@ -234,10 +238,13 @@ namespace webserver {
 		// All custom async tasks should be run inside this to
 		// ensure that the submodule (or the session) won't get deleted
 		Callback getAsyncWrapper(Callback&& aTask) noexcept override {
-			auto sessionId = session->getId();
-			auto moduleId = getId();
-			return [=] {
-				return moduleAsyncRunWrapper(aTask, parentModule, moduleId, sessionId);
+			return [
+				this,
+				sessionId = session->getId(),
+				moduleId = getId(),
+				task = std::move(aTask)
+			] {
+				return moduleAsyncRunWrapper(task, parentModule, moduleId, sessionId);
 			};
 		}
 	private:

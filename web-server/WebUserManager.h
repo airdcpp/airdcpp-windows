@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,11 +22,10 @@
 #include "forward.h"
 
 #include <airdcpp/CriticalSection.h>
+#include <airdcpp/FloodCounter.h>
 #include <airdcpp/Speaker.h>
 
-#include <web-server/FloodCounter.h>
 #include <web-server/Session.h>
-#include <web-server/Timer.h>
 #include <web-server/WebServerManagerListener.h>
 #include <web-server/WebUserManagerListener.h>
 #include <web-server/WebUser.h>
@@ -34,14 +33,14 @@
 namespace webserver {
 	class WebUserManager : private WebServerManagerListener, public Speaker<WebUserManagerListener> {
 	public:
-		WebUserManager(WebServerManager* aServer);
-		~WebUserManager();
+		explicit WebUserManager(WebServerManager* aServer);
+		~WebUserManager() override;
 
 		// Parse Authentication header from an HTTP request
 		// Throws on errors, returns nullptr if no Authorization header is present
 		SessionPtr parseHttpSession(const string& aAuthToken, const string& aIp);
 
-		// Throws on errors
+		// Throws std::domain_error on errors (e.g. invalid password)
 		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP);
 		SessionPtr authenticateSession(const string& aRefreshToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP);
 
@@ -70,11 +69,17 @@ namespace webserver {
 
 		WebUserManager(WebUserManager&) = delete;
 		WebUserManager& operator=(WebUserManager&) = delete;
+
+		enum class SessionRemovalReason {
+			LOGOUT,
+			USER_CHANGED,
+			TIMEOUT,
+		};
 	private:
-		enum AuthType {
-			AUTH_UNKNOWN,
-			AUTH_BASIC,
-			AUTH_BEARER,
+		enum class AuthType {
+			UNKNOWN,
+			BASIC,
+			BEARER,
 		};
 
 		struct TokenInfo {
@@ -82,7 +87,7 @@ namespace webserver {
 			const WebUserPtr user;
 			const time_t expiresOn;
 
-			typedef vector<TokenInfo> List;
+			using List = vector<TokenInfo>;
 		};
 
 		FloodCounter authFloodCounter;
@@ -97,13 +102,12 @@ namespace webserver {
 
 		void checkExpiredSessions() noexcept;
 		void checkExpiredTokens() noexcept;
-		void resetSocketSession(const WebSocketPtr& aSocket) noexcept;
-		void removeSession(const SessionPtr& aSession, bool aTimedOut) noexcept;
+		void removeSession(const SessionPtr& aSession, SessionRemovalReason aReason) noexcept;
 		void removeRefreshTokens(const WebUserPtr& aUser) noexcept;
-		void removeSessions(const WebUserPtr& aUser) noexcept;
+		void removeUserSessions(const WebUserPtr& aUser) noexcept;
 		TimerPtr expirationTimer;
 
-		// Throws on errors
+		// Throws std::domain_error on errors (e.g. invalid password)
 		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP, const string& aSessionToken);
 
 		SessionPtr createSession(const WebUserPtr& aUser, const string& aSessionToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP) noexcept;
@@ -111,11 +115,12 @@ namespace webserver {
 		void on(WebServerManagerListener::Started) noexcept override;
 		void on(WebServerManagerListener::Stopping) noexcept override;
 		void on(WebServerManagerListener::Stopped) noexcept override;
-		void on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
 
-		void on(WebServerManagerListener::LoadLegacySettings, SimpleXML& aXml) noexcept override;
 		void on(WebServerManagerListener::LoadSettings, const MessageCallback& aErrorF) noexcept override;
 		void on(WebServerManagerListener::SaveSettings, const MessageCallback& aErrorF) noexcept override;
+
+		void loadUsers(const json& aJson);
+		void loadRefreshTokens(const json& aJson);
 
 		WebServerManager* wsm;
 		void setDirty() noexcept;

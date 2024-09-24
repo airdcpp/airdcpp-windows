@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -24,18 +24,13 @@
 #include <airdcpp/typedefs.h>
 
 namespace webserver {
+	struct RouterRequest;
+
 	class ApiRouter {
 	public:
-		ApiRouter();
-		~ApiRouter();
-
-		void handleSocketRequest(const std::string& aMessage, const WebSocketPtr& aSocket, bool aIsSecure) noexcept;
-		api_return handleHttpRequest(const std::string& aRequestPath, const websocketpp::http::parser::request& aRequest,
-			json& output_, json& error_, bool aIsSecure, const string& aIp, const SessionPtr& aSession, const ApiDeferredHandler& aDeferredHandler) noexcept;
+		static api_return handleRequest(RouterRequest& aRequest) noexcept;
 	private:
-		api_return handleRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) noexcept;
-
-		api_return routeAuthRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp);
+		static api_return routeAuthRequest(RouterRequest& aRequest);
 	};
 }
 

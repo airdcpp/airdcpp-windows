@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,13 +21,14 @@
 
 #include "stdinc.h"
 
-#include <web-server/Session.h>
-#include <web-server/ApiRequest.h>
+#include "forward.h"
 
 #include <airdcpp/GetSet.h>
 
 namespace webserver {
-	// WebSockets are owned by WebServerManager and API modules
+	// WebSockets are owned by SocketManager and API modules
+	// WebSockets are owned by SocketManager and API modules
+	class WebServerManager;
 
 	class WebSocket {
 	public:
@@ -40,13 +41,15 @@ namespace webserver {
 		IGETSET(SessionPtr, session, Session, nullptr);
 
 		// Send raw data
-		// Throws on JSON conversion errors (possibly because of failing UTF-8 validation...)
+		// Throws json::exception on JSON conversion errors  (possibly because of failing UTF-8 validation...)
 		//
 		// The goal is that the data is always fully validated, but especially the legacy
 		// NMDC code can't be trusted to parse the incoming messages without incorrectly 
 		// splitting multibyte character sequences in malformed received data...
 		void sendPlain(const json& aJson);
 		void sendApiResponse(const json& aJsonResponse, const json& aErrorJson, websocketpp::http::status_code::value aCode, int aCallbackId) noexcept;
+
+		void onData(const string& aPayload, const SessionCallback& aAuthCallback);
 
 		WebSocket(WebSocket&) = delete;
 		WebSocket& operator=(WebSocket&) = delete;
@@ -69,6 +72,8 @@ namespace webserver {
 		}
 
 		const websocketpp::http::parser::request& getRequest() noexcept;
+
+		// Throws json exception (from the json library) in case of invalid JSON, ArgumentException in case of invalid properties
 		static void parseRequest(const string& aRequest, int& callbackId_, string& method_, string& path_, json& data_);
 	protected:
 		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, WebServerManager* aWsm);

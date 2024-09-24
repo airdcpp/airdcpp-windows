@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -23,6 +23,7 @@
 
 #include <web-server/JsonUtil.h>
 #include <web-server/Session.h>
+#include <web-server/WebUser.h>
 
 #include <airdcpp/ActionHook.h>
 #include <airdcpp/Magnet.h>
@@ -33,7 +34,7 @@
 
 
 namespace webserver {
-	string MessageUtils::getHighlighType(MessageHighlight::HighlightType aType) noexcept {
+	string MessageUtils::getHighlightType(MessageHighlight::HighlightType aType) noexcept {
 		switch (aType) {
 			case MessageHighlight::HighlightType::TYPE_BOLD: return "bold";
 			case MessageHighlight::HighlightType::TYPE_USER: return "user";
@@ -96,10 +97,28 @@ namespace webserver {
 	string MessageUtils::getMessageSeverity(LogMessage::Severity aSeverity) noexcept {
 		switch (aSeverity) {
 		case LogMessage::SEV_NOTIFY: return "notify";
+		case LogMessage::SEV_VERBOSE: return "verbose";
 		case LogMessage::SEV_INFO: return "info";
 		case LogMessage::SEV_WARNING: return "warning";
 		case LogMessage::SEV_ERROR: return "error";
 		default: return Util::emptyString;
+		}
+	}
+
+	string MessageUtils::getMessageType(LogMessage::Type aType) noexcept {
+		switch (aType) {
+		case dcpp::LogMessage::Type::SYSTEM:
+			return "system";
+		case dcpp::LogMessage::Type::PRIVATE:
+			return "private";
+		case dcpp::LogMessage::Type::HISTORY:
+			return "history";
+		case dcpp::LogMessage::Type::SPAM:
+			return "spam";
+		case dcpp::LogMessage::Type::SERVER:
+			return "server";
+		default:
+			return Util::emptyString;
 		}
 	}
 
@@ -111,7 +130,8 @@ namespace webserver {
 			{ "severity", getMessageSeverity(aMessage->getSeverity()) },
 			{ "label", aMessage->getLabel() },
 			{ "is_read", aMessage->getRead() },
-			{ "highlights", Serializer::serializeList(aMessage->getHighlights(), serializeMessageHighlight) }
+			{ "highlights", Serializer::serializeList(aMessage->getHighlights(), serializeMessageHighlight) },
+			{ "type", getMessageType(aMessage->getType()) }
 		};
 	}
 
@@ -124,6 +144,7 @@ namespace webserver {
 
 	json MessageUtils::serializeUnreadLog(const MessageCache& aCache) noexcept {
 		return {
+			{ "verbose", aCache.countUnreadLogMessages(LogMessage::SEV_VERBOSE) },
 			{ "info", aCache.countUnreadLogMessages(LogMessage::SEV_INFO) },
 			{ "warning", aCache.countUnreadLogMessages(LogMessage::SEV_WARNING) },
 			{ "error", aCache.countUnreadLogMessages(LogMessage::SEV_ERROR) },
@@ -148,6 +169,7 @@ namespace webserver {
 			{ "user", aCache.countUnreadChatMessages(isUser) },
 			{ "bot", aCache.countUnreadChatMessages(isBot) },
 			{ "status", aCache.countUnreadLogMessages(LogMessage::SEV_LAST) },
+			{ "verbose", aCache.countUnreadLogMessages(LogMessage::SEV_VERBOSE) },
 		};
 	}
 
@@ -164,7 +186,7 @@ namespace webserver {
 		return {
 			{ "id", aHighlight->getToken() },
 			{ "text", aHighlight->getText() },
-			{ "type", getHighlighType(aHighlight->getType()) },
+			{ "type", getHighlightType(aHighlight->getType()) },
 			{ "tag", aHighlight->getTag() },
 			{ "position", {
 				{ "start", aHighlight->getStart() },
@@ -182,7 +204,7 @@ namespace webserver {
 		const auto end = JsonUtil::getField<size_t>("end", aJson, false);
 		const auto descriptionId = JsonUtil::getOptionalFieldDefault<string>("tag", aJson, aDefaultDescriptionId);
 
-		if (end > aMessageText.size() || start < 0 || end <= start) {
+		if (end > aMessageText.size() || end <= start) {
 			throw RequestException(websocketpp::http::status_code::bad_request, "Invalid range");
 		}
 
@@ -190,13 +212,13 @@ namespace webserver {
 	}
 
 	MessageUtils::MessageHighlightDeserializer MessageUtils::getMessageHookHighlightDeserializer(const string& aMessageText) {
-		return [=](const json& aData, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) {
+		return [aMessageText](const json& aData, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) {
 			return deserializeHookMessageHighlights(aData, aResultGetter, aMessageText);
 		};
 	}
 
 	MessageHighlightList MessageUtils::deserializeHookMessageHighlights(const json& aData, const ActionHookResultGetter<MessageHighlightList>& aResultGetter, const string& aMessageText) {
-		const auto highlightItems = JsonUtil::getOptionalArrayField("highlights", aData);
+		const auto& highlightItems = JsonUtil::getOptionalArrayField("highlights", aData);
 
 		MessageHighlightList ret;
 		if (!highlightItems.is_null()) {

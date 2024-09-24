@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -40,13 +40,14 @@ namespace webserver {
 	public:
 		static const StringList subscriptionList;
 
-		typedef shared_ptr<HubInfo> Ptr;
-		typedef vector<Ptr> List;
+		using Ptr = shared_ptr<HubInfo>;
+		using List = vector<Ptr>;
 
 		HubInfo(ParentType* aParentModule, const ClientPtr& aClient);
 		~HubInfo();
 
 		const ClientPtr& getClient() const noexcept { return client; }
+		ClientPtr& getClient() noexcept { return client; }
 
 		static json serializeConnectState(const ClientPtr& aClient) noexcept;
 		static json serializeIdentity(const ClientPtr& aClient) noexcept;
@@ -72,7 +73,6 @@ namespace webserver {
 		void on(ClientListener::Disconnected, const string&, const string&) noexcept override;
 		void on(ClientListener::GetPassword, const Client*) noexcept override;
 		void on(ClientListener::HubUpdated, const Client*) noexcept override;
-		void on(ClientListener::HubTopic, const Client*, const string&) noexcept override;
 		void on(ClientListener::ConnectStateChanged, const Client*, uint8_t) noexcept override;
 		void on(ClientListener::SettingsUpdated, const Client*) noexcept override;
 
@@ -87,8 +87,8 @@ namespace webserver {
 		void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr& m) noexcept override {
 			chatHandler.onChatMessage(m);
 		}
-		void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& m, int = ClientListener::FLAG_NORMAL) noexcept override {
-			chatHandler.onStatusMessage(m);
+		void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& m, const string& aOwner) noexcept override {
+			chatHandler.onStatusMessage(m, aOwner);
 		}
 		void on(ClientListener::MessagesRead, const Client*) noexcept override {
 			chatHandler.onMessagesUpdated();
@@ -114,13 +114,13 @@ namespace webserver {
 		ChatController chatHandler;
 		ClientPtr client;
 
-		typedef ListViewController<OnlineUserPtr, OnlineUserUtils::PROP_LAST> UserView;
+		using UserView = ListViewController<OnlineUserPtr, OnlineUserUtils::PROP_LAST>;
 		UserView view;
 
 		TimerPtr timer;
 	};
 
-	typedef HubInfo::Ptr HubInfoPtr;
+	using HubInfoPtr = HubInfo::Ptr;
 }
 
 #endif

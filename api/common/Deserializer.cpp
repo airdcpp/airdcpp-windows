@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,6 +20,7 @@
 
 #include <web-server/JsonUtil.h>
 #include <web-server/Session.h>
+#include <web-server/WebUser.h>
 
 #include <api/common/Deserializer.h>
 
@@ -166,27 +167,24 @@ namespace webserver {
 			return nullptr;
 		}
 
-		auto client = ClientManager::getInstance()->getClient(*hubUrl);
+		auto client = ClientManager::getInstance()->findClient(*hubUrl);
 		if (!client) {
-			//if (aOptional) {
-			//	return nullptr;
-			//}
-
 			throw std::invalid_argument("Hub " + *hubUrl + " was not found");
 		}
 
 		return client;
 	}
 
-	pair<string, bool> Deserializer::deserializeChatMessage(const json& aJson) {
+	Deserializer::ChatMessageInput Deserializer::deserializeChatMessage(const json& aJson) {
 		return { 
 			JsonUtil::getField<string>("text", aJson, false),
-			JsonUtil::getOptionalFieldDefault<bool>("third_person", aJson, false)
+			JsonUtil::getOptionalFieldDefault<bool>("third_person", aJson, false),
 		};
 	}
 
-	map<string, LogMessage::Severity> severityMappings = {
+	const map<string, LogMessage::Severity> severityMappings = {
 		{ "notify", LogMessage::SEV_NOTIFY },
+		{ "verbose", LogMessage::SEV_VERBOSE },
 		{ "info", LogMessage::SEV_INFO },
 		{ "warning", LogMessage::SEV_WARNING },
 		{ "error", LogMessage::SEV_ERROR },
@@ -201,10 +199,38 @@ namespace webserver {
 		throw std::invalid_argument("Invalid severity: " + aText);
 	}
 
-	pair<string, LogMessage::Severity> Deserializer::deserializeStatusMessage(const json& aJson) {
+	const map<string, LogMessage::Type> logMessageTypeMappings = {
+		{ "history", LogMessage::Type::HISTORY },
+		{ "private", LogMessage::Type::PRIVATE },
+		{ "server", LogMessage::Type::SERVER },
+		{ "spam", LogMessage::Type::SPAM },
+		{ "system", LogMessage::Type::SYSTEM },
+	};
+
+
+	LogMessage::Type Deserializer::parseLogMessageType(const string& aText) {
+		auto i = logMessageTypeMappings.find(aText);
+		if (i != logMessageTypeMappings.end()) {
+			return i->second;
+		}
+
+		throw std::invalid_argument("Invalid type: " + aText);
+	}
+
+	Deserializer::StatusMessageInput Deserializer::deserializeStatusMessage(const json& aJson) {
 		return {
 			JsonUtil::getField<string>("text", aJson, false),
-			parseSeverity(JsonUtil::getField<string>("severity", aJson, false))
+			parseSeverity(JsonUtil::getField<string>("severity", aJson, false)),
+		};
+	}
+
+	Deserializer::ChatStatusMessageInput Deserializer::deserializeChatStatusMessage(const json& aJson) {
+		const auto base = deserializeStatusMessage(aJson);
+		return {
+			base.message,
+			base.severity,
+			parseLogMessageType(JsonUtil::getOptionalFieldDefault<string>("type", aJson, "system")),
+			JsonUtil::getOptionalFieldDefault<string>("owner", aJson, Util::emptyString)
 		};
 	}
 

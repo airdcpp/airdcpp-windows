@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -23,30 +23,44 @@
 #include <api/common/Deserializer.h>
 #include <api/common/FileSearchParser.h>
 
-#include <airdcpp/QueueAddInfo.h>
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/DirectSearch.h>
+#include <web-server/WebServerSettings.h>
+#include <web-server/WebUser.h>
+
 #include <airdcpp/SearchInstance.h>
 #include <airdcpp/SearchManager.h>
-#include <airdcpp/ShareManager.h>
+#include <airdcpp/SearchQuery.h>
+#include <airdcpp/SearchTypes.h>
 
 
 #define DEFAULT_INSTANCE_EXPIRATION_MINUTES 30
 #define SEARCH_TYPE_ID "search_type"
 
+
+#define HOOK_INCOMING_USER_RESULT "search_incoming_user_result"
+
 namespace webserver {
 	StringList SearchApi::subscriptionList = {
 		"search_instance_created",
 		"search_instance_removed",
-		"search_types_updated"
+		"search_types_updated",
+
+		"search_incoming_search",
 	};
 
 	SearchApi::SearchApi(Session* aSession) : 
 		ParentApiModule(TOKEN_PARAM, Access::SEARCH, aSession, subscriptionList, SearchEntity::subscriptionList,
 			[](const string& aId) { return Util::toUInt32(aId); },
-			[](const SearchEntity& aInfo) { return serializeSearchInstance(aInfo.getSearch()); }
+			[](const SearchEntity& aInfo) { return serializeSearchInstance(aInfo.getSearch()); },
+			Access::SEARCH
 		)
 	{
+		HookApiModule::createHook(HOOK_INCOMING_USER_RESULT, [this](ActionHookSubscriber&& aSubscriber) {
+			return SearchManager::getInstance()->incomingSearchResultHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(SearchApi::incomingUserResultHook));
+		}, [this](const string& aId) {
+			SearchManager::getInstance()->incomingSearchResultHook.removeSubscriber(aId);
+		}, [this] {
+			return SearchManager::getInstance()->incomingSearchResultHook.getSubscribers();
+		});
 
 		METHOD_HANDLER(Access::SEARCH,	METHOD_POST,	(),						SearchApi::handleCreateInstance);
 
@@ -80,6 +94,15 @@ namespace webserver {
 		}
 	}
 
+	ActionHookResult<> SearchApi::incomingUserResultHook(const SearchResultPtr& aResult, const ActionHookResultGetter<>& aResultGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook(HOOK_INCOMING_USER_RESULT, WEBCFG(SEARCH_INCOMING_USER_RESULT_HOOK_TIMEOUT).num(), [&]() {
+				return SearchEntity::serializeSearchResult(aResult);
+			}),
+			aResultGetter
+		);
+	}
+
 	void SearchApi::on(SearchManagerListener::SearchInstanceCreated, const SearchInstancePtr& aInstance) noexcept {
 		auto module = std::make_shared<SearchEntity>(this, aInstance);
 		addSubModule(aInstance->getToken(), module);
@@ -89,6 +112,41 @@ namespace webserver {
 	void SearchApi::on(SearchManagerListener::SearchInstanceRemoved, const SearchInstancePtr& aInstance) noexcept {
 		removeSubModule(aInstance->getToken());
 		maybeSend("search_instance_removed", [=] { return serializeSearchInstance(aInstance); });
+	}
+
+	string SearchApi::serializeSearchQueryItemType(const SearchQuery& aQuery) noexcept {
+		if (aQuery.root) {
+			return "tth";
+		}
+
+		switch (aQuery.itemType) {
+			case SearchQuery::ItemType::DIRECTORY: return "directory";
+			case SearchQuery::ItemType::FILE: return "file";
+			case SearchQuery::ItemType::ANY: 
+			default: return "any";
+		};
+	}
+
+	json SearchApi::serializeSearchQuery(const SearchQuery& aQuery) noexcept {
+		return {
+			{ "pattern", aQuery.root ? (*aQuery.root).toBase32() : aQuery.include.toString() },
+			{ "min_size", aQuery.gt },
+			{ "max_size", aQuery.lt },
+			{ "file_type", serializeSearchQueryItemType(aQuery) },
+			{ "extensions", aQuery.ext },
+			{ "excluded", aQuery.exclude.toStringList() },
+		};
+	}
+
+	void SearchApi::on(SearchManagerListener::IncomingSearch, Client* aClient, const OnlineUserPtr& aAdcUser, const SearchQuery& aQuery, const SearchResultList& aResults, bool) noexcept {
+		maybeSend("search_incoming_search", [&] {
+			return json({
+				{ "hub", Serializer::serializeClient(aClient) },
+				{ "user", aAdcUser ? Serializer::serializeOnlineUser(aAdcUser) : json() },
+				{ "results", Serializer::serializeList(aResults, SearchEntity::serializeSearchResult) },
+				{ "query", serializeSearchQuery(aQuery) },
+			});
+		});
 	}
 
 	json SearchApi::serializeSearchInstance(const SearchInstancePtr& aSearch) noexcept {
@@ -107,7 +165,7 @@ namespace webserver {
 	}
 
 
-	string SearchApi::createCurrentSessionOwnerId(const string& aSuffix) noexcept {
+	string SearchApi::createCurrentSessionOwnerId(const string& aSuffix) const noexcept {
 		string ret;
 
 		switch (session->getSessionType()) {
@@ -129,7 +187,7 @@ namespace webserver {
 		return ret;
 	}
 
-	api_return SearchApi::handleCreateInstance(ApiRequest& aRequest) {
+	api_return SearchApi::handleCreateInstance(ApiRequest& aRequest) const {
 		auto expirationMinutes = JsonUtil::getRangeFieldDefault<int>("expiration", aRequest.getRequestBody(), DEFAULT_INSTANCE_EXPIRATION_MINUTES, 0);
 		auto ownerIdSuffix = JsonUtil::getOptionalFieldDefault<string>(
 			"owner_suffix", aRequest.getRequestBody(), 
@@ -151,33 +209,36 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return SearchApi::handleGetTypes(ApiRequest& aRequest) {
-		auto types = SearchManager::getInstance()->getSearchTypes();
+	api_return SearchApi::handleGetTypes(ApiRequest& aRequest) const {
+		const auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto types = typeManager.getSearchTypes();
 		aRequest.setResponseBody(Serializer::serializeList(types, serializeSearchType));
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return SearchApi::handleGetType(ApiRequest& aRequest) {
+	api_return SearchApi::handleGetType(ApiRequest& aRequest) const {
 		auto id = parseSearchTypeId(aRequest);
 
-		auto type = SearchManager::getInstance()->getSearchType(id);
+		const auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto type = typeManager.getSearchType(id);
 		aRequest.setResponseBody(serializeSearchType(type));
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return SearchApi::handlePostType(ApiRequest& aRequest) {
+	api_return SearchApi::handlePostType(ApiRequest& aRequest) const {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		auto name = JsonUtil::getField<string>("name", reqJson, false);
 		auto extensions = JsonUtil::getField<StringList>("extensions", reqJson, false);
 
-		auto type = SearchManager::getInstance()->addSearchType(name, extensions);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto type = typeManager.addSearchType(name, extensions);
 		aRequest.setResponseBody(serializeSearchType(type));
 
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return SearchApi::handleUpdateType(ApiRequest& aRequest) {
+	api_return SearchApi::handleUpdateType(ApiRequest& aRequest) const {
 		auto id = parseSearchTypeId(aRequest);
 
 		const auto& reqJson = aRequest.getRequestBody();
@@ -185,14 +246,16 @@ namespace webserver {
 		auto name = JsonUtil::getOptionalField<string>("name", reqJson);
 		auto extensions = JsonUtil::getOptionalField<StringList>("extensions", reqJson);
 
-		auto type = SearchManager::getInstance()->modSearchType(id, name, extensions);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto type = typeManager.modSearchType(id, name, extensions);
 		aRequest.setResponseBody(serializeSearchType(type));
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return SearchApi::handleRemoveType(ApiRequest& aRequest) {
+	api_return SearchApi::handleRemoveType(ApiRequest& aRequest) const {
 		auto id = parseSearchTypeId(aRequest);
-		SearchManager::getInstance()->delSearchType(id);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.delSearchType(id);
 		return websocketpp::http::status_code::no_content;
 	}
 

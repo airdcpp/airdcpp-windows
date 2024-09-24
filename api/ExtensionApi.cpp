@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -27,6 +27,7 @@
 #include <web-server/Session.h>
 #include <web-server/WebServerManager.h>
 
+#include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 
 
@@ -41,13 +42,13 @@ namespace webserver {
 		"extension_installation_failed",
 	};
 
-	ExtensionApi::ExtensionApi(Session* aSession) : /*HookApiModule(aSession, Access::ADMIN, nullptr, Access::ADMIN),*/ 
-		em(aSession->getServer()->getExtensionManager()),
+	ExtensionApi::ExtensionApi(Session* aSession) : 
 		ParentApiModule(EXTENSION_PARAM, Access::SETTINGS_VIEW, aSession, ExtensionApi::subscriptionList,
 			ExtensionInfo::subscriptionList,
 			[](const string& aId) { return aId; },
 			[](const ExtensionInfo& aInfo) { return ExtensionInfo::serializeExtension(aInfo.getExtension()); }
-		)
+		),
+		em(aSession->getServer()->getExtensionManager())
 	{
 		em.addListener(this);
 

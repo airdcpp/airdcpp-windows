@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,6 +20,8 @@
 #define DCPLUSPLUS_DCPP_MESSAGECACHE_MODULE_H
 
 #include <web-server/JsonUtil.h>
+#include <web-server/Session.h>
+#include <web-server/WebUserManager.h>
 
 #include <api/base/ApiModule.h>
 #include <api/common/Deserializer.h>
@@ -32,7 +34,7 @@ namespace webserver {
 	class ChatController {
 	public:
 		ChatController(SubscribableApiModule* aModule, ChatHandlerBase* aChat, const string& aSubscriptionId, Access aViewPermission, Access aEditPermission, Access aSendPermission) :
-			module(aModule), subscriptionId(aSubscriptionId), chat(aChat)
+			subscriptionId(aSubscriptionId), apiModule(aModule), chat(aChat)
 		{
 			MODULE_METHOD_HANDLER(aModule, aSendPermission, METHOD_POST, (EXACT_PARAM("chat_message")), ChatController::handlePostChatMessage);
 			MODULE_METHOD_HANDLER(aModule, aEditPermission, METHOD_POST, (EXACT_PARAM("status_message")), ChatController::handlePostStatusMessage);
@@ -48,22 +50,26 @@ namespace webserver {
 			onMessagesUpdated();
 
 			auto s = toListenerName("message");
-			if (!module->subscriptionActive(s)) {
+			if (!apiModule->subscriptionActive(s)) {
 				return;
 			}
 
-			module->send(s, MessageUtils::serializeChatMessage(aMessage));
+			apiModule->send(s, MessageUtils::serializeChatMessage(aMessage));
 		}
 
-		void onStatusMessage(const LogMessagePtr& aMessage) noexcept {
+		void onStatusMessage(const LogMessagePtr& aMessage, const string& aOwner) noexcept {
+			if (!aOwner.empty() && getCurrentSessionOwnerId() != aOwner) {
+				return;
+			}
+
 			onMessagesUpdated();
 
 			auto s = toListenerName("status");
-			if (!module->subscriptionActive(s)) {
+			if (!apiModule->subscriptionActive(s)) {
 				return;
 			}
 
-			module->send(s, MessageUtils::serializeLogMessage(aMessage));
+			apiModule->send(s, MessageUtils::serializeLogMessage(aMessage));
 		}
 
 		void onMessagesUpdated() {
@@ -72,7 +78,7 @@ namespace webserver {
 
 		void onChatCommand(const OutgoingChatMessage& aMessage) {
 			auto s = toListenerName("text_command");
-			if (!module->subscriptionActive(s)) {
+			if (!apiModule->subscriptionActive(s)) {
 				return;
 			}
 
@@ -88,10 +94,11 @@ namespace webserver {
 
 			tokens.pop_front();
 
-			module->send(s, {
+			apiModule->send(s, {
 				{ "command", command.substr(1) },
 				{ "args", tokens },
 				{ "permissions",  Serializer::serializePermissions(parseMessageAuthorAccess(aMessage)) },
+				{ "owner", aMessage.ownerId },
 			});
 		}
 
@@ -101,18 +108,18 @@ namespace webserver {
 	private:
 		void sendUnread() noexcept {
 			auto s = toListenerName("updated");
-			if (!module->subscriptionActive(s)) {
+			if (!apiModule->subscriptionActive(s)) {
 				return;
 			}
 
-			module->send(s, {
+			apiModule->send(s, {
 				{ "message_counts",  MessageUtils::serializeCacheInfo(chat->getCache(), MessageUtils::serializeUnreadChat) },
 			});
 		}
 
 		AccessList parseMessageAuthorAccess(const OutgoingChatMessage& aMessage) {
-			const auto sessions = module->getSession()->getServer()->getUserManager().getSessions();
-			const auto ownerSessionIter = std::find_if(sessions.begin(), sessions.end(), [&aMessage](const SessionPtr& aSession) {
+			const auto sessions = apiModule->getSession()->getServer()->getUserManager().getSessions();
+			const auto ownerSessionIter = ranges::find_if(sessions, [&aMessage](const SessionPtr& aSession) {
 				return aSession.get() == aMessage.owner;
 			});
 
@@ -130,14 +137,14 @@ namespace webserver {
 		api_return handlePostChatMessage(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();
 
-			module->addAsyncTask([
+			apiModule->addAsyncTask([
 				this,
 				message = Deserializer::deserializeChatMessage(reqJson),
 				complete = aRequest.defer(),
 				callerPtr = aRequest.getOwnerPtr()
 			] {
 				string error;
-				if (!chat->sendMessageHooked(OutgoingChatMessage(message.first, callerPtr, message.second), error) && !error.empty()) {
+				if (!chat->sendMessageHooked(OutgoingChatMessage(message.message, callerPtr, getCurrentSessionOwnerId(), message.thirdPerson), error) && !error.empty()) {
 					complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error));
 				} else {
 					complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
@@ -150,8 +157,9 @@ namespace webserver {
 		api_return handlePostStatusMessage(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();
 
-			auto message = Deserializer::deserializeStatusMessage(reqJson);
-			chat->statusMessage(message.first, message.second, MessageUtils::parseStatusMessageLabel(aRequest.getSession()));
+			auto message = Deserializer::deserializeChatStatusMessage(reqJson);
+			auto label = MessageUtils::parseStatusMessageLabel(aRequest.getSession());
+			chat->statusMessage(message.message, message.severity, message.type, label, message.ownerId);
 			return websocketpp::http::status_code::no_content;
 		}
 
@@ -192,9 +200,35 @@ namespace webserver {
 			return subscriptionId + "_" + aSubscription;
 		}
 
+		string getCurrentSessionOwnerId(const string& aSuffix = Util::emptyString) noexcept {
+			string ret;
+
+			if (!apiModule->getSocket()) {
+				// Owner isn't meaningful for HTTP sessions as targeted messages aren't cached anywhere...
+				return Util::emptyString;
+			}
+
+			const auto session = apiModule->getSession();
+			switch (session->getSessionType()) {
+			case Session::TYPE_EXTENSION:
+				ret = "extension:" + session->getUser()->getUserName();
+				break;
+			default:
+				ret = "session:" + Util::toString(session->getId());
+				break;
+			}
+
+			if (!aSuffix.empty()) {
+				ret += ":" + aSuffix;
+			}
+
+			return ret;
+		}
+
+
 		ChatHandlerBase* chat;
 		string subscriptionId;
-		SubscribableApiModule* module;
+		SubscribableApiModule* apiModule;
 	};
 }
 

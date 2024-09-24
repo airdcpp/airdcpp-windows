@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_SCL_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\zlib;$(SolutionDir)third-party\openssl\include;$(SolutionDir)third-party\boost;$(SolutionDir)airdcpp;$(SolutionDir)third-party;$(ProjectDir)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MinimalRebuild>false</MinimalRebuild>
@@ -110,7 +110,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\zlib;$(SolutionDir)third-party\openssl\include;$(SolutionDir)third-party\boost;$(SolutionDir)airdcpp;$(SolutionDir)third-party;$(ProjectDir)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -121,7 +121,7 @@
       </ShowIncludes>
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)webapi.pch</PrecompiledHeaderOutputFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -137,14 +137,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_SCL_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\zlib;$(SolutionDir)third-party\openssl\include;$(SolutionDir)third-party\boost;$(SolutionDir)airdcpp;$(SolutionDir)third-party;$(ProjectDir)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/bigobj /permissive- %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)webapi.pch</PrecompiledHeaderOutputFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -162,7 +162,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_SCL_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third-party\zlib;$(SolutionDir)third-party\openssl\include;$(SolutionDir)third-party\boost;$(SolutionDir)airdcpp;$(SolutionDir)third-party;$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj /permissive- %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -170,7 +170,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)webapi.pch</PrecompiledHeaderOutputFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -180,6 +180,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="api\AdcCommandApi.h" />
     <ClInclude Include="api\base\ApiModule.h" />
     <ClInclude Include="api\base\HierarchicalApiModule.h" />
     <ClInclude Include="api\base\HookApiModule.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="api\common\PropertyFilter.h" />
     <ClInclude Include="api\common\Serializer.h" />
     <ClInclude Include="api\common\SettingUtils.h" />
+    <ClInclude Include="api\common\Validation.h" />
     <ClInclude Include="api\common\ViewTasks.h" />
     <ClInclude Include="api\ConnectivityApi.h" />
     <ClInclude Include="api\CoreSettings.h" />
@@ -242,14 +244,17 @@
     <ClInclude Include="web-server\ApiRequest.h" />
     <ClInclude Include="web-server\ApiRouter.h" />
     <ClInclude Include="web-server\ApiSettingItem.h" />
+    <ClInclude Include="web-server\ContextMenuItem.h" />
     <ClInclude Include="web-server\ContextMenuManager.h" />
+    <ClInclude Include="web-server\ContextMenuManagerListener.h" />
     <ClInclude Include="web-server\Exception.h" />
     <ClInclude Include="web-server\Extension.h" />
     <ClInclude Include="web-server\ExtensionListener.h" />
     <ClInclude Include="web-server\ExtensionManager.h" />
     <ClInclude Include="web-server\ExtensionManagerListener.h" />
     <ClInclude Include="web-server\FileServer.h" />
-    <ClInclude Include="web-server\FloodCounter.h" />
+    <ClInclude Include="web-server\HttpManager.h" />
+    <ClInclude Include="web-server\HttpRequest.h" />
     <ClInclude Include="web-server\HttpUtil.h" />
     <ClInclude Include="web-server\JsonUtil.h" />
     <ClInclude Include="web-server\LazyInitWrapper.h" />
@@ -257,6 +262,8 @@
     <ClInclude Include="web-server\NpmRepository.h" />
     <ClInclude Include="web-server\Session.h" />
     <ClInclude Include="web-server\SessionListener.h" />
+    <ClInclude Include="web-server\SocketManager.h" />
+    <ClInclude Include="web-server\SocketManagerListener.h" />
     <ClInclude Include="web-server\SystemUtil.h" />
     <ClInclude Include="web-server\TarFile.h" />
     <ClInclude Include="web-server\Timer.h" />
@@ -270,6 +277,7 @@
     <ClInclude Include="web-server\WebUserManagerListener.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="api\AdcCommandApi.cpp" />
     <ClCompile Include="api\base\ApiModule.cpp" />
     <ClCompile Include="api\base\HookApiModule.cpp" />
     <ClCompile Include="api\common\Deserializer.cpp" />
@@ -279,6 +287,7 @@
     <ClCompile Include="api\common\PropertyFilter.cpp" />
     <ClCompile Include="api\common\Serializer.cpp" />
     <ClCompile Include="api\common\SettingUtils.cpp" />
+    <ClCompile Include="api\common\Validation.cpp" />
     <ClCompile Include="api\ConnectivityApi.cpp" />
     <ClCompile Include="api\ExtensionApi.cpp" />
     <ClCompile Include="api\ExtensionInfo.cpp" />
@@ -341,11 +350,12 @@
     <ClCompile Include="web-server\Extension.cpp" />
     <ClCompile Include="web-server\ExtensionManager.cpp" />
     <ClCompile Include="web-server\FileServer.cpp" />
-    <ClCompile Include="web-server\FloodCounter.cpp" />
+    <ClCompile Include="web-server\HttpManager.cpp" />
     <ClCompile Include="web-server\HttpUtil.cpp" />
     <ClCompile Include="web-server\JsonUtil.cpp" />
     <ClCompile Include="web-server\NpmRepository.cpp" />
     <ClCompile Include="web-server\Session.cpp" />
+    <ClCompile Include="web-server\SocketManager.cpp" />
     <ClCompile Include="web-server\SystemUtil.cpp" />
     <ClCompile Include="web-server\TarFile.cpp" />
     <ClCompile Include="web-server\WebServerManager.cpp" />

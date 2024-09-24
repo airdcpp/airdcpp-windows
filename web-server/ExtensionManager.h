@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -26,10 +26,10 @@
 #include <airdcpp/Singleton.h>
 #include <airdcpp/Speaker.h>
 #include <airdcpp/UpdateManagerListener.h>
-#include <airdcpp/Util.h>
 
 #include <web-server/ExtensionListener.h>
 #include <web-server/ExtensionManagerListener.h>
+#include <web-server/SocketManagerListener.h>
 #include <web-server/WebServerManagerListener.h>
 
 namespace dcpp {
@@ -44,15 +44,15 @@ namespace webserver {
 		string command;
 		StringList arguments;
 
-		typedef vector<ExtensionEngine> List;
+		using List = vector<ExtensionEngine>;
 	};
 
 	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ExtensionEngine, name, command, arguments);
 
-	class ExtensionManager: public Speaker<ExtensionManagerListener>, private WebServerManagerListener, private UpdateManagerListener, ExtensionListener {
+	class ExtensionManager: public Speaker<ExtensionManagerListener>, private WebServerManagerListener, private UpdateManagerListener, private ExtensionListener, private SocketManagerListener {
 	public:
-		ExtensionManager(WebServerManager* aWsm);
-		~ExtensionManager();
+		explicit ExtensionManager(WebServerManager* aWsm);
+		~ExtensionManager() override;
 
 		// Load and start all managed extensions from disk
 		void load() noexcept;
@@ -108,15 +108,16 @@ namespace webserver {
 		void onExtensionFailed(const Extension* aExtension, uint32_t aExitCode) noexcept;
 		bool startExtensionImpl(const ExtensionPtr& aExtension, const ExtensionEngine::List& aInstalledEngines) noexcept;
 
-		typedef map<string, string> BlockedExtensionMap;
+		using BlockedExtensionMap = map<string, string>;
 		BlockedExtensionMap blockedExtensions;
 
 		void uninstallBlockedExtensions() noexcept;
 
+		static bool validateSha1(const string& aData, const string& aSha1) noexcept;
 		void onExtensionDownloadCompleted(const string& aInstallId, const string& aUrl, const string& aSha1) noexcept;
 		void failInstallation(const string& aInstallId, const string& aMessage, const string& aException) noexcept;
 
-		typedef map<string, shared_ptr<HttpDownload>> HttpDownloadMap;
+		using HttpDownloadMap = map<string, shared_ptr<HttpDownload>>;
 		HttpDownloadMap httpDownloads;
 
 		unique_ptr<NpmRepository> npmRepository;
@@ -134,14 +135,15 @@ namespace webserver {
 		void on(WebServerManagerListener::Started) noexcept override;
 		void on(WebServerManagerListener::Stopping) noexcept override;
 		void on(WebServerManagerListener::Stopped) noexcept override;
-		void on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
 
-		virtual void on(ExtensionListener::ExtensionStarted, const Extension*) noexcept override;
-		virtual void on(ExtensionListener::ExtensionStopped, const Extension*, bool /*aFailed*/) noexcept override;
+		void on(SocketManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
 
-		virtual void on(ExtensionListener::SettingValuesUpdated, const Extension*, const SettingValueMap&) noexcept override;
-		virtual void on(ExtensionListener::SettingDefinitionsUpdated, const Extension*) noexcept override;
-		virtual void on(ExtensionListener::PackageUpdated, const Extension*) noexcept override;
+		void on(ExtensionListener::ExtensionStarted, const Extension*) noexcept override;
+		void on(ExtensionListener::ExtensionStopped, const Extension*, bool /*aFailed*/) noexcept override;
+
+		void on(ExtensionListener::SettingValuesUpdated, const Extension*, const SettingValueMap&) noexcept override;
+		void on(ExtensionListener::SettingDefinitionsUpdated, const Extension*) noexcept override;
+		void on(ExtensionListener::PackageUpdated, const Extension*) noexcept override;
 
 		void on(UpdateManagerListener::VersionFileDownloaded, SimpleXML& aXml) noexcept override;
 

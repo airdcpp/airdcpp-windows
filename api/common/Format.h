@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -27,8 +27,11 @@ namespace webserver {
 		static std::string formatIp(const string& aIP, const string& aCountryCode) noexcept;
 		static std::string formatIp(const string& aIP) noexcept;
 
-		static std::string formatNicks(const HintedUser& aUser) noexcept;
-		static std::string formatHubs(const HintedUser& aUser) noexcept;
+		// Basic string conversion for copying/filtering (will ignore the hint)
+		static std::string nicksToString(const HintedUser& aUser) noexcept;
+
+		// Basic string conversion for copying/filtering (will ignore the hint)
+		static std::string hubsToString(const HintedUser& aUser) noexcept;
 	};
 }
 

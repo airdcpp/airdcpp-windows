@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,23 +20,30 @@
 
 #include <api/ShareApi.h>
 
+#include <web-server/HttpManager.h>
 #include <web-server/Session.h>
 #include <web-server/WebServerManager.h>
 
 #include <api/common/Deserializer.h>
 #include <api/common/FileSearchParser.h>
 #include <api/common/Serializer.h>
+#include <api/common/Validation.h>
 
 #include <web-server/JsonUtil.h>
+#include <web-server/WebServerSettings.h>
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/HashManager.h>
 #include <airdcpp/HubEntry.h>
 #include <airdcpp/Magnet.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchResult.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/SharePathValidator.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/TempShareManager.h>
+#include <airdcpp/ValueGenerator.h>
 
 namespace webserver {
 	ShareApi::ShareApi(Session* aSession) : 
@@ -64,6 +71,12 @@ namespace webserver {
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("validate_path")),						ShareApi::handleValidatePath);
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("check_path_shared")),					ShareApi::handleIsPathShared);
 
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST,	(EXACT_PARAM("directories"), EXACT_PARAM("by_real"), EXACT_PARAM("content"), RANGE_START_PARAM, RANGE_MAX_PARAM),	ShareApi::handleGetDirectoryContentByReal);
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST,	(EXACT_PARAM("directories"), EXACT_PARAM("by_real")),		ShareApi::handleGetDirectoryByReal);
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST,	(EXACT_PARAM("files"), EXACT_PARAM("by_real")),				ShareApi::handleGetFileByReal);
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST,	(EXACT_PARAM("files"), EXACT_PARAM("by_tth")),				ShareApi::handleGetFilesByTTH);
+
+
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh")),							ShareApi::handleRefreshShare);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("refresh")),							ShareApi::handleAbortRefreshShare);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh"), EXACT_PARAM("paths")),		ShareApi::handleRefreshPaths);
@@ -80,28 +93,36 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("temp_shares")),						ShareApi::handleAddTempShare);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("temp_shares"), TOKEN_PARAM),			ShareApi::handleRemoveTempShare);
 
-		createHook("share_file_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook("share_file_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
 			return ShareManager::getInstance()->getValidator().fileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::fileValidationHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			ShareManager::getInstance()->getValidator().fileValidationHook.removeSubscriber(aId);
+		}, [] {
+			return ShareManager::getInstance()->getValidator().fileValidationHook.getSubscribers();
 		});
 
-		createHook("share_directory_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook("share_directory_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
 			return ShareManager::getInstance()->getValidator().directoryValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::directoryValidationHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			ShareManager::getInstance()->getValidator().directoryValidationHook.removeSubscriber(aId);
+		}, [] {
+			return ShareManager::getInstance()->getValidator().directoryValidationHook.getSubscribers();
 		});
 
-		createHook("new_share_directory_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook("new_share_directory_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
 			return ShareManager::getInstance()->getValidator().newDirectoryValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::newDirectoryValidationHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			ShareManager::getInstance()->getValidator().newDirectoryValidationHook.removeSubscriber(aId);
+		}, [] {
+			return ShareManager::getInstance()->getValidator().newDirectoryValidationHook.getSubscribers();
 		});
 
-		createHook("new_share_file_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+		HookApiModule::createHook("new_share_file_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
 			return ShareManager::getInstance()->getValidator().newFileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::newFileValidationHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			ShareManager::getInstance()->getValidator().newFileValidationHook.removeSubscriber(aId);
+		}, [] {
+			return ShareManager::getInstance()->getValidator().newFileValidationHook.getSubscribers();
 		});
 
 		ShareManager::getInstance()->addListener(this);
@@ -159,8 +180,51 @@ namespace webserver {
 		);
 	}
 
-	json ShareApi::serializeShareItem(const SearchResultPtr& aSR) noexcept {
-		auto isDirectory = aSR->getType() == SearchResult::TYPE_DIRECTORY;
+	json ShareApi::serializeShareItem(const ShareItem& aItem) noexcept {
+		if (aItem.directory) {
+			return serializeDirectory(aItem.directory);
+		} else {
+			return serializeFile(aItem.file);
+		}
+	}
+
+	json ShareApi::serializeFile(const ShareDirectory::File* aFile) noexcept {
+		auto realPath = aFile->getRealPath();
+		return {
+			{ "id", ValueGenerator::generatePathId(realPath) },
+			{ "name", aFile->getName().getNormal() },
+			{ "path", realPath },
+			{ "virtual_path", aFile->getAdcPath() },
+			{ "size", aFile->getSize() },
+			{ "tth", aFile->getTTH().toBase32() },
+			{ "time", aFile->getLastWrite() },
+			{ "type", Serializer::serializeFileType(aFile->getName().getLower()) },
+			{ "profiles", aFile->getParent()->getRootProfiles() },
+		};
+	}
+
+	json ShareApi::serializeDirectory(const ShareDirectory::Ptr& aDirectory) noexcept {
+		auto contentInfo(DirectoryContentInfo::empty());
+		int64_t totalSize = 0;
+		aDirectory->getContentInfo(totalSize, contentInfo);
+
+		auto realPath = aDirectory->getRealPathUnsafe();
+		return {
+			{ "id", ValueGenerator::generatePathId(realPath) },
+			{ "name", aDirectory->getRealName().getNormal() },
+			{ "path", realPath },
+			{ "virtual_path", aDirectory->getAdcPathUnsafe() },
+			{ "size", totalSize },
+			{ "tth", Util::emptyString },
+			{ "time", aDirectory->getLastWrite() },
+			{ "type", Serializer::serializeFolderType(contentInfo) },
+			{ "profiles", aDirectory->getRootProfiles() },
+		};
+	}
+
+
+	json ShareApi::serializeVirtualItem(const SearchResultPtr& aSR) noexcept {
+		auto isDirectory = aSR->getType() == SearchResult::Type::DIRECTORY;
 		auto path = aSR->getAdcPath();
 
 		StringList realPaths;
@@ -182,7 +246,7 @@ namespace webserver {
 		};
 	}
 
-	json ShareApi::serializeRefreshQueueInfo(const ShareManager::RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept {
+	json ShareApi::serializeRefreshQueueInfo(const RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept {
 		return {
 			{ "task", !aRefreshQueueInfo.token ? JsonUtil::emptyJson : json({
 				{ "id", json(*aRefreshQueueInfo.token) },
@@ -203,11 +267,11 @@ namespace webserver {
 		};
 	}
 
-	string ShareApi::refreshResultToString(ShareManager::RefreshTaskQueueResult aRefreshQueueResult) noexcept {
+	string ShareApi::refreshResultToString(RefreshTaskQueueResult aRefreshQueueResult) noexcept {
 		switch (aRefreshQueueResult) {
-			case ShareManager::RefreshTaskQueueResult::EXISTS: return "exists";
-			case ShareManager::RefreshTaskQueueResult::QUEUED: return "queued";
-			case ShareManager::RefreshTaskQueueResult::STARTED: return "started";
+			case RefreshTaskQueueResult::EXISTS: return "exists";
+			case RefreshTaskQueueResult::QUEUED: return "queued";
+			case RefreshTaskQueueResult::STARTED: return "started";
 		}
 
 		dcassert(0);
@@ -231,20 +295,73 @@ namespace webserver {
 
 		// Parse share profile and query
 		auto profile = Deserializer::deserializeOptionalShareProfile(reqJson);
-		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
+		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(ValueGenerator::rand()));
 
 		// Search
 		SearchResultList results;
 		
 		{
 			unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
+			ShareSearch search(*matcher, profile, nullptr, s->path);
 			try {
-				ShareManager::getInstance()->adcSearch(results, *matcher, profile, CID(), s->path);
+				ShareManager::getInstance()->search(results, search);
 			} catch (...) {}
 		}
 
 		// Serialize results
-		aRequest.setResponseBody(Serializer::serializeList(results, serializeShareItem));
+		aRequest.setResponseBody(Serializer::serializeList(results, serializeVirtualItem));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleGetFilesByTTH(ApiRequest& aRequest) {
+		auto tth = Deserializer::deserializeTTH(aRequest.getRequestBody());
+
+		const auto files = ShareManager::getInstance()->findFiles(tth);
+		aRequest.setResponseBody(Serializer::serializeList(files, serializeFile));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleGetDirectoryContentByReal(ApiRequest& aRequest) {
+		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
+		auto start = aRequest.getRangeParam(START_POS);
+		auto count = aRequest.getRangeParam(MAX_COUNT);
+		if (!ShareManager::getInstance()->findDirectoryByRealPath(path, [&](const ShareDirectory::Ptr& aDirectory) {
+			ShareItem::List items;
+			for (const auto& d : aDirectory->getDirectories()) {
+				items.emplace_back(d);
+			}
+			for (const auto& f : aDirectory->getFiles()) {
+				items.emplace_back(f);
+			}
+
+			auto j = Serializer::serializeFromPosition(start, count, items, serializeShareItem);
+			aRequest.setResponseBody(j);
+		})) {
+			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, "Path was not found");
+		}
+
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleGetFileByReal(ApiRequest& aRequest) {
+		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
+		if (!ShareManager::getInstance()->findFileByRealPath(path, [&](const ShareDirectory::File& aFile) {
+			aRequest.setResponseBody(serializeFile(&aFile));
+		})) {
+			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, "Path was not found");
+		}
+
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleGetDirectoryByReal(ApiRequest& aRequest) {
+		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
+		if (!ShareManager::getInstance()->findDirectoryByRealPath(path, [&](const ShareDirectory::Ptr& aDirectory) {
+			aRequest.setResponseBody(serializeDirectory(aDirectory));
+		})) {
+			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, "Path was not found");
+		}
+
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -254,8 +371,8 @@ namespace webserver {
 		const auto user = Deserializer::deserializeUser(aRequest.getRequestBody(), true, true);
 		const auto optionalClient = Deserializer::deserializeClient(aRequest.getRequestBody(), true);
 
-		const auto filePath = aRequest.getSession()->getServer()->getFileServer().getTempFilePath(fileId);
-		if (filePath.empty() || !Util::fileExists(filePath)) {
+		const auto filePath = aRequest.getSession()->getServer()->getHttpManager().getFileServer().getTempFilePath(fileId);
+		if (filePath.empty() || !PathUtil::fileExists(filePath)) {
 			JsonUtil::throwError("file_id", JsonUtil::ERROR_INVALID, "Source file was not found");
 		}
 
@@ -276,7 +393,7 @@ namespace webserver {
 		}
 
 		auto shareProfileToken = optionalClient ? optionalClient->get(HubSettings::ShareProfile) : SETTING(DEFAULT_SP);
-		auto item = ShareManager::getInstance()->addTempShare(tth, name, filePath, size, shareProfileToken, user);
+		auto item = TempShareManager::getInstance()->addTempShare(tth, name, filePath, size, shareProfileToken, user);
 
 		aRequest.setResponseBody({
 			{ "magnet", Magnet::makeMagnet(tth, name, size) },
@@ -288,7 +405,7 @@ namespace webserver {
 
 	api_return ShareApi::handleRemoveTempShare(ApiRequest& aRequest) {
 		auto token = aRequest.getTokenParam();
-		if (!ShareManager::getInstance()->removeTempShare(token)) {
+		if (!TempShareManager::getInstance()->removeTempShare(token)) {
 			aRequest.setResponseErrorStr("Temp share item " + Util::toString(token) + " was not found");
 			return websocketpp::http::status_code::bad_request;
 		}
@@ -300,7 +417,7 @@ namespace webserver {
 		return {
 			{ "id", aInfo.id },
 			{ "name", aInfo.name },
-			{ "path", aInfo.path },
+			{ "path", aInfo.realPath },
 			{ "size", aInfo.size },
 			{ "tth", aInfo.tth.toBase32() },
 			{ "time_added", aInfo.timeAdded },
@@ -310,7 +427,7 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleGetTempShares(ApiRequest& aRequest) {
-		const auto tempShares = ShareManager::getInstance()->getTempShares();
+		const auto tempShares = TempShareManager::getInstance()->getTempShares();
 
 		aRequest.setResponseBody(Serializer::serializeList(tempShares, serializeTempShare));
 		return websocketpp::http::status_code::ok;
@@ -322,7 +439,7 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleAddExclude(ApiRequest& aRequest) {
-		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
+		auto path = PathUtil::validatePath(JsonUtil::getField<string>("path", aRequest.getRequestBody(), false), true);
 
 		try {
 			ShareManager::getInstance()->addExcludedPath(path);
@@ -356,13 +473,13 @@ namespace webserver {
 	}
 
 
-	void ShareApi::on(ShareManagerListener::TempFileAdded, const TempShareInfo& aFile) noexcept {
+	void ShareApi::on(TempShareManagerListener::TempFileAdded, const TempShareInfo& aFile) noexcept {
 		maybeSend("share_temp_item_added", [&] {
 			return serializeTempShare(aFile);
 		});
 	}
 
-	void ShareApi::on(ShareManagerListener::TempFileRemoved, const TempShareInfo& aFile) noexcept {
+	void ShareApi::on(TempShareManagerListener::TempFileRemoved, const TempShareInfo& aFile) noexcept {
 		maybeSend("share_temp_item_removed", [&] {
 			return serializeTempShare(aFile);
 		});
@@ -407,7 +524,7 @@ namespace webserver {
 			complete = aRequest.defer(),
 			callerPtr = aRequest.getOwnerPtr()
 		] {
-			ShareManager::RefreshTaskQueueInfo refreshInfo;
+			RefreshTaskQueueInfo refreshInfo;
 			const auto refreshF = [&] {
 				refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, paths, callerPtr);
 			};
@@ -432,16 +549,11 @@ namespace webserver {
 	api_return ShareApi::handleRefreshVirtualPath(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 		addAsyncTask([
-			virtualPath = JsonUtil::getField<string>("path", reqJson, false),
+			virtualPath = Validation::validateAdcDirectoryPath(JsonUtil::getField<string>("path", reqJson, false)),
 			priority = parseRefreshPriority(reqJson),
 			complete = aRequest.defer(),
 			callerPtr = aRequest.getOwnerPtr()
 		] {
-			if (!Util::isAdcDirectoryPath(virtualPath)) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("Path " + virtualPath + " isn't a valid ADC directory path"));
-				return;
-			}
-
 			StringList refreshPaths;
 			try {
 				ShareManager::getInstance()->getRealPaths(virtualPath, refreshPaths);
@@ -563,7 +675,7 @@ namespace webserver {
 		auto path = JsonUtil::getOptionalField<string>("path", reqJson);
 		if (path) {
 			// Note: non-standard/partial paths are allowed, no strict directory path validation
-			ret = ShareManager::getInstance()->getAdcDirectoryPaths(*path);
+			ret = ShareManager::getInstance()->getAdcDirectoryDupePaths(*path);
 		} else {
 			auto tth = Deserializer::deserializeTTH(reqJson);
 			ret = ShareManager::getInstance()->getRealPaths(tth);

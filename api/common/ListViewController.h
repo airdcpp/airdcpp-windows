@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,6 +20,7 @@
 #define DCPLUSPLUS_WEBSERVER_LISTVIEW_H
 
 #include <web-server/JsonUtil.h>
+#include <web-server/Session.h>
 #include <web-server/SessionListener.h>
 #include <web-server/Timer.h>
 #include <web-server/WebServerManager.h>
@@ -36,14 +37,14 @@ namespace webserver {
 	template<class T, int PropertyCount>
 	class ListViewController : private SessionListener {
 	public:
-		typedef typename PropertyItemHandler<T>::ItemList ItemList;
-		typedef typename PropertyItemHandler<T>::ItemListFunction ItemListF;
-		typedef std::function<void(bool aActive)> StateChangeFunction;
+		using ItemList = typename PropertyItemHandler<T>::ItemList;
+		using ItemListF = typename PropertyItemHandler<T>::ItemListFunction;
+		using StateChangeFunction = std::function<void (bool)>;
 
 		// Use the short default update interval for lists that can be edited by the users
 		// Larger lists with lots of updates and non-critical response times should specify a longer interval
 		ListViewController(const string& aViewName, SubscribableApiModule* aModule, const PropertyItemHandler<T>& aItemHandler, ItemListF aItemListF, time_t aUpdateInterval = 200) :
-			module(aModule), viewName(aViewName), itemHandler(aItemHandler), itemListF(aItemListF),
+			apiModule(aModule), viewName(aViewName), itemHandler(aItemHandler), itemListF(aItemListF),
 			timer(aModule->getTimer([this] { runTasks(); }, aUpdateInterval))
 		{
 			aModule->getSession()->addListener(this);
@@ -59,8 +60,8 @@ namespace webserver {
 			MODULE_METHOD_HANDLER(aModule, access, METHOD_GET, (EXACT_PARAM(viewName), EXACT_PARAM("items"), RANGE_START_PARAM, RANGE_MAX_PARAM), ListViewController::handleGetItems);
 		}
 
-		~ListViewController() {
-			module->getSession()->removeListener(this);
+		~ListViewController() override {
+			apiModule->getSession()->removeListener(this);
 
 			timer->stop(true);
 		}
@@ -69,7 +70,7 @@ namespace webserver {
 			setActive(false);
 			timer->stop(false);
 
-			clear();
+			clear(true);
 			currentValues.reset();
 		}
 
@@ -122,7 +123,7 @@ namespace webserver {
 
 		bool hasSourceItem(const T& aItem) const noexcept {
 			RLock l(cs);
-			return sourceItems.find(aItem) != sourceItems.end();
+			return sourceItems.contains(aItem);
 		}
 	private:
 		void setActive(bool aActive) {
@@ -144,7 +145,7 @@ namespace webserver {
 		}
 
 		PropertyFilter::List::iterator findFilter(FilterToken aToken) {
-			return find_if(filters.begin(), filters.end(), [&](const PropertyFilter::Ptr& aFilter) { return aFilter->getId() == aToken; });
+			return ranges::find_if(filters, [&](const PropertyFilter::Ptr& aFilter) { return aFilter->getId() == aToken; });
 		}
 
 		bool removeFilter(FilterToken aToken) {
@@ -177,9 +178,11 @@ namespace webserver {
 		template<typename FilterT = PropertyFilter::Ptr, typename MatcherT>
 		bool matchesFilter(const T& aItem, const MatcherT& aMatcher) {
 			return PropertyFilter::Matcher<FilterT>::match(aMatcher,
-				[&](size_t aProperty) { return itemHandler.numberF(aItem, aProperty); },
-				[&](size_t aProperty) { return itemHandler.stringF(aItem, aProperty); },
-				[&](size_t aProperty, const StringMatch& aStringMatcher, double aNumericMatcher) { return itemHandler.customFilterF(aItem, aProperty, aStringMatcher, aNumericMatcher); }
+				[&aItem, this](size_t aProperty) { return itemHandler.numberF(aItem, aProperty); },
+				[&aItem, this](size_t aProperty) { return itemHandler.stringF(aItem, aProperty); },
+				[&aItem, this](size_t aProperty, const StringMatch& aStringMatcher, double aNumericMatcher) { 
+					return itemHandler.customFilterF(aItem, aProperty, aStringMatcher, aNumericMatcher); 
+				}
 			);
 		}
 
@@ -189,7 +192,7 @@ namespace webserver {
 
 			// Pattern can be string or numeric
 			string pattern;
-			auto patternJson = JsonUtil::getRawField("pattern", aRequestJson);
+			auto& patternJson = JsonUtil::getRawField("pattern", aRequestJson);
 			if (patternJson.is_number()) {
 				pattern = Util::toString(JsonUtil::parseValue<double>("pattern", patternJson));
 			} else {
@@ -339,7 +342,7 @@ namespace webserver {
 					// Reset old filter regardless of the props
 					sourceFilter.reset(new PropertyFilter(itemHandler.properties));
 
-					auto filterProps = iter.value();
+					auto& filterProps = iter.value();
 					if (!filterProps.is_null()) {
 						setFilterProperties(filterProps, *sourceFilter.get());
 					}
@@ -352,7 +355,7 @@ namespace webserver {
 			}
 		}
 
-		void on(SessionListener::SocketDisconnected) noexcept {
+		void on(SessionListener::SocketDisconnected) noexcept override {
 			stop();
 		}
 
@@ -361,27 +364,37 @@ namespace webserver {
 				return;
 			}
 
-			module->send(viewName + "_updated", j);
+			apiModule->send(viewName + "_updated", j);
 		}
 
 		int initItems() {
+			auto matchers = getFilterMatcherList();
+
 			WLock l(cs);
 			matchingItems = itemListF();
 
+			// Source filter
 			if (sourceFilter) {
 				auto matcher = PropertyFilter::Matcher<PropertyFilter*>(sourceFilter.get());
-				matchingItems.erase(remove_if(matchingItems.begin(), matchingItems.end(), [&](const T& aItem) {
-					return !matchesFilter<PropertyFilter*>(aItem, matcher);
-				}), matchingItems.end());
-			}
 
+				std::erase_if(matchingItems, [&matcher, this](const T& aItem) {
+					return !matchesFilter<PropertyFilter*>(aItem, matcher);
+				});
+			}
 			sourceItems.insert(matchingItems.begin(), matchingItems.end());
+
+			// Normal filters
+			if (matchers.size()) {
+				std::erase_if(matchingItems, [&matchers, this](const T& aItem) {
+					return !matchesFilter(aItem, matchers);
+				});
+			}
 
 			itemListChanged = true;
 			return static_cast<int>(matchingItems.size());
 		}
 
-		void clear() {
+		void clear(bool aClearFilters = false) {
 			WLock l(cs);
 			tasks.clear();
 			currentViewportItems.clear();
@@ -389,7 +402,10 @@ namespace webserver {
 			sourceItems.clear();
 			prevTotalItemCount = -1;
 			prevMatchingItemCount = -1;
-			filters.clear();
+
+			if (aClearFilters) {
+				filters.clear();
+			}
 		}
 
 		static bool itemSort(const T& t1, const T& t2, const PropertyItemHandler<T>& aItemHandler, int aSortProperty, int aSortAscending) {
@@ -424,7 +440,7 @@ namespace webserver {
 				matchingItemsCopy = matchingItems;
 			}
 
-			auto j = Serializer::serializeFromPosition(start, end - start, matchingItemsCopy, [&](const T& i) {
+			auto j = Serializer::serializeFromPosition(start, end - start, matchingItemsCopy, [this](const T& i) {
 				return Serializer::serializeItem(i, itemHandler);
 			});
 
@@ -433,11 +449,11 @@ namespace webserver {
 		}
 
 		typename ItemList::iterator findItem(const T& aItem, ItemList& aItems) noexcept {
-			return find(aItems.begin(), aItems.end(), aItem);
+			return ranges::find(aItems, aItem);
 		}
 
 		typename ItemList::const_iterator findItem(const T& aItem, const ItemList& aItems) const noexcept {
-			return find(aItems.begin(), aItems.end(), aItem);
+			return ranges::find(aItems, aItem);
 		}
 
 		bool isInList(const T& aItem, const ItemList& aItems) const noexcept {
@@ -524,10 +540,10 @@ namespace webserver {
 			sendJson(j);
 		}
 
-		typedef std::map<T, const PropertyIdSet&> ItemPropertyIdMap;
+		using ItemPropertyIdMap = std::map<T, const PropertyIdSet &>;
 		ItemPropertyIdMap handleTasks(const typename ItemTasks<T>::TaskMap& aTaskList, int aSortProperty, int aSortAscending, int& rangeStart_) {
 			ItemPropertyIdMap updatedItems;
-			for (auto& t : aTaskList) {
+			for (const auto& t : aTaskList) {
 				switch (t.second.type) {
 				case ADD_ITEM: {
 					handleAddItemTask(t.first, aSortProperty, aSortAscending, rangeStart_);
@@ -596,7 +612,7 @@ namespace webserver {
 		}
 
 		void maybeSort(const PropertyIdSet& aUpdatedProperties, int aSortProperty, int aSortAscending) {
-			bool needSort = aUpdatedProperties.find(aSortProperty) != aUpdatedProperties.end() ||
+			bool needSort = aUpdatedProperties.contains(aSortProperty) ||
 				prevValues[IntCollector::TYPE_SORT_ASCENDING] != aSortAscending ||
 				prevValues[IntCollector::TYPE_SORT_PROPERTY] != aSortProperty ||
 				itemListChanged;
@@ -607,14 +623,16 @@ namespace webserver {
 				auto start = GET_TICK();
 
 				WLock l(cs);
-				std::stable_sort(matchingItems.begin(), matchingItems.end(),
-					std::bind(&ListViewController::itemSort,
+				ranges::stable_sort(matchingItems,
+					std::bind(
+						&ListViewController::itemSort,
 						std::placeholders::_1,
 						std::placeholders::_2,
 						itemHandler,
 						aSortProperty,
 						aSortAscending
-						));
+					)
+				);
 
 				dcdebug("Table %s sorted in " U64_FMT " ms\n", viewName.c_str(), GET_TICK() - start);
 			}
@@ -666,7 +684,7 @@ namespace webserver {
 			}
 
 			RLock l(cs);
-			PropertyFilter::Matcher<PropertyFilter*> matcher(sourceFilter.get());
+			auto matcher(sourceFilter.get());
 			return matchesFilter<PropertyFilter*>(aItem, matcher);
 		}
 
@@ -683,7 +701,7 @@ namespace webserver {
 				inList = isInList(aItem, matchingItems);
 
 				// A delayed update for a removed item?
-				if (!inList && sourceItems.find(aItem) == sourceItems.end()) {
+				if (!inList && !sourceItems.contains(aItem)) {
 					return false;
 				}
 			}
@@ -709,9 +727,8 @@ namespace webserver {
 		// Add an item in the current matching view item list
 		void addMatchingItemUnsafe(const T& aItem, int aSortProperty, int aSortAscending, int& rangeStart_) {
 			auto matchingItemsIter = matchingItems.insert(
-				std::upper_bound(
-					matchingItems.begin(),
-					matchingItems.end(),
+				ranges::upper_bound(
+					matchingItems,
 					aItem,
 					std::bind(&ListViewController::itemSort, std::placeholders::_1, std::placeholders::_2, itemHandler, aSortProperty, aSortAscending)
 				),
@@ -759,7 +776,7 @@ namespace webserver {
 		}
 
 		// Append item without property values
-		void appendItemPosition(const T& aItem, json& json_, int pos) {
+		static void appendItemPosition(const T& aItem, json& json_, int pos) {
 			json_["items"][pos]["id"] = aItem->getToken();
 		}
 
@@ -785,7 +802,7 @@ namespace webserver {
 
 		mutable SharedMutex cs;
 
-		SubscribableApiModule* module = nullptr;
+		SubscribableApiModule* apiModule = nullptr;
 		const std::string viewName;
 
 		ItemTasks<T> tasks;
@@ -802,7 +819,7 @@ namespace webserver {
 				TYPE_LAST
 			};
 
-			typedef std::map<ValueType, int> ValueMap;
+			using ValueMap = std::map<ValueType, int>;
 
 			IntCollector() {
 				reset();

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -66,20 +66,20 @@ namespace webserver {
 	}
 
 	string ShareUtils::formatStatusId(const ShareDirectoryInfoPtr& aItem) noexcept {
-		switch (static_cast<ShareManager::RefreshState>(aItem->refreshState)) {
-			case ShareManager::RefreshState::STATE_NORMAL: return "normal";
-			case ShareManager::RefreshState::STATE_PENDING: return "refresh_pending";
-			case ShareManager::RefreshState::STATE_RUNNING: return "refresh_running";
+		switch (static_cast<ShareRootRefreshState>(aItem->refreshState)) {
+			case ShareRootRefreshState::STATE_NORMAL: return "normal";
+			case ShareRootRefreshState::STATE_PENDING: return "refresh_pending";
+			case ShareRootRefreshState::STATE_RUNNING: return "refresh_running";
 		}
 
 		return Util::emptyString;
 	}
 
 	string ShareUtils::formatDisplayStatus(const ShareDirectoryInfoPtr& aItem) noexcept {
-		switch (static_cast<ShareManager::RefreshState>(aItem->refreshState)) {
-			case ShareManager::RefreshState::STATE_NORMAL: return STRING(NORMAL);
-			case ShareManager::RefreshState::STATE_PENDING: return STRING(API_SHARE_REFRESH_PENDING);
-			case ShareManager::RefreshState::STATE_RUNNING: return STRING(API_SHARE_REFRESHING);
+		switch (static_cast<ShareRootRefreshState>(aItem->refreshState)) {
+			case ShareRootRefreshState::STATE_NORMAL: return STRING(NORMAL);
+			case ShareRootRefreshState::STATE_PENDING: return STRING(API_SHARE_REFRESH_PENDING);
+			case ShareRootRefreshState::STATE_RUNNING: return STRING(API_SHARE_REFRESHING);
 		}
 
 		return Util::emptyString;
@@ -89,7 +89,7 @@ namespace webserver {
 		switch (aPropertyName) {
 		case PROP_PROFILES:
 		{
-			return aItem->profiles.find(static_cast<int>(aNumericMatcher)) != aItem->profiles.end();
+			return aItem->profiles.contains(static_cast<int>(aNumericMatcher));
 		}
 		}
 
@@ -99,7 +99,7 @@ namespace webserver {
 	int ShareUtils::compareItems(const ShareDirectoryInfoPtr& a, const ShareDirectoryInfoPtr& b, int aPropertyName) noexcept {
 		switch (aPropertyName) {
 		case PROP_TYPE: {
-			return Util::directoryContentSort(a->contentInfo, b->contentInfo);
+			return DirectoryContentInfo::Sort(a->contentInfo, b->contentInfo);
 		}
 		case PROP_PROFILES: {
 			return compare(a->profiles.size(), b->profiles.size());

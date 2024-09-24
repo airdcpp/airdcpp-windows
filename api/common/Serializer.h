@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -26,6 +26,7 @@
 #include <airdcpp/typedefs.h>
 #include <airdcpp/tribool.h>
 
+#include <airdcpp/DirectoryContentInfo.h>
 #include <airdcpp/DirectoryDownload.h>
 #include <airdcpp/DupeType.h>
 #include <airdcpp/QueueItemBase.h>
@@ -45,10 +46,11 @@ namespace webserver {
 		static json serializeUser(const UserPtr& aUser) noexcept;
 		static json serializeHintedUser(const HintedUser& aUser) noexcept;
 		static json serializeOnlineUser(const OnlineUserPtr& aUser) noexcept;
+		static json serializeClient(const Client* aClient) noexcept;
 
 		static string toFileContentType(const string& aExt) noexcept;
 		static string getFileTypeId(const string& aName) noexcept;
-		static json serializeFileType(const string& aPath) noexcept;
+		static json serializeFileType(const string& aName) noexcept;
 		static json serializeFolderType(const DirectoryContentInfo& aContentInfo) noexcept;
 
 		static json serializeIp(const string& aIP) noexcept;
@@ -85,7 +87,7 @@ namespace webserver {
 		// Serialize n items from end by keeping the list order
 		// Throws for invalid parameters
 		template <class ContainerT, class FuncT>
-		static json serializeFromEnd(int aCount, const ContainerT& aList, FuncT aF) {
+		static json serializeFromEnd(int aCount, const ContainerT& aList, const FuncT& aF) {
 			if (aList.empty()) {
 				return json::array();
 			}
@@ -94,8 +96,8 @@ namespace webserver {
 				throw std::domain_error("Invalid range");
 			}
 
-			auto listSize = static_cast<int>(std::distance(aList.begin(), aList.end()));
-			auto beginIter = aList.begin();
+			auto listSize = static_cast<int>(std::distance(std::begin(aList), std::end(aList)));
+			auto beginIter = std::begin(aList);
 			if (aCount > 0 && listSize > aCount) {
 				std::advance(beginIter, listSize - aCount);
 			}
@@ -106,7 +108,7 @@ namespace webserver {
 		// Serialize n items from beginning by keeping the list order
 		// Throws for invalid parameters
 		template <class ContainerT, class FuncT>
-		static json serializeFromBegin(int aCount, const ContainerT& aList, FuncT aF) {
+		static json serializeFromBegin(int aCount, const ContainerT& aList, const FuncT& aF) {
 			if (aList.empty()) {
 				return json::array();
 			}
@@ -115,26 +117,26 @@ namespace webserver {
 				throw std::domain_error("Invalid range");
 			}
 
-			auto listSize = static_cast<int>(std::distance(aList.begin(), aList.end()));
-			auto endIter = aList.end();
+			auto listSize = static_cast<int>(std::distance(std::begin(aList), std::end(aList)));
+			auto endIter = std::end(aList);
 			if (aCount > 0 && listSize > aCount) {
-				endIter = aList.begin();
+				endIter = std::begin(aList);
 				std::advance(endIter, aCount);
 			}
 
-			return serializeRange(aList.begin(), endIter, aF);
+			return serializeRange(std::begin(aList), endIter, aF);
 		}
 
 		template <class ContainerT, class FuncT>
-		static json serializeList(const ContainerT& aList, FuncT aF) noexcept {
-			return serializeRange(aList.begin(), aList.end(), aF);
+		static json serializeList(const ContainerT& aList, const FuncT& aF) noexcept {
+			return serializeRange(std::begin(aList), std::end(aList), aF);
 		}
 
 		// Serialize n messages from position
 		// Throws for invalid parameters
 		template <class ContainerT, class FuncT>
-		static json serializeFromPosition(int aBeginPos, int aCount, const ContainerT& aList, FuncT aF) {
-			auto listSize = static_cast<int>(std::distance(aList.begin(), aList.end()));
+		static json serializeFromPosition(int aBeginPos, int aCount, const ContainerT& aList, const FuncT& aF) {
+			auto listSize = static_cast<int>(std::distance(std::begin(aList), std::end(aList)));
 			if (listSize == 0) {
 				return json::array();
 			}
@@ -143,7 +145,7 @@ namespace webserver {
 				throw std::domain_error("Invalid range");
 			}
 
-			auto beginIter = aList.begin();
+			auto beginIter = std::begin(aList);
 			std::advance(beginIter, aBeginPos);
 
 			auto endIter = beginIter;
@@ -164,7 +166,7 @@ namespace webserver {
 		// Serialize a list of items provider by the handler
 		template <class T, class ContainerT>
 		static json serializeItemList(const PropertyItemHandler<T>& aHandler, const ContainerT& aItems) {
-			return Serializer::serializeRange(aItems.begin(), aItems.end(), [&aHandler](const T& aItem) {
+			return Serializer::serializeRange(std::begin(aItems), std::end(aItems), [&aHandler](const T& aItem) {
 				return Serializer::serializeItem(aItem, aHandler);
 			});
 		}
@@ -226,11 +228,12 @@ namespace webserver {
 		static void appendOnlineUserFlags(const OnlineUserPtr& aUser, StringSet& flags_) noexcept;
 
 		template <class IterT, class FuncT>
-		static json serializeRange(IterT aBegin, IterT aEnd, FuncT aF) noexcept {
-			return std::accumulate(aBegin, aEnd, json::array(), [&](json& list, const typename iterator_traits<IterT>::value_type& elem) {
-				list.push_back(aF(elem));
-				return list;
+		static json serializeRange(const IterT& aBegin, const IterT& aEnd, const FuncT& aF) noexcept {
+			auto ret = json::array();
+			std::for_each(aBegin, aEnd, [&](const auto& elem) {
+				ret.push_back(aF(elem));
 			});
+			return ret;
 		}
 	};
 }

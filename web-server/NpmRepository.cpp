@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -59,7 +59,7 @@ namespace webserver {
 		}));
 
 		WLock l(cs);
-		auto ret = httpDownloads.emplace(aName, make_shared<HttpDownload>(url, [=]() {
+		httpDownloads.try_emplace(aName, make_shared<HttpDownload>(url, [this, aName, aCurrentVersion]() {
 			onPackageInfoDownloaded(aName, aCurrentVersion);
 		}, options));
 	}
@@ -102,7 +102,7 @@ namespace webserver {
 	}
 
 	// https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
-	void NpmRepository::checkPackageData(const string& aPackageData, const string& aName, const string& aCurrentVersion) {
+	void NpmRepository::checkPackageData(const string& aPackageData, const string& aName, const string& aCurrentVersion) const {
 		optional<semver::version> curSemver = !aCurrentVersion.empty() ? optional(semver::version(aCurrentVersion)) : nullopt;
 
 		const auto packageJson = json::parse(aPackageData);

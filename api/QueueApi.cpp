@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -17,9 +17,11 @@
 */
 
 #include "stdinc.h"
-#include <web-server/JsonUtil.h>
 
 #include <api/QueueApi.h>
+
+#include <web-server/JsonUtil.h>
+#include <web-server/WebServerSettings.h>
 
 #include <api/common/Serializer.h>
 #include <api/common/Deserializer.h>
@@ -27,8 +29,6 @@
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/SearchManager.h>
-
-#include <boost/range/algorithm/copy.hpp>
 
 
 
@@ -76,32 +76,42 @@ namespace webserver {
 
 		createHook(HOOK_FILE_FINISHED, [this](ActionHookSubscriber&& aSubscriber) {
 			return QueueManager::getInstance()->fileCompletionHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::fileCompletionHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			QueueManager::getInstance()->fileCompletionHook.removeSubscriber(aId);
+		}, [] {
+			return QueueManager::getInstance()->fileCompletionHook.getSubscribers();
 		});
 
 		createHook(HOOK_BUNDLE_FINISHED, [this](ActionHookSubscriber&& aSubscriber) {
 			return QueueManager::getInstance()->bundleCompletionHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleCompletionHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			QueueManager::getInstance()->bundleCompletionHook.removeSubscriber(aId);
+		}, [] {
+			return QueueManager::getInstance()->bundleCompletionHook.getSubscribers();
 		});
 
 		createHook(HOOK_ADD_BUNDLE, [this](ActionHookSubscriber&& aSubscriber) {
 			return QueueManager::getInstance()->bundleValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleAddHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			QueueManager::getInstance()->bundleValidationHook.removeSubscriber(aId);
+		}, [] {
+			return QueueManager::getInstance()->bundleValidationHook.getSubscribers();
 		});
 
 		createHook(HOOK_ADD_BUNDLE_FILE, [this](ActionHookSubscriber&& aSubscriber) {
 			return QueueManager::getInstance()->bundleFileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleFileAddHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			QueueManager::getInstance()->bundleFileValidationHook.removeSubscriber(aId);
+		}, [] {
+			return QueueManager::getInstance()->bundleFileValidationHook.getSubscribers();
 		});
 
 		createHook(HOOK_ADD_SOURCE, [this](ActionHookSubscriber&& aSubscriber) {
 			return QueueManager::getInstance()->sourceValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::sourceAddHook));
-		}, [this](const string& aId) {
+		}, [](const string& aId) {
 			QueueManager::getInstance()->sourceValidationHook.removeSubscriber(aId);
+		}, [] {
+			return QueueManager::getInstance()->sourceValidationHook.getSubscribers();
 		});
 
 		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundles"), RANGE_START_PARAM, RANGE_MAX_PARAM),			QueueApi::handleGetBundles);
@@ -156,7 +166,7 @@ namespace webserver {
 				});
 			}),
 			aResultGetter,
-			[=](const json& aData, const ActionHookResultGetter<BundleFileAddHookResult>& aResultGetter) {
+			[](const json& aData, const ActionHookResultGetter<BundleFileAddHookResult>& aResultGetter) {
 				if (aData.is_null()) {
 					return BundleFileAddHookResult();
 				}
@@ -179,7 +189,7 @@ namespace webserver {
 						{ "name", aData.name },
 						{ "time", aData.date },
 						{ "priority", Serializer::serializePriorityId(aData.prio) },
-						{ "type", aIsFile ? Serializer::serializeFileType(aData.name) : Serializer::serializeFolderType(DirectoryContentInfo()) },
+						{ "type", aIsFile ? Serializer::serializeFileType(aData.name) : Serializer::serializeFolderType(DirectoryContentInfo::uninitialized()) },
 					} },
 				});
 			}),
@@ -237,7 +247,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getBundlesUnsafe() | map_values, back_inserter(bundles));
+		ranges::copy(qm->getBundlesUnsafe() | views::values, back_inserter(bundles));
 		return bundles;
 	}
 
@@ -246,7 +256,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getFileQueueUnsafe() | map_values, back_inserter(items));
+		ranges::copy(qm->getFileQueueUnsafe() | views::values, back_inserter(items));
 		return items;
 	}
 
@@ -282,7 +292,7 @@ namespace webserver {
 		auto path = JsonUtil::getOptionalField<string>("path", reqJson);
 		if (path) {
 			// Note: non-standard/partial paths are allowed, no strict directory path validation
-			ret = QueueManager::getInstance()->getAdcDirectoryPaths(*path);
+			ret = QueueManager::getInstance()->getAdcDirectoryDupePaths(*path);
 		} else {
 			auto tth = Deserializer::deserializeTTH(reqJson);
 			ret = QueueManager::getInstance()->getTargets(tth);
@@ -792,7 +802,7 @@ namespace webserver {
 		}
 	}
 
-	void QueueApi::on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept {
+	void QueueApi::on(QueueManagerListener::BundleDownloadStatus, const BundlePtr& aBundle) noexcept {
 		// "Waiting" isn't really a status (it's just meant to clear the props for running bundles...)
 		onBundleUpdated(aBundle, TICK_PROPS, "queue_bundle_tick");
 	}
