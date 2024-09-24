@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -16,12 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef UPLOAD_H_
-#define UPLOAD_H_
+#ifndef DCPLUSPLUS_DCPP_UPLOAD_H_
+#define DCPLUSPLUS_DCPP_UPLOAD_H_
 
 #include "forward.h"
 #include "Transfer.h"
-#include "UploadBundle.h"
 #include "Flags.h"
 #include "GetSet.h"
 
@@ -37,24 +36,22 @@ public:
 		FLAG_PARTIAL = 0x10
 	};
 
-	bool operator==(const Upload* u) const noexcept;
-
 	Upload(UserConnection& aSource, const string& aPath, const TTHValue& aTTH, unique_ptr<InputStream> aIS);
-	~Upload();
+	~Upload() override;
 
-	void getParams(const UserConnection& aSource, ParamMap& params) const;
+	void getParams(const UserConnection& aSource, ParamMap& params) const noexcept override;
 
 	IGETSET(int64_t, fileSize, FileSize, -1);
-	IGETSET(UploadBundlePtr, bundle, Bundle, nullptr);
 
-	uint8_t delayTime = 0;
 	InputStream* getStream();
 	void setFiltered();
-	void resume(int64_t aStart, int64_t aSize) noexcept;
 
-	void appendFlags(OrderedStringSet& flags_) const noexcept;
+	void appendFlags(OrderedStringSet& flags_) const noexcept override;
+	bool checkDelaySecond() noexcept;
+	void disableDelayCheck() noexcept;
 private:
 	unique_ptr<InputStream> stream;
+	int8_t delayTime = 0;
 };
 
 } // namespace dcpp

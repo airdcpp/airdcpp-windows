@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -19,7 +19,6 @@
 #include "stdinc.h"
 #include "GroupedSearchResult.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/QueueManager.h>
@@ -31,15 +30,11 @@ namespace dcpp {
 	FastCriticalSection GroupedSearchResult::cs;
 
 	GroupedSearchResult::GroupedSearchResult(const SearchResultPtr& aSR, SearchResult::RelevanceInfo&& aRelevance) :
-		/*token(Util::rand()),*/ baseResult(aSR), relevanceInfo(move(aRelevance)) {
+		baseResult(aSR), relevanceInfo(std::move(aRelevance)) {
 
 		// check the dupe
 		if (SETTING(DUPE_SEARCH)) {
-			if (baseResult->getType() == SearchResult::TYPE_DIRECTORY) {
-				dupe = AirUtil::checkAdcDirectoryDupe(baseResult->getAdcPath(), baseResult->getSize());
-			} else {
-				dupe = AirUtil::checkFileDupe(baseResult->getTTH());
-			}
+			dupe = baseResult->getDupe();
 		}
 
 		children.push_back(aSR);
@@ -63,7 +58,7 @@ namespace dcpp {
 
 	bool GroupedSearchResult::hasUser(const UserPtr& aUser) const noexcept {
 		FastLock l(cs);
-		return boost::find_if(children, [&](const SearchResultPtr& aResult) { return aResult->getUser() == aUser; }) != children.end();
+		return ranges::find_if(children, [&](const SearchResultPtr& aResult) { return aResult->getUser() == aUser; }) != children.end();
 	}
 
 	double GroupedSearchResult::getConnectionSpeed() const noexcept {
@@ -96,7 +91,7 @@ namespace dcpp {
 			FastLock l(cs);
 
 			// Attempt to find a user that provides this information
-			auto i = boost::find_if(children, [&](const SearchResultPtr& aResult) { return Util::hasContentInfo(aResult->getContentInfo()); });
+			auto i = ranges::find_if(children, [&](const SearchResultPtr& aResult) { return aResult->getContentInfo().isInitialized(); });
 			if (i != children.end()) {
 				return (*i)->getContentInfo();
 			}
@@ -108,8 +103,25 @@ namespace dcpp {
 
 	time_t GroupedSearchResult::getOldestDate() const noexcept {
 		FastLock l(cs);
-		auto min = min_element(children.begin(), children.end(), SearchResult::DateOrder());
+		auto min = ranges::min_element(children, SearchResult::DateOrder());
 		return (*min)->getDate();
+	}
+
+	string GroupedSearchResult::getFileName() const noexcept {
+		StringIntMap nameCounts;
+
+		{
+			FastLock l(cs);
+			for (const auto& child : children)
+				++nameCounts[child->getFileName()];
+		}
+
+		const auto& [maxName, maxCount] = *ranges::max_element(nameCounts, [](const auto& p1, const auto& p2) {
+			return p1.second < p2.second;
+		});
+
+		auto matches = ranges::count(nameCounts | views::values, maxCount);
+		return matches == 1 ? maxName : baseResult->getFileName();
 	}
 
 	double GroupedSearchResult::getTotalRelevance() const noexcept {
@@ -131,11 +143,11 @@ namespace dcpp {
 		return results;
 	}
 
-	BundleAddInfo GroupedSearchResult::downloadFileHooked(const string& aTargetDirectory, const string& aTargetName, Priority aPrio, const void* aCaller) {
+	BundleAddInfo GroupedSearchResult::downloadFileHooked(const string& aTargetDirectory, const string& aTargetName, Priority aPrio, CallerPtr aCaller) {
 		string lastError;
 		optional<BundleAddInfo> bundleAddInfo;
 
-		boost::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
+		ranges::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
 			try {
 				auto fileInfo = BundleFileAddData(aTargetName, aSR->getTTH(), aSR->getSize(), aPrio, aSR->getDate());
 				auto options = BundleAddOptions(aTargetDirectory, aSR->getUser(), aCaller);
@@ -155,11 +167,11 @@ namespace dcpp {
 		return *bundleAddInfo;
 	}
 
-	DirectoryDownloadList GroupedSearchResult::downloadDirectoryHooked(const string& aTargetDirectory, const string& aTargetName, Priority aPrio, const void* aCaller) {
+	DirectoryDownloadList GroupedSearchResult::downloadDirectoryHooked(const string& aTargetDirectory, const string& aTargetName, Priority aPrio, CallerPtr aCaller) const {
 		string lastError;
 		DirectoryDownloadList directoryDownloads;
 
-		boost::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
+		ranges::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
 			try {
 				auto listData = FilelistAddData(aSR->getUser(), aCaller, aSR->getAdcFilePath());
 				auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownloadHookedThrow(listData, aTargetName, aTargetDirectory, aPrio, DirectoryDownload::ErrorMethod::LOG);

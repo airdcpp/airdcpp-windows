@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -23,13 +23,21 @@ namespace dcpp {
 
 enum DupeType : uint8_t {
 	DUPE_NONE,
+
 	DUPE_SHARE_PARTIAL,
 	DUPE_SHARE_FULL,
+
 	DUPE_QUEUE_PARTIAL,
 	DUPE_QUEUE_FULL,
+
 	DUPE_FINISHED_PARTIAL,
 	DUPE_FINISHED_FULL,
-	DUPE_SHARE_QUEUE
+
+	DUPE_SHARE_QUEUE,
+	DUPE_SHARE_FINISHED,
+	DUPE_QUEUE_FINISHED,
+
+	DUPE_SHARE_QUEUE_FINISHED,
 };
 
 }

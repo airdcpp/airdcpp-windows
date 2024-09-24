@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -49,17 +49,17 @@ struct DirectoryBundleAddResult {
 
 // Adding bundles
 struct BundleAddOptions {
-	BundleAddOptions(string aTarget, const HintedUser& aOptionalUser, const void* aCaller) noexcept :
-		target(move(aTarget)), optionalUser(aOptionalUser), caller(aCaller) { }
+	BundleAddOptions(string aTarget, const HintedUser& aOptionalUser, CallerPtr aCaller) noexcept :
+		target(std::move(aTarget)), optionalUser(aOptionalUser), caller(aCaller) { }
 
 	string target;
 	HintedUser optionalUser;
-	const void* caller;
+	CallerPtr caller;
 };
 
 struct BundleAddData {
 	BundleAddData(string aName, Priority aPrio, time_t aDate) noexcept :
-		name(move(aName)), prio(aPrio), date(aDate) { }
+		name(std::move(aName)), prio(aPrio), date(aDate) { }
 
 	string name;
 	Priority prio;
@@ -68,33 +68,33 @@ struct BundleAddData {
 
 struct BundleFileAddData : public BundleAddData {
 	BundleFileAddData(string aFile, const TTHValue& aTTH, int64_t aSize, Priority aPrio, time_t aDate) noexcept :
-		BundleAddData(move(aFile), aPrio, aDate), tth(aTTH), size(aSize) { }
+		BundleAddData(std::move(aFile), aPrio, aDate), tth(aTTH), size(aSize) { }
 
 	TTHValue tth;
 	int64_t size;
 
-	typedef vector<BundleFileAddData> List;
+	using List = vector<BundleFileAddData>;
 };
 
 // Filelist
 struct FilelistAddData {
-	FilelistAddData(const HintedUser& aUser, const void* aCaller, const string& aListPath) noexcept :
+	FilelistAddData(const HintedUser& aUser, CallerPtr aCaller, const string& aListPath) noexcept :
 		user(aUser), caller(aCaller), listPath(aListPath) { }
 
 	HintedUser user;
-	const void* caller;
+	CallerPtr caller;
 	string listPath;
 };
 
 // Viewed files
 struct ViewedFileAddData {
-	ViewedFileAddData(string aFile, const TTHValue& aTTH, int64_t aSize, const void* aCaller, const HintedUser& aUser, bool aIsText) noexcept :
-		file(move(aFile)), tth(aTTH), size(aSize), caller(aCaller), user(aUser), isText(aIsText) { }
+	ViewedFileAddData(string aFile, const TTHValue& aTTH, int64_t aSize, CallerPtr aCaller, const HintedUser& aUser, bool aIsText) noexcept :
+		file(std::move(aFile)), tth(aTTH), size(aSize), caller(aCaller), user(aUser), isText(aIsText) { }
 
 	string file;
 	TTHValue tth;
 	int64_t size;
-	const void* caller;
+	CallerPtr caller;
 	HintedUser user;
 	bool isText;
 };

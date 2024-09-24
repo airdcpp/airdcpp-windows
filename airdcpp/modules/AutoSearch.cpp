@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,25 +22,26 @@
 
 #include <airdcpp/ActionHook.h>
 #include <airdcpp/Bundle.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/TimerManager.h>
+#include <airdcpp/ValueGenerator.h>
 
-#include <boost/range/algorithm/max_element.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #define SHARE_SCANNER_ERROR_MISSING "items_missing"
 
 namespace dcpp {
 
-using boost::max_element;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
-AutoSearch::AutoSearch() noexcept : token(Util::randInt(10)) {
+AutoSearch::AutoSearch() noexcept : token(ValueGenerator::randInt(10)) {
 
 }
 
@@ -55,7 +56,7 @@ AutoSearch::AutoSearch(bool aEnabled, const string& aSearchString, const string&
 		timeAdded = GET_TIME();
 
 	if (token == 0)
-		token = Util::randInt(10);
+		token = ValueGenerator::randInt(10);
 	
 	checkRecent();
 	setPriority(calculatePriority());
@@ -172,7 +173,7 @@ bool AutoSearch::isExcluded(const string& aString) noexcept {
 void AutoSearch::updateExcluded() noexcept {
 	excluded.clear();
 	if (!excludedString.empty()) {
-		auto ex = move(SearchQuery::parseSearchString(excludedString));
+		auto ex = std::move(SearchQuery::parseSearchString(excludedString));
 		for (const auto& i : ex)
 			excluded.addString(i);
 	}
@@ -202,7 +203,7 @@ string AutoSearch::getDisplayName() noexcept {
 }
 
 void AutoSearch::setTarget(const string& aTarget) noexcept {
-	target = Util::validatePath(aTarget, true);
+	target = PathUtil::validatePath(aTarget, true);
 }
 
 void AutoSearch::updatePattern() noexcept {
@@ -222,7 +223,8 @@ string AutoSearch::getDisplayType() const noexcept {
 	Search::TypeModes mode;
 	string name;
 	try {
-		SearchManager::getInstance()->getSearchType(fileType, mode, ext, name);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.getSearchType(fileType, mode, ext, name);
 	} catch (...) {
 		return STRING(ANY);
 	}
@@ -231,20 +233,20 @@ string AutoSearch::getDisplayType() const noexcept {
 }
 
 void AutoSearch::addBundle(const BundlePtr& aBundle) noexcept {
-	if (find(bundles, aBundle) == bundles.end())
+	if (ranges::find(bundles, aBundle) == bundles.end())
 		bundles.push_back(aBundle);
 
 	updateStatus();
 }
 
 void AutoSearch::removeBundle(const BundlePtr& aBundle) noexcept {
-	auto p = find(bundles, aBundle);
+	auto p = ranges::find(bundles, aBundle);
 	if (p != bundles.end())
 		bundles.erase(p);
 }
 
 bool AutoSearch::hasBundle(const BundlePtr& aBundle) noexcept {
-	return find(bundles, aBundle) != bundles.end();
+	return ranges::find(bundles, aBundle) != bundles.end();
 }
 
 void AutoSearch::addPath(const string& aPath, time_t aFinishTime) noexcept {
@@ -269,7 +271,7 @@ string AutoSearch::getSearchingStatus() const noexcept {
 	} else if (status == STATUS_WAITING) {
 		auto time = GET_TIME();
 		if (nextSearchChange > time) {
-			auto timeStr = Util::formatTime(nextSearchChange - time, true, true);
+			auto timeStr = Util::formatDuration(nextSearchChange - time, true, true);
 			return nextIsDisable ? STRING_F(ACTIVE_FOR, timeStr) : STRING_F(WAITING_LEFT, timeStr);
 		}
 	} else if (remove || usingIncrementation()) {
@@ -293,7 +295,7 @@ string AutoSearch::getExpiration() const noexcept {
 	if (expireTime <= curTime) {
 		return STRING(EXPIRED);
 	} else {
-		return Util::formatTime(expireTime - curTime, true, true);
+		return Util::formatDuration(expireTime - curTime, true, true);
 	}
 }
 
@@ -316,7 +318,7 @@ void AutoSearch::updateStatus() noexcept {
 			status = AutoSearch::STATUS_SEARCHING;
 		}
 	} else {
-		auto maxBundle = *boost::max_element(bundles, Bundle::StatusOrder());
+		auto maxBundle = *ranges::max_element(bundles, Bundle::StatusOrder());
 		if(maxBundle->getStatus() == Bundle::STATUS_VALIDATION_ERROR) {
 			if (AutoSearch::hasHookFilesMissing(maxBundle->getHookError())) {
 				status = AutoSearch::STATUS_FAILED_MISSING;

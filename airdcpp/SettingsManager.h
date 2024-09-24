@@ -1,9 +1,9 @@
 ﻿/*
- * Copyright (C) 20 01-2021 Jacek Sieka, arnetheduck on gmailpoint com
+ * Copyright (C) 20 01-2024 Jacek Sieka, arnetheduck on gmailpoint com
  *
  * This program is free software; you can redistribute it and/or modif
  * it under the terms of the GU Genera Public License as ubished by
- * he FreeSoftare Foundation; either version 2 of the License, or
+ * he FreeSoftare Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,16 +19,16 @@
 #ifndef DCPLUSPLUS_DCPP_SETTINGS_MANAGER_H
 #define DCPLUSPLUS_DCPP_SETTINGS_MANAGER_H
 
-#include "Exception.h"
-#include "HubSettings.h"
+#include "AppUtil.h"
 #include "SettingItem.h"
 #include "SettingsManagerListener.h"
 #include "Singleton.h"
 #include "Speaker.h"
-#include "Util.h"
 #include "version.h"
 
 namespace dcpp {
+
+struct HubSettings;
 
 // Shouldn't really be in core...
 enum class ToolbarIconEnum {
@@ -168,14 +168,14 @@ public:
 		TAB_INACTIVE_BORDER, TAB_INACTIVE_BG_NOTIFY, TAB_DIRTY_BLEND, TAB_SIZE, MEDIA_PLAYER,
 		POPUP_TIME, MAX_MSG_LENGTH, POPUP_BACKCOLOR, POPUP_TEXTCOLOR, POPUP_TITLE_TEXTCOLOR, 
 		TB_IMAGE_SIZE, TB_IMAGE_SIZE_HOT, MAX_RESIZE_LINES,
-		DUPE_COLOR, TEXT_DUPE_BACK_COLOR, 
+		SHARE_DUPE_COLOR, TEXT_SHARE_DUPE_BACK_COLOR, 
 		TEXT_NORM_BACK_COLOR, TEXT_NORM_FORE_COLOR, 
 		FAV_TOP, FAV_BOTTOM, FAV_LEFT, FAV_RIGHT, SYSLOG_TOP, SYSLOG_BOTTOM, SYSLOG_LEFT, SYSLOG_RIGHT, NOTEPAD_TOP, NOTEPAD_BOTTOM,
 		NOTEPAD_LEFT, NOTEPAD_RIGHT, QUEUE_TOP, QUEUE_BOTTOM, QUEUE_LEFT, QUEUE_RIGHT, SEARCH_TOP, SEARCH_BOTTOM, SEARCH_LEFT, SEARCH_RIGHT, USERS_TOP, USERS_BOTTOM,
 		USERS_LEFT, USERS_RIGHT, FINISHED_TOP, FINISHED_BOTTOM, FINISHED_LEFT, FINISHED_RIGHT, TEXT_TOP, TEXT_BOTTOM, TEXT_LEFT, TEXT_RIGHT, DIRLIST_TOP, DIRLIST_BOTTOM,
 		DIRLIST_LEFT, DIRLIST_RIGHT, STATS_TOP, STATS_BOTTOM, STATS_LEFT, STATS_RIGHT, 
 
-		LIST_HL_BG_COLOR, LIST_HL_COLOR, QUEUE_COLOR, TEXT_QUEUE_BACK_COLOR, QUEUE_SPLITTER_POS,
+		LIST_HL_BG_COLOR, LIST_HL_COLOR, QUEUE_DUPE_COLOR, TEXT_QUEUE_DUPE_BACK_COLOR, QUEUE_SPLITTER_POS,
 		WTB_IMAGE_SIZE, TB_PROGRESS_TEXT_COLOR,
 		COLOR_STATUS_FINISHED, COLOR_STATUS_SHARED, PROGRESS_LIGHTEN, FAV_USERS_SPLITTER_POS,
 #endif
@@ -316,7 +316,24 @@ public:
 	static const ResourceManager::Strings dropStrings[QUEUE_LAST];
 	static const ResourceManager::Strings updateStrings[VERSION_LAST];
 
-	typedef map<int, ResourceManager::Strings> EnumStringMap;
+	using SettingValue = boost::variant<bool, int, string>;
+	using SettingValueList = vector<SettingValue>;
+
+	using SettingKeyList = vector<int>;
+	struct SettingChangeHandler {
+
+		using List = vector<SettingChangeHandler>;
+		using OnSettingChangedF = std::function<void (const MessageCallback &, const SettingKeyList &)>;
+
+		OnSettingChangedF onChanged;
+		SettingKeyList settingKeys;
+	};
+
+	void registerChangeHandler(const SettingKeyList& aKeys, SettingChangeHandler::OnSettingChangedF&& changeF) noexcept;
+
+	SettingValue getSettingValue(int aSetting, bool useDefault = true) const noexcept;
+
+	using EnumStringMap = map<int, ResourceManager::Strings>;
 	static EnumStringMap getEnumStrings(int aKey, bool aValidateCurrentValue) noexcept;
 
 	const string& get(StrSetting key, bool useDefault = true) const noexcept {
@@ -360,7 +377,7 @@ public:
 		return int64Defaults[key - INT64_FIRST];
 	}
 
-	void setDefault(StrSetting key, string const& value) noexcept {
+	void setDefault(StrSetting key, const string_view& value) noexcept {
 		strDefaults[key - STR_FIRST] = value;
 	}
 
@@ -402,7 +419,7 @@ public:
 
 	HubSettings getHubSettings() const noexcept;
 
-	typedef vector<string> HistoryList;
+	using HistoryList = vector<string>;
 
 	enum HistoryType {
 		HISTORY_SEARCH,
@@ -421,21 +438,26 @@ public:
 	string getProfileName(int profile) const noexcept;
 
 	// Reports errors to system log if no custom error function is supplied
-	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
-	static bool saveSettingFile(const string& aContent, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool saveSettingFile(SimpleXML& aXML, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool saveSettingFile(const string& aContent, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
 
 	// Attempts to load the setting file and creates a backup after completion
 	// Settings are recovered automatically from the backup file in case the main setting file is malformed/corrupted
-	typedef std::function<void(SimpleXML&)> XMLParseCallback;
-	typedef std::function<bool(const string&)> PathParseCallback;
-	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
-	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	using XMLParseCallback = std::function<void (SimpleXML &)>;
+	using PathParseCallback = std::function<bool (const string &)>;
+	static bool loadSettingFile(AppUtil::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool loadSettingFile(AppUtil::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+
+	const SettingChangeHandler::List& getChangeCallbacks() const noexcept {
+		return settingChangeHandlers;
+	}
 private:
+	SettingChangeHandler::List settingChangeHandlers;
 	boost::regex connectionRegex;
 
 	friend class Singleton<SettingsManager>;
 	SettingsManager();
-	~SettingsManager() { }
+	~SettingsManager() override = default;
 
 	static const string settingTags[SETTINGS_LAST+1];
 
@@ -458,6 +480,14 @@ private:
 
 	static string buildToolbarOrder(const vector<ToolbarIconEnum>& aIcons) noexcept;
 	static vector<ToolbarIconEnum> getDefaultToolbarOrder() noexcept;
+
+	void saveSettings(SimpleXML& xml) const;
+	void saveHistory(SimpleXML& xml) const;
+
+	void loadSettings(SimpleXML& xml);
+	void loadHistory(SimpleXML& xml);
+
+	void ensureValidBindAddresses(const StartupLoader& aLoader) noexcept;
 };
 
 // Shorthand accessor macros

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,7 +20,6 @@
 
 #include "SFVReader.h"
 
-#include "AirUtil.h"
 #include "File.h"
 #include "FileReader.h"
 #include "FilteredFile.h"
@@ -36,7 +35,10 @@
 
 namespace dcpp {
 
-using boost::range::find_if;
+using ranges::find_if;
+
+boost::regex DirSFVReader::crcReg = boost::regex(R"(.{5,200}\s(\w{8})$)");
+boost::regex DirSFVReader::lineBreakRegex = boost::regex(R"(\n|\r)");
 
 DirSFVReader::DirSFVReader() : loaded(false) { }
 
@@ -48,10 +50,16 @@ DirSFVReader::DirSFVReader(const string& /*aPath*/, const StringList& aSfvFiles)
 	load();
 }
 
-void DirSFVReader::loadPath(const string& aPath) {
+void DirSFVReader::loadPath(const string& aPath) noexcept {
 	content.clear();
 	path = aPath;
-	sfvFiles = File::findFiles(path, "*.sfv", File::TYPE_FILE);
+
+	try {
+		sfvFiles = File::findFiles(path, "*.sfv", File::TYPE_FILE);
+	} catch (const FileException& e) {
+		dcdebug("SFV reader: failed to load path %s (%s)", aPath.c_str(), e.getError().c_str());
+		return;
+	}
 
 	load();
 }
@@ -91,12 +99,12 @@ bool DirSFVReader::loadFile(const string& aContent) noexcept {
 	bool hasValidLines = false;
 	string line;
 
-	StringTokenizer<string> tokenizer(aContent, AirUtil::lineBreakRegex);
+	StringTokenizer<string> tokenizer(aContent, lineBreakRegex);
 	for (const auto& rawLine: tokenizer.getTokens()) {
 		line = Text::toUtf8(rawLine);
 
 		// Make sure that the line is valid
-		if (!regex_search(line, AirUtil::crcReg) || line.find(';') != string::npos) {
+		if (!regex_search(line, crcReg) || line.find(';') == 0) {
 			continue;
 		}
 
@@ -155,7 +163,7 @@ void DirSFVReader::load() noexcept {
 }
 
 void DirSFVReader::read(std::function<void (const string&)> aReadF) const {
-	for (const auto& p: content | map_keys) {
+	for (const auto& p: content | views::keys) {
 		aReadF(p);
 	}
 }

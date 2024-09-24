@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -25,9 +25,9 @@
 
 namespace dcpp {
 
-typedef std::function<void ()> DelayedF;
+using DelayedF = std::function<void ()>;
 struct DelayTask {
-	DelayTask(DelayedF aF, uint64_t aRunTick) : runTick(aRunTick), f(aF) { }
+	DelayTask(const DelayedF& aF, uint64_t aRunTick) : runTick(aRunTick), f(aF) { }
 	uint64_t runTick;
 	DelayedF f;
 };
@@ -35,13 +35,13 @@ struct DelayTask {
 template<class T>
 class DelayedEvents : private TimerManagerListener {
 public:
-	typedef unordered_map<T, unique_ptr<DelayTask>> List;
+	using List = unordered_map<T, unique_ptr<DelayTask>>;
 
 	DelayedEvents() { 
 		TimerManager::getInstance()->addListener(this);
 	}
 
-	~DelayedEvents() {
+	~DelayedEvents() override {
 		TimerManager::getInstance()->removeListener(this);
 		clear();
 	}
@@ -64,7 +64,7 @@ public:
 		return true;
 	}
 
-	void on(TimerManagerListener::Second, uint64_t aTick) noexcept {
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override {
 		vector<T> taskKeys;
 
 		{
@@ -84,8 +84,7 @@ public:
 	void addEvent(const T& aKey, DelayedF f, uint64_t aDelayTicks) {
 		Lock l(cs);
 
-		auto i = eventList.find(aKey);
-		if (i != eventList.end()) {
+		if (auto i = eventList.find(aKey); i != eventList.end()) {
 			i->second.get()->runTick = GET_TICK() + aDelayTicks;
 			return;
 		}
@@ -100,8 +99,7 @@ public:
 
 	bool removeEvent(const T& aKey) {
 		Lock l(cs);
-		auto i = eventList.find(aKey);
-		if (i != eventList.end()) {
+		if (auto i = eventList.find(aKey); i != eventList.end()) {
 			eventList.erase(i);
 			return true;
 		}

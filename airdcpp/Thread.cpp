@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@
 
 #include "Exception.h"
 #include "ResourceManager.h"
+#include "SystemUtil.h"
 #include "Util.h"
 
 #ifdef _WIN32
@@ -33,7 +34,6 @@ namespace dcpp {
 	
 #ifdef _WIN32
 
-DWORD threadId;
 void Thread::start() {
 	join();
 	if ((threadHandle = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0, &starter, this, 0, reinterpret_cast<unsigned int*>(&threadId)))) == NULL) {
@@ -54,7 +54,7 @@ unsigned int WINAPI Thread::starter(void* p) {
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
-	Thread* t = (Thread*)p;
+	auto t = (Thread*)p;
 	t->run();
 	return 0;
 }
@@ -85,9 +85,9 @@ void Thread::t_resume() {
 
 void Thread::setThreadPriority(Priority p) {
 	if (!::SetThreadPriority(threadHandle, p)) {
-		dcdebug("Unable to set thread priority: %s", Util::translateError(GetLastError()).c_str());
+		dcdebug("Unable to set thread priority: %s", SystemUtil::translateError(GetLastError()).c_str());
 		//dcassert(0);
-		//throw ThreadException("Unable to set thread priority: " + Util::translateError(GetLastError()));
+		//throw ThreadException("Unable to set thread priority: " + SystemUtil::translateError(GetLastError()));
 	}
 }
 
@@ -95,7 +95,15 @@ void Thread::yield() {
 	::Sleep(0);
 }
 
+#ifdef _DEBUG
+bool Thread::isCurrentThread() const noexcept {
+	auto currentThreadId = GetCurrentThreadId();
+	return currentThreadId == threadId;
+}
+#endif
+
 #else
+
 void Thread::start() {
 	join();
 	if (pthread_create(&threadHandle, NULL, &starter, this) != 0) {
@@ -142,7 +150,7 @@ void Thread::join() {
 void Thread::setThreadPriority(Priority p) {
 	if (setpriority(PRIO_PROCESS, 0, p) != 0) {
 		dcassert(0);
-		//throw ThreadException("Unable to set thread priority: " + Util::translateError(errno));
+		//throw ThreadException("Unable to set thread priority: " + SystemUtil::translateError(errno));
 	}
 }
 

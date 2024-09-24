@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -93,7 +93,7 @@ void HubSettings::load(SimpleXML& xml) {
 		bools[i] = to3boolXml(xml.getIntChildAttrib(boolNames[i]));
 	}
 	for(uint8_t i = 0; i < IntCount; ++i) {
-		auto tmp = xml.getChildAttrib(intNames[i]);
+		const auto& tmp = xml.getChildAttrib(intNames[i]);
 		if (!tmp.empty())
 			ints[i] = Util::toInt(tmp);
 	}

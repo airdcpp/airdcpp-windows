@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -33,6 +33,7 @@
 #include "File.h"
 #include "Encoder.h"
 #include "Exception.h"
+#include "PathUtil.h"
 #include "Util.h"
 
 namespace dcpp {
@@ -48,7 +49,7 @@ public:
 
 	static string getHash(const string& input, bool bBase32) {
 		SimpleHasher<Hash> hash(bBase32);
-		if(Util::fileExists(input))
+		if(PathUtil::fileExists(input))
 			return hash.fromFile(input);
 
 		return hash.fromString(input);
@@ -95,11 +96,13 @@ public:
 		 uint8_t* buf = getResult();
 
 		string ret;
-		if(!base32) {
+		if (!base32) {
 			ret.resize(Hash::BYTES * 2, '\0');
 			for(uint32_t i = 0; i < Hash::BYTES; ++i)
-				sprintf(&ret[i*2], "%02x", (uint8_t)buf[i]);
-		} else Encoder::toBase32(buf, Hash::BYTES, ret);
+				snprintf(&ret[i*2], sizeof(ret), "%02x", (uint8_t)buf[i]);
+		} else {
+			Encoder::toBase32(buf, Hash::BYTES, ret);
+		}
 
 		return ret;
 	}

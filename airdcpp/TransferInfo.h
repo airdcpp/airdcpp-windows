@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,14 +22,14 @@
 #include "typedefs.h"
 
 #include "HintedUser.h"
-#include "QueueItemBase.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "Transfer.h"
-#include "Util.h"
+#include "ValueGenerator.h"
 
 
 namespace dcpp {
-	typedef uint32_t TransferToken;
+	using TransferInfoToken = uint32_t;
 	class TransferInfo {
 	public:
 
@@ -48,7 +48,7 @@ namespace dcpp {
 			FLAGS = 0x1000,
 			ENCRYPTION = 0x2000,
 			QUEUE_ID = 0x4000,
-			// BUNDLE_ID = 0x8000,
+			SUPPORTS = 0x8000,
 		};
 
 		enum ItemState {
@@ -59,9 +59,9 @@ namespace dcpp {
 			STATE_LAST,
 		};
 
-		typedef shared_ptr<TransferInfo> Ptr;
-		typedef vector<Ptr> List;
-		typedef unordered_map<string, Ptr> Map;
+		using Ptr = shared_ptr<TransferInfo>;
+		using List = vector<Ptr>;
+		using Map = unordered_map<string, Ptr>;
 
 		TransferInfo(const HintedUser& aUser, bool aIsDownload, const std::string& aStringToken) :
 			user(aUser), download(aIsDownload), stringToken(aStringToken)
@@ -76,6 +76,7 @@ namespace dcpp {
 		GETSET(string, statusString, StatusString)
 		GETSET(string, bundle, Bundle);
 		GETSET(OrderedStringSet, flags, Flags);
+		GETSET(StringList, supports, Supports);
 
 		IGETSET(Transfer::Type, type, Type, Transfer::TYPE_LAST)
 
@@ -86,7 +87,7 @@ namespace dcpp {
 
 		IGETSET(QueueToken, queueToken, QueueToken, 0);
 
-		const TransferToken getToken() const noexcept {
+		TransferInfoToken getToken() const noexcept {
 			return token;
 		}
 
@@ -114,25 +115,24 @@ namespace dcpp {
 			user.hint = aHubUrl;
 		}
 
-		string getName() {
+		string getName() const noexcept {
 			switch (type) {
-			case Transfer::TYPE_TREE: return "TTH: " + Util::getFileName(target);
+			case Transfer::TYPE_TREE: return "TTH: " + PathUtil::getFileName(target);
 			case Transfer::TYPE_FULL_LIST: return STRING(TYPE_FILE_LIST);
 			case Transfer::TYPE_PARTIAL_LIST: return STRING(TYPE_FILE_LIST_PARTIAL);
-			default: return Util::getFileName(target);
+			case Transfer::TYPE_TTH_LIST: return STRING(TYPE_TTHLIST);
+			default: return PathUtil::getFileName(target);
 			}
 		}
 	private:
 		HintedUser user;
 		const bool download;
 
-		const TransferToken token = Util::rand();
+		const TransferInfoToken token = ValueGenerator::rand();
 		const std::string stringToken;
-
-		bool transferFailed = false;
 	};
 
-	typedef TransferInfo::Ptr TransferInfoPtr;
+	using TransferInfoPtr = TransferInfo::Ptr;
 }
 
 #endif

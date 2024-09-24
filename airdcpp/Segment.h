@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -26,7 +26,7 @@ namespace dcpp {
 
 class Segment {
 public:
-	Segment() { }
+	Segment() = default;
 	Segment(int64_t start_, int64_t size_, bool overlapped_ = false) : start(start_), size(size_), overlapped(overlapped_) { }
 	
 	int64_t getStart() const noexcept { return start; }
@@ -61,9 +61,9 @@ public:
 	}
 
 	bool inSet(const set<Segment>& segmentSet) const noexcept {
-		return find_if(segmentSet.begin(), segmentSet.end(), [&](const Segment& s) {
+		return ranges::any_of(segmentSet, [&](const Segment& s) {
 			return s.contains(*this);
-		}) != segmentSet.end();
+		});
 	}
 	
 	bool contains(const Segment& rhs) const noexcept {

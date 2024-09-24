@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -33,16 +33,12 @@ public:
 	void addQI(const QueueItemPtr& qi, const HintedUser& aUser, bool aIsBadSource = false) noexcept;
 	void getUserQIs(const UserPtr& aUser, QueueItemList& ql) noexcept;
 
-	QueueItemPtr getNext(const UserPtr& aUser, const QueueTokenSet& runningBundles, const OrderedStringSet& onlineHubs, string& lastError_, bool& hasDownload,
-		Priority minPrio = Priority::LOWEST, int64_t wantedSize = 0, int64_t lastSpeed = 0, QueueItemBase::DownloadType aType = QueueItem::TYPE_ANY, bool allowOverlap = false) noexcept;
-	QueueItemPtr getNextPrioQI(const UserPtr& aUser, const OrderedStringSet& onlineHubs, int64_t wantedSize, int64_t lastSpeed, 
-		QueueItemBase::DownloadType aType, bool allowOverlap, string& lastError_) noexcept;
-	QueueItemPtr getNextBundleQI(const UserPtr& aUser, const QueueTokenSet& runningBundles, const OrderedStringSet& onlineHubs,
-		Priority minPrio, int64_t wantedSize, int64_t lastSpeed, QueueItemBase::DownloadType aType, 
-		bool allowOverlap, string& lastError_, bool& hasDownload) noexcept;
+	QueueItemPtr getNext(const QueueDownloadQuery& aQuery, string& lastError_, bool& hasDownload_, bool aAllowOverlap = false) noexcept;
+	QueueItemPtr getNextPrioQI(const QueueDownloadQuery& aQuery, string& lastError_, bool aAllowOverlap) noexcept;
+	QueueItemPtr getNextBundleQI(const QueueDownloadQuery& aQuery, string& lastError_, bool& hasDownload, bool aAllowOverlap) noexcept;
 
 	void addDownload(const QueueItemPtr& qi, Download* d) noexcept;
-	void removeDownload(const QueueItemPtr& qi, const string& aToken) noexcept;
+	void removeDownload(const QueueItemPtr& qi, const Download* d) noexcept;
 
 	void removeQI(const QueueItemPtr& qi, bool removeRunning = true) noexcept;
 	void removeQI(const QueueItemPtr& qi, const UserPtr& aUser, bool removeRunning = true, Flags::MaskType reason = 0) noexcept;

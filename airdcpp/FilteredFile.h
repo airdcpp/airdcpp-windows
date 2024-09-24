@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,7 +19,8 @@
 #ifndef DCPLUSPLUS_DCPP_FILTERED_FILE_H
 #define DCPLUSPLUS_DCPP_FILTERED_FILE_H
 
-#include "Streams.h"
+#include "Exception.h"
+#include "StreamBase.h"
 
 namespace dcpp {
 
@@ -27,8 +28,8 @@ template<bool managed>
 class CountOutputStream : public OutputStream {
 public:
 	using OutputStream::write;
-	CountOutputStream(OutputStream* aStream) : s(aStream), count(0) { }
-	~CountOutputStream() { if(managed) delete s; }
+	explicit CountOutputStream(OutputStream* aStream) : s(aStream) { }
+	~CountOutputStream() override { if(managed) delete s; }
 
 	size_t flushBuffers(bool aForce) override {
 		size_t n = s->flushBuffers(aForce);
@@ -44,7 +45,7 @@ public:
 	int64_t getCount() const { return count; }
 private:
 	OutputStream* s;
-	int64_t count;
+	int64_t count = 0;
 };
 
 template<class Filter, bool managed>
@@ -52,8 +53,8 @@ class CalcOutputStream : public OutputStream {
 public:
 	using OutputStream::write;
 
-	CalcOutputStream(OutputStream* aStream) : s(aStream) { }
-	~CalcOutputStream() { if(managed) delete s; }
+	explicit CalcOutputStream(OutputStream* aStream) : s(aStream) { }
+	~CalcOutputStream() override { if(managed) delete s; }
 
 	size_t flushBuffers(bool aForce) override {
 		return s->flushBuffers(aForce);
@@ -74,8 +75,8 @@ private:
 template<class Filter, bool managed>
 class CalcInputStream : public InputStream {
 public:
-	CalcInputStream(InputStream* aStream) : s(aStream) { }
-	~CalcInputStream() { if(managed) delete s; }
+	explicit CalcInputStream(InputStream* aStream) : s(aStream) { }
+	~CalcInputStream() override { if(managed) delete s; }
 
 	size_t read(void* buf, size_t& len) override {
 		size_t x = s->read(buf, len);
@@ -94,11 +95,11 @@ class FilteredOutputStream : public OutputStream {
 public:
 	using OutputStream::write;
 
-	FilteredOutputStream(OutputStream* aFile) : buf(new uint8_t[BUF_SIZE]) { 
+	explicit FilteredOutputStream(OutputStream* aFile) : buf(new uint8_t[BUF_SIZE]) { 
 		f.reset(aFile);
 	}
 
-	~FilteredOutputStream() { 
+	~FilteredOutputStream() override { 
 		if(!manage) 
 			f.release(); 
 	}
@@ -127,7 +128,7 @@ public:
 		if(flushed)
 			throw Exception("No filtered writes after flush");
 
-		uint8_t* wb = (uint8_t*)wbuf;
+		auto wb = (uint8_t*)wbuf;
 		size_t written = 0;
 		while(len > 0) {
 			size_t n = BUF_SIZE;
@@ -154,7 +155,7 @@ public:
 		return as->releaseRootStream();
 	}
 
-	virtual bool eof() noexcept override { return !more; }
+	bool eof() noexcept override { return !more; }
 private:
 	static const size_t BUF_SIZE = 128*1024; //increase buffer from 64, test
 
@@ -169,11 +170,11 @@ private:
 template<class Filter, bool managed>
 class FilteredInputStream : public InputStream {
 public:
-	FilteredInputStream(InputStream* aFile) : buf(new uint8_t[BUF_SIZE]) { 
+	explicit FilteredInputStream(InputStream* aFile) : buf(new uint8_t[BUF_SIZE]) { 
 		f.reset(aFile);
 	}
 
-	~FilteredInputStream() noexcept { 
+	~FilteredInputStream() noexcept final { 
 		if(!managed) 
 			f.release(); 
 	}
@@ -185,7 +186,7 @@ public:
 	* @return Length of data in buffer
 	*/
 	size_t read(void* rbuf, size_t& len) override {
-		uint8_t* rb = (uint8_t*)rbuf;
+		auto rb = (uint8_t*)rbuf;
 
 		size_t totalRead = 0;
 		size_t totalProduced = 0;
@@ -215,6 +216,10 @@ public:
 	InputStream* releaseRootStream() override {
 		auto as = f.release();
 		return as->releaseRootStream();
+	}
+
+	int64_t getSize() const noexcept override {
+		return f->getSize();
 	}
 private:
 	static const size_t BUF_SIZE = 128*1024; //increase buffer from 64

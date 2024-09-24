@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -25,9 +25,10 @@
 #include "CriticalSection.h"
 #include "Message.h"
 #include "SettingsManager.h"
+#include "Util.h"
 
 namespace dcpp {
-	typedef deque<Message> MessageList;
+	using MessageList = deque<Message>;
 
 	struct MessageCount {
 		int logMessages = 0;
@@ -41,9 +42,9 @@ namespace dcpp {
 	class MessageCache {
 	public:
 
-		typedef std::function<bool(const ChatMessagePtr& aMessage)> ChatMessageFilterF;
+		using ChatMessageFilterF = std::function<bool (const ChatMessagePtr &)>;
 
-		MessageCache(SettingsManager::IntSetting aSetting) noexcept : setting(aSetting) { }
+		explicit MessageCache(SettingsManager::IntSetting aSetting) noexcept : setting(aSetting) { }
 		MessageCache(const MessageCache& aCache) noexcept;
 
 		template<class T>
@@ -64,7 +65,7 @@ namespace dcpp {
 
 		// Use the severity SEV_LAST to count all messages
 		int countUnreadLogMessages(LogMessage::Severity aSeverity) const noexcept;
-		int countUnreadChatMessages(ChatMessageFilterF filterF = nullptr) const noexcept;
+		int countUnreadChatMessages(const ChatMessageFilterF& filterF = nullptr) const noexcept;
 		MessageCount setRead() noexcept;
 
 		SharedMutex& getCS() const noexcept { return cs; }
@@ -87,7 +88,7 @@ namespace dcpp {
 
 		virtual const MessageCache& getCache() const noexcept = 0;
 		virtual bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) = 0;
-		virtual void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel = Util::emptyString) noexcept = 0;
+		virtual void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType, const string& aLabel = Util::emptyString, const string& aOwner = Util::emptyString) noexcept = 0;
 	};
 }
 

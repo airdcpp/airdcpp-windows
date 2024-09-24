@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -25,8 +25,11 @@
 #include "HashManager.h"
 #include "MerkleCheckOutputStream.h"
 #include "MerkleTreeOutputStream.h"
+#include "PathUtil.h"
 #include "QueueItem.h"
+#include "SettingsManager.h"
 #include "SharedFileStream.h"
+#include "Streams.h"
 #include "UserConnection.h"
 #include "ZUtils.h"
 
@@ -35,72 +38,94 @@ namespace dcpp {
 Download::Download(UserConnection& conn, QueueItem& qi) noexcept : Transfer(conn, qi.getTarget(), qi.getTTH()),
 	tempTarget(qi.getTempTarget()), listDirectoryPath(qi.isFilelist() ? qi.getListDirectoryPath() : Util::emptyString)
 {
+	dcassert(!conn.getDownload());
 	conn.setDownload(this);
 	
-	QueueItem::SourceConstIter source = qi.getSource(getUser());
-
+	// Type
 	if(qi.isSet(QueueItem::FLAG_PARTIAL_LIST)) {
 		setType(TYPE_PARTIAL_LIST);
 	} else if(qi.isSet(QueueItem::FLAG_USER_LIST)) {
 		setType(TYPE_FULL_LIST);
 	}
 
-	if(source->isSet(QueueItem::Source::FLAG_PARTIAL))
-		setFlag(FLAG_PARTIAL);
-	if(qi.isSet(QueueItem::FLAG_CLIENT_VIEW))
-		setFlag(FLAG_VIEW);
-	if(qi.isSet(QueueItem::FLAG_MATCH_QUEUE))
-		setFlag(FLAG_QUEUE);
-	if(qi.isSet(QueueItem::FLAG_RECURSIVE_LIST))
-		setFlag(FLAG_RECURSIVE);
-	if(qi.isSet(QueueItem::FLAG_TTHLIST_BUNDLE))
-		setFlag(FLAG_TTHLIST_BUNDLE);
-	if (qi.getPriority() == Priority::HIGHEST)
-		setFlag(FLAG_HIGHEST_PRIO);
+	// Base flags
+	initFlags(qi);
 
+	// Bundle
 	if (qi.getBundle()) {
-		dcassert(!qi.isSet(QueueItem::FLAG_USER_LIST));
-		dcassert(!qi.isSet(QueueItem::FLAG_CLIENT_VIEW));
+		dcassert(!qi.isSet(QueueItem::FLAG_USER_LIST) && !qi.isSet(QueueItem::FLAG_CLIENT_VIEW));
 		setBundle(qi.getBundle());
 	}
 	
+	// File
 	if(getType() == TYPE_FILE && qi.getSize() != -1) {
-		if(HashManager::getInstance()->getTree(getTTH(), getTigerTree())) {
-			setTreeValid(true);
-			setSegment(qi.getNextSegment(getTigerTree().getBlockSize(), conn.getChunkSize(), conn.getSpeed(), source->getPartialSource(), true));
-			qi.setBlockSize(getTigerTree().getBlockSize());
-		} else if(conn.isSet(UserConnection::FLAG_SUPPORTS_TTHL) && !source->isSet(QueueItem::Source::FLAG_NO_TREE) && qi.getSize() > HashManager::getMinBlockSize()) {
-			// Get the tree unless the file is small (for small files, we'd probably only get the root anyway)
-			setType(TYPE_TREE);
-			getTigerTree().setFileSize(qi.getSize());
-			setSegment(Segment(0, -1));
-		} else {
-			// Use the root as tree to get some sort of validation at least...
-			getTigerTree() = TigerTree(qi.getSize(), qi.getSize(), getTTH());
-			setTreeValid(true);
-			setSegment(qi.getNextSegment(getTigerTree().getBlockSize(), 0, 0, source->getPartialSource(), true));
-		}
-		
-		if ((getStartPos() + getSegmentSize()) != qi.getSize() || (conn.getDownload() && conn.getDownload()->isSet(FLAG_CHUNKED))) {
-			setFlag(FLAG_CHUNKED);
-		}
-
-		if(getSegment().getOverlapped()) {
-			setFlag(FLAG_OVERLAP);
-
-			// set overlapped flag to original segment
-			for(auto d: qi.getDownloads()) {
-				if(d->getSegment().contains(getSegment())) {
-					d->setOverlapped(true);
-					break;
-				}
-			}
-		}
+		initSegment(qi);
+		initOverlapped(qi);
 	}
 }
 
 Download::~Download() {
-	getUserConnection().setDownload(0);
+	dcassert(getUserConnection().getDownload() == this);
+	// dcdebug("Deleting download %s\n", getToken().c_str());
+	getUserConnection().setDownload(nullptr);
+}
+
+void Download::initSegment(QueueItem& qi) noexcept {
+	const auto& conn = getUserConnection();
+	auto source = qi.getSource(getUser());
+	if (HashManager::getInstance()->getTree(getTTH(), tt)) {
+		setTreeValid(true);
+		setSegment(qi.getNextSegment(getTigerTree().getBlockSize(), conn.getChunkSize(), conn.getSpeed(), source->getPartsInfo(), true));
+		qi.setBlockSize(getTigerTree().getBlockSize());
+	} else if(conn.isSet(UserConnection::FLAG_SUPPORTS_TTHL) && !source->isSet(QueueItem::Source::FLAG_NO_TREE) && qi.getSize() > HashManager::getMinBlockSize()) {
+		// Get the tree unless the file is small (for small files, we'd probably only get the root anyway)
+		setType(TYPE_TREE);
+		getTigerTree().setFileSize(qi.getSize());
+		setSegment(Segment(0, -1));
+	} else {
+		// Use the root as tree to get some sort of validation at least...
+		getTigerTree() = TigerTree(qi.getSize(), qi.getSize(), getTTH());
+		setTreeValid(true);
+		setSegment(qi.getNextSegment(getTigerTree().getBlockSize(), 0, 0, source->getPartsInfo(), true));
+	}
+		
+	if ((getStartPos() + getSegmentSize()) != qi.getSize() || (conn.getDownload() && conn.getDownload()->isSet(FLAG_CHUNKED))) {
+		setFlag(FLAG_CHUNKED);
+	}
+}
+
+void Download::initOverlapped(const QueueItem& qi) noexcept {
+	if (!getSegment().getOverlapped()) {
+		return;
+	}
+
+	setFlag(FLAG_OVERLAP);
+
+	// set overlapped flag to original segment
+	for (auto d : qi.getDownloads()) {
+		if (d->getSegment().contains(getSegment())) {
+			d->setOverlapped(true);
+			break;
+		}
+	}
+}
+
+void Download::initFlags(const QueueItem& qi) noexcept {
+	// Source flags
+	if (auto source = qi.getSource(getUser()); source->isSet(QueueItem::Source::FLAG_PARTIAL))
+		setFlag(FLAG_PARTIAL);
+
+	// Other
+	if (qi.isSet(QueueItem::FLAG_CLIENT_VIEW))
+		setFlag(FLAG_VIEW);
+	if (qi.isSet(QueueItem::FLAG_MATCH_QUEUE))
+		setFlag(FLAG_QUEUE);
+	if (qi.isSet(QueueItem::FLAG_RECURSIVE_LIST))
+		setFlag(FLAG_RECURSIVE);
+	if (qi.isSet(QueueItem::FLAG_TTHLIST_BUNDLE))
+		setFlag(FLAG_TTHLIST_BUNDLE);
+	if (qi.getPriority() == Priority::HIGHEST)
+		setFlag(FLAG_HIGHEST_PRIO);
 }
 
 string Download::getBundleStringToken() const noexcept {
@@ -110,23 +135,33 @@ string Download::getBundleStringToken() const noexcept {
 	return bundle->getStringToken();
 }
 
-bool Download::operator==(const Download* d) const {
-	return compare(getToken(), d->getToken()) == 0;
+void Download::flush() const noexcept {
+	if (!getOutput()) {
+		return;
+	}
+
+	if (getActual() > 0) {
+		try {
+			getOutput()->flushBuffers(false);
+		} catch (const Exception&) {
+			// ...
+		}
+	}
 }
 
 void Download::appendFlags(OrderedStringSet& flags_) const noexcept {
 	if (isSet(Download::FLAG_PARTIAL)) {
-		flags_.insert("P");
+		flags_.emplace("P");
 	}
 
 	if (isSet(Download::FLAG_TTH_CHECK)) {
-		flags_.insert("T");
+		flags_.emplace("T");
 	}
 	if (isSet(Download::FLAG_ZDOWNLOAD)) {
-		flags_.insert("Z");
+		flags_.emplace("Z");
 	}
 	if (isSet(Download::FLAG_CHUNKED)) {
-		flags_.insert("C");
+		flags_.emplace("C");
 	}
 
 	Transfer::appendFlags(flags_);
@@ -137,13 +172,13 @@ AdcCommand Download::getCommand(bool zlib, const string& mySID) const noexcept {
 	
 	cmd.addParam(Transfer::names[getType()]);
 
-	if(getType() == TYPE_PARTIAL_LIST) {
+	if(getType() == TYPE_PARTIAL_LIST || getType() == TYPE_TTH_LIST) {
 		cmd.addParam(getListDirectoryPath());
 	} else if(getType() == TYPE_FULL_LIST) {
 		if(isSet(Download::FLAG_XML_BZ_LIST)) {
 			cmd.addParam(USER_LIST_NAME_BZ);
 		} else {
-			cmd.addParam(USER_LIST_NAME);
+			cmd.addParam(USER_LIST_NAME_EXTRACTED);
 		}
 	} else {
 		cmd.addParam("TTH/" + getTTH().toBase32());
@@ -151,6 +186,7 @@ AdcCommand Download::getCommand(bool zlib, const string& mySID) const noexcept {
 
 	cmd.addParam(Util::toString(getStartPos()));
 	cmd.addParam(Util::toString(getSegmentSize()));
+
 	if(!mySID.empty()) //add requester's SID (mySID) to the filelist request, so he can find the hub we are calling from.
 		cmd.addParam("ID", mySID); 
 
@@ -163,7 +199,7 @@ AdcCommand Download::getCommand(bool zlib, const string& mySID) const noexcept {
 	}
 	
 	if(isSet(Download::FLAG_QUEUE) && getType() == TYPE_PARTIAL_LIST) {	 
-		cmd.addParam("TL1");	 
+		cmd.addParam("TL1");
 	}
 
 	return cmd;
@@ -171,49 +207,56 @@ AdcCommand Download::getCommand(bool zlib, const string& mySID) const noexcept {
 
 void Download::getParams(const UserConnection& aSource, ParamMap& params) const noexcept {
 	Transfer::getParams(aSource, params);
-	params["target"] = getPath();
+	params["target"] = (getType() == TYPE_PARTIAL_LIST ? STRING(PARTIAL_FILELIST) + " (" + getListDirectoryPath() + ")" : getPath());
 }
 
 string Download::getTargetFileName() const noexcept {
-	return Util::getFileName(getPath());
+	return PathUtil::getFileName(getPath());
 }
 
 const string& Download::getDownloadTarget() const noexcept {
 	return (getTempTarget().empty() ? getPath() : getTempTarget());
 }
 
-void Download::open(int64_t bytes, bool z, bool hasDownloadedBytes) {
-	if(getType() == Transfer::TYPE_FILE) {
-		auto target = getDownloadTarget();
-		auto fullSize = tt.getFileSize();
+void Download::disconnectOverlappedThrow() {
+	if (!getOverlapped() || !bundle) {
+		return;
+	}
 
-		if(getOverlapped() && bundle) {
-			setOverlapped(false);
- 	 
-			bool found = false;
-			// ok, we got a fast slot, so it's possible to disconnect original user now
-			for(auto d: bundle->getDownloads()) {
-				if(d != this && compare(d->getPath(), getPath()) == 0 && d->getSegment().contains(getSegment())) {
- 	 
-					// overlapping has no sense if segment is going to finish
-					if(d->getSecondsLeft() < 10)
-						break;
- 	 
-					found = true;
- 	 
-					// disconnect slow chunk
-					d->getUserConnection().disconnect();
-					break;
-				}
-			}
+	setOverlapped(false);
 
-			if(!found) {
-				// slow chunk already finished ???
-				throw Exception(STRING(DOWNLOAD_FINISHED_IDLE));
-			}
+	// ok, we got a fast slot, so it's possible to disconnect original user now
+	bool found = false;
+	for (auto d: bundle->getDownloads()) {
+		if (d == this || compare(d->getPath(), getPath()) != 0 || !d->getSegment().contains(getSegment())) {
+			continue;
 		}
 
-		if(hasDownloadedBytes) {
+		// overlapping has no sense if segment is going to finish
+		if (d->getSecondsLeft() >= 10) {
+			found = true;
+
+			// disconnect slow chunk
+			d->getUserConnection().disconnect();
+		}
+
+		break;
+	}
+
+	if (!found) {
+		// slow chunk already finished ???
+		throw Exception(STRING(DOWNLOAD_FINISHED_IDLE));
+	}
+}
+
+void Download::open(int64_t bytes, bool z, bool aHasDownloadedBytes) {
+	if(getType() == Transfer::TYPE_FILE) {
+
+		disconnectOverlappedThrow();
+
+		auto target = getDownloadTarget();
+		auto fullSize = tt.getFileSize();
+		if (aHasDownloadedBytes) {
 			if(File::getSize(target) != fullSize) {
 				// When trying the download the next time, the resume pos will be reset
 				throw Exception(CSTRING(TARGET_FILE_MISSING));
@@ -224,7 +267,7 @@ void Download::open(int64_t bytes, bool z, bool hasDownloadedBytes) {
 
 		int fileFlags = File::OPEN | File::CREATE | File::SHARED_WRITE;
 		if (getSegment().getEnd() != fullSize) {
-			//segmented download, let Windows decide the buffering
+			// Segmented download, let Windows decide the buffering
 			fileFlags |= File::BUFFER_AUTO;
 		}
 
@@ -235,7 +278,8 @@ void Download::open(int64_t bytes, bool z, bool hasDownloadedBytes) {
 		}
 
 		f->setPos(getSegment().getStart());
-		output = move(f);
+
+		output = std::move(f);
 		tempTarget = target;
 	} else if(getType() == Transfer::TYPE_FULL_LIST) {
 		auto target = getPath();
@@ -260,7 +304,7 @@ void Download::open(int64_t bytes, bool z, bool hasDownloadedBytes) {
 	}
 
 	if (getType() == Transfer::TYPE_FILE) {
-		typedef MerkleCheckOutputStream<TigerTree, true> MerkleStream;
+		using MerkleStream = MerkleCheckOutputStream<TigerTree, true>;
 
 		output.reset(new MerkleStream(tt, output.release(), getStartPos()));
 		setFlag(Download::FLAG_TTH_CHECK);

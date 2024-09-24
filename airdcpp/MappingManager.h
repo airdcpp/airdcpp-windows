@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -59,18 +59,16 @@ public:
 	string stating otherwise. */
 	string getStatus() const;
 
-	MappingManager(bool v6);
-	virtual ~MappingManager() { }
+	explicit MappingManager(bool v6);
+	~MappingManager() override = default;
 private:
-	//friend class Singleton<MappingManager>;
-
 	vector<pair<string, function<Mapper* (const string&, bool)>>> mappers;
 
 	atomic_flag busy;
 	unique_ptr<Mapper> working; /// currently working implementation.
 	uint64_t renewal = 0; /// when the next renewal should happen, if requested by the mapper.
 
-	int run();
+	int run() override;
 
 	void close(Mapper& mapper);
 	void log(const string& message, LogMessage::Severity sev);
@@ -78,7 +76,7 @@ private:
 	void renewLater(Mapper& mapper);
 
 	bool v6;
-	void on(TimerManagerListener::Minute, uint64_t tick) noexcept;
+	void on(TimerManagerListener::Minute, uint64_t tick) noexcept override;
 };
 
 } // namespace dcpp

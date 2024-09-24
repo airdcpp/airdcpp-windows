@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,8 +19,8 @@
 #include "stdinc.h"
 #include "StringMatch.h"
 
-#include "AirUtil.h"
 #include "LogManager.h"
+#include "RegexUtil.h"
 #include "ResourceManager.h"
 #include "StringTokenizer.h"
 
@@ -65,7 +65,7 @@ struct Prepare : boost::static_visitor<bool> {
 		s.clear();
 
 		StringTokenizer<string> st(pattern, ' ');
-		for(auto& i: st.getTokens()) {
+		for(auto const& i: st.getTokens()) {
 			s.addString(i);
 		}
 		return true;
@@ -79,7 +79,7 @@ struct Prepare : boost::static_visitor<bool> {
 	bool operator()(boost::regex& r) const {
 		try {
 			if (wildCard) {
-				r.assign(AirUtil::regexEscape(pattern, true), boost::regex::icase);
+				r.assign(RegexUtil::regexEscape(pattern, true), boost::regex::icase);
 			} else {
 				r.assign(pattern);
 			}
@@ -104,7 +104,7 @@ bool StringMatch::prepare() {
 }
 
 struct Match : boost::static_visitor<bool> {
-	Match(const string& aStr) : str(aStr) { }
+	explicit Match(const string& aStr) : str(aStr) { }
 	Match& operator=(const Match&) = delete;
 
 	bool operator()(const StringSearch& s) const {

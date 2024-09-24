@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,25 +19,28 @@
 #include "stdinc.h"
 
 #include <boost/range/numeric.hpp>
-#include <boost/range/algorithm/count_if.hpp>
+#include <boost/range/adaptor/map.hpp>
 
-#include "AirUtil.h"
 #include "BundleQueue.h"
+#include "DupeUtil.h"
+#include "Exception.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "QueueItem.h"
 #include "SettingsManager.h"
 #include "TimerManager.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
-using boost::range::find_if;
+using ranges::find_if;
 
-BundleQueue::BundleQueue() : PrioritySearchQueue(SettingsManager::BUNDLE_SEARCH_TIME) { }
+BundleQueue::BundleQueue() : searchQueue(SettingsManager::BUNDLE_SEARCH_TIME) { }
 
 BundleQueue::~BundleQueue() { }
 
 size_t BundleQueue::getTotalFiles() const noexcept {
-	return boost::accumulate(bundles | map_values, (size_t)0, [](size_t old, const BundlePtr& b) { return old + b->getQueueItems().size() + b->getFinishedFiles().size(); });
+	return boost::accumulate(bundles | boost::adaptors::map_values, (size_t)0, [](size_t old, const BundlePtr& b) { return old + b->getQueueItems().size() + b->getFinishedFiles().size(); });
 }
 
 void BundleQueue::addBundle(const BundlePtr& aBundle) noexcept {
@@ -51,14 +54,13 @@ void BundleQueue::addBundle(const BundlePtr& aBundle) noexcept {
 	aBundle->setStatus(Bundle::STATUS_QUEUED);
 	aBundle->setDownloadedBytes(0); //sets to downloaded segments
 
-	addSearchPrio(aBundle);
+	searchQueue.addSearchPrio(aBundle);
 }
 
 void BundleQueue::getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& aSources, Bundle::SourceBundleList& aBad) const noexcept {
-	for(auto& b: bundles | map_values) {
+	for(auto& b: bundles | views::values) {
 		const auto& sources = b->getSources();
-		auto s = find(sources.begin(), sources.end(), aUser);
-		if (s != sources.end())
+		if (auto s = find(sources.begin(), sources.end(), aUser); s != sources.end())
 			aSources.emplace_back(b, *s);
 
 		const auto& badSources = b->getBadSources();
@@ -71,19 +73,6 @@ void BundleQueue::getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& 
 BundlePtr BundleQueue::findBundle(QueueToken aBundleToken) const noexcept {
 	auto i = bundles.find(aBundleToken);
 	return i != bundles.end() ? i->second : nullptr;
-}
-
-DupeType BundleQueue::isAdcDirectoryQueued(const string& aPath, int64_t aSize) const noexcept {
-	PathInfoPtrList infos;
-	findAdcDirectoryPathInfos(aPath, infos);
-
-	if (infos.empty()) {
-		return DUPE_NONE;
-	}
-
-	const auto& pathInfo = *infos.front();
-
-	return pathInfo.toDupeType(aSize);
 }
 
 BundlePtr BundleQueue::isLocalDirectoryQueued(const string& aPath) const noexcept {
@@ -131,7 +120,20 @@ size_t BundleQueue::getDirectoryCount(const BundlePtr& aBundle) const noexcept {
 	return (*pathInfos).size();
 }
 
-StringList BundleQueue::getAdcDirectoryPaths(const string& aAdcPath) const noexcept {
+DupeType BundleQueue::getAdcDirectoryDupe(const string& aPath, int64_t aSize) const noexcept {
+	PathInfoPtrList infos;
+	findAdcDirectoryPathInfos(aPath, infos);
+
+	if (infos.empty()) {
+		return DUPE_NONE;
+	}
+
+	const auto& pathInfo = *infos.front();
+
+	return pathInfo.toDupeType(aSize);
+}
+
+StringList BundleQueue::getAdcDirectoryDupePaths(const string& aAdcPath) const noexcept {
 	PathInfoPtrList infos;
 	findAdcDirectoryPathInfos(aAdcPath, infos);
 
@@ -145,38 +147,33 @@ StringList BundleQueue::getAdcDirectoryPaths(const string& aAdcPath) const noexc
 
 void BundleQueue::findAdcDirectoryPathInfos(const string& aAdcPath, PathInfoPtrList& pathInfos_) const noexcept {
 	// Get the last meaningful directory to look up
-	auto dirNameInfo = AirUtil::getAdcDirectoryName(aAdcPath);
-	auto directories = dirNameMap.equal_range(dirNameInfo.first);
-	if (directories.first == directories.second)
-		return;
+	auto [dirName, subdirStart] = DupeUtil::getAdcDirectoryName(aAdcPath);
+	auto directories = dirNameMap.equal_range(dirName);
 
 	// Go through all directories with this name
-	for (auto s = directories.first; s != directories.second; ++s) {
-		if (dirNameInfo.second != string::npos) {
+	for (const auto& pathInfo: directories | pair_to_range | views::values) {
+		if (subdirStart != string::npos) {
 			// Confirm that we have the subdirectory as well
-			auto subDir = getAdcSubDirectoryInfo(aAdcPath.substr(dirNameInfo.second), s->second.bundle);
+			auto subDir = getAdcSubDirectoryInfo(aAdcPath.substr(subdirStart), pathInfo.bundle);
 			if (subDir) {
 				pathInfos_.push_back(subDir);
 			}
 		} else {
-			pathInfos_.push_back(&s->second);
+			pathInfos_.push_back(&pathInfo);
 		}
 	}
 }
 
 const BundleQueue::PathInfo* BundleQueue::findLocalDirectoryPathInfo(const string& aRealPath) const noexcept {
 	// Get the last meaningful directory to look up
-	auto dirNameInfo = AirUtil::getLocalDirectoryName(aRealPath);
-	auto directories = dirNameMap.equal_range(dirNameInfo.first);
-	if (directories.first == directories.second) {
-		return nullptr;
-	}
+	auto [dirName, _] = DupeUtil::getLocalDirectoryName(aRealPath);
+	auto directories = dirNameMap.equal_range(dirName);
 
-	for (auto s = directories.first; s != directories.second; ++s) {
-		auto pathInfos = getPathInfos(s->second.bundle->getTarget());
+	for (const auto& pathInfo : directories | pair_to_range | views::values) {
+		auto pathInfos = getPathInfos(pathInfo.bundle->getTarget());
 
 		// Find exact match
-		auto i = find_if(pathInfos->begin(), pathInfos->end(), [&aRealPath](const PathInfo* aInfo) {
+		auto i = ranges::find_if(*pathInfos, [&aRealPath](const PathInfo* aInfo) {
 			return Util::stricmp(aInfo->path, aRealPath) == 0;
 		});
 
@@ -189,12 +186,11 @@ const BundleQueue::PathInfo* BundleQueue::findLocalDirectoryPathInfo(const strin
 }
 
 const BundleQueue::PathInfo* BundleQueue::getAdcSubDirectoryInfo(const string& aSubPath, const BundlePtr& aBundle) const noexcept {
-	auto pathInfos = getPathInfos(aBundle->getTarget());
-	if (pathInfos) {
-		for (const auto& p : *pathInfos) {
-			auto pos = AirUtil::compareFromEndAdc(p->path, aSubPath);
+	if (auto pathInfos = getPathInfos(aBundle->getTarget())) {
+		for (const auto& pathInfo : *pathInfos) {
+			auto pos = PathUtil::compareFromEndAdc(pathInfo->path, aSubPath);
 			if (pos == 0) {
-				return p;
+				return pathInfo;
 			}
 		}
 	}
@@ -207,17 +203,17 @@ BundlePtr BundleQueue::getMergeBundle(const string& aTarget) const noexcept {
 	// File bundles with the exact target will be returned as well
 
 	// In case it's a file bundle
-	auto filePath = Util::getFilePath(aTarget);
+	auto filePath = PathUtil::getFilePath(aTarget);
 
-	for(const auto& compareBundle: bundles | map_values) {
-		dcassert(!Util::isDirectoryPath(aTarget) || !AirUtil::isSubLocal(compareBundle->getTarget(), filePath));
+	for(const auto& compareBundle: bundles | views::values) {
+		dcassert(!PathUtil::isDirectoryPath(aTarget) || !PathUtil::isSubLocal(compareBundle->getTarget(), filePath));
 
 		if (compareBundle->isFileBundle()) {
 			// Adding the same file again?
 			if (Util::stricmp(aTarget, compareBundle->getTarget()) == 0) {
 				return compareBundle;
 			}
-		} else if (AirUtil::isParentOrExactLocal(compareBundle->getTarget(), filePath)) {
+		} else if (PathUtil::isParentOrExactLocal(compareBundle->getTarget(), filePath)) {
 			return compareBundle;
 		}
 	}
@@ -226,8 +222,8 @@ BundlePtr BundleQueue::getMergeBundle(const string& aTarget) const noexcept {
 
 void BundleQueue::getSubBundles(const string& aTarget, BundleList& retBundles_) const noexcept {
 	/* Returns bundles that are inside aTarget */
-	for(const auto& compareBundle: bundles | map_values) {
-		if (AirUtil::isSubLocal(compareBundle->getTarget(), aTarget)) {
+	for(const auto& compareBundle: bundles | views::values) {
+		if (PathUtil::isSubLocal(compareBundle->getTarget(), aTarget)) {
 			retBundles_.push_back(compareBundle);
 		}
 	}
@@ -239,7 +235,7 @@ ContainerT pickRandomItems(const ContainerT& aItems, size_t aMaxCount) noexcept 
 
 	while (ret.size() < aMaxCount && !selectableItems.empty()) {
 		auto pos = selectableItems.begin();
-		auto rand = Util::rand(selectableItems.size());
+		auto rand = ValueGenerator::rand(0, static_cast<uint32_t>(selectableItems.size() - 1));
 		advance(pos, rand);
 
 		ret.insert(*pos);
@@ -274,7 +270,7 @@ QueueItemList BundleQueue::getSearchItems(const BundlePtr& aBundle) const noexce
 				continue;
 			}
 
-			mainBundlePaths.insert(AirUtil::getReleaseDirLocal(pathInfo->path, false));
+			mainBundlePaths.insert(DupeUtil::getReleaseDirLocal(pathInfo->path, false));
 		}
 
 
@@ -291,7 +287,7 @@ QueueItemList BundleQueue::getSearchItems(const BundlePtr& aBundle) const noexce
 
 			// We'll also get search items for parent directories that have no files directly inside them
 			// so we need to filter duplicate items as well
-			if (searchItem && find_if(searchItems, QueueItem::HashComp(searchItem->getTTH())) == searchItems.end()) {
+			if (searchItem && ranges::find_if(searchItems, QueueItem::HashComp(searchItem->getTTH())) == searchItems.end()) {
 				searchItems.push_back(searchItem);
 			}
 		}
@@ -310,7 +306,7 @@ QueueItemList BundleQueue::getSearchItems(const BundlePtr& aBundle) const noexce
 }
 
 BundleQueue::PathInfo* BundleQueue::addPathInfo(const string& aPath, const BundlePtr& aBundle) noexcept {
-	auto info = &dirNameMap.emplace(Util::getLastDir(aPath), PathInfo(aPath, aBundle))->second;
+	auto info = &dirNameMap.emplace(PathUtil::getLastDir(aPath), PathInfo(aPath, aBundle))->second;
 	bundlePaths[const_cast<string*>(&aBundle->getTarget())].insert_sorted(info);
 	return info;
 }
@@ -324,15 +320,15 @@ void BundleQueue::removePathInfo(const PathInfo* aPathInfo) noexcept {
 		bundlePaths.erase(bundleTarget);
 	}
 
-	auto nameRange = dirNameMap.equal_range(Util::getLastDir(aPathInfo->path));
-	auto i = boost::find(nameRange | map_values, aPathInfo).base();
+	auto nameRange = dirNameMap.equal_range(PathUtil::getLastDir(aPathInfo->path));
+	auto i = ranges::find(nameRange | pair_to_range | views::values, *aPathInfo).base();
 	if (i != nameRange.second) {
 		dirNameMap.erase(i);
 	}
 }
 
-void BundleQueue::forEachPath(const BundlePtr& aBundle, const string& aFilePath, PathInfoHandler&& aHandler) noexcept {
-	auto currentPath = Util::getFilePath(aFilePath);
+void BundleQueue::forEachPath(const BundlePtr& aBundle, const string& aFilePath, const PathInfoHandler& aHandler) noexcept {
+	auto currentPath = PathUtil::getFilePath(aFilePath);
 	auto& pathInfos = bundlePaths[const_cast<string*>(&aBundle->getTarget())];
 
 	while (true) {
@@ -362,7 +358,7 @@ void BundleQueue::forEachPath(const BundlePtr& aBundle, const string& aFilePath,
 			break;
 		}
 
-		currentPath = Util::getParentDir(currentPath);
+		currentPath = PathUtil::getParentDir(currentPath);
 	}
 }
 
@@ -428,7 +424,7 @@ void BundleQueue::removeBundle(const BundlePtr& aBundle) noexcept{
 	{
 		auto infoPtr = getPathInfos(aBundle->getTarget());
 		if (infoPtr) {
-			auto pathInfos = *infoPtr;
+			auto& pathInfos = *infoPtr;
 			for (const auto& p : pathInfos) {
 				removePathInfo(p);
 			}
@@ -438,16 +434,16 @@ void BundleQueue::removeBundle(const BundlePtr& aBundle) noexcept{
 	dcassert(aBundle->getFinishedFiles().empty());
 	dcassert(aBundle->getQueueItems().empty());
 
-	removeSearchPrio(aBundle);
+	searchQueue.removeSearchPrio(aBundle);
 	bundles.erase(aBundle->getToken());
 
-	dcassert(bundlePaths.size() == static_cast<size_t>(boost::count_if(bundles | map_values, [](const BundlePtr& b) { return !b->isFileBundle(); })));
+	dcassert(bundlePaths.size() == static_cast<size_t>(ranges::count_if(bundles | views::values, [](const BundlePtr& b) { return !b->isFileBundle(); })));
 
 	aBundle->deleteXmlFile();
 }
 
 void BundleQueue::saveQueue(bool aForce) noexcept {
-	for(auto& b: bundles | map_values) {
+	for (const auto& b: bundles | views::values) {
 		if (b->getDirty() || aForce) {
 			try {
 				b->save();

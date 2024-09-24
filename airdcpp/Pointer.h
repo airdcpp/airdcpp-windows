@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -49,8 +49,17 @@ protected:
 	
 private:
 	friend void intrusive_ptr_add_ref(intrusive_ptr_base* p) { ++p->ref; }
-	friend void intrusive_ptr_release(intrusive_ptr_base* p) { if(--p->ref == 0) { delete static_cast<T*>(p); } }
 
+#if defined (__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER)
+// warning: ‘long unsigned int __atomic_sub_fetch_8(volatile void*, long unsigned int, int)’ writing 8 bytes into a region of size 0 overflows the destination
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107694
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+	friend void intrusive_ptr_release(intrusive_ptr_base* p) { if(--p->ref == 0) { delete static_cast<T*>(p); } }
+#if defined (__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER)
+#pragma GCC diagnostic pop
+#endif
 	atomic<long> ref;
 };
 

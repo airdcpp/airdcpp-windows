@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,15 +21,13 @@
 
 #include "ClientManager.h"
 #include "SearchManager.h"
-
 #include "SearchQuery.h"
-
-#include <boost/range/algorithm/copy.hpp>
+#include "TimerManager.h"
 
 
 namespace dcpp {
 	atomic<SearchInstanceToken> searchInstanceIdCounter { 1 };
-	SearchInstance::SearchInstance(const string& aOwnerId, uint64_t aExpirationTick) : ownerId(aOwnerId), token(searchInstanceIdCounter++), expirationTick(aExpirationTick) {
+	SearchInstance::SearchInstance(const string& aOwnerId, uint64_t aExpirationTick) : token(searchInstanceIdCounter++), expirationTick(aExpirationTick), ownerId(aOwnerId) {
 		SearchManager::getInstance()->addListener(this);
 		ClientManager::getInstance()->addListener(this);
 	}
@@ -51,7 +49,7 @@ namespace dcpp {
 
 	GroupedSearchResult::Ptr SearchInstance::getResult(GroupedResultToken aToken) const noexcept {
 		RLock l(cs);
-		auto i = find_if(results | map_values, [&](const GroupedSearchResultPtr& aSI) { return aSI->getTTH() == aToken; });
+		auto i = ranges::find_if(results | views::values, [&](const GroupedSearchResultPtr& aSI) { return aSI->getTTH() == aToken; });
 		if (i.base() == results.end()) {
 			return nullptr;
 		}
@@ -63,7 +61,7 @@ namespace dcpp {
 		GroupedSearchResultList ret;
 
 		RLock l(cs);
-		boost::range::copy(results | map_values, back_inserter(ret));
+		ranges::copy(results | views::values, back_inserter(ret));
 		return ret;
 	}
 
@@ -72,7 +70,7 @@ namespace dcpp {
 
 		{
 			RLock l(cs);
-			boost::range::copy(results | map_values, inserter(resultSet, resultSet.begin()));
+			ranges::copy(results | views::values, inserter(resultSet, resultSet.begin()));
 		}
 
 		return resultSet;
@@ -115,9 +113,9 @@ namespace dcpp {
 		return queueInfo;
 	}
 
-	bool SearchInstance::userSearch(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept {
+	bool SearchInstance::userSearchHooked(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept {
 		reset(aSearch);
-		if (!ClientManager::getInstance()->directSearch(aUser, aSearch, error_)) {
+		if (!ClientManager::getInstance()->directSearchHooked(aUser, aSearch, error_)) {
 			return false;
 		}
 
@@ -134,8 +132,7 @@ namespace dcpp {
 	}
 
 	uint64_t SearchInstance::getQueueTime() const noexcept {
-		auto time = ClientManager::getInstance()->getMaxSearchQueueTime(this);
-		if (time) {
+		if (auto time = ClientManager::getInstance()->getMaxSearchQueueTime(this); time) {
 			return *time;
 		}
 
@@ -170,8 +167,7 @@ namespace dcpp {
 
 		{
 			WLock l(cs);
-			auto removed = queuedHubUrls.erase(aHubUrl);
-			if (removed == 0) {
+			if (auto removed = queuedHubUrls.erase(aHubUrl); removed == 0) {
 				return;
 			}
 
@@ -212,8 +208,8 @@ namespace dcpp {
 			WLock l(cs);
 			auto i = results.find(aResult->getTTH());
 			if (i == results.end()) {
-				parent = std::make_shared<GroupedSearchResult>(aResult, move(relevanceInfo));
-				results.emplace(aResult->getTTH(), parent);
+				parent = std::make_shared<GroupedSearchResult>(aResult, std::move(relevanceInfo));
+				results.try_emplace(aResult->getTTH(), parent);
 				created = true;
 			} else {
 				parent = i->second;

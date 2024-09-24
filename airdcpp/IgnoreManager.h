@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -37,7 +37,7 @@ namespace dcpp {
 	class ChatFilterItem {
 	public:
 		ChatFilterItem(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod,
-			StringMatch::Method aTextMethod, bool aMainchat, bool aPM, bool aEnabled = true) : matchPM(aPM), matchMainchat(aMainchat), enabled(aEnabled)
+			StringMatch::Method aTextMethod, bool aMainchat, bool aPM, bool aEnabled = true) : enabled(aEnabled), matchPM(aPM), matchMainchat(aMainchat)
 		{
 			nickMatcher.setMethod(aNickMethod);
 			nickMatcher.pattern = aNickMatch;
@@ -47,7 +47,7 @@ namespace dcpp {
 			textMatcher.pattern = aTextMatch;
 			textMatcher.prepare();
 		}
-		~ChatFilterItem() {}
+		~ChatFilterItem() = default;
 
 		enum Context {
 			PM, // Private chat
@@ -101,19 +101,20 @@ namespace dcpp {
 	class IgnoreManager : public Speaker<IgnoreManagerListener>, public Singleton<IgnoreManager>, private SettingsManagerListener {
 
 	public:
-		typedef unordered_map<UserPtr, int, User::Hash> IgnoreMap;
+		using IgnoreMap = unordered_map<UserPtr, int, User::Hash>;
 
 		IgnoreManager() noexcept;
 		~IgnoreManager() noexcept;
 
-		typedef unordered_set<UserPtr, User::Hash> UserSet;
+		using UserSet = unordered_set<UserPtr, User::Hash>;
+		using ChatFilterItemList = vector<ChatFilterItem>;
 
 		IgnoreMap getIgnoredUsers() const noexcept;
 		bool storeIgnore(const UserPtr& aUser) noexcept;
 		bool removeIgnore(const UserPtr& aUser) noexcept;
 
-		vector<ChatFilterItem>& getIgnoreList() { return ChatFilterItems; }
-		void replaceList(vector<ChatFilterItem>& newList) {
+		ChatFilterItemList& getIgnoreList() { return ChatFilterItems; }
+		void replaceList(const ChatFilterItemList& newList) {
 			ChatFilterItems = newList;
 		}
 
@@ -132,7 +133,7 @@ namespace dcpp {
 
 		bool dirty = false;
 		// contains the ignored nicks and patterns 
-		vector<ChatFilterItem> ChatFilterItems;
+		ChatFilterItemList ChatFilterItems;
 
 		ActionHookResult<MessageHighlightList> isIgnoredOrFiltered(const ChatMessagePtr& msg, const ActionHookResultGetter<MessageHighlightList>& aResultGetter, bool aPM) noexcept;
 
@@ -140,8 +141,8 @@ namespace dcpp {
 		bool isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext = ChatFilterItem::ALL) const noexcept;
 
 		// SettingsManagerListener
-		virtual void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept;
-		virtual void on(SettingsManagerListener::Save, SimpleXML& xml) noexcept;
+		void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept override;
+		void on(SettingsManagerListener::Save, SimpleXML& xml) noexcept override;
 	};
 
 }

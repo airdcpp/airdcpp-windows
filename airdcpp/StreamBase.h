@@ -1,10 +1,10 @@
 #pragma once
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -29,10 +29,10 @@ namespace dcpp {
 /**
 	* A simple output stream. Intended to be used for nesting streams one inside the other.
 	*/
-class OutputStream : boost::noncopyable {
+class OutputStream : public boost::noncopyable {
 public:
-	OutputStream() { }
-	virtual ~OutputStream() { }
+	OutputStream() = default;
+	virtual ~OutputStream() = default;
 
 	/**
 		* @return The actual number of bytes written. len bytes will always be
@@ -60,15 +60,14 @@ public:
 		*/
 	virtual bool eof() { return false; }
 
-	size_t write(std::string&& str) { return write(str.c_str(), str.size()); }
 	size_t write(const std::string& str) { return write(str.c_str(), str.size()); }
 	virtual OutputStream* releaseRootStream() { return this; }
 };
 
-class InputStream : boost::noncopyable {
+class InputStream : public boost::noncopyable {
 public:
-	InputStream() { }
-	virtual ~InputStream() { }
+	InputStream() = default;
+	virtual ~InputStream() = default;
 	/**
 		* Call this function until it returns 0 to get all bytes.
 		* @return The number of bytes read. len reflects the number of bytes
@@ -79,6 +78,7 @@ public:
 	/* This only works for file streams */
 	virtual void setPos(int64_t /*pos*/) noexcept { }
 	virtual InputStream* releaseRootStream() { return this; }
+	virtual int64_t getSize() const noexcept = 0;
 };
 
 class IOStream : public InputStream, public OutputStream {

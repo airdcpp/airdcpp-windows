@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -43,16 +43,16 @@ namespace dcpp {
 
 		};
 
-		enum CCPMState : uint8_t {
+		enum class CCPMState : uint8_t {
 			CONNECTING,
 			CONNECTED,
 			DISCONNECTED
 		};
 
-		static const string& ccpmStateToString(uint8_t aState) noexcept;
+		static const string& ccpmStateToString(CCPMState aState) noexcept;
 
 		PrivateChat(const HintedUser& aUser, UserConnection* aUc = nullptr);
-		~PrivateChat();
+		~PrivateChat() override;
 
 		const CID& getToken() const noexcept {
 			return replyTo.user->getCID();
@@ -60,13 +60,13 @@ namespace dcpp {
 
 		bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) override;
 		void handleMessage(const ChatMessagePtr& aMessage) noexcept;
-		void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel = Util::emptyString) noexcept override;
+		void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType, const string& aLabel = Util::emptyString, const string& aOwner = Util::emptyString) noexcept override;
 
 		void close();
 
 		void closeCC(bool now, bool noAutoConnect);
 		void startCC();
-		bool ccReady() const { return ccpmState == CONNECTED; };
+		bool ccReady() const { return ccpmState == CCPMState::CONNECTED; };
 		UserConnection* getUc() { return uc; }
 		void sendPMInfo(uint8_t aType);
 
@@ -80,14 +80,12 @@ namespace dcpp {
 
 		ClientPtr getClient() const noexcept;
 
-		string getLastCCPMError();
+		string getLastCCPMError() const noexcept;
 	
-		void logMessage(const string& aMessage) const noexcept;
-		void fillLogParams(ParamMap& params) const noexcept;
 		string getLogPath() const noexcept;
 		bool isOnline() const noexcept { return online; }
 
-		bool allowCCPM();
+		bool allowCCPM() const noexcept;
 
 		CCPMState getCCPMState() const noexcept {
 			return ccpmState;
@@ -103,6 +101,12 @@ namespace dcpp {
 		// Posts an info status message of the user is ignored
 		void checkIgnored() noexcept;
 	private:
+		void readLastLog();
+		void initConnectState();
+
+		void logMessage(const string& aMessage) const noexcept;
+		void fillLogParams(ParamMap& params) const noexcept;
+
 		MessageCache cache;
 		enum EventType {
 			USER_UPDATE,
@@ -113,24 +117,24 @@ namespace dcpp {
 		void checkAlwaysCCPM();
 		void checkCCPMTimeout();
 		void checkCCPMHubBlocked() noexcept;
-		void setUc(UserConnection* aUc) noexcept { uc = aUc; ccpmState = aUc ? CONNECTED : DISCONNECTED; }
+		void setUc(UserConnection* aUc) noexcept { uc = aUc; ccpmState = aUc ? CCPMState::CONNECTED : CCPMState::DISCONNECTED; }
 
 		HintedUser replyTo;
 
-		int ccpmAttempts;
-		bool allowAutoCCPM;
-		uint64_t lastCCPMAttempt;
+		int ccpmAttempts = 0;
+		bool allowAutoCCPM = true;
+		uint64_t lastCCPMAttempt = 0;
 
-		atomic<CCPMState> ccpmState;
+		atomic<CCPMState> ccpmState = CCPMState::DISCONNECTED;
 		UserConnection* uc;
 
 		DelayedEvents<uint8_t> delayEvents;
 
 		// UserConnectionListener
-		virtual void on(UserConnectionListener::PrivateMessage, UserConnection*, const ChatMessagePtr& message) noexcept override {
+		void on(UserConnectionListener::PrivateMessage, UserConnection*, const ChatMessagePtr& message) noexcept override {
 			handleMessage(message);
 		}
-		virtual void on(AdcCommand::PMI, UserConnection*, const AdcCommand& cmd) noexcept override;
+		void on(AdcCommand::PMI, UserConnection*, const AdcCommand& cmd) noexcept override;
 
 		// ClientManagerListener
 		void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool aWasOffline) noexcept override;

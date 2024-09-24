@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -34,10 +34,10 @@ namespace dcpp {
 	class SearchInstance : public Speaker<SearchInstanceListener>, private SearchManagerListener, private ClientManagerListener {
 	public:
 		SearchInstance(const string& aOwnerId, uint64_t aExpirationTick = 0);
-		~SearchInstance();
+		~SearchInstance() override;
 
 		SearchQueueInfo hubSearch(StringList& aHubUrls, const SearchPtr& aSearch) noexcept;
-		bool userSearch(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept;
+		bool userSearchHooked(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept;
 
 		void reset(const SearchPtr& aSearch) noexcept;
 

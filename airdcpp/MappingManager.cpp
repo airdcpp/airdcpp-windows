@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -57,8 +57,8 @@ MappingManager::MappingManager(bool v6) : renewal(0), v6(v6) {
 
 StringList MappingManager::getMappers() const {
 	StringList ret;
-	for(auto& i: mappers)
-		ret.push_back(i.first);
+	for(auto& [name, _] : mappers)
+		ret.push_back(name);
 	return ret;
 }
 
@@ -155,9 +155,10 @@ int MappingManager::run() {
 		}
 	}
 
-	for(auto& i: mappers) {
+	for(auto const& [_, initF] : mappers) {
 		auto setting = v6 ? SettingsManager::BIND_ADDRESS6 : SettingsManager::BIND_ADDRESS;
-		unique_ptr<Mapper> pMapper(i.second((SettingsManager::getInstance()->isDefault(setting) ? Util::emptyString : SettingsManager::getInstance()->get(setting)), v6));
+		auto bindAddress = SettingsManager::getInstance()->isDefault(setting) ? Util::emptyString : SettingsManager::getInstance()->get(setting);
+		unique_ptr<Mapper> pMapper(initF(bindAddress, v6));
 		Mapper& mapper = *pMapper;
 
 		ScopedFunctor([&mapper] { mapper.uninit(); });
@@ -166,7 +167,7 @@ int MappingManager::run() {
 			continue;
 		}
 
-		auto addRule = [this, &mapper](const string& port, Mapper::Protocol protocol, const string& description) -> bool {
+		auto addRule = [this, &mapper](const string& port, Mapper::Protocol protocol, const string& description) {
 			if (!port.empty() && !mapper.open(port, protocol, STRING_F(MAPPER_X_PORT_X, APPNAME % description % port % Mapper::protocols[protocol]))) {
 				this->log(STRING_F(MAPPER_INTERFACE_FAILED, description % port % Mapper::protocols[protocol] % mapper.getName()), LogMessage::SEV_WARNING);
 				mapper.close();
@@ -182,7 +183,7 @@ int MappingManager::run() {
 
 		log(STRING_F(MAPPER_CREATING_SUCCESS_LONG, conn_port % secure_port % search_port % deviceString(mapper) % mapper.getName()), LogMessage::SEV_INFO);
 
-		working = move(pMapper);
+		working = std::move(pMapper);
 
 		if ((!v6 && !CONNSETTING(NO_IP_OVERRIDE)) || (v6 && !CONNSETTING(NO_IP_OVERRIDE6))) {
 			setting = v6 ? SettingsManager::EXTERNAL_IP6 : SettingsManager::EXTERNAL_IP;

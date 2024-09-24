@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -47,12 +47,6 @@ public:
 		MODE_DATA
 	};
 
-	enum NatRoles {
-		NAT_NONE,
-		NAT_CLIENT,
-		NAT_SERVER
-	};
-
 	/**
 	 * BufferedSocket factory, each BufferedSocket may only be used to create one connection
 	 * @param sep Line separator
@@ -62,7 +56,7 @@ public:
 		return new BufferedSocket(sep, v4only);
 	}
 
-	static void putSocket(BufferedSocket* aSock, function<void ()> f = nullptr) {
+	static void putSocket(BufferedSocket* aSock, const Callback& f = nullptr) {
 		if(aSock) {
 			aSock->removeListeners();
 			aSock->shutdown(f);
@@ -74,9 +68,10 @@ public:
 			Thread::sleep(100);
 	}
 
-	void accept(const Socket& srv, bool secure, bool allowUntrusted, const string& expKP = Util::emptyString);
-	void connect(const AddressInfo& aAddress, const string& aPort, bool secure, bool allowUntrusted, bool proxy, const string& expKP = Util::emptyString);
-	void connect(const AddressInfo& aAddress, const string& aPort, const string& localPort, NatRoles natRole, bool secure, bool allowUntrusted, bool proxy, const string& expKP = Util::emptyString);
+	using SocketAcceptFloodF = std::function<bool (const string &)>;
+	void accept(const Socket& srv, bool aSecure, bool aAllowUntrusted, const SocketAcceptFloodF& aFloodCheckF);
+	void connect(const AddressInfo& aAddress, const SocketConnectOptions& aOptions, bool aAllowUntrusted, bool aProxy, const string& expKP = Util::emptyString);
+	void connect(const AddressInfo& aAddress, const SocketConnectOptions& aOptions, const string& aLocalPort, bool aAllowUntrusted, bool aProxy, const string& expKP = Util::emptyString);
 
 	/** Sets data mode for aBytes bytes. Must be called within onLine. */
 	void setDataMode(int64_t aBytes = -1) { mode = MODE_DATA; dataBytes = aBytes; }
@@ -89,29 +84,30 @@ public:
 	void setMode(Modes mode, size_t aRollback = 0);
 	Modes getMode() const { return mode; }
 
-	const string& getIp() const { return sock->getIp(); }
-	bool isSecure() const { return sock->isSecure(); }
-	bool isTrusted() const { return sock->isTrusted(); }
-	bool isKeyprintMatch() const { return sock->isKeyprintMatch(); }
-	std::string getEncryptionInfo() const { return sock->getEncryptionInfo(); }
-	ByteVector getKeyprint() const { return sock->getKeyprint(); }
-	bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept { return sock->verifyKeyprint(expKeyp, allowUntrusted); };
-	string getLocalIp() const { return sock->getLocalIp(); }
-	uint16_t getLocalPort() const { return sock->getLocalPort(); }
-	bool isV6Valid() const { return sock->isV6Valid(); }
+	const string& getIp() const { return sock ? sock->getIp() : Util::emptyString; }
+	bool isSecure() const { return sock ? sock->isSecure() : false; }
+	bool isTrusted() const { return sock ? sock->isTrusted() : false; }
+	bool isKeyprintMatch() const { return sock ? sock->isKeyprintMatch() : false; }
+	std::string getEncryptionInfo() const { return sock ? sock->getEncryptionInfo() : Util::emptyString; }
+	ByteVector getKeyprint() const { return sock ? sock->getKeyprint() : ByteVector(); }
+	bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept { return sock ? sock->verifyKeyprint(expKeyp, allowUntrusted) : false; };
+	string getLocalIp() const { return sock ? sock->getLocalIp() : Util::emptyString; }
+	uint16_t getLocalPort() const { return sock ? sock->getLocalPort() : 0; }
+	bool isV6Valid() const { return sock ? sock->isV6Valid() : false; }
 
-	void write(const string& aData) { write(aData.data(), aData.length()); }
+	void write(const string_view& aData) { write(aData.data(), aData.length()); }
 	void write(const char* aBuf, size_t aLen) noexcept;
 	/** Send the file f over this socket. */
-	void transmitFile(InputStream* f) { Lock l(cs); addTask(SEND_FILE, new SendFileInfo(f)); }
+	void transmitFile(InputStream* f) { Lock l(cs); addTask(SEND_FILE, make_unique<SendFileInfo>(f)); }
 
 	/** Call a function from the socket's thread. */
-	void callAsync(function<void ()> f) { Lock l(cs); addTask(ASYNC_CALL, new CallData(f)); }
+	void callAsync(const Callback& f) { Lock l(cs); addTask(ASYNC_CALL, make_unique<CallData>(f)); }
 
-	void disconnect(bool graceless = false) noexcept { Lock l(cs); if(graceless) disconnecting = true; addTask(DISCONNECT, 0); }
+	void disconnect(bool graceless = false) noexcept;
+	bool isDisconnecting() const noexcept { return disconnecting; }
 
 	GETSET(char, separator, Separator);
-	GETSET(bool, useLimiter, UseLimiter);
+	IGETSET(bool, useLimiter, UseLimiter, false);
 private:
 	enum Tasks {
 		CONNECT,
@@ -130,51 +126,55 @@ private:
 	};
 
 	struct TaskData {
-		virtual ~TaskData() { }
+		virtual ~TaskData() = default;
 	};
 	struct ConnectInfo : public TaskData {
-		ConnectInfo(AddressInfo addr_, string port_, string localPort_, NatRoles natRole_, bool proxy_) : addr(addr_), port(port_), localPort(localPort_), natRole(natRole_), proxy(proxy_) {}
+		ConnectInfo(const AddressInfo& addr_, const string& port_, const string& localPort_, NatRole natRole_, bool proxy_) : 
+			addr(addr_), port(port_), localPort(localPort_), natRole(natRole_), proxy(proxy_) {}
+
 		AddressInfo addr;
 		string port;
 		string localPort;
-		NatRoles natRole;
+		NatRole natRole;
 		bool proxy;
 	};
 	struct SendFileInfo : public TaskData {
-		SendFileInfo(InputStream* stream_) : stream(stream_) { }
+		explicit SendFileInfo(InputStream* stream_) : stream(stream_) { }
 		InputStream* stream;
 	};
 	struct CallData : public TaskData {
-		CallData(function<void ()> f) : f(f) { }
+		explicit CallData(const Callback& f) : f(f) { }
 		function<void ()> f;
 	};
 
 	BufferedSocket(char aSeparator, bool v4only);
 
-	virtual ~BufferedSocket();
+	~BufferedSocket() override;
 
 	CriticalSection cs;
 
 	Semaphore taskSem;
-	deque<pair<Tasks, unique_ptr<TaskData> > > tasks;
 
-	Modes mode;
+	using TaskPair = pair<Tasks, unique_ptr<TaskData>>;
+	deque<TaskPair> tasks;
+
+	Modes mode = MODE_LINE;
 	std::unique_ptr<UnZFilter> filterIn;
-	int64_t dataBytes;
-	size_t rollback;
+	int64_t dataBytes = 0;
+	size_t rollback = 0;
 	string line;
 	ByteVector inbuf;
 	ByteVector writeBuf;
 	ByteVector sendBuf;
 
 	std::unique_ptr<Socket> sock;
-	State state;
-	bool disconnecting;
+	State state = STARTING;
+	bool disconnecting = false;
 	bool v4only;
 
-	virtual int run();
+	int run() override;
 
-	void threadConnect(const AddressInfo& aAddr, const string& aPort, const string& localPort, NatRoles natRole, bool proxy);
+	void threadConnect(const AddressInfo& aAddr, const string& aPort, const string& localPort, NatRole natRole, bool proxy);
 	void threadAccept();
 	void threadRead();
 	void threadSendFile(InputStream* is);
@@ -188,8 +188,8 @@ private:
 
 	void setSocket(std::unique_ptr<Socket>&& s);
 	void setOptions();
-	void shutdown(function<void ()> f);
-	void addTask(Tasks task, TaskData* data);
+	void shutdown(const Callback& f);
+	void addTask(Tasks task, unique_ptr<TaskData>&& data);
 };
 
 } // namespace dcpp

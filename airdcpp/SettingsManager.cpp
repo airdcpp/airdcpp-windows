@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,25 +19,29 @@
 #include "stdinc.h"
 #include "SettingsManager.h"
 
-#include "AirUtil.h"
 #include "CID.h"
 #include "ConnectivityManager.h"
 #include "DCPlusPlus.h"
+#include "Exception.h"
 #include "File.h"
+#include "HubSettings.h"
 #include "LogManager.h"
 #include "Mapper_MiniUPnPc.h"
+#include "NetworkUtil.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "SimpleXML.h"
 #include "StringTokenizer.h"
+#include "SystemUtil.h"
 #include "Util.h"
 #include "version.h"
 
-#include <thread>
+#include <thread> // thread::hardware_concurrency
 
 namespace dcpp {
 
 #define CONFIG_NAME "DCPlusPlus.xml"
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
 StringList SettingsManager::connectionSpeeds = { "0.1", "0.2", "0.5", "1", "2", "5", "8", "10", "20", "30", "40", "50", "60", "100", "200", "1000" };
 
@@ -51,6 +55,25 @@ const ResourceManager::Strings SettingsManager::incomingStrings[INCOMING_LAST] {
 const ResourceManager::Strings SettingsManager::outgoingStrings[OUTGOING_LAST] { ResourceManager::SETTINGS_DIRECT, ResourceManager::SETTINGS_SOCKS5 };
 const ResourceManager::Strings SettingsManager::dropStrings[QUEUE_LAST] { ResourceManager::FILE, ResourceManager::BUNDLE, ResourceManager::ALL };
 const ResourceManager::Strings SettingsManager::updateStrings[VERSION_LAST] { ResourceManager::CHANNEL_STABLE, ResourceManager::CHANNEL_BETA, ResourceManager::CHANNEL_NIGHTLY };
+
+
+void SettingsManager::registerChangeHandler(const SettingKeyList& aKeys, SettingChangeHandler::OnSettingChangedF&& changeF) noexcept {
+	settingChangeHandlers.push_back(SettingChangeHandler({ changeF, aKeys }));
+}
+
+SettingsManager::SettingValue SettingsManager::getSettingValue(int key, bool useDefault) const noexcept {
+	if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
+		return SettingsManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(key), useDefault);
+	} else if (key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
+		return SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(key), useDefault);
+	} else if (key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
+		return SettingsManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(key), useDefault);
+	} else {
+		dcassert(0);
+	}
+
+	return 0;
+}
 
 SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aValidateCurrentValue) noexcept {
 	EnumStringMap ret;
@@ -100,14 +123,13 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 	return ret;
 }
 
+// Every profile should contain the same setting keys
 const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager::PROFILE_LAST] = {
 
-{ 
+{
 	// profile normal
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 15, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()), ResourceManager::TOOLBAR_ORDER },
@@ -115,8 +137,7 @@ const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager:
 }, {
 	// profile RAR
 	{ SettingsManager::MULTI_CHUNK, false, ResourceManager::SEGMENTS },
-	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 5, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ SettingsManager::AUTO_FOLLOW, false, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder({
@@ -155,9 +176,7 @@ const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager:
 }, {
 	// profile LAN
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 5, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()), ResourceManager::TOOLBAR_ORDER },
@@ -385,7 +404,7 @@ const string SettingsManager::settingTags[] =
 
 SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 {
-	setDefault(NICK, Util::getSystemUsername());
+	setDefault(NICK, SystemUtil::getSystemUsername());
 
 	setDefault(MAX_UPLOAD_SPEED_MAIN, 0);
 	setDefault(MAX_DOWNLOAD_SPEED_MAIN, 0);
@@ -396,21 +415,19 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(BANDWIDTH_LIMIT_END, 1);
 	setDefault(SLOTS_ALTERNATE_LIMITING, 1);
 	
-	setDefault(DOWNLOAD_DIRECTORY, Util::getPath(Util::PATH_DOWNLOADS));
+	setDefault(DOWNLOAD_DIRECTORY, AppUtil::getPath(AppUtil::PATH_DOWNLOADS));
 	setDefault(UPLOAD_SLOTS, 2);
 	setDefault(MAX_COMMAND_LENGTH, 512*1024); // 512 KiB
 
 	setDefault(BIND_ADDRESS, "0.0.0.0");
 	setDefault(BIND_ADDRESS6, "::");
 
-	setDefault(TCP_PORT, Util::rand(10000, 32000));
-	setDefault(UDP_PORT, Util::rand(10000, 32000));
-	setDefault(TLS_PORT, Util::rand(10000, 32000));
+	setDefault(TCP_PORT, 0);
+	setDefault(UDP_PORT, 0);
+	setDefault(TLS_PORT, 0);
 
 	setDefault(MAPPER, Mapper_MiniUPnPc::name);
 	setDefault(INCOMING_CONNECTIONS, INCOMING_ACTIVE);
-
-	//TODO: check whether we have ipv6 available
 	setDefault(INCOMING_CONNECTIONS6, INCOMING_ACTIVE);
 
 	setDefault(OUTGOING_CONNECTIONS, OUTGOING_DIRECT);
@@ -423,10 +440,10 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(AUTO_SEARCH, true);
 	setDefault(TIME_STAMPS, true);
 	setDefault(BUFFER_SIZE, 256);
-	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;https://tankafett.biz/?do=hublist&get=hublist.xml.bz2;https://dcnf.github.io/Hublist/hublist.xml.bz2;");
+	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;https://dcnf.github.io/Hublist/hublist.xml.bz2;https://hublist.pwiam.com/hublist.xml.bz2;");
 	setDefault(DOWNLOAD_SLOTS, 50);
 	setDefault(MAX_DOWNLOAD_SPEED, 0);
-	setDefault(LOG_DIRECTORY, Util::getPath(Util::PATH_USER_CONFIG) + "Logs" PATH_SEPARATOR_STR);
+	setDefault(LOG_DIRECTORY, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Logs" PATH_SEPARATOR_STR);
 	setDefault(LOG_UPLOADS, false);
 	setDefault(LOG_DOWNLOADS, false);
 	setDefault(LOG_PRIVATE_CHAT, false);
@@ -478,9 +495,9 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(NO_IP_OVERRIDE6, false);
 	setDefault(SOCKET_IN_BUFFER, 0); // OS default
 	setDefault(SOCKET_OUT_BUFFER, 0); // OS default
-	setDefault(TLS_TRUSTED_CERTIFICATES_PATH, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR);
-	setDefault(TLS_PRIVATE_KEY_FILE, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.key");
-	setDefault(TLS_CERTIFICATE_FILE, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.crt");
+	setDefault(TLS_TRUSTED_CERTIFICATES_PATH, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR);
+	setDefault(TLS_PRIVATE_KEY_FILE, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.key");
+	setDefault(TLS_CERTIFICATE_FILE, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.crt");
 	setDefault(AUTO_REFRESH_TIME, 60);
 	setDefault(AUTO_SEARCH_LIMIT, 15);
 	setDefault(AUTO_KICK_NO_FAVS, false);
@@ -761,14 +778,14 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(TEXT_URL_ITALIC, false);
 	setDefault(UNDERLINE_LINKS, true);
 
-	setDefault(TEXT_DUPE_BACK_COLOR, RGB(255, 255, 255));
-	setDefault(DUPE_COLOR, RGB(255, 128, 255));
+	setDefault(TEXT_SHARE_DUPE_BACK_COLOR, RGB(255, 255, 255));
+	setDefault(SHARE_DUPE_COLOR, RGB(255, 128, 255));
 	setDefault(TEXT_DUPE_BOLD, false);
 	setDefault(TEXT_DUPE_ITALIC, false);
 	setDefault(UNDERLINE_DUPES, true);
 
-	setDefault(TEXT_QUEUE_BACK_COLOR, RGB(255, 255, 255));
-	setDefault(QUEUE_COLOR, RGB(255,200,0));
+	setDefault(TEXT_QUEUE_DUPE_BACK_COLOR, RGB(255, 255, 255));
+	setDefault(QUEUE_DUPE_COLOR, RGB(255,200,0));
 	setDefault(TEXT_QUEUE_BOLD, false);
 	setDefault(TEXT_QUEUE_ITALIC, false);
 	setDefault(UNDERLINE_QUEUE, true);
@@ -912,7 +929,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(CLIENT_COMMANDS, true);
 	setDefault(POPUP_FONT, "MS Shell Dlg,-11,400,0");
 	setDefault(POPUP_TITLE_FONT, "MS Shell Dlg,-11,400,0");
-	setDefault(POPUPFILE, Util::getPath(Util::PATH_RESOURCES) + "popup.bmp");
+	setDefault(POPUPFILE, AppUtil::getPath(AppUtil::PATH_RESOURCES) + "popup.bmp");
 	setDefault(PM_PREVIEW, true);
 	setDefault(POPUP_TIME, 5);
 	setDefault(MAX_MSG_LENGTH, 120);
@@ -1029,72 +1046,77 @@ string SettingsManager::getProfileName(int profile) const noexcept {
 	}
 }
 
+void SettingsManager::loadSettings(SimpleXML& xml) {
+	if (xml.findChild("Settings")) {
+		xml.stepIn();
+
+		int i;
+
+		for (i = STR_FIRST; i < STR_LAST; i++) {
+			const string& attr = settingTags[i];
+			dcassert(attr.find("SENTRY") == string::npos);
+
+			if (xml.findChild(attr))
+				set(StrSetting(i), xml.getChildData(), true);
+			xml.resetCurrentChild();
+		}
+
+		for (i = INT_FIRST; i < INT_LAST; i++) {
+			const string& attr = settingTags[i];
+			dcassert(attr.find("SENTRY") == string::npos);
+
+			if (xml.findChild(attr))
+				set(IntSetting(i), Util::toInt(xml.getChildData()), true);
+			xml.resetCurrentChild();
+		}
+
+		for (i = BOOL_FIRST; i < BOOL_LAST; i++) {
+			const string& attr = settingTags[i];
+			dcassert(attr.find("SENTRY") == string::npos);
+
+			if (xml.findChild(attr)) {
+				auto val = Util::toInt(xml.getChildData());
+				dcassert(val == 0 || val == 1);
+				set(BoolSetting(i), val ? true : false, true);
+			}
+			xml.resetCurrentChild();
+		}
+
+		for (i = INT64_FIRST; i < INT64_LAST; i++) {
+			const string& attr = settingTags[i];
+			dcassert(attr.find("SENTRY") == string::npos);
+
+			if (xml.findChild(attr))
+				set(Int64Setting(i), Util::toInt64(xml.getChildData()), true);
+			xml.resetCurrentChild();
+		}
+
+		xml.stepOut();
+	}
+
+	xml.resetCurrentChild();
+}
+
+void SettingsManager::loadHistory(SimpleXML& xml) {
+	for (int i = 0; i < HISTORY_LAST; ++i) {
+		if (xml.findChild(historyTags[i])) {
+			xml.stepIn();
+			while (xml.findChild("HistoryItem")) {
+				addToHistory(xml.getChildData(), static_cast<HistoryType>(i));
+			}
+			xml.stepOut();
+		}
+		xml.resetCurrentChild();
+	}
+}
+
 void SettingsManager::load(StartupLoader& aLoader) noexcept {
 	auto fileLoaded = loadSettingFile(CONFIG_DIR, CONFIG_NAME, [this](SimpleXML& xml) {
 		if (xml.findChild("DCPlusPlus")) {
 			xml.stepIn();
 
-			if (xml.findChild("Settings")) {
-				xml.stepIn();
-
-				int i;
-
-				for (i = STR_FIRST; i < STR_LAST; i++) {
-					const string& attr = settingTags[i];
-					dcassert(attr.find("SENTRY") == string::npos);
-
-					if (xml.findChild(attr))
-						set(StrSetting(i), xml.getChildData(), true);
-					xml.resetCurrentChild();
-				}
-
-				for (i = INT_FIRST; i < INT_LAST; i++) {
-					const string& attr = settingTags[i];
-					dcassert(attr.find("SENTRY") == string::npos);
-
-					if (xml.findChild(attr))
-						set(IntSetting(i), Util::toInt(xml.getChildData()), true);
-					xml.resetCurrentChild();
-				}
-
-				for (i = BOOL_FIRST; i < BOOL_LAST; i++) {
-					const string& attr = settingTags[i];
-					dcassert(attr.find("SENTRY") == string::npos);
-
-					if (xml.findChild(attr)) {
-						auto val = Util::toInt(xml.getChildData());
-						dcassert(val == 0 || val == 1);
-						set(BoolSetting(i), val ? true : false, true);
-					}
-					xml.resetCurrentChild();
-				}
-
-				for (i = INT64_FIRST; i < INT64_LAST; i++) {
-					const string& attr = settingTags[i];
-					dcassert(attr.find("SENTRY") == string::npos);
-
-					if (xml.findChild(attr))
-						set(Int64Setting(i), Util::toInt64(xml.getChildData()), true);
-					xml.resetCurrentChild();
-				}
-
-				xml.stepOut();
-			}
-
-			xml.resetCurrentChild();
-
-
-			//load history lists
-			for (int i = 0; i < HISTORY_LAST; ++i) {
-				if (xml.findChild(historyTags[i])) {
-					xml.stepIn();
-					while (xml.findChild("HistoryItem")) {
-						addToHistory(xml.getChildData(), static_cast<HistoryType>(i));
-					}
-					xml.stepOut();
-				}
-				xml.resetCurrentChild();
-			}
+			loadSettings(xml);
+			loadHistory(xml);
 
 			fire(SettingsManagerListener::Load(), xml);
 
@@ -1102,19 +1124,24 @@ void SettingsManager::load(StartupLoader& aLoader) noexcept {
 		}
 	});
 
-	setDefault(UDP_PORT, SETTING(TCP_PORT));
-
 	File::ensureDirectory(SETTING(TLS_TRUSTED_CERTIFICATES_PATH));
 
 	if(SETTING(PRIVATE_ID).length() != 39 || !CID(SETTING(PRIVATE_ID))) {
 		set(SettingsManager::PRIVATE_ID, CID::generate().toBase32());
 	}
 
-	//check the bind address
-	auto checkBind = [&] (SettingsManager::StrSetting aSetting, bool v6) {
+	ensureValidBindAddresses(aLoader);
+
+	applyProfileDefaults();
+
+	fire(SettingsManagerListener::LoadCompleted(), fileLoaded);
+}
+
+void SettingsManager::ensureValidBindAddresses(const StartupLoader& aLoader) noexcept {
+	auto checkBind = [&](SettingsManager::StrSetting aSetting, bool v6) {
 		if (!isDefault(aSetting)) {
-			auto adapters = AirUtil::getNetworkAdapters(v6);
-			auto p = boost::find_if(adapters, [this, aSetting](const AdapterInfo& aInfo) { return aInfo.ip == get(aSetting); });
+			auto adapters = NetworkUtil::getNetworkAdapters(v6);
+			auto p = ranges::find_if(adapters, [this, aSetting](const AdapterInfo& aInfo) { return aInfo.ip == get(aSetting); });
 			if (p == adapters.end() && aLoader.messageF(STRING_F(BIND_ADDRESS_MISSING, (v6 ? "IPv6" : "IPv4") % get(aSetting)), true, false)) {
 				unsetKey(aSetting);
 			}
@@ -1123,10 +1150,6 @@ void SettingsManager::load(StartupLoader& aLoader) noexcept {
 
 	checkBind(BIND_ADDRESS, false);
 	checkBind(BIND_ADDRESS6, true);
-
-	applyProfileDefaults();
-
-	fire(SettingsManagerListener::LoadCompleted(), fileLoaded);
 }
 
 const SettingsManager::BoolSetting clearSettings[SettingsManager::HISTORY_LAST] = {
@@ -1155,7 +1178,7 @@ bool SettingsManager::addToHistory(const string& aString, HistoryType aType) noe
 	StringList& hist = history[aType];
 
 	// Remove existing matching item
-	auto s = boost::find(hist, aString);
+	auto s = ranges::find(hist, aString);
 	if(s != hist.end()) {
 		hist.erase(s);
 	}
@@ -1224,6 +1247,8 @@ void SettingsManager::set(IntSetting key, int value, bool aForceSet) noexcept {
 	} else if (key == MAX_RESIZE_LINES && value < 1) {
 		value = 1;
 #endif
+	} else if (key == DISCONNECT_SPEED && value < 1) {
+		value = 1;
 	}
 
 	intSettings[key - INT_FIRST] = value;
@@ -1267,11 +1292,7 @@ void SettingsManager::set(Int64Setting key, const string& value) noexcept {
 	}
 }
 
-void SettingsManager::save() noexcept {
-
-	SimpleXML xml;
-	xml.addTag("DCPlusPlus");
-	xml.stepIn();
+void SettingsManager::saveSettings(SimpleXML& xml) const {
 	xml.addTag("Settings");
 	xml.stepIn();
 
@@ -1323,18 +1344,31 @@ void SettingsManager::save() noexcept {
 		}
 	}
 	xml.stepOut();
+}
 
-	for(i = 0; i < HISTORY_LAST; ++i) {
+void SettingsManager::saveHistory(SimpleXML& xml) const {
+
+	for (auto i = 0; i < HISTORY_LAST; ++i) {
 		const auto& hist = history[i];
 		if (!hist.empty() && !get(clearSettings[i])) {
 			xml.addTag(historyTags[i]);
 			xml.stepIn();
-			for (auto& hi: hist) {
+			for (auto& hi : hist) {
 				xml.addTag("HistoryItem", hi);
 			}
 			xml.stepOut();
 		}
 	}
+}
+
+void SettingsManager::save() noexcept {
+
+	SimpleXML xml;
+	xml.addTag("DCPlusPlus");
+	xml.stepIn();
+
+	saveSettings(xml);
+	saveHistory(xml);
 
 	fire(SettingsManagerListener::Save(), xml);
 	saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
@@ -1419,7 +1453,7 @@ vector<ToolbarIconEnum> SettingsManager::getDefaultToolbarOrder() noexcept {
 	});
 }
 
-bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
+bool SettingsManager::loadSettingFile(AppUtil::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
 	const auto parseXmlFile = [&](const string& aPath) {
 		SimpleXML xml;
 		try {
@@ -1439,19 +1473,19 @@ bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName
 	return loadSettingFile(aPath, aFileName, parseXmlFile, aCustomReportF);
 }
 
-bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
-	const auto fullPath = Util::getPath(aPath) + aFileName;
+bool SettingsManager::loadSettingFile(AppUtil::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
+	const auto fullPath = AppUtil::getPath(aPath) + aFileName;
 
-	Util::migrate(fullPath);
+	AppUtil::migrate(fullPath);
 
-	if (!Util::fileExists(fullPath)) {
+	if (!PathUtil::fileExists(fullPath)) {
 		return false;
 	}
 
 	const auto backupPath = fullPath + ".bak";
 	if (!aParseCallback(fullPath)) {
 		// Try to load the file that was previously loaded succesfully
-		if (!Util::fileExists(backupPath) || !aParseCallback(backupPath)) {
+		if (!PathUtil::fileExists(backupPath) || !aParseCallback(backupPath)) {
 			return false;
 		}
 
@@ -1480,12 +1514,12 @@ bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName
 	return true;
 }
 
-bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
+bool SettingsManager::saveSettingFile(SimpleXML& aXML, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
 	return saveSettingFile(SimpleXML::utf8Header + aXML.toXML(), aPath, aFileName, aCustomErrorF);
 }
 
-bool SettingsManager::saveSettingFile(const string& aContent, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
-	auto fname = Util::getPath(aPath) + aFileName;
+bool SettingsManager::saveSettingFile(const string& aContent, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
+	auto fname = AppUtil::getPath(aPath) + aFileName;
 	try {
 		{
 			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_WRITE_THROUGH);

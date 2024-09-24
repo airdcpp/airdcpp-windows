@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -27,12 +27,13 @@
 #include "HintedUser.h"
 #include "PrioritySearchQueue.h"
 #include "SortedVector.h"
+#include "Util.h"
 
 namespace dcpp {
 
 /* Stores the queue bundle lists and the bundle search queue */
 
-class BundleQueue : public PrioritySearchQueue<BundlePtr> {
+class BundleQueue {
 public:
 	struct PathInfo {
 		PathInfo(const string& aPath, const BundlePtr& aBundle) noexcept : path(aPath), bundle(aBundle) {  }
@@ -40,9 +41,9 @@ public:
 			const string& operator()(const PathInfo* a) const { return a->path; }
 		};
 
-		typedef SortedVector<PathInfo*, std::vector, string, Compare, Path> List;
+		using List = SortedVector<PathInfo *, std::vector, string, Compare, Path>;
 
-		bool operator==(const PathInfo* aInfo) const noexcept { return this == aInfo; }
+		bool operator==(const PathInfo& aInfo) const noexcept { return bundle == aInfo.bundle && path == aInfo.path; }
 
 		size_t queuedFiles = 0;
 		size_t finishedFiles = 0;
@@ -55,9 +56,9 @@ public:
 		DupeType toDupeType(int64_t aSize) const noexcept;
 	};
 
-	typedef vector<const PathInfo*> PathInfoPtrList;
-	typedef unordered_multimap<string, PathInfo, noCaseStringHash, noCaseStringEq> DirectoryNameMap;
-	typedef unordered_map<string*, PathInfo::List, noCaseStringHash, noCaseStringEq> PathInfoMap;
+	using PathInfoPtrList = vector<const PathInfo *>;
+	using DirectoryNameMap = unordered_multimap<string, PathInfo, noCaseStringHash, noCaseStringEq>;
+	using PathInfoMap = unordered_map<string *, PathInfo::List, noCaseStringHash, noCaseStringEq>;
 
 	BundleQueue();
 	~BundleQueue();
@@ -79,10 +80,10 @@ public:
 	void saveQueue(bool aForce) noexcept;
 	QueueItemList getSearchItems(const BundlePtr& aBundle) const noexcept;
 
-	DupeType isAdcDirectoryQueued(const string& aPath, int64_t aSize) const noexcept;
-	BundlePtr isLocalDirectoryQueued(const string& aPath) const noexcept;
+	DupeType getAdcDirectoryDupe(const string& aPath, int64_t aSize) const noexcept;
+	StringList getAdcDirectoryDupePaths(const string& aDirName) const noexcept;
 
-	StringList getAdcDirectoryPaths(const string& aDirName) const noexcept;
+	BundlePtr isLocalDirectoryQueued(const string& aPath) const noexcept;
 	size_t getDirectoryCount(const BundlePtr& aBundle) const noexcept;
 
 	void getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& aSources, Bundle::SourceBundleList& aBad) const noexcept;
@@ -91,6 +92,8 @@ public:
 	const Bundle::TokenMap& getBundles() const { return bundles; }
 
 	int64_t getTotalQueueSize() const noexcept { return queueSize; }
+
+	PrioritySearchQueue<BundlePtr> searchQueue;
 private:
 	void findAdcDirectoryPathInfos(const string& aAdcPath, PathInfoPtrList& pathInfos_) const noexcept;
 	const PathInfo* findLocalDirectoryPathInfo(const string& aRealPath) const noexcept;
@@ -100,10 +103,10 @@ private:
 	// Get path infos by bundle path
 	const PathInfo::List* getPathInfos(const string& aBundlePath) const noexcept;
 
-	typedef function<void(PathInfo&)> PathInfoHandler;
+	using PathInfoHandler = function<void (PathInfo &)>;
 
 	// Goes through each directory and stops after the bundle target was handled
-	void forEachPath(const BundlePtr& aBundle, const string& aPath, PathInfoHandler&& aHandler) noexcept;
+	void forEachPath(const BundlePtr& aBundle, const string& aPath, const PathInfoHandler& aHandler) noexcept;
 
 	PathInfo* addPathInfo(const string& aPath, const BundlePtr& aBundle) noexcept;
 	void removePathInfo(const PathInfo* aPathInfo) noexcept;

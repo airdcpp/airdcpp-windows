@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -22,21 +22,23 @@
 #include "typedefs.h"
 
 #include "CriticalSection.h"
+#include "HasherManager.h"
+#include "PathUtil.h"
 #include "Semaphore.h"
-#include "SFVReader.h"
 #include "SortedVector.h"
 #include "Thread.h"
 #include "Util.h"
 
 namespace dcpp {
-	typedef int64_t devid;
-
+	using devid = int64_t;
+	class DirSFVReader;
+	class HasherStats;
 	class Hasher : public Thread {
 	public:
 		/** We don't keep leaves for blocks smaller than this... */
 		static const int64_t MIN_BLOCK_SIZE;
 
-		Hasher(bool isPaused, int aHasherID);
+		Hasher(bool isPaused, int aHasherID, HasherManager* aManager);
 
 		bool hashFile(const string& filePath, const string& filePathLower, int64_t size, devid aDeviceId) noexcept;
 
@@ -50,7 +52,7 @@ namespace dcpp {
 		void stop() noexcept;
 
 		void stopHashing(const string& baseDir) noexcept;
-		int run();
+		int run() override;
 		void getStats(string& curFile_, int64_t& bytesLeft_, size_t& filesLeft_, int64_t& speed_, size_t& filesAdded_, int64_t& bytesAdded_) const noexcept;
 		void shutdown();
 
@@ -64,20 +66,28 @@ namespace dcpp {
 		const int hasherID;
 		static SharedMutex hcs;
 	private:
+		HasherManager* manager;
+
 		void clearStats() noexcept;
 
 		class WorkItem {
 		public:
 			WorkItem(const string& aFilePathLower, const string& aFilePath, int64_t aSize, devid aDeviceId) noexcept
-				: filePath(aFilePath), fileSize(aSize), deviceId(aDeviceId), filePathLower(aFilePathLower) { }
+				: filePath(aFilePath), fileSize(aSize), deviceId(aDeviceId), filePathLower(aFilePathLower) { 
+
+				dcassert(aDeviceId >= 0);
+			}
+
+			WorkItem() = default;
+
 			WorkItem(WorkItem&& rhs) = default;
 			WorkItem& operator=(WorkItem&&) = default;
 			WorkItem(const WorkItem&) = delete;
 			WorkItem& operator=(const WorkItem&) = delete;
 
 			string filePath;
-			int64_t fileSize;
-			devid deviceId;
+			int64_t fileSize = 0;
+			devid deviceId = -1;
 			string filePathLower;
 
 			struct NameLower {
@@ -85,7 +95,10 @@ namespace dcpp {
 			};
 		};
 
-		SortedVector<WorkItem, std::deque, string, Util::PathSortOrderInt, WorkItem::NameLower> w;
+		void processQueue() noexcept;
+		optional<HashedFile> hashFile(const WorkItem& aItem, HasherStats& stats_, const DirSFVReader& aSFV) noexcept;
+
+		SortedVector<WorkItem, std::deque, string, PathUtil::PathSortOrderInt, WorkItem::NameLower> w;
 
 		Semaphore s;
 		void removeDevice(devid aDevice) noexcept;
@@ -96,26 +109,20 @@ namespace dcpp {
 		bool paused;
 
 		string currentFile;
-		atomic<int64_t> totalBytesLeft;
-		atomic<int64_t> totalBytesAdded;
-		atomic<int64_t> lastSpeed;
-		atomic<int64_t> totalFilesAdded;
+		atomic<int64_t> totalBytesLeft = 0;
+		atomic<int64_t> totalBytesAdded = 0;
+		atomic<int64_t> lastSpeed = 0;
+		atomic<int64_t> totalFilesAdded = 0;
 
 		void instantPause();
 
-		int64_t totalSizeHashed = 0;
-		uint64_t totalHashTime = 0;
-		int totalDirsHashed = 0;
-		int totalFilesHashed = 0;
-
-		int64_t dirSizeHashed = 0;
-		uint64_t dirHashTime = 0;
-		int dirFilesHashed = 0;
-		string initialDir;
-
-		DirSFVReader sfv;
-
 		map<devid, int> devices;
+
+		void logHasher(const string& aMessage, LogMessage::Severity aSeverity, bool aLock) const noexcept;
+
+		void logHashedDirectory(const string& aPath, const string& aLastFilePath, const HasherStats& aStats) const noexcept;
+		void logHashedFile(const string& aPath, int64_t aSpeed) const noexcept;
+		void logFailedFile(const string& aPath, const string& aError) const noexcept;
 	};
 
 } // namespace dcpp

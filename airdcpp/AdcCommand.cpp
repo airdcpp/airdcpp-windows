@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -25,7 +25,7 @@
 namespace dcpp {
 
 AdcCommand::AdcCommand(uint32_t aCmd, char aType /* = TYPE_CLIENT */) noexcept : cmdInt(aCmd), type(aType) { }
-AdcCommand::AdcCommand(uint32_t aCmd, const uint32_t aTarget, char aType) noexcept : cmdInt(aCmd), to(aTarget), type(aType) { }
+AdcCommand::AdcCommand(uint32_t aCmd, dcpp::SID aTarget, char aType) noexcept : cmdInt(aCmd), to(aTarget), type(aType) { }
 AdcCommand::AdcCommand(Severity sev, Error err, const string& desc, char aType /* = TYPE_CLIENT */) noexcept : cmdInt(CMD_STA), type(aType) {
 	addParam((sev == SEV_SUCCESS && err == SUCCESS) ? "000" : Util::toString(sev * 100 + err));
 	addParam(desc);
@@ -33,6 +33,14 @@ AdcCommand::AdcCommand(Severity sev, Error err, const string& desc, char aType /
 
 AdcCommand::AdcCommand(const string& aLine, bool nmdc /* = false */) : cmdInt(0), type(TYPE_CLIENT) {
 	parse(aLine, nmdc);
+}
+
+bool AdcCommand::isValidType(char aType) noexcept {
+	if (aType != TYPE_BROADCAST && aType != TYPE_CLIENT && aType != TYPE_DIRECT && aType != TYPE_ECHO && aType != TYPE_FEATURE && aType != TYPE_INFO && aType != TYPE_HUB && aType != TYPE_UDP) {
+		return false;
+	}
+
+	return true;
 }
 
 void AdcCommand::parse(const string& aLine, bool nmdc /* = false */) {
@@ -57,7 +65,7 @@ void AdcCommand::parse(const string& aLine, bool nmdc /* = false */) {
 		cmd[2] = aLine[3];
 	}
 
-	if(type != TYPE_BROADCAST && type != TYPE_CLIENT && type != TYPE_DIRECT && type != TYPE_ECHO && type != TYPE_FEATURE && type != TYPE_INFO && type != TYPE_HUB && type != TYPE_UDP) {
+	if(!isValidType(type)) {
 		throw ParseException("Invalid type");
 	}
 
@@ -160,6 +168,12 @@ void AdcCommand::parse(const string& aLine, bool nmdc /* = false */) {
 	}
 }
 
+AdcCommand& AdcCommand::addFeature(const string& feat, FeatureType aType) noexcept {
+	features += aType == FeatureType::REQUIRED ? "+" : "-";
+	features += feat;
+	return *this; 
+}
+
 string AdcCommand::toString(const CID& aCID) const noexcept {
 	return getHeaderString(aCID) + getParamString(false);
 }
@@ -168,7 +182,7 @@ string AdcCommand::toString() const noexcept {
 	return getHeaderString() + getParamString(false);
 }
 
-string AdcCommand::toString(uint32_t sid /* = 0 */, bool nmdc /* = false */) const noexcept {
+string AdcCommand::toString(dcpp::SID sid /* = 0 */, bool nmdc /* = false */) const noexcept {
 	return getHeaderString(sid, nmdc) + getParamString(nmdc);
 }
 
@@ -190,7 +204,7 @@ string AdcCommand::escape(const string& str, bool old) noexcept {
 	return tmp;
 }
 
-string AdcCommand::getHeaderString(uint32_t sid, bool nmdc) const noexcept {
+string AdcCommand::getHeaderString(dcpp::SID sid, bool nmdc) const noexcept {
 	string tmp;
 	if(nmdc) {
 		tmp += "$ADC";
@@ -235,6 +249,13 @@ string AdcCommand::getHeaderString() const noexcept {
 	tmp += getType();
 	tmp += cmdChar;
 	return tmp;
+}
+
+AdcCommand& AdcCommand::addParams(const ParamMap& aParams) noexcept {
+	for (const auto& [name, value] : aParams) {
+		addParam(name, value);
+	}
+	return *this;
 }
 
 const string& AdcCommand::getParam(size_t n) const noexcept {
@@ -284,6 +305,11 @@ bool AdcCommand::hasFlag(const char* name, size_t start) const noexcept {
 		}
 	}
 	return false;
+}
+
+AdcCommand::CommandType AdcCommand::toCommand(const string& aCmd) noexcept {
+	dcassert(aCmd.length() == 3);
+	return (((uint32_t)aCmd[0]) | (((uint32_t)aCmd[1]) << 8) | (((uint32_t)aCmd[2]) << 16));
 }
 
 } // namespace dcpp

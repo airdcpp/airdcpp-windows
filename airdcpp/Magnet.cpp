@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2012-2021 AirDC++ Project
+ * Copyright (C) 2012-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,10 +19,11 @@
 #include "stdinc.h"
 #include "Magnet.h"
 
-#include "AirUtil.h"
+#include "DupeUtil.h"
+#include "LinkUtil.h"
 #include "QueueManager.h"
-#include "ShareManager.h"
 #include "StringTokenizer.h"
+#include "TempShareManager.h"
 #include "Text.h"
 #include "Util.h"
 
@@ -32,8 +33,8 @@ using std::map;
 
 
 
-optional<Magnet> Magnet::parseMagnet(const string& aLink, const UserPtr& aSender) noexcept {
-	Magnet m(aLink, aSender);
+optional<Magnet> Magnet::parseMagnet(const string& aLink, const UserPtr& aTo) noexcept {
+	Magnet m(aLink, aTo);
 	if (m.fname.empty() || m.fsize == -1 || m.hash.empty()) {
 		return nullopt;
 	}
@@ -49,10 +50,10 @@ string Magnet::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t aS
 	string ret = "magnet:?xt=urn:tree:tiger:" + aHash.toBase32();
 	if (aSize > 0)
 		ret += "&xl=" + Util::toString(aSize);
-	return ret + "&dn=" + Util::encodeURI(aFile);
+	return ret + "&dn=" + LinkUtil::encodeURI(aFile);
 }
 
-Magnet::Magnet(const string& aLink, const UserPtr& aSender) : sender(aSender) {
+Magnet::Magnet(const string& aLink, const UserPtr& aTo) : to(aTo) {
 	// official types that are of interest to us
 	//  xt = exact topic
 	//  xs = exact substitute
@@ -61,14 +62,14 @@ Magnet::Magnet(const string& aLink, const UserPtr& aSender) : sender(aSender) {
 	//  xl = exact length
 	StringTokenizer<string> mag(aLink.substr(8), '&');
 	map<string, string> hashes;
-	for(auto& idx: mag.getTokens()) {
+	for(const auto& idx: mag.getTokens()) {
 		// break into pairs
 		auto pos = idx.find('=');
 		if(pos != string::npos) {
-			type = Text::toLower(Util::encodeURI(idx.substr(0, pos), true));
-			param = Util::encodeURI(idx.substr(pos+1), true);
+			type = Text::toLower(LinkUtil::encodeURI(idx.substr(0, pos), true));
+			param = LinkUtil::encodeURI(idx.substr(pos+1), true);
 		} else {
-			type = Util::encodeURI(idx, true);
+			type = LinkUtil::encodeURI(idx, true);
 			param.clear();
 		}
 		// extract what is of value
@@ -88,11 +89,11 @@ Magnet::Magnet(const string& aLink, const UserPtr& aSender) : sender(aSender) {
 	}
 
 	// pick the most authoritative hash out of all of them.
-	if(hashes.find("xt") != hashes.end()) {
+	if(hashes.contains("xt")) {
 		hash = hashes["xt"];
-	} else if(hashes.find("xs") != hashes.end()) {
+	} else if(hashes.contains("xs")) {
 		hash = hashes["xs"];
-	} else if(hashes.find("as") != hashes.end()) {
+	} else if(hashes.contains("as")) {
 		hash = hashes["as"];
 	}
 
@@ -102,8 +103,8 @@ Magnet::Magnet(const string& aLink, const UserPtr& aSender) : sender(aSender) {
 }
 
 DupeType Magnet::getDupeType() const {
-	auto dupe = AirUtil::checkFileDupe(getTTH());
-	if (sender && ShareManager::getInstance()->isTempShared(sender, getTTH())) {
+	auto dupe = DupeUtil::checkFileDupe(getTTH());
+	if (TempShareManager::getInstance()->isTempShared(to, getTTH())) {
 		dupe = DUPE_SHARE_FULL;
 	}
 

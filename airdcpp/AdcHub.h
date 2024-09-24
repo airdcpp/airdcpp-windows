@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -22,14 +22,12 @@
 #include "typedefs.h"
 
 #include "Client.h"
-#include "CriticalSection.h"
 #include "AdcCommand.h"
-
-#include <future>
 
 namespace dcpp {
 
 class ClientManager;
+class HBRIValidator;
 
 class AdcHub : public Client, public CommandHandler<AdcHub> {
 public:
@@ -38,11 +36,11 @@ public:
 
 	int connect(const OnlineUser& aUser, const string& aToken, string& lastError_) noexcept override;
 	
-	bool hubMessage(const string& aMessage, string& error_, bool thirdPerson = false) noexcept override;
-	bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept override;
+	bool hubMessageHooked(const string& aMessage, string& error_, bool thirdPerson = false) noexcept override;
+	bool privateMessageHooked(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept override;
 	void sendUserCmd(const UserCommand& command, const ParamMap& params) override;
 	void search(const SearchPtr& aSearch) noexcept override;
-	bool directSearch(const OnlineUser& user, const SearchPtr& aSearch, string& error_) noexcept override;
+	bool directSearchHooked(const OnlineUser& user, const SearchPtr& aSearch, string& error_) noexcept override;
 	void password(const string& pwd) noexcept override;
 	void infoImpl() noexcept override;
 	void refreshUserList(bool) noexcept override;
@@ -50,35 +48,24 @@ public:
 	size_t getUserCount() const noexcept override;
 
 	static string escape(const string& str) noexcept { return AdcCommand::escape(str, false); }
-	bool send(const AdcCommand& cmd) override;
+	bool sendHooked(const AdcCommand& cmd) override;
 
-	string getMySID() const noexcept { return AdcCommand::fromSID(sid); }
+	string getMySID() const noexcept { return AdcCommand::fromSID(mySID); }
 
 	static const vector<StringList>& getSearchExts() noexcept;
 	static StringList parseSearchExts(int flag) noexcept;
 
-	static const string CLIENT_PROTOCOL;
-	static const string SECURE_CLIENT_PROTOCOL_TEST;
-	static const string ADCS_FEATURE;
-	static const string TCP4_FEATURE;
-	static const string TCP6_FEATURE;
-	static const string UDP4_FEATURE;
-	static const string UDP6_FEATURE;
-	static const string NAT0_FEATURE;
-	static const string SEGA_FEATURE;
+	// Hub
 	static const string BASE_SUPPORT;
 	static const string BAS0_SUPPORT;
-	static const string TIGR_SUPPORT;
 	static const string UCM0_SUPPORT;
 	static const string BLO0_SUPPORT;
 	static const string ZLIF_SUPPORT;
-	static const string SUD1_FEATURE;
 	static const string HBRI_SUPPORT;
-	static const string ASCH_FEATURE;
-	static const string CCPM_FEATURE;
+	static const string TIGR_SUPPORT;
 
 	AdcHub(const string& aHubURL, const ClientPtr& aOldClient = nullptr);
-	~AdcHub();
+	~AdcHub() override;
 
 	AdcHub(const AdcHub&) = delete;
 	AdcHub& operator=(const AdcHub&) = delete;
@@ -88,28 +75,27 @@ private:
 	friend class Identity;
 
 	/** Map session id to OnlineUser */
-	typedef unordered_map<uint32_t, OnlineUser*> SIDMap;
+	using SIDMap = unordered_map<dcpp::SID, OnlineUser *>;
 
 	void getUserList(OnlineUserList& list, bool aListHidden) const noexcept override;
 
 	void connect(const OnlineUser& aUser, const string& aToken, bool aSecure, bool aReplyingRCM = false) noexcept;
 
 	// Can we accept incoming connections from the other user?
-	bool acceptUserConnections(const OnlineUser& aUser) noexcept;
+	bool acceptUserConnections(const OnlineUser& aUser) const noexcept;
 
 	/* Checks if we are allowed to connect to the user */
 	AdcCommand::Error allowConnect(const OnlineUser& aUser, bool aSecure, string& failedProtocol_, bool checkBase) const noexcept;
 	/* Does the same thing but also sends the error to the remote user */
 	bool checkProtocol(const OnlineUser& aUser, bool& secure_, const string& aRemoteProtocol, const string& aToken) noexcept;
+	bool validateConnectUser(const OnlineUser* aUser, bool& secure_, const string& aRemoteProtocol, const string& aToken, const string& aRemotePort) noexcept;
 
 	bool oldPassword = false;
-	unique_ptr<Socket> udp;
 	SIDMap users;
 	StringMap lastInfoMap;
-	mutable SharedMutex cs;
 
 	string salt;
-	uint32_t sid = 0;
+	dcpp::SID mySID = 0;
 
 	std::unordered_set<uint32_t> forbiddenCommands;
 
@@ -117,17 +103,26 @@ private:
 
 	string checkNick(const string& nick) noexcept override;
 
-	OnlineUser& getUser(const uint32_t aSID, const CID& aCID) noexcept;
-	OnlineUser* findUser(const uint32_t aSID) const noexcept override;
+	OnlineUser& getUser(dcpp::SID aSID, const CID& aCID) noexcept;
+	OnlineUser* findUser(dcpp::SID aSID) const noexcept override;
 	OnlineUser* findUser(const CID& cid) const noexcept;
 	
 	OnlineUserPtr findUser(const string& aNick) const noexcept override;
 
-	void putUser(const uint32_t aSID, bool aDisconnectTransfers) noexcept;
+	// Returns the user and whether the user had to be created
+	pair<OnlineUser*, bool> parseInfUser(const AdcCommand& c) noexcept;
+	void updateInfUserProperties(OnlineUser* aUser, const StringList& aParams) noexcept;
+	void recalculateConnectModes() noexcept;
+
+	void putUser(dcpp::SID aSID, bool aDisconnectTransfers) noexcept;
 
 	void shutdown(ClientPtr& aClient, bool aRedirect) override;
 	void clearUsers() noexcept override;
 	void appendConnectivity(StringMap& aLastInfoMap, AdcCommand& c, bool v4, bool v6) const noexcept;
+	void appendClientSupports(StringMap& aLastInfoMap, AdcCommand& c, bool v4, bool v6) const noexcept;
+	void appendConnectionSpeed(StringMap& aLastInfoMap, AdcCommand& c, const string& aConnection, int64_t aLimit) const noexcept;
+
+	static void appendHubSupports(AdcCommand& aCmd);
 
 	void handle(AdcCommand::SUP, AdcCommand& c) noexcept;
 	void handle(AdcCommand::SID, AdcCommand& c) noexcept;
@@ -144,29 +139,29 @@ private:
 	void handle(AdcCommand::GET, AdcCommand& c) noexcept;
 	void handle(AdcCommand::NAT, AdcCommand& c) noexcept;
 	void handle(AdcCommand::RNT, AdcCommand& c) noexcept;
-	void handle(AdcCommand::PSR, AdcCommand& c) noexcept;
-	void handle(AdcCommand::PBD, AdcCommand& c) noexcept;
-	void handle(AdcCommand::UBD, AdcCommand& c) noexcept;
 	void handle(AdcCommand::ZON, AdcCommand& c) noexcept;
 	void handle(AdcCommand::ZOF, AdcCommand& c) noexcept;
 	void handle(AdcCommand::TCP, AdcCommand& c) noexcept;
 
 	template<typename T> void handle(T, AdcCommand&) { }
 
-	void constructSearch(AdcCommand& c, const SearchPtr& aSearch, bool isDirect) noexcept;
+	static uint8_t groupExtensions(StringList& exts_, StringList& rx_) noexcept;
+	void handleSearchExtensions(AdcCommand& c, const SearchPtr& aSearch, const OnlineUser* aDirectUser) noexcept;
+	bool sendSearchHooked(AdcCommand& c, const SearchPtr& aSearch, const OnlineUser* aDirectUser) noexcept;
 	void sendSearch(AdcCommand& c);
-	void sendUDP(const AdcCommand& cmd) noexcept;
 
 	bool v4only() const noexcept override { return false; }
 	void on(BufferedSocketListener::Connected) noexcept override;
 	void on(BufferedSocketListener::Line, const string& aLine) noexcept override;
 
+	void onErrorMessage(const AdcCommand& c, OnlineUser* aSender) noexcept;
+
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
 
-	bool supportsHBRI = false;
-	unique_ptr<std::thread> hbriThread;
-	void sendHBRI(const string& aIP, const string& aPort, const string& aToken, bool v6);
-	bool stopValidation = false;
+	unique_ptr<HBRIValidator> hbriValidator;
+
+	AdcCommand getHBRIRequest(bool v6, const string& aToken) const noexcept;
+	void resetHBRI() noexcept;
 };
 
 } // namespace dcpp

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -20,7 +20,7 @@
 #include "MessageCache.h"
 
 namespace dcpp {
-	MessageCache::MessageCache(const MessageCache& aCache) noexcept : messages(aCache.getMessages()), setting(aCache.setting) {
+	MessageCache::MessageCache(const MessageCache& aCache) noexcept : setting(aCache.setting), messages(aCache.getMessages()) {
 
 	}
 
@@ -94,7 +94,7 @@ namespace dcpp {
 		return ret;
 	}
 
-	int MessageCache::countUnreadChatMessages(ChatMessageFilterF filterF) const noexcept {
+	int MessageCache::countUnreadChatMessages(const ChatMessageFilterF& filterF) const noexcept {
 		RLock l(cs);
 		return std::accumulate(messages.begin(), messages.end(), 0, [&](int aOld, const Message& aMessage) {
 			if (aMessage.type != Message::TYPE_CHAT || (filterF && !filterF(aMessage.chatMessage))) {
@@ -116,6 +116,10 @@ namespace dcpp {
 				return aOld;
 			}
 
+			if (aSeverity == LogMessage::SEV_LAST && aMessage.logMessage->getSeverity() == LogMessage::SEV_VERBOSE) {
+				return aOld;
+			}
+
 			if (aSeverity != LogMessage::SEV_LAST && aMessage.logMessage->getSeverity() != aSeverity) {
 				return aOld;
 			}
@@ -130,9 +134,9 @@ namespace dcpp {
 
 	void MessageCache::add(Message&& aMessage) noexcept {
 		WLock l(cs);
-		messages.push_back(move(aMessage));
+		messages.push_back(std::move(aMessage));
 		for (const auto& hl : aMessage.getHighlights()) {
-			highlights.emplace(hl->getToken(), hl);
+			highlights.try_emplace(hl->getToken(), hl);
 		}
 
 		if (static_cast<int>(messages.size()) > SettingsManager::getInstance()->get(setting)) {

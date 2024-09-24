@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -110,7 +110,7 @@ public:
 	~File();
 
 	bool isOpen() const noexcept;
-	int64_t getSize() const noexcept;
+	int64_t getSize() const noexcept override;
 	void setSize(int64_t newSize);
 
 	int64_t getPos() const noexcept;
@@ -213,19 +213,19 @@ public:
 	// Stops if the handler returns false
 	static void forEachFile(const string& aPath, const string& aNamePattern, FileIterF aHandlerF, bool aSkipHidden = true);
 #ifdef _WIN32
-#define HandleType HANDLE
+#define FileHandleType HANDLE
 #else
-#define HandleType int
+#define FileHandleType int
 	static bool isLink(const string& aPath) noexcept;
 	static time_t getLastWriteTime(const string& aPath) noexcept;
 #endif
 
-	HandleType getNativeHandle() const noexcept { return h; }
+	FileHandleType getNativeHandle() const noexcept { return h; }
 
 protected:
 	void close() noexcept;
 
-	HandleType h;
+	FileHandleType h;
 };
 
 class FileFindIter {

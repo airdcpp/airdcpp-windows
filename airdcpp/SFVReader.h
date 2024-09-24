@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -23,7 +23,6 @@
 #include <string>
 
 #include "typedefs.h"
-#include "GetSet.h"
 
 namespace dcpp {
 
@@ -34,6 +33,9 @@ public:
 	DirSFVReader();
 	DirSFVReader(const string& aPath);
 	DirSFVReader(const string& aPath, const StringList& aSfvFiles);
+
+	static boost::regex crcReg;
+	static boost::regex lineBreakRegex;
 
 	/**
 	 * Search for a CRC32 file in all .sfv files in the directory of fileName.
@@ -52,7 +54,7 @@ public:
 	/* Loops through the file names */
 	void read(std::function<void (const string&)> aReadF) const;
 
-	void loadPath(const string& aPath);
+	void loadPath(const string& aPath) noexcept;
 	string getPath() const noexcept { return path; }
 	void unload() noexcept;
 

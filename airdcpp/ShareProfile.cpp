@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2012-2021 AirDC++ Project
+ * Copyright (C) 2012-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,18 +18,20 @@
 
 #include "stdinc.h"
 
+#include "AppUtil.h"
 #include "BZUtils.h"
 #include "FilteredFile.h"
+#include "ResourceManager.h"
+#include "SettingsManager.h"
 #include "ShareProfile.h"
 #include "TimerManager.h"
-#include "Streams.h"
 
 namespace dcpp {
 
 FileList::FileList(ProfileToken aProfile) : profile(aProfile) { }
 
 string FileList::getFileName() const noexcept {
-	return Util::getPath(Util::PATH_USER_CONFIG) + "files_" + Util::toString(profile) + "_" + Util::toString(listN) + ".xml.bz2";
+	return AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "files_" + Util::toString(profile) + "_" + Util::toString(listN) + ".xml.bz2";
 }
 
 bool FileList::allowGenerateNew(bool aForced) noexcept {
@@ -55,7 +57,7 @@ void FileList::saveList() {
 	bzXmlListLen = File::getSize(getFileName());
 
 	//cleanup old filelists we failed to delete before due to uploading them.
-	StringList list = File::findFiles(Util::getPath(Util::PATH_USER_CONFIG), "files_" + Util::toString(profile) + "?*.xml.bz2");
+	StringList list = File::findFiles(AppUtil::getPath(AppUtil::PATH_USER_CONFIG), "files_" + Util::toString(profile) + "?*.xml.bz2");
 	for (auto& f : list) {
 		if (f != getFileName())
 			File::deleteFile(f);
@@ -79,13 +81,10 @@ ShareProfile::~ShareProfile() {
 }
 
 bool ShareProfile::hasCommonProfiles(const ProfileTokenSet& a, const ProfileTokenSet& b) noexcept {
-	for (auto profileToken : a) {
-		if (b.find(profileToken) != b.end()) {
-			return true;
-		}
-	}
-
-	return false;
+	auto found = ranges::any_of(a, [&b](auto profileToken) {
+		return b.contains(profileToken);
+	});
+	return found;
 }
 
 StringList ShareProfile::getProfileNames(const ProfileTokenSet& aTokens, const ShareProfileList& aProfiles) noexcept {
@@ -118,6 +117,13 @@ bool ShareProfile::isDefault() const noexcept {
 
 bool ShareProfile::isHidden() const noexcept {
 	return token == SP_HIDDEN;
+}
+
+void ShareProfile::setDirty(bool aForceRefresh) noexcept {
+	setProfileContentInfoDirty(true);
+	if (aForceRefresh)
+		getProfileList()->setForceXmlRefresh(true);
+	getProfileList()->setXmlDirty(true);
 }
 
 } //dcpp

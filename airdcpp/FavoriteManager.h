@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -22,59 +22,42 @@
 #include "ClientManagerListener.h"
 #include "FavoriteManagerListener.h"
 #include "SettingsManagerListener.h"
-#include "ShareManagerListener.h"
+#include "ShareProfileManagerListener.h"
 #include "TimerManagerListener.h"
 
 #include "FavHubGroup.h"
-#include "FavoriteUser.h"
 #include "HubEntry.h"
 #include "Singleton.h"
 #include "Speaker.h"
-#include "UserCommand.h"
 
 namespace dcpp {
 
 class FavoriteManager : public Speaker<FavoriteManagerListener>, public Singleton<FavoriteManager>,
-	private SettingsManagerListener, private ClientManagerListener, private ShareManagerListener, private TimerManagerListener
+	private SettingsManagerListener, private ClientManagerListener, private ShareProfileManagerListener, private TimerManagerListener
 {
 public:
-// Favorite Users
-	typedef unordered_map<CID, FavoriteUser> FavoriteMap;
-
-	//remember to lock this
-	const FavoriteMap& getFavoriteUsers() const noexcept { return users; }
-
-	void addFavoriteUser(const HintedUser& aUser) noexcept;
-	void addSavedUser(const UserPtr& aUser) noexcept;
-	void removeFavoriteUser(const UserPtr& aUser) noexcept;
-	optional<FavoriteUser> getFavoriteUser(const UserPtr& aUser) const noexcept;
-
-	bool hasSlot(const UserPtr& aUser) const noexcept;
-	void setUserDescription(const UserPtr& aUser, const string& description) noexcept;
-	void setAutoGrant(const UserPtr& aUser, bool grant) noexcept;
-	time_t getLastSeen(const UserPtr& aUser) const noexcept;
-	void changeLimiterOverride(const UserPtr& aUser) noexcept;
 // Favorite Hubs
 	void autoConnect() noexcept;
-	FavoriteHubEntryList& getFavoriteHubs() noexcept { return favoriteHubs; }
+	FavoriteHubEntryList& getFavoriteHubsUnsafe() noexcept { return favoriteHubs; }
 
 	bool addFavoriteHub(const FavoriteHubEntryPtr& aEntry) noexcept;
 	void onFavoriteHubUpdated(const FavoriteHubEntryPtr& aEntry) noexcept;
-	bool removeFavoriteHub(ProfileToken aToken) noexcept;
-	bool isUnique(const string& aUrl, ProfileToken aToken) const noexcept;
+	bool removeFavoriteHub(FavoriteHubToken aToken) noexcept;
+	bool isUnique(const string& aUrl, FavoriteHubToken aExcludedEntryToken) const noexcept;
 	FavoriteHubEntryPtr getFavoriteHubEntry(const string& aServer) const noexcept;
-	FavoriteHubEntryPtr getFavoriteHubEntry(const ProfileToken& aToken) const noexcept;
+	FavoriteHubEntryPtr getFavoriteHubEntry(FavoriteHubToken aToken) const noexcept;
 
 	void mergeHubSettings(const FavoriteHubEntryPtr& entry, HubSettings& settings) const noexcept;
 	void setHubSetting(const string& aUrl, HubSettings::HubBoolSetting aSetting, bool newValue) noexcept;
 // Favorite hub groups
-	const FavHubGroups& getFavHubGroups() const noexcept { return favHubGroups; }
-	void setFavHubGroups(const FavHubGroups& favHubGroups_) noexcept { favHubGroups = favHubGroups_; }
+	const FavHubGroups& getFavHubGroupsUnsafe() const noexcept { return favHubGroups; }
+	void setFavHubGroups(const FavHubGroups& favHubGroups_) noexcept;
 
 	FavoriteHubEntryList getFavoriteHubs(const string& group) const noexcept;
+	FavoriteHubEntryList getFavoriteHubs() const noexcept;
 
 	// Favorite Directories (path -> grouped name)
-	typedef map<string, string> FavoriteDirectoryMap;
+	using FavoriteDirectoryMap = map<string, string>;
 
 	// For adding or renaming of favorite directories
 	bool setFavoriteDir(const string& aPath, const string& aGroupName) noexcept;
@@ -86,87 +69,62 @@ public:
 	GroupedDirectoryMap getGroupedFavoriteDirs() const noexcept;
 	FavoriteDirectoryMap getFavoriteDirs() const noexcept;
 
-// User Commands
-	UserCommand addUserCommand(int type, int ctx, Flags::MaskType flags, const string& name, const string& command, const string& to, const string& hub) noexcept;
-	bool getUserCommand(int cid, UserCommand& uc) noexcept;
-	int findUserCommand(const string& aName, const string& aUrl) noexcept;
-	bool moveUserCommand(int cid, int pos) noexcept;
-	void updateUserCommand(const UserCommand& uc) noexcept;
-	void removeUserCommand(int cid) noexcept;
-	void removeUserCommand(const string& srv) noexcept;
-	void removeHubUserCommands(int ctx, const string& hub) noexcept;
-
-	UserCommand::List getUserCommands() noexcept { RLock l(cs); return userCommands; }
-	UserCommand::List getUserCommands(int ctx, const StringList& hub, bool& op) noexcept;
-
 	void load() noexcept;
 	void setDirty() { xmlDirty = true; }
 	void shutdown() noexcept;
 
 	bool hasActiveHubs() const noexcept;
 
-	mutable SharedMutex cs;
+	SharedMutex& getCS() noexcept {
+		return cs;
+	}
 private:
+	mutable SharedMutex cs;
+
 	FavoriteHubEntryList favoriteHubs;
 	FavHubGroups favHubGroups;
 	FavoriteDirectoryMap favoriteDirectories;
-	UserCommand::List userCommands;
-	int lastId = 0;
 
 	uint64_t lastXmlSave = 0;
 	atomic<bool> xmlDirty{ false };
 	void save() noexcept;
-
-	//Favorite users
-	FavoriteMap users;
-	//Saved users
-	unordered_set<UserPtr, User::Hash> savedUsers;
-
-	FavoriteUser createUser(const UserPtr& aUser, const string& aUrl);
 	
 	friend class Singleton<FavoriteManager>;
 	
 	FavoriteManager();
-	~FavoriteManager();
+	~FavoriteManager() override;
 	
-	FavoriteHubEntryList::const_iterator getFavoriteHub(const string& aServer) const noexcept;
-	FavoriteHubEntryList::const_iterator getFavoriteHub(ProfileToken aToken) const noexcept;
+	FavoriteHubEntryList::const_iterator getFavoriteHubUnsafe(const string& aServer) const noexcept;
+	FavoriteHubEntryList::const_iterator getFavoriteHubUnsafe(FavoriteHubToken aToken) const noexcept;
 
 	int resetProfile(ProfileToken oldProfile, ProfileToken newProfile, bool nmdcOnly) noexcept;
 
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t tick) noexcept;
+	void on(TimerManagerListener::Second, uint64_t tick) noexcept override;
 
 	// ShareManagerListener
-	void on(ShareManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept;
-	void on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept;
+	void on(ShareProfileManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept override;
+	void on(ShareProfileManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept override;
 
 	// ClientManagerListener
-	void on(ClientManagerListener::UserConnected, const OnlineUser& user, bool wasOffline) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& user, bool wentOffline) noexcept;
-
-	void on(ClientManagerListener::ClientCreated, const ClientPtr& c) noexcept;
-	void on(ClientManagerListener::ClientConnected, const ClientPtr& c) noexcept;
-	void on(ClientManagerListener::ClientRemoved, const ClientPtr& c) noexcept;
-	void on(ClientManagerListener::ClientRedirected, const ClientPtr& aOldClient, const ClientPtr& aNewClient) noexcept;
+	void on(ClientManagerListener::ClientCreated, const ClientPtr& c) noexcept override;
+	void on(ClientManagerListener::ClientConnected, const ClientPtr& c) noexcept override;
+	void on(ClientManagerListener::ClientRemoved, const ClientPtr& c) noexcept override;
+	void on(ClientManagerListener::ClientRedirected, const ClientPtr& aOldClient, const ClientPtr& aNewClient) noexcept override;
 
 	void onConnectStateChanged(const ClientPtr& aClient, FavoriteHubEntry::ConnectState aState) noexcept;
 	void setConnectState(const FavoriteHubEntryPtr& aEntry) noexcept;
 
 	// SettingsManagerListener
-	void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept;
+	void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept override;
 
 	void loadFavoriteHubs(SimpleXML& aXml);
 	void loadFavoriteDirectories(SimpleXML& aXml);
-	void loadFavoriteUsers(SimpleXML& aXml);
-	void loadUserCommands(SimpleXML& aXml);
 
 	void saveFavoriteHubs(SimpleXML& aXml) const noexcept;
-	void saveFavoriteUsers(SimpleXML& aXml) noexcept;
 	void saveFavoriteDirectories(SimpleXML& aXml) const noexcept;
-	void saveUserCommands(SimpleXML& aXml) const noexcept;
 
-	void loadCID() noexcept;
+	static void loadCID() noexcept;
 };
 
 } // namespace dcpp

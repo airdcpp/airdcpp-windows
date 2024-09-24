@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -35,16 +35,17 @@ public:
 		TYPE_FULL_LIST,
 		TYPE_PARTIAL_LIST,
 		TYPE_TREE,
+		TYPE_TTH_LIST,
 		TYPE_LAST
 	};
 	
 	static const string names[TYPE_LAST];
 
-	static const string USER_LIST_NAME;
+	static const string USER_LIST_NAME_EXTRACTED;
 	static const string USER_LIST_NAME_BZ;
 
 	Transfer(UserConnection& conn, const string& path, const TTHValue& tth);
-	virtual ~Transfer() { };
+	virtual ~Transfer() = default;;
 
 	int64_t getPos() const noexcept { return pos; }
 
@@ -70,18 +71,17 @@ public:
 
 	int64_t getSecondsLeft(bool wholeFile = false) const noexcept;
 
-	void getParams(const UserConnection& aSource, ParamMap& params) const noexcept;
+	virtual void getParams(const UserConnection& aSource, ParamMap& params) const noexcept;
 
-	UserPtr getUser() noexcept;
-	const UserPtr getUser() const noexcept;
+	UserPtr getUser() const noexcept;
 	HintedUser getHintedUser() const noexcept;
-	
-	//const string& getPath() const { return path; }
+
 	const TTHValue& getTTH() const noexcept { return tth; }
 
 	UserConnection& getUserConnection() noexcept { return userConnection; }
 	const UserConnection& getUserConnection() const noexcept { return userConnection; }
-	const string& getToken() const noexcept;
+	const string& getConnectionToken() const noexcept;
+	TransferToken getToken() const noexcept { return token; }
 
 	GETSET(string, path, Path);
 	GETSET(Segment, segment, Segment);
@@ -92,14 +92,12 @@ public:
 
 	bool isFilelist() const noexcept;
 private:
-	typedef std::pair<uint64_t, int64_t> Sample;
-	typedef deque<Sample> SampleList;
+	using Sample = std::pair<uint64_t, int64_t>;
+	using SampleList = deque<Sample>;
 	
 	SampleList samples;
 	mutable SharedMutex cs;
-	
-	/** The file being transferred */
-	//string path;
+
 	/** TTH of the file being transferred */
 	TTHValue tth;
 	/** Bytes transferred over socket */
@@ -108,6 +106,7 @@ private:
 	int64_t pos = 0;
 
 	UserConnection& userConnection;
+	const TransferToken token;
 };
 
 } // namespace dcpp

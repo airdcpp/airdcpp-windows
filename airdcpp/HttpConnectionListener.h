@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -32,13 +32,11 @@ public:
 	typedef X<1> Failed;
 	typedef X<2> Complete;
 	typedef X<3> Redirected;
-	typedef X<4> Retried;
 
 	virtual void on(Data, HttpConnection*, const uint8_t*, size_t) noexcept = 0;
 	virtual void on(Failed, HttpConnection*, const string&) noexcept = 0;
 	virtual void on(Complete, HttpConnection*, const string&) noexcept = 0;
 	virtual void on(Redirected, HttpConnection*, const string&) noexcept { }
-	virtual void on(Retried, HttpConnection*) noexcept { }
 };
 
 } // namespace dcpp

@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "HashManager.h"
 
+#include "Exception.h"
 #include "File.h"
 #include "FileReader.h"
 #include "LogManager.h"
@@ -31,7 +32,7 @@
 
 namespace dcpp {
 
-using boost::range::find_if;
+using ranges::find_if;
 
 HashManager::HashManager() {
 	store = make_unique<HashStore>();
@@ -48,6 +49,41 @@ void HashManager::close() noexcept {
 void HashManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
 	LogManager::getInstance()->message(aMsg, aSeverity, STRING(HASHING));
 }
+
+
+// Hasher functions
+void HashManager::onFileHashed(const string& aPath, HashedFile& aFile, const TigerTree& aTree, int aHasherId) noexcept {
+
+	HashManager::getInstance()->fire(HashManagerListener::FileHashed(), aPath, aFile, aHasherId);
+	try {
+		store->addHashedFile(Text::toLower(aPath), aTree, aFile);
+	} catch (const Exception& e) {
+		logHasher(STRING_F(HASHING_FAILED_X, e.getError()), aHasherId, LogMessage::SEV_ERROR, true);
+	}
+}
+
+void HashManager::onFileFailed(const string& aPath, const string& aErrorId, const string& aMessage, int aHasherId) noexcept {
+	fire(HashManagerListener::FileFailed(), aPath, aErrorId, aMessage, aHasherId);
+}
+
+void HashManager::onDirectoryHashed(const string& aPath, const HasherStats& aStats, int aHasherId) noexcept {
+	fire(HashManagerListener::DirectoryHashed(), aPath, aStats, aHasherId);
+}
+
+void HashManager::onHasherFinished(int aDirectoriesHashed, const HasherStats& aStats, int aHasherId) noexcept {
+	fire(HashManagerListener::HasherFinished(), aDirectoriesHashed, aStats, aHasherId);
+}
+
+void HashManager::removeHasher(int aHasherId) noexcept {
+	dcdebug("Hash: removing hasher #%d\n", aHasherId);
+	std::erase_if(hashers, [aHasherId](const Hasher* aHasher) { return aHasher->hasherID == aHasherId; });
+}
+
+void HashManager::logHasher(const string& aMessage, int aHasherID, LogMessage::Severity aSeverity, bool aLock) const noexcept {
+	ConditionalRLock l(Hasher::hcs, aLock);
+	log((hashers.size() > 1 ? "[" + STRING_F(HASHER_X, aHasherID) + "] " + ": " : Util::emptyString) + aMessage, aSeverity);
+}
+
 
 void HashManager::addTree(const TigerTree& aTree) {
 	store->addTree(aTree); 
@@ -115,80 +151,95 @@ int64_t HashManager::getMinBlockSize() noexcept {
 	return Hasher::MIN_BLOCK_SIZE;
 }
 
-bool HashManager::hashFile(const string& filePath, const string& pathLower, int64_t size) {
+bool HashManager::isPathQueued(const string& aPathLower) const noexcept {
+	auto p = find_if(hashers, [&aPathLower](const Hasher* aHasher) { return aHasher->hasFile(aPathLower); });
+	if (p != hashers.end()) {
+		dcdebug("Hash: ignoring file %s (queued already for hasher %d)\n", aPathLower.c_str(), (*p)->hasherID);
+		return true;
+	}
+
+	return false;
+}
+
+Hasher* HashManager::createHasher() noexcept {
+	int id = 0;
+	for (auto i : hashers) {
+		if (i->hasherID != id)
+			break;
+		id++;
+	}
+
+	log(STRING_F(HASHER_X_CREATED, id), LogMessage::SEV_INFO);
+	auto h = new Hasher(pausers > 0, id, this);
+	hashers.push_back(h);
+
+	dcdebug("Hash: creating hasher #%d\n", id);
+	return h;
+}
+
+Hasher* HashManager::getFileHasher(int64_t aDeviceId, int64_t aSize) const noexcept {
+	Hasher* h = nullptr;
+	auto getLeastLoaded = [](const HasherList& hl) {
+		return ranges::min_element(hl, [](const Hasher* h1, const Hasher* h2) { return h1->getBytesLeft() < h2->getBytesLeft(); });
+	};
+
+	auto totalHashersExceeded = static_cast<int>(hashers.size()) >= SETTING(MAX_HASHING_THREADS);
+
+	// Get the hashers with this volume
+	HasherList volHashers;
+	ranges::copy_if(hashers, back_inserter(volHashers), [aDeviceId](const Hasher* aHasher) { return aHasher->hasDevice(aDeviceId); });
+
+	if (volHashers.empty() && totalHashersExceeded) {
+		// We just need choose from all hashers
+		h = *getLeastLoaded(hashers);
+		// dcdebug("Hash: using least loaded hasher #%d for file %s (total hashers exceeded)\n", h->hasherID, aPath.c_str());
+	} else if (!volHashers.empty()) {
+		auto minLoaded = getLeastLoaded(volHashers);
+
+		auto volumeHashersExceeded = static_cast<int>(volHashers.size()) >= SETTING(HASHERS_PER_VOLUME) && SETTING(HASHERS_PER_VOLUME) > 0;
+		auto reuseExisting = aSize <= Util::convertSize(10, Util::MB) && !volHashers.empty() && (*minLoaded)->getBytesLeft() <= Util::convertSize(200, Util::MB);
+		if (totalHashersExceeded || volumeHashersExceeded || reuseExisting) {
+
+			// Use the least loaded hasher that already has this volume
+			h = *minLoaded;
+			// dcdebug("Hash: using volume hasher #%d for file %s\n", h->hasherID, aPath.c_str());
+		}
+	}
+
+	return h;
+}
+
+bool HashManager::hashFile(const string& aPath, const string& aPathLower, int64_t aSize) {
 	if (isShutdown) { //we cant allow adding more hashers if we are shutting down, it will result in infinite loop
 		return false;
 	}
 
-	Hasher* h = nullptr;
-
 	WLock l(Hasher::hcs);
+	if (isPathQueued(aPathLower)) {
+		return false;
+	}
 
-	auto deviceId = File::getDeviceId(filePath);
+	auto deviceId = File::getDeviceId(aPath);
+
+	Hasher* h = nullptr;
 	if (hashers.size() == 1 && !hashers.front()->hasDevices()) {
-		//always use the first hasher if it's idle
+		// Always use the main hasher if it's idle
 		h = hashers.front();
+		// dcdebug("Using empty main hasher for file %s\n", aPath.c_str());
 	} else {
-		auto getLeastLoaded = [](const HasherList& hl) {
-			return min_element(hl.begin(), hl.end(), [](const Hasher* h1, const Hasher* h2) { return h1->getBytesLeft() < h2->getBytesLeft(); });
-		};
-
-		if (SETTING(HASHERS_PER_VOLUME) == 1) {
-			//do we have files for this volume queued already? always use the same one in that case
-			auto p = find_if(hashers, [&deviceId](const Hasher* aHasher) { return aHasher->hasDevice(deviceId); });
-			if (p != hashers.end()) {
-				h = *p;
-			} else if (static_cast<int>(hashers.size()) >= SETTING(MAX_HASHING_THREADS)) {
-				// can't create new ones
-				h = *getLeastLoaded(hashers);
-			}
-		} else {
-			//get the hashers with this volume
-			HasherList volHashers;
-			copy_if(hashers.begin(), hashers.end(), back_inserter(volHashers), [deviceId](const Hasher* aHasher) { return aHasher->hasDevice(deviceId); });
-
-			if (volHashers.empty() && static_cast<int>(hashers.size()) >= SETTING(MAX_HASHING_THREADS)) {
-				//we just need choose from all hashers
-				h = *getLeastLoaded(hashers);
-			} else if (!volHashers.empty()) {
-				//check that the file isn't queued already
-				auto p = find_if(volHashers, [&pathLower](const Hasher* aHasher) { return aHasher->hasFile(pathLower); });
-				if (p != volHashers.end()) {
-					return false;
-				}
-
-				auto minLoaded = getLeastLoaded(volHashers);
-
-				//don't create new hashers if the file is less than 10 megabytes and there's a hasher with less than 200MB queued, or the maximum number of threads have been reached for this volume
-				if (static_cast<int>(hashers.size()) >= SETTING(MAX_HASHING_THREADS) || (static_cast<int>(volHashers.size()) >= SETTING(HASHERS_PER_VOLUME) && 
-					SETTING(HASHERS_PER_VOLUME) > 0) || (size <= Util::convertSize(10, Util::MB) && !volHashers.empty() && (*minLoaded)->getBytesLeft() <= Util::convertSize(200, Util::MB))) {
-
-					//use the least loaded hasher that already has this volume
-					h = *minLoaded;
-				}
-			}
-		}
-
+		h = getFileHasher(deviceId, aSize);
 		if (!h) {
-			//add a new one
-			int id = 0;
-			for (auto i: hashers) {
-				if (i->hasherID != id)
-					break;
-				id++;
-			}
-
-			log(STRING_F(HASHER_X_CREATED, id), LogMessage::SEV_INFO);
-			h = new Hasher(pausers > 0, id);
-			hashers.push_back(h);
+			// Create new one
+			h = createHasher();
 		}
 	}
 
-	//queue the file for hashing
-	return h->hashFile(filePath, pathLower, size, deviceId);
+	// Queue the file for hashing
+	dcdebug("Hash: choosing hasher #%d for file %s\n", h->hasherID, aPath.c_str());
+	return h->hashFile(aPath, aPathLower, aSize, deviceId);
 }
 
-void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool addStore, TTHValue& tth_, int64_t& sizeLeft_, const bool& aCancel, std::function<void(int64_t, const string&)> updateF/*nullptr*/) {
+void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool aAddStore, TTHValue& tth_, int64_t& sizeLeft_, const bool& aCancel, std::function<void(int64_t, const string&)> updateF/*nullptr*/) {
 	auto pathLower = Text::toLower(aFile);
 	HashedFile fi(File::getLastModified(aFile), aSize);
 
@@ -229,36 +280,12 @@ void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool addStore, 
 		tt.finalize();
 		tth_ = tt.getRoot();
 
-		if (addStore && !aCancel) {
+		if (aAddStore && !aCancel) {
 			fi = HashedFile(tth_, timestamp, aSize);
 			store->addHashedFile(pathLower, tt, fi);
 		}
 	} else {
 		tth_ = fi.getRoot();
-	}
-}
-
-void HashManager::hasherDone(const string& aFileName, const string& pathLower, const TigerTree& tt, int64_t speed, HashedFile& aFileInfo, int hasherID /*0*/) noexcept {
-	try {
-		store->addHashedFile(pathLower, tt, aFileInfo);
-	} catch (const Exception& e) {
-		logHasher(STRING_F(HASHING_FAILED_X, e.getError()), hasherID, true, true);
-	}
-	
-	if(SETTING(LOG_HASHING)) {
-		string fn = aFileName;
-		if (count(fn.begin(), fn.end(), PATH_SEPARATOR) >= 2) {
-			string::size_type i = fn.rfind(PATH_SEPARATOR);
-			i = fn.rfind(PATH_SEPARATOR, i - 1);
-			fn.erase(0, i);
-			fn.insert(0, "...");
-		}
-	
-		if (speed > 0) {
-			logHasher(STRING_F(HASHING_FINISHED_X, fn) + " (" + Util::formatBytes(speed) + "/s)", hasherID, false, true);
-		} else {
-			logHasher(STRING_F(HASHING_FINISHED_X, fn), hasherID, false, true);
-		}
 	}
 }
 
@@ -279,10 +306,10 @@ bool HashManager::addFile(const string& aPath, const HashedFile& fi_) {
 	store->addFile(Text::toLower(aPath), fi_);
 	return true;
 }
-void HashManager::stopHashing(const string& baseDir) noexcept {
+void HashManager::stopHashing(const string& aBaseDir) noexcept {
 	WLock l(Hasher::hcs);
 	for (auto h: hashers)
-		h->stopHashing(baseDir); 
+		h->stopHashing(aBaseDir);
 }
 
 void HashManager::setPriority(Thread::Priority p) noexcept {
@@ -309,8 +336,8 @@ HashManager::HashStats HashManager::getStats() const noexcept {
 	return stats;
 }
 
-void HashManager::startMaintenance(bool verify){
-	optimizer.startMaintenance(verify); 
+void HashManager::startMaintenance(bool aVerify){
+	optimizer.startMaintenance(aVerify);
 }
 
 HashManager::Optimizer::Optimizer() {
@@ -341,7 +368,7 @@ int HashManager::Optimizer::run() {
 }
 
 void HashManager::startup(StartupLoader& aLoader) {
-	hashers.push_back(new Hasher(false, 0));
+	hashers.push_back(new Hasher(false, 0, this));
 	store->load(aLoader); 
 }
 
@@ -374,10 +401,6 @@ void HashManager::stop() noexcept {
 	}
 }
 
-void HashManager::removeHasher(const Hasher* aHasher) {
-	hashers.erase(remove(hashers.begin(), hashers.end(), aHasher), hashers.end());
-}
-
 bool HashManager::pauseHashing() noexcept {
 	pausers++;
 	if (pausers == 1) {
@@ -389,8 +412,8 @@ bool HashManager::pauseHashing() noexcept {
 	return true;
 }
 
-void HashManager::resumeHashing(bool forced) {
-	if (forced)
+void HashManager::resumeHashing(bool aForced) {
+	if (aForced)
 		pausers = 0;
 	else if (pausers > 0)
 		pausers--;
@@ -402,14 +425,9 @@ void HashManager::resumeHashing(bool forced) {
 	}
 }
 
-void HashManager::logHasher(const string& aMessage, int hasherID, bool isError, bool lock) {
-	ConditionalRLock l(Hasher::hcs, lock);
-	log((hashers.size() > 1 ? "[" + STRING_F(HASHER_X, hasherID) + "] " + ": " : Util::emptyString) + aMessage, isError ? LogMessage::SEV_ERROR : LogMessage::SEV_INFO);
-}
-
-bool HashManager::isHashingPaused(bool lock /*true*/) const noexcept {
-	ConditionalRLock l(Hasher::hcs, lock);
-	return all_of(hashers.begin(), hashers.end(), [](const Hasher* h) { return h->isPaused(); });
+bool HashManager::isHashingPaused(bool aLock /*true*/) const noexcept {
+	ConditionalRLock l(Hasher::hcs, aLock);
+	return ranges::all_of(hashers, [](const Hasher* h) { return h->isPaused(); });
 }
 
 HashManager::HashPauser::HashPauser() {

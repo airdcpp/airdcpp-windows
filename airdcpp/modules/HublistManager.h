@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -38,7 +38,7 @@ namespace dcpp {
 	{
 	public:
 		HublistManager();
-		~HublistManager();
+		~HublistManager() override;
 
 		// Public Hubs
 		enum HubTypes {
@@ -51,7 +51,7 @@ namespace dcpp {
 		int getSelectedHubList() const noexcept { return lastServer; }
 		void refresh(bool forceDownload = false) noexcept;
 		HubTypes getHubListType() const noexcept { return listType; }
-		HublistEntry::List getPublicHubs() noexcept;
+		HublistEntry::List getPublicHubs() const noexcept;
 		bool isDownloading() const noexcept { return (useHttp && running); }
 
 		mutable SharedMutex cs;
@@ -59,7 +59,7 @@ namespace dcpp {
 		static string getHublistPath() noexcept;
 
 		// Public Hubs
-		typedef unordered_map<string, HublistEntry::List> PubListMap;
+		using PubListMap = unordered_map<string, HublistEntry::List>;
 		PubListMap publicListMatrix;
 		string publicListServer;
 		bool useHttp = false, running = false;
@@ -69,11 +69,10 @@ namespace dcpp {
 		string downloadBuf;
 
 		// HttpConnectionListener
-		void on(Data, HttpConnection*, const uint8_t*, size_t) noexcept;
-		void on(Failed, HttpConnection*, const string&) noexcept;
-		void on(Complete, HttpConnection*, const string&) noexcept;
-		void on(Redirected, HttpConnection*, const string&) noexcept;
-		void on(Retried, HttpConnection*, bool) noexcept;
+		void on(HttpConnectionListener::Data, HttpConnection*, const uint8_t*, size_t) noexcept override;
+		void on(HttpConnectionListener::Failed, HttpConnection*, const string&) noexcept override;
+		void on(HttpConnectionListener::Complete, HttpConnection*, const string&) noexcept override;
+		void on(HttpConnectionListener::Redirected, HttpConnection*, const string&) noexcept override;
 
 		bool onHttpFinished(bool fromHttp) noexcept;
 	};

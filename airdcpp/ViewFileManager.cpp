@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -22,10 +22,10 @@
 
 #include "ClientManager.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "QueueManager.h"
 #include "ShareManager.h"
-
-#include <boost/range/algorithm/copy.hpp>
+#include "TempShareManager.h"
 
 
 namespace dcpp {
@@ -46,7 +46,7 @@ namespace dcpp {
 
 		{
 			RLock l(cs);
-			boost::range::copy(viewFiles | map_values, back_inserter(ret));
+			ranges::copy(viewFiles | views::values, back_inserter(ret));
 		}
 
 		return ret;
@@ -88,7 +88,7 @@ namespace dcpp {
 
 	ViewFilePtr ViewFileManager::createFile(const string& aFileName, const string& aPath, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile) noexcept {
 		auto file = std::make_shared<ViewFile>(aFileName, aPath, aTTH, aIsText, aIsLocalFile,
-			std::bind(&ViewFileManager::onFileStateUpdated, this, std::placeholders::_1));
+			std::bind_front(&ViewFileManager::onFileStateUpdated, this));
 
 		{
 			WLock l(cs);
@@ -135,27 +135,20 @@ namespace dcpp {
 			return nullptr;
 		}
 
-		auto paths = ShareManager::getInstance()->getRealPaths(aTTH);
-		if (paths.empty()) {
+		UploadFileQuery query(aTTH);
+		auto fileInfo = ShareManager::getInstance()->toRealWithSize(query);
+		if (!fileInfo.found) {
 			throw Exception(STRING(FILE_NOT_FOUND));
 		}
 
-		string name;
-		auto tempShares = ShareManager::getInstance()->getTempShares(aTTH);
-		if (!tempShares.empty()) {
-			name = tempShares.front().name;
-		} else {
-			name = Util::getFileName(paths.front());
-		}
-
-		auto file = createFile(name, paths.front(), aTTH, aIsText, true);
+		auto file = createFile(PathUtil::getFileName(fileInfo.path), fileInfo.path, aTTH, aIsText, true);
 
 		fire(ViewFileManagerListener::FileFinished(), file);
 		return file;
 	}
 	
 	ViewFilePtr ViewFileManager::addUserFileHookedThrow(const ViewedFileAddData& aFileInfo) {
-		if (ShareManager::getInstance()->isFileShared(aFileInfo.tth) || ShareManager::getInstance()->isTempShared(nullptr, aFileInfo.tth)) {
+		if (ShareManager::getInstance()->isFileShared(aFileInfo.tth) || TempShareManager::getInstance()->isTempShared(nullptr, aFileInfo.tth)) {
 			return addLocalFileThrow(aFileInfo.tth, aFileInfo.isText);
 		}
 
@@ -186,7 +179,7 @@ namespace dcpp {
 
 			log(STRING_F(FILE_ALREADY_VIEWED, aFileInfo.file), LogMessage::SEV_NOTIFY);
 		} catch (const Exception& e) {
-			log(STRING_F(ADD_FILE_ERROR, aFileInfo.file % ClientManager::getInstance()->getFormatedNicks(aFileInfo.user) % e.getError()), LogMessage::SEV_NOTIFY);
+			log(STRING_F(ADD_FILE_ERROR, aFileInfo.file % ClientManager::getInstance()->getFormattedNicks(aFileInfo.user) % e.getError()), LogMessage::SEV_NOTIFY);
 		}
 
 		return nullptr;

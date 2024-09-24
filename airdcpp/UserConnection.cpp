@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -25,7 +25,7 @@
 #include "StringTokenizer.h"
 #include "AdcCommand.h"
 #include "Transfer.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "FavoriteManager.h"
 #include "Message.h"
 
@@ -40,12 +40,12 @@ const string UserConnection::FEATURE_ADCGET = "ADCGet";
 const string UserConnection::FEATURE_ZLIB_GET = "ZLIG";
 const string UserConnection::FEATURE_TTHL = "TTHL";
 const string UserConnection::FEATURE_TTHF = "TTHF";
+
 const string UserConnection::FEATURE_ADC_BAS0 = "BAS0";
 const string UserConnection::FEATURE_ADC_BASE = "BASE";
 const string UserConnection::FEATURE_ADC_BZIP = "BZIP";
 const string UserConnection::FEATURE_ADC_TIGR = "TIGR";
 const string UserConnection::FEATURE_ADC_MCN1 = "MCN1";
-const string UserConnection::FEATURE_ADC_UBN1 = "UBN1";
 const string UserConnection::FEATURE_ADC_CPMI = "CPMI";
 
 const string UserConnection::FILE_NOT_AVAILABLE = "File Not Available";
@@ -53,11 +53,9 @@ const string UserConnection::FILE_NOT_AVAILABLE = "File Not Available";
 const string UserConnection::UPLOAD = "Upload";
 const string UserConnection::DOWNLOAD = "Download";
 
-const string UserConnection::FEATURE_AIRDC = "AIRDC";
-
 void UserConnection::on(BufferedSocketListener::Line, const string& aLine) noexcept {
 
-	COMMAND_DEBUG(aLine, DebugManager::TYPE_CLIENT, DebugManager::INCOMING, getRemoteIp());
+	COMMAND_DEBUG(aLine, ProtocolCommandManager::TYPE_CLIENT, ProtocolCommandManager::INCOMING, getRemoteIp());
 	
 	if(aLine.length() < 2) {
 		fire(UserConnectionListener::ProtocolError(), this, STRING(MALFORMED_DATA));
@@ -69,16 +67,21 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 			fire(UserConnectionListener::ProtocolError(), this, STRING(UTF_VALIDATION_ERROR));
 			return;
 		}
-		dispatch(aLine);
+		dispatch(aLine, [this](const AdcCommand& aCmd) {
+			ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::IncomingTCPCommand (), aCmd, getRemoteIp(), getUser());
+		});
 		return;
 	} else if(aLine[0] == '$') {
+		onNmdcLine(aLine);
 		setFlag(FLAG_NMDC);
 	} else {
 		// We shouldn't be here?
 		fire(UserConnectionListener::ProtocolError(), this, STRING(MALFORMED_DATA));
 		return;
 	}
+}
 
+void UserConnection::onNmdcLine(const string & aLine) noexcept {
 	string cmd;
 	string param;
 
@@ -140,7 +143,7 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 			fire(UserConnectionListener::Supports(), this, StringTokenizer<string>(param, ' ').getTokens());
 	    }
 	} else if(cmd.compare(0, 3, "ADC") == 0) {
-    	dispatch(aLine, true);
+    	dispatch(aLine, true, nullptr);
 	} else if (cmd == "ListLen") {
 		if(!param.empty()) {
 			fire(UserConnectionListener::ListLength(), this, param);
@@ -148,22 +151,6 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 	} else {
 		fire(UserConnectionListener::ProtocolError(), this, STRING(MALFORMED_DATA));
 	}
-}
-
-void UserConnection::connect(const AddressInfo& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const UserPtr& aUser /*nullptr*/) {
-	dcassert(!socket);
-
-	socket = BufferedSocket::getSocket(0);
-	socket->addListener(this);
-
-	//string expKP;
-	if (aUser) {
-		// @see UserConnection::accept, additionally opt to treat connections in both directions identically to avoid unforseen issues
-		//expKP = ClientManager::getInstance()->getField(aUser->getCID(), hubUrl, "KP");
-		setUser(aUser);
-	}
-
-	socket->connect(aServer, aPort, localPort, natRole, secure, /*SETTING(ALLOW_UNTRUSTED_CLIENTS)*/ true, true);
 }
 
 int64_t UserConnection::getChunkSize() const noexcept {
@@ -179,16 +166,34 @@ void UserConnection::setThreadPriority(Thread::Priority aPriority) {
 	socket->setThreadPriority(aPriority);
 }
 
+bool UserConnection::isMCN() const noexcept {
+	return supports.includes(FEATURE_ADC_MCN1);
+}
+
+void UserConnection::setUseLimiter(bool aEnabled) noexcept {
+	if (socket) {
+		socket->setUseLimiter(aEnabled);
+	}
+}
+
+void UserConnection::setState(States aNewState) noexcept {
+	if (aNewState == state) {
+		return;
+	}
+
+	state = aNewState;
+	callAsync([this] {
+		fire(UserConnectionListener::State(), this);
+	});
+}
+
 void UserConnection::setUser(const UserPtr& aUser) noexcept {
 	user = aUser;
+
 	if (aUser && socket) {
-		socket->setUseLimiter(true);
-		if (aUser->isSet(User::FAVORITE)) {
-			auto u = FavoriteManager::getInstance()->getFavoriteUser(aUser);
-			if (u) {
-				socket->setUseLimiter(!u->isSet(FavoriteUser::FLAG_SUPERUSER));
-			}
-		}
+		socket->callAsync([this] {
+			fire(UserConnectionListener::UserSet(), this);
+		});
 	}
 }
 
@@ -206,17 +211,35 @@ void UserConnection::maxedOut(size_t qPos /*0*/) {
 	}
 }
 
-void UserConnection::accept(const Socket& aServer) {
+void UserConnection::initSocket() {
 	dcassert(!socket);
 	socket = BufferedSocket::getSocket(0);
+	socket->setUseLimiter(true);
 	socket->addListener(this);
+}
+
+void UserConnection::connect(const AddressInfo& aServer, const SocketConnectOptions& aOptions, const string& localPort, const UserPtr& aUser /*nullptr*/) {
+	initSocket();
+
+	//string expKP;
+	if (aUser) {
+		// @see UserConnection::accept, additionally opt to treat connections in both directions identically to avoid unforseen issues
+		//expKP = ClientManager::getInstance()->getField(aUser->getCID(), hubUrl, "KP");
+		setUser(aUser);
+	}
+
+	socket->connect(aServer, aOptions, localPort, /*SETTING(ALLOW_UNTRUSTED_CLIENTS)*/ true, true);
+}
+
+void UserConnection::accept(const Socket& aServer, bool aSecure, const BufferedSocket::SocketAcceptFloodF& aFloodCheckF) {
+	initSocket();
 
 	/*
 	Technically only one side needs to verify KeyPrint, 
 	also since we most likely requested to be connected to (and we have insufficient info otherwise) deal with TLS options check post handshake
 	-> SSLSocket::verifyKeyprint does full certificate verification after INF
 	*/
-	socket->accept(aServer, secure, true);
+	socket->accept(aServer, aSecure, true, aFloodCheckF);
 }
 
 void UserConnection::inf(bool withToken, int mcnSlots) { 
@@ -231,6 +254,35 @@ void UserConnection::inf(bool withToken, int mcnSlots) {
 		c.addParam("PM", "1");
 	}
 	send(c);
+}
+
+void UserConnection::get(const string& aType, const string& aName, const int64_t aStart, const int64_t aBytes) {
+	send(
+		AdcCommand(AdcCommand::CMD_GET)
+			.addParam(aType)
+			.addParam(aName)
+			.addParam(Util::toString(aStart))
+			.addParam(Util::toString(aBytes))
+	); 
+}
+
+void UserConnection::snd(const string& aType, const string& aName, const int64_t aStart, const int64_t aBytes) {
+	send(
+		AdcCommand(AdcCommand::CMD_SND)
+			.addParam(aType)
+			.addParam(aName)
+			.addParam(Util::toString(aStart))
+			.addParam(Util::toString(aBytes))
+	); 
+}
+
+void UserConnection::send(const AdcCommand& c) {
+	auto isNmdc = isSet(FLAG_NMDC);
+	if (!isNmdc) {
+		ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::OutgoingTCPCommand(), c, getRemoteIp(), getUser());
+	}
+
+	send(c.toString(0, isNmdc)); 
 }
 
 bool UserConnection::sendPrivateMessageHooked(const OutgoingChatMessage& aMessage, string& error_) {
@@ -253,7 +305,7 @@ bool UserConnection::sendPrivateMessageHooked(const OutgoingChatMessage& aMessag
 	send(c);
 
 	// simulate an echo message.
-	callAsync([=]{ handlePM(c, true); });
+	callAsync([=, this]{ handlePM(c, true); });
 	return true;
 }
 
@@ -276,7 +328,7 @@ void UserConnection::handlePM(const AdcCommand& c, bool aEcho) noexcept{
 	//try to use the same hub so nicks match to a hub, not the perfect solution for CCPM, nicks keep changing when hubs go offline.
 	if(peer && peer->getHubUrl() != hubUrl) 
 		setHubUrl(peer->getHubUrl());
-	auto me = cm->findOnlineUser(cm->getMe()->getCID(), getHubUrl());
+	auto me = cm->findOnlineUser(cm->getMyCID(), getHubUrl());
 
 	if (!me || !peer){ //ChatMessage cant be formatted without the OnlineUser!
 		disconnect(true);
@@ -318,7 +370,7 @@ void UserConnection::sendError(const std::string& msg /*FILE_NOT_AVAILABLE*/, Ad
 	}
 }
 
-void UserConnection::supports(const StringList& feat) {
+void UserConnection::sendSupports(const StringList& feat) {
 	string x;
 	for(const auto& f: feat)
 		x += f + ' ';
@@ -410,11 +462,16 @@ void UserConnection::updateChunkSize(int64_t leafSize, int64_t lastChunk, uint64
 
 void UserConnection::send(const string& aString) {
 	lastActivity = GET_TICK();
-	COMMAND_DEBUG(aString, DebugManager::TYPE_CLIENT, DebugManager::OUTGOING, getRemoteIp());
+	COMMAND_DEBUG(aString, ProtocolCommandManager::TYPE_CLIENT, ProtocolCommandManager::OUTGOING, getRemoteIp());
 	socket->write(aString);
 }
 
-UserConnection::UserConnection(bool secure_) noexcept : encoding(SETTING(NMDC_ENCODING)),
-	secure(secure_), download(nullptr) {
+UserConnection::UserConnection() noexcept : encoding(SETTING(NMDC_ENCODING)), download(nullptr) {
 }
+
+UserConnection::~UserConnection() {
+	BufferedSocket::putSocket(socket);
+	dcdebug("User connection %s was deleted\n", getToken().c_str());
+}
+
 } // namespace dcpp

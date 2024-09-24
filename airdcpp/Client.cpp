@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,17 +19,20 @@
 #include "stdinc.h"
 #include "Client.h"
 
-#include "AirUtil.h"
 #include "BufferedSocket.h"
 #include "ClientManager.h"
+#include "ConnectionManager.h"
 #include "ConnectivityManager.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "FavoriteManager.h"
+#include "LinkUtil.h"
 #include "LogManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
+#include "ShareProfileManager.h"
 #include "ThrottleManager.h"
 #include "TimerManager.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
@@ -37,20 +40,24 @@ atomic<long> Client::allCounts[COUNT_UNCOUNTED];
 atomic<long> Client::sharingCounts[COUNT_UNCOUNTED];
 atomic<ClientToken> idCounter { 0 };
 
+#define FLOOD_PERIOD 60
+
 Client::Client(const string& aHubUrl, char aSeparator, const ClientPtr& aOldClient) :
-	hubUrl(aHubUrl), separator(aSeparator), 
-	myIdentity(ClientManager::getInstance()->getMe(), 0),
+	myIdentity(ClientManager::getInstance()->getMe(), 0), lastActivity(GET_TICK()), 
+	cache(SettingsManager::HUB_MESSAGE_CACHE),
+	ctmFloodCounter(FLOOD_PERIOD),
+	searchFloodCounter(FLOOD_PERIOD),
 	clientId(aOldClient ? aOldClient->getToken() : ++idCounter),
-	lastActivity(GET_TICK()),
-	cache(SettingsManager::HUB_MESSAGE_CACHE)
+	hubUrl(aHubUrl),
+	separator(aSeparator)
 {
 	TimerManager::getInstance()->addListener(this);
-	ShareManager::getInstance()->addListener(this);
+	ShareManager::getInstance()->getProfileMgr().addListener(this);
 
 	string file, proto, query, fragment;
-	Util::decodeUrl(hubUrl, proto, address, port, file, query, fragment);
+	LinkUtil::decodeUrl(hubUrl, proto, address, port, file, query, fragment);
 
-	keyprint = Util::decodeQuery(query)["kp"];
+	keyprint = LinkUtil::decodeQuery(query)["kp"];
 }
 
 Client::~Client() {
@@ -61,6 +68,7 @@ void Client::reconnect() noexcept {
 	disconnect(true);
 	setAutoReconnect(true);
 	setReconnDelay(0);
+	supports.clear();
 }
 
 void Client::setActive() noexcept {
@@ -68,16 +76,15 @@ void Client::setActive() noexcept {
 }
 
 void Client::shutdown(ClientPtr& aClient, bool aRedirect) {
-	FavoriteManager::getInstance()->removeUserCommand(getHubUrl());
 	TimerManager::getInstance()->removeListener(this);
-	ShareManager::getInstance()->removeListener(this);
+	ShareManager::getInstance()->getProfileMgr().removeListener(this);
 
 	if (!aRedirect) {
 		fire(ClientListener::Close(), this);
 	}
 
 	if(sock) {
-		destroySocket([=] { // Ensure that the pointer won't be deleted too early
+		destroySocket([=, this] { // Ensure that the pointer won't be deleted too early
 			sock = nullptr;
 
 			// Users store a reference that prevents the client from being deleted
@@ -101,13 +108,13 @@ string Client::getDescription() const noexcept {
 	return ret;
 }
 
-void Client::on(ShareManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken /*aNewDefault*/) noexcept {
+void Client::on(ShareProfileManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken /*aNewDefault*/) noexcept {
 	if (get(HubSettings::ShareProfile) == aOldDefault) {
 		reloadSettings(false);
 	}
 }
 
-void Client::on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
+void Client::on(ShareProfileManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
 	if (get(HubSettings::ShareProfile) == aProfile) {
 		reloadSettings(false);
 	}
@@ -219,7 +226,7 @@ void Client::connect(bool withKeyprint) noexcept {
 
 	redirectUrl = Util::emptyString;
 	setAutoReconnect(true);
-	setReconnDelay(120 + Util::rand(0, 60));
+	setReconnDelay(120 + ValueGenerator::rand(0, 60));
 	reloadSettings(true);
 	setRegistered(false);
 	setMyIdentity(Identity(ClientManager::getInstance()->getMe(), 0));
@@ -232,8 +239,7 @@ void Client::connect(bool withKeyprint) noexcept {
 		sock->addListener(this);
 		sock->connect(
 			AddressInfo(address, AddressInfo::TYPE_URL), 
-			port, 
-			AirUtil::isSecure(hubUrl), 
+			SocketConnectOptions(port, LinkUtil::isSecure(hubUrl)),
 			SETTING(ALLOW_UNTRUSTED_HUBS), 
 			true, 
 			withKeyprint ? keyprint : Util::emptyString
@@ -256,7 +262,7 @@ void Client::send(const char* aMessage, size_t aLen) {
 	}
 	updateActivity();
 	sock->write(aMessage, aLen);
-	COMMAND_DEBUG(aMessage, DebugManager::TYPE_HUB, DebugManager::OUTGOING, getIpPort());
+	COMMAND_DEBUG(aMessage, ProtocolCommandManager::TYPE_HUB, ProtocolCommandManager::OUTGOING, getIpPort());
 }
 
 void Client::on(BufferedSocketListener::Connected) noexcept {
@@ -279,10 +285,10 @@ void Client::setConnectState(State aState) noexcept {
 	fire(ClientListener::ConnectStateChanged(), this, aState);
 }
 
-void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel, int aFlag) noexcept {
-	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, aLabel);
+void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType, const string& aLabel, const string& aOwner) noexcept {
+	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, aType, aLabel);
 
-	if (aFlag != ClientListener::FLAG_IS_SPAM) {
+	if (aOwner.empty() && aType != LogMessage::Type::SPAM && aType != LogMessage::Type::PRIVATE) {
 		cache.addMessage(message);
 
 		if (SETTING(LOG_STATUS_MESSAGES)) {
@@ -295,7 +301,7 @@ void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverit
 		}
 	}
 
-	fire(ClientListener::StatusMessage(), this, message, aFlag);
+	fire(ClientListener::StatusMessage(), this, message, aOwner);
 }
 
 void Client::setRead() noexcept {
@@ -325,7 +331,7 @@ void Client::onPassword() noexcept {
 }
 
 void Client::onRedirect(const string& aRedirectUrl) noexcept {
-	if (ClientManager::getInstance()->hasClient(aRedirectUrl)) {
+	if (ClientManager::getInstance()->findClient(aRedirectUrl)) {
 		statusMessage(STRING(REDIRECT_ALREADY_CONNECTED), LogMessage::SEV_INFO);
 		return;
 	}
@@ -345,7 +351,7 @@ void Client::onUserConnected(const OnlineUserPtr& aUser) noexcept {
 
 		if (aUser->getUser() != ClientManager::getInstance()->getMe()) {
 			if (!aUser->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && aUser->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(JOINS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, Util::emptyString, ClientListener::FLAG_IS_SYSTEM);
+				statusMessage(STRING(JOINS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_VERBOSE, LogMessage::Type::SYSTEM);
 			}
 		}
 	}
@@ -359,7 +365,7 @@ void Client::onUserDisconnected(const OnlineUserPtr& aUser, bool aDisconnectTran
 
 		if (aUser->getUser() != ClientManager::getInstance()->getMe()) {
 			if (!aUser->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && aUser->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(PARTS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, Util::emptyString, ClientListener::FLAG_IS_SYSTEM);
+				statusMessage(STRING(PARTS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_VERBOSE, LogMessage::Type::SYSTEM);
 			}
 		}
 	}
@@ -368,7 +374,7 @@ void Client::onUserDisconnected(const OnlineUserPtr& aUser, bool aDisconnectTran
 }
 
 void Client::allowUntrustedConnect() noexcept {
-	if (state != STATE_DISCONNECTED || !SETTING(ALLOW_UNTRUSTED_HUBS) || !AirUtil::isSecure(hubUrl))
+	if (state != STATE_DISCONNECTED || !SETTING(ALLOW_UNTRUSTED_HUBS) || !LinkUtil::isSecure(hubUrl))
 		return;
 	//Connect without keyprint just this once...
 	connect(false);
@@ -394,7 +400,7 @@ bool Client::sendMessageHooked(const OutgoingChatMessage& aMessage, string& erro
 		return false;
 	}
 
-	return hubMessage(aMessage.text, error_, aMessage.thirdPerson);
+	return hubMessageHooked(aMessage.text, error_, aMessage.thirdPerson);
 }
 
 bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const OutgoingChatMessage& aMessage, string& error_, bool aEcho) noexcept {
@@ -413,7 +419,7 @@ bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const Outgoing
 		return false;
 	}
 
-	return privateMessage(aUser, aMessage.text, error_, aMessage.thirdPerson, aEcho);
+	return privateMessageHooked(aUser, aMessage.text, error_, aMessage.thirdPerson, aEcho);
 }
 
 void Client::onPrivateMessage(const ChatMessagePtr& aMessage) noexcept {
@@ -465,7 +471,7 @@ void Client::doRedirect() noexcept {
 		return;
 	}
 
-	if (ClientManager::getInstance()->hasClient(redirectUrl)) {
+	if (ClientManager::getInstance()->findClient(redirectUrl)) {
 		statusMessage(STRING(REDIRECT_ALREADY_CONNECTED), LogMessage::SEV_INFO);
 		return;
 	}
@@ -477,10 +483,6 @@ void Client::doRedirect() noexcept {
 void Client::on(BufferedSocketListener::Failed, const string& aLine) noexcept {
 	updateCounts(true);
 	clearUsers();
-	
-	if (stateNormal()) {
-		FavoriteManager::getInstance()->removeUserCommand(hubUrl);
-	}
 
 	setConnectState(STATE_DISCONNECTED);
 	statusMessage(aLine, LogMessage::SEV_WARNING);
@@ -498,7 +500,7 @@ bool Client::isKeyprintMismatch() const noexcept {
 
 void Client::callAsync(AsyncF f) noexcept {
 	if (sock) {
-		sock->callAsync(move(f));
+		sock->callAsync(std::move(f));
 	}
 }
 
@@ -555,7 +557,7 @@ bool Client::updateCounts(bool aRemove) noexcept {
 		} else {
 			//disconnect before the hubcount is updated.
 			if(SETTING(DISALLOW_CONNECTION_TO_PASSED_HUBS)) {
-				addLine(STRING(HUB_NOT_PROTECTED));
+				statusMessage(STRING(HUB_NOT_PROTECTED), LogMessage::SEV_ERROR);
 				disconnect(true);
 				setAutoReconnect(false);
 				return false;
@@ -579,7 +581,7 @@ uint64_t Client::queueSearch(const SearchPtr& aSearch) noexcept {
 	return searchQueue.add(aSearch);
 }
 
-optional<uint64_t> Client::getQueueTime(const void* aOwner) const noexcept {
+optional<uint64_t> Client::getQueueTime(CallerPtr aOwner) const noexcept {
 	return searchQueue.getQueueTime(Search::CompareOwner(aOwner));
 }
 
@@ -593,14 +595,10 @@ long Client::getDisplayCount(CountType aCountType) const noexcept {
 	//return SETTING(SEPARATE_NOSHARE_HUBS) && isSharingHub() ? sharingCounts[aCountType] : allCounts[aCountType];
 	return allCounts[aCountType];
 }
-
-void Client::addLine(const string& msg) noexcept {
-	fire(ClientListener::AddLine(), this, msg);
-}
  
 void Client::on(BufferedSocketListener::Line, const string& aLine) noexcept {
 	updateActivity();
-	COMMAND_DEBUG(aLine, DebugManager::TYPE_HUB, DebugManager::INCOMING, getIpPort());
+	COMMAND_DEBUG(aLine, ProtocolCommandManager::TYPE_HUB, ProtocolCommandManager::INCOMING, getIpPort());
 }
 
 void Client::on(TimerManagerListener::Second, uint64_t aTick) noexcept{
@@ -610,11 +608,86 @@ void Client::on(TimerManagerListener::Second, uint64_t aTick) noexcept{
 	}
 
 	if (isConnected()){
-		auto s = move(searchQueue.maybePop());
+		auto s = searchQueue.maybePop();
 		if (s) {
 			fire(ClientListener::OutgoingSearch(), this, s);
-			search(move(s));
+			search(s);
 		}
+	}
+}
+
+FloodCounter::FloodLimits Client::getCTMLimits(const OnlineUser* aAdcUser) noexcept {
+	// Is it a valid DC client?
+	// There may be many connection attempts with MCN users so we don't want to ban them
+	if (aAdcUser && ConnectionManager::getInstance()->isMCNUser(aAdcUser->getUser())) {
+		return {
+			100,
+			150,
+		};
+	}
+
+	return {
+		15,
+		40,
+	};
+}
+
+FloodCounter::FloodLimits Client::getSearchLimits() noexcept {
+	return {
+		20,
+		60,
+	};
+}
+
+bool Client::checkIncomingCTM(const string& aTarget, const OnlineUser* aAdcUser) noexcept {
+	auto result = ctmFloodCounter.handleRequest(aTarget, getCTMLimits(aAdcUser));
+	if (result.type == FloodCounter::FloodType::OK) {
+		return true;
+	}
+
+	auto message = STRING_F(CONNECT_REQUEST_SPAM_FROM, aTarget);
+	if (aAdcUser) {
+		message += " (" + aAdcUser->getIdentity().getNick() + ")";
+	}
+
+	handleFlood(result, message);
+	return false;
+}
+
+bool Client::checkIncomingSearch(const string& aTarget, const OnlineUser* aAdcUser) noexcept {
+	auto result = searchFloodCounter.handleRequest(aTarget, getSearchLimits());
+	if (result.type == FloodCounter::FloodType::OK) {
+		return true;
+	}
+
+	auto message = STRING_F(SEARCH_SPAM_FROM, aTarget);
+	if (aAdcUser) {
+		message += " (" + aAdcUser->getIdentity().getNick() + ")";
+	}
+
+	handleFlood(result, message);
+	return false;
+}
+
+
+void Client::handleFlood(const FloodCounter::FloodResult& aResult, const string& aMessage) noexcept {
+	if (aResult.type == FloodCounter::FloodType::FLOOD_MINOR) {
+		if (aResult.hitLimit) {
+			// Status message only
+			statusMessage(aMessage, LogMessage::SEV_VERBOSE, LogMessage::Type::SPAM);
+		}
+	} else if (aResult.type == FloodCounter::FloodType::FLOOD_SEVERE) {
+		// If the flood is really severe, there may be lots of incoming messages waiting to be processed
+		// We only want to do this once
+		if (sock && sock->isDisconnecting()) {
+			return;
+		}
+
+		auto message = aMessage + " (" + Text::toLower(STRING(SEVERE)) + ")";
+
+		statusMessage(STRING_F(HUB_DDOS_DISCONNECT, message), LogMessage::SEV_ERROR);
+		setReconnDelay(10 * 60); // 10 minutes
+		disconnect(true);
 	}
 }
 

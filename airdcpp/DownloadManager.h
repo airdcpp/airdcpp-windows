@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -28,8 +28,9 @@
 #include "Speaker.h"
 
 #include "CriticalSection.h"
-#include "Bundle.h"
+#include "GetSet.h"
 #include "MerkleTree.h"
+#include "QueueItemBase.h"
 #include "Util.h"
 
 namespace dcpp {
@@ -46,10 +47,8 @@ public:
 
 	/** @internal */
 	void addConnection(UserConnection* conn);
-	bool checkIdle(const UserPtr& user, bool smallSlot, bool reportOnly = false);
-
-	void sendSizeUpdate(const BundlePtr& aBundle) const noexcept;
-	BundlePtr findRunningBundle(QueueToken bundleToken) const noexcept;
+	bool checkIdle(const UserPtr& aUser, bool aSmallSlot);
+	bool checkIdle(const string& aToken);
 
 	/** @internal */
 	void abortDownload(const string& aTarget, const UserPtr& aUser = nullptr);
@@ -64,7 +63,7 @@ public:
 
 	// This will ignore bundles with no downloads and 
 	// bundles using highest priority
-	void getRunningBundles(QueueTokenSet& bundles_) const noexcept;
+	QueueTokenSet getRunningBundles(bool aIgnoreHighestPrio = true) const noexcept;
 	size_t getRunningBundleCount() const noexcept;
 
 	SharedMutex& getCS() noexcept { return cs; }
@@ -82,10 +81,9 @@ private:
 	// The list of bundles being download. Note that all of them may not be running
 	// as the bundle is removed from here only after the connection has been 
 	// switched to use another bundle (or no other downloads were found)
-	Bundle::TokenMap bundles;
 	UserConnectionList idlers;
 
-	void removeRunningUser(UserConnection* aSource, bool sendRemoved=false) noexcept;
+	void disconnect(UserConnectionPtr aConn, bool aGraceless = false) const noexcept;
 	void removeConnection(UserConnectionPtr aConn);
 	void removeDownload(Download* aDown);
 	void fileNotAvailable(UserConnection* aSource, bool aNoAccess, const string& aMessage = Util::emptyString);
@@ -96,12 +94,11 @@ private:
 	friend class Singleton<DownloadManager>;
 
 	DownloadManager();
-	~DownloadManager();
+	~DownloadManager() override;
 
-	//typedef unordered_set<CID> CIDList;
 	void checkDownloads(UserConnection* aConn);
+	bool disconnectSlowSpeed(Download* aDownload, uint64_t aTick) const noexcept;
 	void startData(UserConnection* aSource, int64_t start, int64_t newSize, bool z);
-	void startBundle(UserConnection* aSource, BundlePtr aBundle);
 
 	void revive(UserConnection* uc);
 	void endData(UserConnection* aSource);
@@ -109,11 +106,11 @@ private:
 	void onFailed(UserConnection* aSource, const string& aError);
 
 	// UserConnectionListener
-	void on(Data, UserConnection*, const uint8_t*, size_t) noexcept override;
-	void on(Failed, UserConnection* aSource, const string& aError) noexcept override { onFailed(aSource, aError); }
-	void on(ProtocolError, UserConnection* aSource, const string& aError) noexcept override { onFailed(aSource, aError); }
-	void on(MaxedOut, UserConnection*, const string& param) noexcept override;
-	void on(FileNotAvailable, UserConnection*) noexcept override;
+	void on(UserConnectionListener::Data, UserConnection*, const uint8_t*, size_t) noexcept override;
+	void on(UserConnectionListener::Failed, UserConnection* aSource, const string& aError) noexcept override { onFailed(aSource, aError); }
+	void on(UserConnectionListener::ProtocolError, UserConnection* aSource, const string& aError) noexcept override { onFailed(aSource, aError); }
+	void on(UserConnectionListener::MaxedOut, UserConnection*, const string& param) noexcept override;
+	void on(UserConnectionListener::FileNotAvailable, UserConnection*) noexcept override;
 		
 	void on(AdcCommand::SND, UserConnection*, const AdcCommand&) noexcept override;
 	void on(AdcCommand::STA, UserConnection*, const AdcCommand&) noexcept override;
@@ -121,12 +118,12 @@ private:
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
 
-	typedef pair< string, int64_t > StringIntPair;
-
 	// Statistics
 	uint64_t lastUpdate = 0;
 	int64_t lastUpBytes = 0;
 	int64_t lastDownBytes = 0;
+
+	string updateConnectionHubUrl(UserConnection* aSource, const string& aNewHubUrl) const noexcept;
 };
 
 } // namespace dcpp

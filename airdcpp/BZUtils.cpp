@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -99,6 +99,47 @@ bool UnBZFilter::operator()(const void* in, size_t& insize, void* out, size_t& o
 	outsize = outsize - zs.avail_out;
 	insize = insize - zs.avail_in;
 	return err == BZ_OK;
+}
+
+void BZUtil::decodeBZ2(const uint8_t* is, size_t sz, string& os) {
+	bz_stream bs = { 0 };
+
+	if(BZ2_bzDecompressInit(&bs, 0, 0) != BZ_OK)
+		throw Exception(STRING(DECOMPRESSION_ERROR));
+
+	// We assume that the files aren't compressed more than 2:1...if they are it'll work anyway,
+	// but we'll have to do multiple passes...
+	size_t bufsize = 2*sz;
+	boost::scoped_array<char> buf(new char[bufsize]);
+
+	bs.avail_in = sz;
+	bs.avail_out = bufsize;
+	bs.next_in = reinterpret_cast<char*>(const_cast<uint8_t*>(is));
+	bs.next_out = &buf[0];
+
+	int err;
+
+	os.clear();
+
+	while((err = BZ2_bzDecompress(&bs)) == BZ_OK) {
+		if (bs.avail_in == 0 && bs.avail_out > 0) { // error: BZ_UNEXPECTED_EOF
+			BZ2_bzDecompressEnd(&bs);
+			throw Exception(STRING(DECOMPRESSION_ERROR));
+		}
+		os.append(&buf[0], bufsize-bs.avail_out);
+		bs.avail_out = bufsize;
+		bs.next_out = &buf[0];
+	}
+
+	if(err == BZ_STREAM_END)
+		os.append(&buf[0], bufsize-bs.avail_out);
+
+	BZ2_bzDecompressEnd(&bs);
+
+	if(err < 0) {
+		// This was a real error
+		throw Exception(STRING(DECOMPRESSION_ERROR));
+	}
 }
 
 } // namespace dcpp

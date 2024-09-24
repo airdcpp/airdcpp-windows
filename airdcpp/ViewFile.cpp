@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -24,8 +24,8 @@
 
 namespace dcpp {
 	ViewFile::ViewFile(const string& aFileName, const string& aPath, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile, UpdateF&& aUpdateFunction) noexcept :
-		TrackableDownloadItem(aIsLocalFile), fileName(aFileName), path(aPath), tth(aTTH), timeCreated(GET_TIME()),
-		updateFunction(aUpdateFunction), text(aIsText), localFile(aIsLocalFile) {
+		TrackableDownloadItem(aIsLocalFile), fileName(aFileName), path(aPath), updateFunction(std::move(aUpdateFunction)), tth(aTTH),
+		text(aIsText), localFile(aIsLocalFile), timeCreated(GET_TIME()) {
 
 	}
 

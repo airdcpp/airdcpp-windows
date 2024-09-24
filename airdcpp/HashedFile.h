@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -31,23 +31,14 @@ public:
 	HashedFile(const TTHValue& aRoot, uint64_t aTimeStamp, int64_t aSize) :
 		root(aRoot), timeStamp(aTimeStamp), size(aSize) { }
 
-	~HashedFile() { }
+	~HashedFile() = default;
 
-	//GETSET(string, fileName, FileName);
 	GETSET(TTHValue, root, Root);
 	GETSET(uint64_t, timeStamp, TimeStamp);
 	GETSET(int64_t, size, Size);
-
-	/*struct FileLess {
-		bool operator()(const HashedFilePtr& a, const HashedFilePtr& b) const { return (a->getFileName().compare(b->getFileName()) < 0); }
-	};
-
-	struct Name {
-		const string& operator()(const HashedFilePtr& a) const { return a->getFileName(); }
-	};*/
 };
 
-typedef std::vector<pair<std::string, HashedFile>> RenameList;
+using RenameList = std::vector<pair<std::string, HashedFile>>;
 
 }
 

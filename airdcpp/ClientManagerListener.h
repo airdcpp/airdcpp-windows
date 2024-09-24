@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -40,11 +40,12 @@ public:
 	typedef X<7> ClientDisconnected;
 	typedef X<8> ClientRemoved;
 
-	typedef X<9> IncomingSearch;
-	typedef X<10> IncomingADCSearch;
+	typedef X<9> ClientUserCommand;
+
 	typedef X<11> DirectSearchEnd;
-	typedef X<11> OutgoingSearch;
-	typedef X<12> PrivateMessage;
+	typedef X<12> OutgoingSearch;
+
+	typedef X<14> PrivateMessage;
 
 
 	virtual void on(UserConnected, const OnlineUser&, bool /*was offline*/) noexcept { }
@@ -58,11 +59,11 @@ public:
 	virtual void on(ClientDisconnected, const string&) noexcept { }
 	virtual void on(ClientRemoved, const ClientPtr&) noexcept { }
 
-	virtual void on(IncomingSearch, const string&) noexcept { }
-	virtual void on(IncomingADCSearch, const AdcCommand&) noexcept { }
 	virtual void on(DirectSearchEnd, const string& /*token*/, int /*resultcount*/) noexcept { }
 	virtual void on(OutgoingSearch, const string&, const SearchPtr&) noexcept {}
+
 	virtual void on(PrivateMessage, const ChatMessagePtr&) noexcept {}
+	virtual void on(ClientUserCommand, const Client*, int, int, const string&, const string&) noexcept { }
 };
 
 } // namespace dcpp

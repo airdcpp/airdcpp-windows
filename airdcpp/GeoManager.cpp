@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,10 +19,25 @@
 #include "stdinc.h"
 #include "GeoManager.h"
 
+#include "AppUtil.h"
 #include "GeoIP.h"
+#include "SettingsManager.h"
 #include "Util.h"
 
 namespace dcpp {
+
+
+GeoManager::GeoManager() {
+	SettingsManager::getInstance()->registerChangeHandler({
+		SettingsManager::GET_USER_COUNTRY
+	}, [this](auto ...) {
+		if (SETTING(GET_USER_COUNTRY)) {
+			GeoManager::getInstance()->init();
+		} else {
+			GeoManager::getInstance()->close();
+		}
+	});
+}
 
 void GeoManager::init() {
 	geo = make_unique<GeoIP>(getDbPath());
@@ -31,7 +46,6 @@ void GeoManager::init() {
 void GeoManager::update() {
 	if (geo) {
 		geo->update();
-		//geo->rebuild();
 	}
 }
 
@@ -48,7 +62,7 @@ string GeoManager::getCountry(const string& ip) const {
 }
 
 string GeoManager::getDbPath() {
-	return Util::getPath(Util::PATH_USER_LOCAL) + "country_ip_db.mmdb";
+	return AppUtil::getPath(AppUtil::PATH_USER_LOCAL) + "country_ip_db.mmdb";
 }
 
 } // namespace dcpp

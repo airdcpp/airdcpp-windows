@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2012-2021 AirDC++ Project
+ * Copyright (C) 2012-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,23 +18,32 @@
 
 #include "stdinc.h"
 #include "UploadBundle.h"
+
+#include "ConnectionManager.h"
+#include "PathUtil.h"
 #include "Util.h"
 
 namespace dcpp {
 
-UploadBundle::UploadBundle(const string& aTarget, const string& aToken, int64_t aSize, bool aSingleUser, int64_t aUploaded) : target(aTarget), token(aToken), size(aSize),
-	singleUser(aSingleUser), uploadedSegments(aUploaded) { 
+UploadBundle::UploadBundle(const string& aTarget, const string& aToken, int64_t aSize, bool aSingleUser, int64_t aUploaded) : size(aSize), uploadedSegments(aUploaded), target(aTarget),
+	singleUser(aSingleUser), token(aToken) { 
 
 	if (uploadedSegments > size)
 		uploadedSegments = size;
 }
 
+UploadBundle::~UploadBundle() {
+	dcdebug("Removing upload bundle %s", getName().c_str());
+	ConnectionManager::getInstance()->tokens.removeToken(getToken());
+}
+
 void UploadBundle::addUploadedSegment(int64_t aSize) noexcept {
 	dcassert(aSize + uploadedSegments <= size);
 	if (singleUser && aSize + uploadedSegments <= size) {
-		countSpeed();
 		uploadedSegments += aSize;
-		uploaded -= aSize;
+		currentUploaded -= aSize;
+	} else {
+		dcassert(0);
 	}
 }
 
@@ -42,96 +51,114 @@ void UploadBundle::setSingleUser(bool aSingleUser, int64_t aUploadedSegments) no
 	if (aSingleUser) {
 		singleUser = true;
 		totalSpeed = 0;
-		if (aUploadedSegments <= size)
+		if (aUploadedSegments <= size) {
 			uploadedSegments = aUploadedSegments;
+		}
 	} else {
 		singleUser = false;
-		uploaded = 0;
+		currentUploaded = 0;
 	}
 }
 
 uint64_t UploadBundle::getSecondsLeft() const noexcept {
 	auto avg = totalSpeed > 0 ? totalSpeed : speed;
 	int64_t bytesLeft =  getSize() - getUploaded();
-	return (avg > 0) ? static_cast<int64_t>(bytesLeft / avg) : 0;
+	return (avg > 0) ? bytesLeft / avg : 0;
 }
 
 string UploadBundle::getName() const noexcept {
-	if(target.back() == PATH_SEPARATOR)
-		return Util::getLastDir(target);
-	else
-		return Util::getFilePath(target);
+	if (target.back() == PATH_SEPARATOR) {
+		return PathUtil::getLastDir(target);
+	} else {
+		return PathUtil::getFilePath(target);
+	}
 }
 
-void UploadBundle::addUpload(Upload* u) noexcept {
-	//can't have multiple bundles for it
-	if (u->getBundle()) {
-		u->getBundle()->removeUpload(u);
-	}
-
-	uploads.push_back(u);
-	u->setBundle(this);
+void UploadBundle::addUpload(const Upload* u) noexcept {
+	// dcassert(uploads.find(u->getToken()) == uploads.end());
+	uploads.insert(u->getToken());
 
 	if (uploads.size() == 1) {
-		findBundlePath(target);
+		findBundlePath(target, u);
 		delayTime = 0;
 	}
 }
 
-bool UploadBundle::removeUpload(Upload* u) noexcept {
-	auto s = find(uploads.begin(), uploads.end(), u);
+const UploadBundle::BundleUploadList& UploadBundle::getUploads() const noexcept {
+	return uploads; 
+}
+
+int UploadBundle::getConnectionCount() const noexcept {
+	return (int)uploads.size(); 
+}
+
+bool UploadBundle::removeUpload(const Upload* u) noexcept {
+	auto s = uploads.find(u->getToken());
 	dcassert(s != uploads.end());
 	if (s != uploads.end()) {
 		addUploadedSegment(u->getPos());
 		uploads.erase(s);
 
 		auto isEmpty = uploads.empty();
-		u->setBundle(nullptr);
 		return isEmpty;
 	}
-	dcassert(0);
+
 	return uploads.empty();
 }
 
-uint64_t UploadBundle::countSpeed() noexcept {
-	double bundleRatio = 0;
-	int64_t bundleSpeed = 0, bundlePos = 0;
-	int up = 0;
-	for (auto u: uploads) {
-		if (u->getAverageSpeed() > 0 && u->getStart() > 0) {
-			bundleSpeed += u->getAverageSpeed();
-			if (singleUser) {
-				up++;
-				int64_t pos = u->getPos();
-				bundleRatio += pos > 0 ? (double)u->getActual() / (double)pos : 1.00;
-				bundlePos += pos;
-			}
-		}
-	}
-
-	if (bundleSpeed > 0) {
-		speed = bundleSpeed;
-		if (singleUser) {
-			bundleRatio = bundleRatio / up;
-			actual = ((int64_t)((double)uploaded * (bundleRatio == 0 ? 1.00 : bundleRatio)));
-			uploaded = bundlePos;
-		}
-	}
-	return bundleSpeed;
+uint64_t UploadBundle::getUploaded() const noexcept {
+	return currentUploaded + uploadedSegments; 
 }
 
-void UploadBundle::findBundlePath(const string& aName) noexcept {
-	if (uploads.empty())
-		return;
+constexpr auto BUNDLE_DELAY_SECONDS = 60;
+bool UploadBundle::checkDelaySecond() noexcept {
+	if (uploads.empty()) {
+		return false;
+	}
 
-	Upload* u = uploads.front();
-	string upath = u->getPath();
-	size_t pos = u->getPath().rfind(aName);
+	delayTime++;
+	return delayTime > BUNDLE_DELAY_SECONDS;
+}
+
+uint64_t UploadBundle::countSpeed(const UploadList& aUploads) noexcept {
+	double bundleRatio = 0;
+	int64_t ownBundleSpeed = 0, bundlePos = 0;
+	int up = 0;
+	for (auto u: aUploads) {
+		if (u->getStart() > 0) {
+			ownBundleSpeed += u->getAverageSpeed();
+
+			up++;
+			int64_t pos = u->getPos();
+			bundleRatio += pos > 0 ? (double)u->getActual() / (double)pos : 1.00;
+			bundlePos += pos;
+		}
+	}
+
+	if (ownBundleSpeed > 0) {
+		if (singleUser) {
+			currentUploaded = bundlePos;
+		}
+
+		speed = ownBundleSpeed;
+		bundleRatio = bundleRatio / up;
+		actual = ((int64_t)((double)getUploaded() * (bundleRatio == 0 ? 1.00 : bundleRatio)));
+	}
+
+	return ownBundleSpeed;
+}
+
+void UploadBundle::findBundlePath(const string& aName, const Upload* aUpload) noexcept {
+	const auto& uploadPath = aUpload->getPath();
+	auto pos = uploadPath.rfind(aName);
 	if (pos != string::npos) {
-		if (pos + aName.length() == u->getPath().length()) //file bundle
-			target = u->getPath();
-		else //dir bundle
-			target = upath.substr(0, pos + aName.length());
+		if (pos + aName.length() == uploadPath.length()) {
+			// File bundle
+			target = uploadPath;
+		} else {
+			// Directory bundle
+			target = uploadPath.substr(0, pos + aName.length());
+		}
 	}
 }
 

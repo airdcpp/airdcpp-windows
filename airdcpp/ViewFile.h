@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -28,10 +28,10 @@
 namespace dcpp {
 	class ViewFile : public TrackableDownloadItem {
 
-	typedef std::function<void(const TTHValue&)> UpdateF;
+	using UpdateF = std::function<void (const TTHValue &)>;
 	public:
 		ViewFile(const string& aFileName, const string& aPath, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile, UpdateF&& aUpdateFunction) noexcept;
-		~ViewFile() noexcept;
+		~ViewFile() noexcept final;
 
 		const string& getPath() const noexcept {
 			return path;
@@ -59,7 +59,7 @@ namespace dcpp {
 
 		IGETSET(bool, read, Read, false);
 	protected:
-		void onStateChanged() noexcept;
+		void onStateChanged() noexcept override;
 	private:
 		const string fileName;
 		const string path;

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,6 +20,7 @@
 #define DCPLUSPLUS_DCPP_QUEUE_ITEM_H
 
 #include "QueueItemBase.h"
+#include "QueueDownloadInfo.h"
 
 #include "FastAlloc.h"
 #include "HintedUser.h"
@@ -31,17 +32,13 @@ namespace dcpp {
 
 class QueueItem : public QueueItemBase {
 public:
-	typedef unordered_map<QueueToken, QueueItemPtr> TokenMap;
-	typedef unordered_map<string*, QueueItemPtr, noCaseStringHash, noCaseStringEq> StringMap;
-	typedef unordered_multimap<TTHValue*, QueueItemPtr> TTHMap;
-	typedef vector<pair<QueueItemPtr, bool>> ItemBoolList;
-
-	struct Hash {
-		size_t operator()(const QueueItemPtr& x) const noexcept { return hash<string>()(x->getTarget()); }
-	};
+	using TokenMap = unordered_map<QueueToken, QueueItemPtr>;
+	using StringMap = unordered_map<string *, QueueItemPtr, noCaseStringHash, noCaseStringEq>;
+	using TTHMap = unordered_multimap<TTHValue *, QueueItemPtr>;
+	using ItemBoolList = vector<pair<QueueItemPtr, bool>>;
 
 	struct HashComp {
-		HashComp(const TTHValue& s) : a(s) { }
+		explicit HashComp(const TTHValue& s) : a(s) { }
 		bool operator()(const QueueItemPtr& q) const noexcept { return a == q->getTTH(); }
 
 		HashComp& operator=(const HashComp&) = delete;
@@ -97,28 +94,6 @@ public:
 
 	static bool isFailedStatus(Status aStatus) noexcept;
 
-	/**
-	 * Source parts info
-	 * Meaningful only when Source::FLAG_PARTIAL is set
-	 */
-	class PartialSource : public FastAlloc<PartialSource> {
-	public:
-		PartialSource(const string& aMyNick, const string& aHubIpPort, const string& aIp, const string& udp) : 
-			myNick(aMyNick), hubIpPort(aHubIpPort), ip(aIp), nextQueryTime(0), udpPort(udp), pendingQueryCount(0) {}
-		
-		~PartialSource() { }
-
-		typedef shared_ptr<PartialSource> Ptr;
-
-		GETSET(PartsInfo, partialInfo, PartialInfo);
-		GETSET(string, myNick, MyNick);			// for NMDC support only
-		GETSET(string, hubIpPort, HubIpPort);
-		GETSET(string, ip, Ip);
-		GETSET(uint64_t, nextQueryTime, NextQueryTime);
-		GETSET(string, udpPort, UdpPort);
-		GETSET(uint8_t, pendingQueryCount, PendingQueryCount);
-	};
-
 	class Source : public Flags {
 	public:
 		enum {
@@ -138,15 +113,12 @@ public:
 				| FLAG_NO_TREE | FLAG_TTH_INCONSISTENCY | FLAG_UNTRUSTED
 		};
 
-		Source(const HintedUser& aUser) : user(aUser), partialSource(nullptr) { }
+		Source(const HintedUser& aUser) : user(aUser) { }
 
 		bool operator==(const UserPtr& aUser) const { return user == aUser; }
-		PartialSource::Ptr& getPartialSource() { return partialSource; }
-
-		IGETSET(PartialSource::Ptr, partialSource, PartialSource, nullptr);
 
 		// Update the hinted download hub URL based if the provided one can't be used
-		bool updateDownloadHubUrl(const OrderedStringSet& aOnlineHubs, string& hubUrl_, bool aIsFileList) const noexcept;
+		bool updateDownloadHubUrl(const OrderedStringSet& aOnlineHubs, string& hubUrl_, bool aAllowUrlChange) const noexcept;
 
 		// Update the hinted source URL
 		void setHubUrl(const string& aHubUrl) noexcept;
@@ -163,34 +135,47 @@ public:
 		void addBlockedHub(const string& aHubUrl) noexcept {
 			blockedHubs.insert(aHubUrl);
 		}
+
+		const PartsInfo* getPartsInfo() const noexcept {
+			return partsInfo.empty() ? nullptr : &partsInfo;
+		}
+
+		void setPartsInfo(const PartsInfo& aPartsInfo) noexcept {
+			partsInfo = aPartsInfo;
+		}
+
+		bool validateHub(const OrderedStringSet& aOnlineHubs, bool aAllowUrlChange, string& lastError_) const noexcept;
+		bool validateHub(const string& aHubUrl, bool aAllowUrlChange) const noexcept;
 	private:
+		PartsInfo partsInfo;
+
 		HintedUser user;
 
 		OrderedStringSet blockedHubs;
 	};
 
-	typedef vector<Source> SourceList;
-	typedef SourceList::iterator SourceIter;
+	using SourceList = vector<Source>;
+	using SourceIter = SourceList::iterator;
 
-	typedef SourceList::const_iterator SourceConstIter;
+	using SourceConstIter = SourceList::const_iterator;
 
-	typedef set<Segment> SegmentSet;
-	typedef SegmentSet::const_iterator SegmentConstIter;
+	using SegmentSet = set<Segment>;
+	using SegmentConstIter = SegmentSet::const_iterator;
 	
 	QueueItem(const string& aTarget, int64_t aSize, Priority aPriority, Flags::MaskType aFlag, time_t aAdded, const TTHValue& tth, const string& aTempTarget);
 
-	~QueueItem();
+	~QueueItem() override;
 
 	bool usesSmallSlot() const noexcept;
 
 	// Select a random item from the list to search for alternates
 	static QueueItemPtr pickSearchItem(const QueueItemList& aItems) noexcept;
 
-	void save(OutputStream &save, string tmp, string b32tmp);
+	void save(OutputStream &save, string tmp, string b32tmp) const;
 	int countOnlineUsers() const noexcept;
 	void getOnlineUsers(HintedUserList& l) const noexcept;
-	bool hasSegment(const UserPtr& aUser, const OrderedStringSet& onlineHubs, string& lastError, int64_t wantedSize, int64_t lastSpeed, DownloadType aType, bool allowOverlap) noexcept;
-	bool isPausedPrio() const noexcept;
+	bool hasSegment(const QueueDownloadQuery& aQuery, string& lastError_, bool aAllowOverlap) noexcept;
+	bool isPausedPrio() const noexcept override;
 
 	SourceList& getSources() noexcept { return sources; }
 	const SourceList& getSources() const noexcept { return sources; }
@@ -211,7 +196,7 @@ public:
 	
 	void getChunksVisualisation(vector<Segment>& running, vector<Segment>& downloaded, vector<Segment>& done) const noexcept;
 
-	bool isChunkDownloaded(int64_t startPos, int64_t& len) const noexcept;
+	bool isChunkDownloaded(const Segment& aSegment) const noexcept;
 
 	/**
 	 * Is specified parts needed by this download?
@@ -230,14 +215,14 @@ public:
 	void addDownload(Download* d) noexcept;
 
 	// Erase a single download
-	void removeDownload(const string& aToken) noexcept;
+	void removeDownload(const Download* d) noexcept;
 
 	// Erase all downloads from this user
 	void removeDownloads(const UserPtr& aUser) noexcept;
 	
 	/** Next segment that is not done and not being downloaded, zero-sized segment returned if there is none is found */
-	Segment getNextSegment(int64_t blockSize, int64_t wantedSize, int64_t aLastSpeed, const PartialSource::Ptr& aPartialSource, bool allowOverlap) const noexcept;
-	Segment checkOverlaps(int64_t blockSize, int64_t aLastSpeed, const PartialSource::Ptr& aPartialSource, bool allowOverlap) const noexcept;
+	Segment getNextSegment(int64_t blockSize, int64_t wantedSize, int64_t aLastSpeed, const PartsInfo* aPartsInfo, bool allowOverlap) const noexcept;
+	Segment checkOverlaps(int64_t blockSize, int64_t aLastSpeed, const PartsInfo* aPartsInfo, bool allowOverlap) const noexcept;
 	
 	void addFinishedSegment(const Segment& segment) noexcept;
 	void resetDownloaded() noexcept;
@@ -297,8 +282,12 @@ private:
 
 	void addSource(const HintedUser& aUser) noexcept;
 	void blockSourceHub(const HintedUser& aUser) noexcept;
-	bool isHubBlocked(const UserPtr& aUser, const string& aUrl) const noexcept;
+	bool validateHub(const UserPtr& aUser, const string& aUrl) const noexcept;
 	void removeSource(const UserPtr& aUser, Flags::MaskType reason) noexcept;
+
+	bool matchesDownloadType(QueueDownloadType aType) const noexcept;
+	bool allowSegmentedDownloads() const noexcept;
+	bool allowUrlChange() const noexcept;
 
 	static uint8_t getMaxSegments(int64_t aFileSize) noexcept;
 

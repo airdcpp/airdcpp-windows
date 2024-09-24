@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -23,6 +23,8 @@
 
 namespace dcpp {
 
+class SimpleXML;
+
 class FavoriteManagerListener {
 public:
 	virtual ~FavoriteManagerListener() { }
@@ -33,22 +35,20 @@ public:
 	typedef X<2> FavoriteHubUpdated;
 	typedef X<3> FavoriteHubsUpdated;
 
-	typedef X<4> FavoriteUserAdded;
-	typedef X<5> FavoriteUserRemoved;
-	typedef X<6> FavoriteUserUpdated;
-
 	typedef X<7> FavoriteDirectoriesUpdated;
+
+	typedef X<8> Load;
+	typedef X<9> Save;
 
 	virtual void on(FavoriteHubAdded, const FavoriteHubEntryPtr&) noexcept { }
 	virtual void on(FavoriteHubRemoved, const FavoriteHubEntryPtr&) noexcept {}
 	virtual void on(FavoriteHubUpdated, const FavoriteHubEntryPtr&) noexcept { }
 	virtual void on(FavoriteHubsUpdated) noexcept { }
 
-	virtual void on(FavoriteUserAdded, const FavoriteUser&) noexcept { }
-	virtual void on(FavoriteUserRemoved, const FavoriteUser&) noexcept { }
-	virtual void on(FavoriteUserUpdated, const UserPtr&) noexcept { }
-
 	virtual void on(FavoriteDirectoriesUpdated) noexcept { }
+
+	virtual void on(Load, SimpleXML&) noexcept {}
+	virtual void on(Save, SimpleXML&) noexcept {}
 };
 
 } // namespace dcpp

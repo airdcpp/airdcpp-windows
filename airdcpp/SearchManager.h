@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,16 +19,14 @@
 #ifndef DCPLUSPLUS_DCPP_SEARCH_MANAGER_H
 #define DCPLUSPLUS_DCPP_SEARCH_MANAGER_H
 
-#include "ResourceManager.h"
 #include "SearchManagerListener.h"
-#include "SettingsManagerListener.h"
 #include "TimerManagerListener.h"
 
+#include "ActionHook.h"
 #include "AdcCommand.h"
 #include "CriticalSection.h"
 #include "GetSet.h"
 #include "Message.h"
-#include "Search.h"
 #include "Singleton.h"
 #include "Speaker.h"
 #include "UDPServer.h"
@@ -37,12 +35,9 @@
 
 namespace dcpp {
 
-#define SEARCH_TYPE_ANY "0"
-#define SEARCH_TYPE_DIRECTORY "7"
-#define SEARCH_TYPE_TTH "8"
-#define SEARCH_TYPE_FILE "9"
-
+class SearchTypes;
 class SocketException;
+class UDPServer;
 
 struct SearchQueueInfo {
 	StringSet queuedHubUrls;
@@ -50,76 +45,43 @@ struct SearchQueueInfo {
 	string error;
 };
 
-class SearchType {
-public:
-	SearchType(const string& aId, const string& aName, const StringList& aExtensions) :
-		id(aId), name(aName), extensions(aExtensions) {
-
-	}
-
-	string getDisplayName() const noexcept;
-	bool isDefault() const noexcept;
-	Search::TypeModes getTypeMode() const noexcept;
-
-	GETSET(string, id, Id);
-	GETSET(string, name, Name);
-	GETSET(StringList, extensions, Extensions);
-};
-
-class SearchManager : public Speaker<SearchManagerListener>, public Singleton<SearchManager>, private TimerManagerListener, private SettingsManagerListener
+class SearchManager : public Speaker<SearchManagerListener>, public Singleton<SearchManager>, private TimerManagerListener
 {
 public:
-	typedef map<string, SearchTypePtr> SearchTypes;
-private:
-	static ResourceManager::Strings types[Search::TYPE_LAST];
-public:
-	static const string& getTypeStr(int aType) noexcept;
-	static bool isDefaultTypeStr(const string& aType) noexcept;
-	
+	ActionHook<nullptr_t, const SearchResultPtr&> incomingSearchResultHook;
+
 	SearchQueueInfo search(const SearchPtr& aSearch) noexcept;
-	SearchQueueInfo search(StringList& aHubUrls, const SearchPtr& aSearch, void* aOwner = nullptr) noexcept;
+	SearchQueueInfo search(const StringList& aHubUrls, const SearchPtr& aSearch, void* aOwner = nullptr) noexcept;
 	
-	void respond(const AdcCommand& cmd, OnlineUser& aUser, bool isUdpActive, const string& hubIpPort, ProfileToken aProfile);
+	void respond(const AdcCommand& cmd, Client* aClient, OnlineUser* aUser, bool aIsUdpActive, ProfileToken aProfile) noexcept;
+	void respond(Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize, int aFileType, const string& aString, bool aIsPassive) noexcept;
 
 	const string& getPort() const;
 
 	void listen();
 	void disconnect() noexcept;
-	void onSR(const string& aLine, const string& aRemoteIP=Util::emptyString);
+	void onSR(const string& aLine, const string& aRemoteIP = Util::emptyString);
 
-	void onRES(const AdcCommand& cmd, const UserPtr& from, const string& remoteIp);
-	void onPSR(const AdcCommand& cmd, UserPtr from, const string& remoteIp);
-	void onPBD(const AdcCommand& cmd, const UserPtr& from);
-	AdcCommand toPSR(bool wantResponse, const string& myNick, const string& hubIpPort, const string& tth, const vector<uint16_t>& partialInfo) const;
-	AdcCommand toPBD(const string& hubIpPort, const string& bundle, const string& aTTH, bool reply, bool add, bool notify = false) const;
-
-
-	// Search types
-	static void validateSearchTypeName(const string& aName);
-	void setSearchTypeDefaults();
-	SearchTypePtr addSearchType(const string& aName, const StringList& aExtensions);
-	void delSearchType(const string& aId);
-	SearchTypePtr modSearchType(const string& aId, const optional<string>& aName, const optional<StringList>& aExtensions);
-
-	SearchTypeList getSearchTypes() const noexcept;
-
-	void getSearchType(int aPos, Search::TypeModes& type_, StringList& extList_, string& typeId_);
-	void getSearchType(const string& aId, Search::TypeModes& type_, StringList& extList_, string& name_);
-
-	SearchTypePtr getSearchType(const string& aId) const;
-	string getTypeIdByExtension(const string& aExtension, bool aDefaultsOnly = false) const noexcept;
+	void onRES(const AdcCommand& cmd, const UserPtr& aFrom, const string& aRemoteIp);
 
 	bool decryptPacket(string& x, size_t aLen, const ByteVector& aBuf);
-	static string encryptSUDP(const uint8_t* aKey, const string& aCmd);
-	static bool decryptSUDP(const uint8_t* aKey, const ByteVector& aData, size_t aDataLen, string& result_);
 
 	SearchInstancePtr createSearchInstance(const string& aOwnerId, uint64_t aExpirationTick = 0) noexcept;
 	SearchInstancePtr removeSearchInstance(SearchInstanceToken aToken) noexcept;
 	SearchInstancePtr getSearchInstance(SearchInstanceToken aToken) const noexcept;
 	SearchInstanceList getSearchInstances() const noexcept;
+
+	SearchTypes& getSearchTypes() noexcept {
+		return *searchTypes.get();
+	}
+
+	UDPServer& getUdpServer() noexcept {
+		return *udpServer.get();
+	}
 private:
-	static void testSUDP();
-	vector<pair<uint8_t*, uint64_t>> searchKeys;
+	vector<pair<std::unique_ptr<uint8_t[]>, uint64_t>> searchKeys;
+
+	string generateSUDPKey();
 
 	mutable SharedMutex cs;
 
@@ -129,24 +91,15 @@ private:
 
 	static std::string normalizeWhitespace(const std::string& aString);
 
-	~SearchManager();
-
-	string getPartsString(const PartsInfo& partsInfo) const;
+	~SearchManager() override;
 	
-	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept;
+	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
 
-	void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept;
-	void on(SettingsManagerListener::Save, SimpleXML& xml) noexcept;
+	const unique_ptr<SearchTypes> searchTypes;
+	const unique_ptr<UDPServer> udpServer;
 
-	// Search types
-	SearchTypes searchTypes; // name, extlist
-
-	UDPServer udpServer;
-
-	typedef map<SearchInstanceToken, SearchInstancePtr> SearchInstanceMap;
+	using SearchInstanceMap = map<SearchInstanceToken, SearchInstancePtr>;
 	SearchInstanceMap searchInstances;
-
-	void dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 };
 
 } // namespace dcpp

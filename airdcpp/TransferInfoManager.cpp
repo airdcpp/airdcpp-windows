@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -29,8 +29,6 @@
 #include "ThrottleManager.h"
 #include "UploadManager.h"
 
-#include <boost/range/algorithm/copy.hpp>
-
 
 namespace dcpp {
 	TransferInfoManager::TransferInfoManager() {
@@ -49,14 +47,14 @@ namespace dcpp {
 		TransferInfo::List ret;
 		{
 			RLock l(cs);
-			boost::range::copy(transfers | map_values, back_inserter(ret));
+			ranges::copy(transfers | views::values, back_inserter(ret));
 		}
 
 		return ret;
 	}
 
 	TransferInfoPtr TransferInfoManager::onTick(const Transfer* aTransfer, bool aIsDownload) noexcept {
-		auto t = findTransfer(aTransfer->getToken());
+		auto t = findTransfer(aTransfer->getConnectionToken());
 		if (!t) {
 			return nullptr;
 		}
@@ -89,7 +87,6 @@ namespace dcpp {
 
 			auto t = onTick(ul, false);
 			if (t) {
-				t->setBundle(ul->getBundle() ? ul->getBundle()->getToken() : Util::emptyString);
 				tickTransfers.push_back(t);
 			}
 		}
@@ -100,7 +97,7 @@ namespace dcpp {
 		}
 	}
 
-	void TransferInfoManager::on(DownloadManagerListener::Tick, const DownloadList& aDownloads) noexcept {
+	void TransferInfoManager::on(DownloadManagerListener::Tick, const DownloadList& aDownloads, uint64_t) noexcept {
 		TransferInfo::List tickTransfers;
 		for (const auto& dl : aDownloads) {
 			auto t = onTick(dl, true);
@@ -190,26 +187,26 @@ namespace dcpp {
 		fire(TransferInfoManagerListener::Updated(), aTransfer, aUpdatedProperties, aTick);
 	}
 
-	void TransferInfoManager::updateQueueInfo(TransferInfoPtr& aInfo) noexcept {
+	void TransferInfoManager::updateQueueInfo(const TransferInfoPtr& aInfo) noexcept {
 		if (!aInfo->isDownload()) {
 			return;
 		}
 
-		auto qi = QueueManager::getInstance()->getQueueInfo(aInfo->getHintedUser());
-		if (!qi) {
+		auto result = QueueManager::getInstance()->startDownload(aInfo->getHintedUser(), QueueDownloadType::ANY);
+		if (!result.qi) {
 			return;
 		}
 
 		auto type = Transfer::TYPE_FILE;
-		if (qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
+		if (result.qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
 			type = Transfer::TYPE_PARTIAL_LIST;
-		else if (qi->getFlags() & QueueItem::FLAG_USER_LIST)
+		else if (result.qi->getFlags() & QueueItem::FLAG_USER_LIST)
 			type = Transfer::TYPE_FULL_LIST;
 
 		aInfo->setType(type);
-		aInfo->setTarget(qi->getTarget());
-		aInfo->setSize(qi->getSize());
-		aInfo->setQueueToken(qi->getToken());
+		aInfo->setTarget(result.qi->getTarget());
+		aInfo->setSize(result.qi->getSize());
+		aInfo->setQueueToken(result.qi->getToken());
 	}
 
 	void TransferInfoManager::on(ConnectionManagerListener::Connecting, const ConnectionQueueItem* aCqi) noexcept {
@@ -239,7 +236,10 @@ namespace dcpp {
 			return;
 		}
 
-		t->setState(TransferInfo::STATE_WAITING);
+		if (t->getState() != TransferInfo::STATE_RUNNING) {
+			t->setState(TransferInfo::STATE_WAITING);
+		}
+
 		t->setStatusString(STRING(CONNECTING_FORCED));
 		onTransferUpdated(t, TransferInfo::UpdateFlags::STATUS | TransferInfo::UpdateFlags::STATE);
 	}
@@ -255,7 +255,7 @@ namespace dcpp {
 	}
 
 	void TransferInfoManager::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept {
-		auto t = findTransfer(aDownload->getToken());
+		auto t = findTransfer(aDownload->getConnectionToken());
 		if (!t) {
 			return;
 		}
@@ -282,9 +282,13 @@ namespace dcpp {
 		aInfo->setIp(aTransfer->getUserConnection().getRemoteIp());
 		aInfo->setEncryption(aTransfer->getUserConnection().getEncryptionInfo());
 
-		OrderedStringSet flags;
-		aTransfer->appendFlags(flags);
-		aInfo->setFlags(flags);
+		{
+			OrderedStringSet flags;
+			aTransfer->appendFlags(flags);
+			aInfo->setFlags(flags);
+		}
+
+		aInfo->setSupports(aTransfer->getUserConnection().getSupports().getAll());
 
 		onTransferUpdated(
 			aInfo,
@@ -292,7 +296,8 @@ namespace dcpp {
 			TransferInfo::UpdateFlags::BYTES_TRANSFERRED | TransferInfo::UpdateFlags::TIME_STARTED |
 			TransferInfo::UpdateFlags::SIZE | TransferInfo::UpdateFlags::TARGET | TransferInfo::UpdateFlags::STATE |
 			TransferInfo::UpdateFlags::QUEUE_ID | TransferInfo::UpdateFlags::TYPE |
-			TransferInfo::UpdateFlags::IP | TransferInfo::UpdateFlags::ENCRYPTION | TransferInfo::UpdateFlags::FLAGS
+			TransferInfo::UpdateFlags::IP | TransferInfo::UpdateFlags::ENCRYPTION | TransferInfo::UpdateFlags::FLAGS | 
+			TransferInfo::UpdateFlags::SUPPORTS
 		);
 
 
@@ -303,8 +308,22 @@ namespace dcpp {
 		starting(aDownload, STRING(REQUESTING), true);
 	}
 
+	void TransferInfoManager::on(DownloadManagerListener::Idle, const UserConnection* aConn, const string& aError) noexcept {
+		if (aError.empty()) {
+			return;
+		}
+
+		auto t = findTransfer(aConn->getToken());
+		if (!t) {
+			return;
+		}
+
+		t->setStatusString(aError);
+		onTransferUpdated(t, TransferInfo::UpdateFlags::STATUS);
+	}
+
 	void TransferInfoManager::starting(const Download* aDownload, const string& aStatus, bool aFullUpdate) noexcept {
-		auto t = findTransfer(aDownload->getToken());
+		auto t = findTransfer(aDownload->getConnectionToken());
 		if (!t) {
 			return;
 		}
@@ -339,12 +358,11 @@ namespace dcpp {
 	}
 
 	void TransferInfoManager::on(UploadManagerListener::Starting, const Upload* aUpload) noexcept {
-		auto t = findTransfer(aUpload->getToken());
+		auto t = findTransfer(aUpload->getConnectionToken());
 		if (!t) {
 			return;
 		}
 
-		t->setBundle(aUpload->getBundle() ? aUpload->getBundle()->getToken() : Util::emptyString);
 		starting(t, aUpload);
 	}
 
@@ -354,9 +372,9 @@ namespace dcpp {
 		return i != transfers.end() ? i->second : nullptr;
 	}
 
-	TransferInfoPtr TransferInfoManager::findTransfer(TransferToken aToken) const noexcept {
+	TransferInfoPtr TransferInfoManager::findTransfer(TransferInfoToken aToken) const noexcept {
 		RLock l(cs);
-		auto ret = boost::find_if(transfers | map_values, [&](const TransferInfoPtr& aInfo) {
+		auto ret = ranges::find_if(transfers | views::values, [&](const TransferInfoPtr& aInfo) {
 			return aInfo->getToken() == aToken;
 		});
 
@@ -376,7 +394,7 @@ namespace dcpp {
 	}
 
 	void TransferInfoManager::onTransferCompleted(const Transfer* aTransfer, bool aIsDownload) noexcept {
-		auto t = findTransfer(aTransfer->getToken());
+		auto t = findTransfer(aTransfer->getConnectionToken());
 		if (!t) {
 			return;
 		}

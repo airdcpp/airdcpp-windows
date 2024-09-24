@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -27,17 +27,18 @@ namespace dcpp {
 class UDPServer : public Thread, public CommandHandler<UDPServer> {
 public:
 	UDPServer();
-	virtual ~UDPServer();
+	~UDPServer() override;
 
 	const string& getPort() const { return port; }
 	void disconnect();
 	void listen();
 
 
+	void addTask(Callback&& aTask) noexcept;
 private:
 	friend class CommandHandler<UDPServer>;
 
-	virtual int run();
+	int run() override;
 
 	std::unique_ptr<Socket> socket;
 	string port;
@@ -48,14 +49,6 @@ private:
 
 	// Search results
 	void handle(AdcCommand::RES, AdcCommand& c, const string& aRemoteIp) noexcept;
-
-	// Partial sharing
-	void handle(AdcCommand::PSR, AdcCommand& c, const string& aRemoteIp) noexcept;
-	void handle(AdcCommand::PBD, AdcCommand& c, const string& aRemoteIp) noexcept;
-
-	// Upload bundles
-	void handle(AdcCommand::UBD, AdcCommand& c, const string& aRemoteIp) noexcept;
-	void handle(AdcCommand::UBN, AdcCommand& c, const string& aRemoteIp) noexcept;
 
 	// Ignore any other ADC commands for now
 	template<typename T> void handle(T, AdcCommand&, const string&) { }

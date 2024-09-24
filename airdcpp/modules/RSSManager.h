@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2012-2021 AirDC++ Project
+* Copyright (C) 2012-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -36,6 +36,7 @@
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/StringMatch.h>
+#include <airdcpp/ValueGenerator.h>
 
 #include <airdcpp/TimerManager.h>
 
@@ -87,7 +88,7 @@ public:
 			updateInterval = 10;
 
 		if (token == 0)
-			token = Util::randInt(10);
+			token = ValueGenerator::randInt(10);
 
 		rssDownload.reset();
 	}
@@ -97,7 +98,7 @@ public:
 		updateInterval = 60;
 
 		if (token == 0)
-			token = Util::randInt(10);
+			token = ValueGenerator::randInt(10);
 
 		rssDownload.reset();
 	}

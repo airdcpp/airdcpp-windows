@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -46,6 +46,12 @@ public:
 	static void sleep(uint64_t millis) {
 		::Sleep(static_cast<DWORD>(millis));
 	}
+
+	typedef HANDLE ThreadHandleType;
+
+#ifdef _DEBUG
+	bool isCurrentThread() const noexcept;
+#endif
 #else
 	enum Priority {
 		IDLE = 19,
@@ -60,8 +66,9 @@ public:
 	static void sleep(uint32_t millis) {
 		::usleep(millis * 1000);
 	}
-#endif
 
+	typedef pthread_t ThreadHandleType;
+#endif
 	Thread();
 	virtual ~Thread();
 
@@ -82,17 +89,17 @@ public:
 	static void yield();
 protected:
 	virtual int run() = 0;
-	
-#ifdef _WIN32
-	HANDLE threadHandle;
 
+	ThreadHandleType threadHandle;
+#ifdef _WIN32
+
+	DWORD threadId;
 	static unsigned int WINAPI starter(void* p);
 #else
 	pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 	pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 	bool suspended = false;
 
-	pthread_t threadHandle;
 	static void* starter(void* p);
 #endif
 };

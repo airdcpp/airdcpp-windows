@@ -4,7 +4,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -23,13 +23,12 @@
 #include "CriticalSection.h"
 #include "File.h"
 #include "GetSet.h"
-#include "Thread.h"
 
 namespace dcpp {
 
 struct SharedFileHandle : File {
 	SharedFileHandle(const string& aPath, int access, int mode);
-	~SharedFileHandle() noexcept { }
+	~SharedFileHandle() noexcept = default;
 
 	CriticalSection cs;
 	int	ref_cnt;
@@ -41,15 +40,15 @@ class SharedFileStream : public IOStream
 {
 
 public:
-	typedef unordered_map<string, unique_ptr<SharedFileHandle>, noCaseStringHash, noCaseStringEq> SharedFileHandleMap;
+	using SharedFileHandleMap = unordered_map<string, unique_ptr<SharedFileHandle>, noCaseStringHash, noCaseStringEq>;
 
     SharedFileStream(const string& aFileName, int access, int mode);
-    ~SharedFileStream();
+    ~SharedFileStream() override;
 
 	size_t write(const void* buf, size_t len) override;
 	size_t read(void* buf, size_t& len) override;
 
-	int64_t getSize() const noexcept;
+	int64_t getSize() const noexcept override;
 	void setSize(int64_t newSize);
 
 	size_t flushBuffers(bool aForce) override;

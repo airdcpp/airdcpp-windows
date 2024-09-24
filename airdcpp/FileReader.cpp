@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -23,8 +23,10 @@
 #include "debug.h"
 #include "File.h"
 #include "Exception.h"
+#include "PathUtil.h"
 #include "Text.h"
 #include "Util.h"
+#include "SystemUtil.h"
 
 namespace dcpp {
 
@@ -74,7 +76,7 @@ size_t FileReader::readSync(const string& aPath, const DataCallback& callback) {
 #ifdef POSIX_FADV_DONTNEED
 		// Allow read bytes to be purged from the memory cache
 		if (posix_fadvise(f.getNativeHandle(), total, n, POSIX_FADV_DONTNEED) != 0) {
-			throw FileException(Util::translateError(errno));
+			throw FileException(SystemUtil::translateError(errno));
 		}
 #endif
 
@@ -115,8 +117,8 @@ size_t FileReader::readAsync(const string& aPath, const DataCallback& callback) 
 
 	auto tfile = Text::toT(aPath);
 
-	if (!::GetDiskFreeSpace(Util::getFilePath(tfile).c_str(), &y, &sector, &y, &y)) {
-		dcdebug("Failed to get sector size: %s\n", Util::translateError(::GetLastError()).c_str());
+	if (!::GetDiskFreeSpace(PathUtil::getFilePath(tfile).c_str(), &y, &sector, &y, &y)) {
+		dcdebug("Failed to get sector size: %s\n", SystemUtil::translateError(::GetLastError()).c_str());
 		return READ_FAILED;
 	}
 
@@ -124,7 +126,7 @@ size_t FileReader::readAsync(const string& aPath, const DataCallback& callback) 
 		FILE_FLAG_NO_BUFFERING | FILE_FLAG_OVERLAPPED, NULL);
 
 	if (tmp == INVALID_HANDLE_VALUE) {
-		dcdebug("Failed to open unbuffered file: %s\n", Util::translateError(::GetLastError()).c_str());
+		dcdebug("Failed to open unbuffered file: %s\n", SystemUtil::translateError(::GetLastError()).c_str());
 		return READ_FAILED;
 	}
 
@@ -147,7 +149,7 @@ size_t FileReader::readAsync(const string& aPath, const DataCallback& callback) 
 
 	if(!res && err != ERROR_IO_PENDING) {
 		if(err != ERROR_HANDLE_EOF) {
-			dcdebug("First overlapped read failed: %s\n", Util::translateError(::GetLastError()).c_str());
+			dcdebug("First overlapped read failed: %s\n", SystemUtil::translateError(::GetLastError()).c_str());
 			return READ_FAILED;
 		}
 
@@ -158,7 +160,7 @@ size_t FileReader::readAsync(const string& aPath, const DataCallback& callback) 
 	if(!GetOverlappedResult(h, &over, &hn, TRUE)) {
 		err = ::GetLastError();
 		if(err != ERROR_HANDLE_EOF) {
-			dcdebug("First overlapped read failed: %s\n", Util::translateError(::GetLastError()).c_str());
+			dcdebug("First overlapped read failed: %s\n", SystemUtil::translateError(::GetLastError()).c_str());
 			return READ_FAILED;
 		}
 	}
@@ -175,7 +177,7 @@ size_t FileReader::readAsync(const string& aPath, const DataCallback& callback) 
 
 		if (!res && err != ERROR_IO_PENDING) {
 			if(err != ERROR_HANDLE_EOF) {
-				throw FileException(Util::translateError(err));
+				throw FileException(SystemUtil::translateError(err));
 			}
 
 			rn = 0;
@@ -184,7 +186,7 @@ size_t FileReader::readAsync(const string& aPath, const DataCallback& callback) 
 			if (!GetOverlappedResult(h, &over, &rn, TRUE)) {
 				err = ::GetLastError();
 				if(err != ERROR_HANDLE_EOF) {
-					throw FileException(Util::translateError(err));
+					throw FileException(SystemUtil::translateError(err));
 				}
 
 				rn = 0;

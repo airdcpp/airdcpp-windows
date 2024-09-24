@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -75,6 +75,9 @@ public:
 	inline size_t count() const { return patterns.size(); }
 	inline bool empty() const { return patterns.empty(); }
 	inline const PatternList& getPatterns() const { return patterns; }
+
+	string toString() const noexcept;
+	StringList toStringList() const noexcept;
 private:
 	PatternList patterns;
 };

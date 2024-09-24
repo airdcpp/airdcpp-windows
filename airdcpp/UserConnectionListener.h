@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -39,6 +39,7 @@ public:
 	typedef X<6> Direction;
 	typedef X<7> Get;
 	typedef X<8> PrivateMessage;
+	typedef X<9> UserSet;
 	typedef X<12> Send;
 	typedef X<13> GetListLength;
 	typedef X<14> MaxedOut;
@@ -48,7 +49,8 @@ public:
 	typedef X<18> Supports;
 	typedef X<19> ProtocolError;
 	typedef X<20> FileNotAvailable;
-	typedef X<21> ListLength; 
+	typedef X<21> ListLength;
+	typedef X<22> State;
 
 	virtual void on(BytesSent, UserConnection*, size_t, size_t) noexcept { }
 	virtual void on(Connected, UserConnection*) noexcept { }
@@ -69,6 +71,8 @@ public:
 	virtual void on(FileNotAvailable, UserConnection*) noexcept { }
 	virtual void on(ListLength, UserConnection*, const string&) noexcept { }
 	virtual void on(PrivateMessage, UserConnection*, const ChatMessagePtr&) noexcept{}
+	virtual void on(UserSet, UserConnection*) noexcept {}
+	virtual void on(State, UserConnection*) noexcept {}
 
 	virtual void on(AdcCommand::SUP, UserConnection*, const AdcCommand&) noexcept { }
 	virtual void on(AdcCommand::INF, UserConnection*, const AdcCommand&) noexcept { }

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -19,10 +19,9 @@
 #include "stdinc.h"
 #include "SharePathValidator.h"
 
-#include "AirUtil.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "QueueManager.h"
-#include "ShareManager.h"
 #include "SimpleXML.h"
 
 #ifdef _WIN32
@@ -53,7 +52,7 @@ bool SharePathValidator::matchSkipList(const string& aName) const noexcept {
 	return skipList.match(aName); 
 }
 
-StringSet forbiddenExtension = {
+const StringSet forbiddenExtension = {
 	".dctmp",
 	".tmp",
 	".temp",
@@ -65,7 +64,7 @@ StringSet forbiddenExtension = {
 };
 
 void SharePathValidator::checkSharedName(const string& aPath, bool aIsDir, int64_t aFileSize /*0*/) const {
-	const auto name = aIsDir ? Util::getLastDir(aPath) : Util::getFileName(aPath);
+	const auto name = aIsDir ? PathUtil::getLastDir(aPath) : PathUtil::getFileName(aPath);
 
 	if (matchSkipList(name)) {
 		throw ShareValidatorException(STRING(SKIPLIST_SHARE_MATCH), ShareValidatorErrorType::TYPE_CONFIG_ADJUSTABLE);
@@ -80,7 +79,7 @@ void SharePathValidator::checkSharedName(const string& aPath, bool aIsDir, int64
 		}
 
 		// Check for forbidden file extensions
-		if (SETTING(REMOVE_FORBIDDEN) && forbiddenExtension.find(Text::toLower(Util::getFileExt(name))) != forbiddenExtension.end()) {
+		if (SETTING(REMOVE_FORBIDDEN) && forbiddenExtension.contains(Text::toLower(PathUtil::getFileExt(name)))) {
 			throw ShareValidatorException(STRING(FORBIDDEN_FILE_EXT), ShareValidatorErrorType::TYPE_CONFIG_BOOLEAN);
 		}
 
@@ -113,15 +112,11 @@ void SharePathValidator::setExcludedPaths(const StringSet& aPaths) noexcept {
 	excludedPaths = aPaths;
 }
 
-void SharePathValidator::addExcludedPath(const string& aPath) {
+void SharePathValidator::addExcludedPath(const string& aPath, const StringList& aRootPaths) {
 
 	{
 		// Make sure this is a sub folder of a shared folder
-
-		StringList rootPaths;
-		ShareManager::getInstance()->getRootPaths(rootPaths);
-
-		if (boost::find_if(rootPaths, [&aPath](const string& aRootPath) { return AirUtil::isSubLocal(aPath, aRootPath); }) == rootPaths.end()) {
+		if (ranges::none_of(aRootPaths, [&aPath](const string& aRootPath) { return PathUtil::isSubLocal(aPath, aRootPath); })) {
 			throw ShareException(STRING(PATH_NOT_SHARED));
 		}
 	}
@@ -132,13 +127,13 @@ void SharePathValidator::addExcludedPath(const string& aPath) {
 		WLock l(cs);
 
 		// Subfolder of an already excluded folder?
-		if (boost::find_if(excludedPaths, [&aPath](const string& aExcludedPath) { return AirUtil::isParentOrExactLocal(aExcludedPath, aPath); }) != excludedPaths.end()) {
+		if (ranges::find_if(excludedPaths, [&aPath](const string& aExcludedPath) { return PathUtil::isParentOrExactLocal(aExcludedPath, aPath); }) != excludedPaths.end()) {
 			throw ShareException(STRING(PATH_ALREADY_EXCLUDED));
 		}
 
 		// No use for excluded subfolders of this path
 		copy_if(excludedPaths.begin(), excludedPaths.end(), back_inserter(toRemove), [&aPath](const string& aExcluded) {
-			return AirUtil::isSubLocal(aExcluded, aPath);
+			return PathUtil::isSubLocal(aExcluded, aPath);
 		});
 
 		excludedPaths.insert(aPath);
@@ -162,14 +157,14 @@ bool SharePathValidator::removeExcludedPath(const string& aPath) noexcept {
 
 bool SharePathValidator::isExcluded(const string& aPath) const noexcept {
 	RLock l(cs);
-	return excludedPaths.find(aPath) != excludedPaths.end();
+	return excludedPaths.contains(aPath);
 }
 
 void SharePathValidator::loadExcludes(SimpleXML& aXml) noexcept {
 	if (aXml.findChild("NoShare")) {
 		aXml.stepIn();
 		while (aXml.findChild("Directory")) {
-			auto path = aXml.getChildData();
+			const auto& path = aXml.getChildData();
 
 			excludedPaths.insert(path);
 		}
@@ -191,7 +186,7 @@ void SharePathValidator::saveExcludes(SimpleXML& aXml) const noexcept {
 	aXml.stepOut();
 }
 
-void SharePathValidator::validateHooked(const FileItemInfoBase& aFileItem, const string& aPath, bool aSkipQueueCheck, const void* aCaller, bool aIsNew, bool aNewParent) const {
+void SharePathValidator::validateHooked(const FileItemInfoBase& aFileItem, const string& aPath, bool aSkipQueueCheck, CallerPtr aCaller, bool aIsNew, bool aNewParent) const {
 	if (!SETTING(SHARE_HIDDEN) && aFileItem.isHidden()) {
 		throw ShareValidatorException("File is hidden", ShareValidatorErrorType::TYPE_CONFIG_BOOLEAN);
 	}
@@ -259,7 +254,7 @@ void SharePathValidator::validateRootPath(const string& aRealPath) const {
 	}
 #endif
 
-	if (aRealPath == Util::getAppFilePath() || aRealPath == Util::getPath(Util::PATH_USER_CONFIG) || aRealPath == Util::getPath(Util::PATH_USER_LOCAL)) {
+	if (aRealPath == AppUtil::getAppFilePath() || aRealPath == AppUtil::getPath(AppUtil::PATH_USER_CONFIG) || aRealPath == AppUtil::getPath(AppUtil::PATH_USER_LOCAL)) {
 		throw ShareException(STRING(DONT_SHARE_APP_DIRECTORY));
 	}
 }
@@ -271,7 +266,7 @@ void SharePathValidator::reloadSkiplist() {
 	skipList.prepare();
 }
 
-void SharePathValidator::validateNewDirectoryPathTokensHooked(const string& aBasePath, const StringList& aNewTokens, bool aSkipQueueCheck, const void* aCaller) const {
+void SharePathValidator::validateNewDirectoryPathTokensHooked(const string& aBasePath, const StringList& aNewTokens, bool aSkipQueueCheck, CallerPtr aCaller) const {
 	if (aNewTokens.empty()) {
 		return;
 	}
@@ -285,7 +280,7 @@ void SharePathValidator::validateNewDirectoryPathTokensHooked(const string& aBas
 	}
 }
 
-void SharePathValidator::validateNewPathHooked(const string& aPath, bool aSkipQueueCheck, bool aNewParent, const void* aCaller) const {
+void SharePathValidator::validateNewPathHooked(const string& aPath, bool aSkipQueueCheck, bool aNewParent, CallerPtr aCaller) const {
 	FileItem f(aPath);
 	validateHooked(f, aPath, aSkipQueueCheck, aCaller, true, aNewParent);
 }

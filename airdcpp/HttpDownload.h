@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -30,17 +30,16 @@ struct HttpDownload : private HttpConnectionListener, private boost::noncopyable
 	HttpConnection* c;
 	string buf;
 	string status;
-	typedef std::function<void ()> CompletionF;
+	using CompletionF = std::function<void ()>;
 	CompletionF f;
 
-	explicit HttpDownload(const string& address, CompletionF f, const HttpOptions& aOptions = HttpOptions());
-	~HttpDownload();
+	explicit HttpDownload(const string& address, CompletionF&& f, const HttpOptions& aOptions = HttpOptions());
+	~HttpDownload() override;
 
 	// HttpConnectionListener
-	void on(HttpConnectionListener::Data, HttpConnection*, const uint8_t* buf_, size_t len) noexcept;
-	void on(HttpConnectionListener::Failed, HttpConnection*, const string& status_) noexcept;
-	void on(HttpConnectionListener::Complete, HttpConnection*, const string& status_) noexcept;
-	void on(HttpConnectionListener::Retried, HttpConnection*, bool connected) noexcept;
+	void on(HttpConnectionListener::Data, HttpConnection*, const uint8_t* buf_, size_t len) noexcept override;
+	void on(HttpConnectionListener::Failed, HttpConnection*, const string& status_) noexcept override;
+	void on(HttpConnectionListener::Complete, HttpConnection*, const string& status_) noexcept override;
 };
 
 } // namespace dcpp

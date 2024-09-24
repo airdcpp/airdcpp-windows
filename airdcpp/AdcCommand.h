@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -33,6 +33,8 @@ public:
 	struct Type {
 		enum { CMD = T };
 	};
+
+	typedef multimap<string, string> ParamMap;
 
 	enum Error {
 		SUCCESS = 0,
@@ -85,44 +87,46 @@ public:
 	static const char TYPE_HUB = 'H';
 	static const char TYPE_UDP = 'U';
 
-#define C(n, a, b, c) static const uint32_t CMD_##n = (((uint32_t)a) | (((uint32_t)b)<<8) | (((uint32_t)c)<<16)); typedef Type<CMD_##n> n
+#define ADC_CMD(n, a, b, c) static const uint32_t CMD_##n = (((uint32_t)a) | (((uint32_t)b)<<8) | (((uint32_t)c)<<16)); using n = AdcCommand::Type<CMD_##n>
 	// Base commands
-	C(SUP, 'S','U','P');
-	C(STA, 'S','T','A');
-	C(INF, 'I','N','F');
-	C(MSG, 'M','S','G');
-	C(SCH, 'S','C','H');
-	C(RES, 'R','E','S');
-	C(CTM, 'C','T','M');
-	C(RCM, 'R','C','M');
-	C(GPA, 'G','P','A');
-	C(PAS, 'P','A','S');
-	C(QUI, 'Q','U','I');
-	C(GET, 'G','E','T');
-	C(GFI, 'G','F','I');
-	C(SND, 'S','N','D');
-	C(SID, 'S','I','D');
-	// Extensions
-	C(CMD, 'C','M','D');
-	C(NAT, 'N','A','T');
-	C(RNT, 'R','N','T');
-	C(PSR, 'P','S','R');
-	C(ZON, 'Z','O','N');
-	C(ZOF, 'Z','O','F');
-	C(PBD, 'P','B','D');
-	C(UBD, 'U','B','D');
-	C(UBN, 'U','B','N');
-	C(TCP, 'T','C','P');
-	C(PMI, 'P', 'M', 'I');
-#undef C
+	ADC_CMD(SUP, 'S','U','P');
+	ADC_CMD(STA, 'S','T','A');
+	ADC_CMD(INF, 'I','N','F');
+	ADC_CMD(MSG, 'M','S','G');
+	ADC_CMD(SCH, 'S','C','H');
+	ADC_CMD(RES, 'R','E','S');
+	ADC_CMD(CTM, 'C','T','M');
+	ADC_CMD(RCM, 'R','C','M');
+	ADC_CMD(GPA, 'G','P','A');
+	ADC_CMD(PAS, 'P','A','S');
+	ADC_CMD(QUI, 'Q','U','I');
+	ADC_CMD(GET, 'G','E','T');
+	ADC_CMD(GFI, 'G','F','I');
+	ADC_CMD(SND, 'S','N','D');
+	ADC_CMD(SID, 'S','I','D');
 
-	static const uint32_t HUB_SID = 0xffffffff;		// No client will have this sid
+	// Extensions
+	ADC_CMD(CMD, 'C','M','D');
+
+	ADC_CMD(NAT, 'N','A','T');
+	ADC_CMD(RNT, 'R','N','T');
+
+	ADC_CMD(ZON, 'Z','O','N');
+	ADC_CMD(ZOF, 'Z','O','F');
+
+	ADC_CMD(TCP, 'T','C','P');
+
+	ADC_CMD(PMI, 'P', 'M', 'I');
+
+	using CommandType = uint32_t;
+
+	static const dcpp::SID HUB_SID = 0xffffffff;		// No client will have this sid
 
 	static uint32_t toFourCC(const char* x) noexcept { return *reinterpret_cast<const uint32_t*>(x); }
 	static std::string fromFourCC(uint32_t x) noexcept { return std::string(reinterpret_cast<const char*>(&x), sizeof(x)); }
 
 	explicit AdcCommand(uint32_t aCmd, char aType = TYPE_CLIENT) noexcept;
-	explicit AdcCommand(uint32_t aCmd, const uint32_t aTarget, char aType) noexcept;
+	explicit AdcCommand(uint32_t aCmd, dcpp::SID aTarget, char aType) noexcept;
 	explicit AdcCommand(Severity sev, Error err, const string& desc, char aType = TYPE_CLIENT) noexcept;
 
 	// Throws ParseException on errors
@@ -139,12 +143,18 @@ public:
 	const string& getFeatures() const noexcept { return features; }
 	AdcCommand& setFeatures(const string& feat) noexcept { features = feat; return *this; }
 
+	enum class FeatureType {
+		REQUIRED,
+		EXCLUDED,
+	};
+	AdcCommand& addFeature(const string& feat, FeatureType aType) noexcept;
+
 	StringList& getParameters() noexcept { return parameters; }
 	const StringList& getParameters() const noexcept { return parameters; }
 
 	string toString() const noexcept;
 	string toString(const CID& aCID) const noexcept;
-	string toString(uint32_t sid, bool nmdc = false) const noexcept;
+	string toString(dcpp::SID sid, bool nmdc = false) const noexcept;
 
 	AdcCommand& addParam(const string& name, const string& value) noexcept {
 		parameters.push_back(name);
@@ -155,27 +165,30 @@ public:
 		parameters.push_back(str);
 		return *this;
 	}
+	AdcCommand& addParams(const ParamMap& aParams) noexcept;
 	const string& getParam(size_t n) const noexcept;
 	/** Return a named parameter where the name is a two-letter code */
 	bool getParam(const char* name, size_t start, string& ret) const noexcept;
 	bool getParam(const char* name, size_t start, StringList& ret) const noexcept;
 	bool hasFlag(const char* name, size_t start) const noexcept;
 	static uint16_t toCode(const char* x) noexcept { return *((uint16_t*)x); }
+	static CommandType toCommand(const string& aCmd) noexcept;
 
 	bool operator==(uint32_t aCmd) const noexcept { return cmdInt == aCmd; }
 
 	static string escape(const string& str, bool old) noexcept;
-	uint32_t getTo() const noexcept { return to; }
-	AdcCommand& setTo(const uint32_t sid) noexcept { to = sid; return *this; }
-	uint32_t getFrom() const noexcept { return from; }
-	void setFrom(const uint32_t sid) noexcept { from = sid; }
+	dcpp::SID getTo() const noexcept { return to; }
+	AdcCommand& setTo(const dcpp::SID sid) noexcept { to = sid; return *this; }
+	dcpp::SID getFrom() const noexcept { return from; }
+	void setFrom(const dcpp::SID sid) noexcept { from = sid; }
+	static bool isValidType(char aType) noexcept;
 
-	static uint32_t toSID(const string& aSID) noexcept { return *reinterpret_cast<const uint32_t*>(aSID.data()); }
-	static string fromSID(const uint32_t aSID) noexcept { return string(reinterpret_cast<const char*>(&aSID), sizeof(aSID)); }
+	static dcpp::SID toSID(const string& aSID) noexcept { return *reinterpret_cast<const dcpp::SID*>(aSID.data()); }
+	static string fromSID(dcpp::SID aSID) noexcept { return string(reinterpret_cast<const char*>(&aSID), sizeof(aSID)); }
 private:
 	string getHeaderString(const CID& cid) const noexcept;
 	string getHeaderString() const noexcept;
-	string getHeaderString(uint32_t sid, bool nmdc) const noexcept;
+	string getHeaderString(dcpp::SID sid, bool nmdc) const noexcept;
 	string getParamString(bool nmdc) const noexcept;
 	StringList parameters;
 	string features;
@@ -184,8 +197,8 @@ private:
 		uint8_t cmd[4];
 		uint32_t cmdInt;
 	};
-	uint32_t from = 0;
-	uint32_t to = 0;
+	dcpp::SID from = 0;
+	dcpp::SID to = 0;
 	char type;
 
 };
@@ -193,52 +206,56 @@ private:
 template<class T>
 class CommandHandler {
 public:
-	inline void dispatch(const string& aLine) noexcept {
-		dispatch(aLine, false);
+	using OnCommandParsedF = std::function<void (const AdcCommand &)>;
+	inline void dispatch(const string& aLine, OnCommandParsedF&& aOnCommandParsedF) noexcept {
+		dispatch(aLine, false, std::move(aOnCommandParsedF));
 	}
 
 	template<typename... ArgT>
-	void dispatch(const string& aLine, bool aNmdc, ArgT&&... args) noexcept {
+	void dispatch(const string& aLine, bool aNmdc, const OnCommandParsedF& aOnCommandParsedF, ArgT&&... args) noexcept {
 		try {
 			AdcCommand c(aLine, aNmdc);
-
-#define C(n) case AdcCommand::CMD_##n: ((T*)this)->handle(AdcCommand::n(), c, std::forward<ArgT>(args)...); break;
-			switch(c.getCommand()) {
-				C(SUP);
-				C(STA);
-				C(INF);
-				C(MSG);
-				C(SCH);
-				C(RES);
-				C(CTM);
-				C(RCM);
-				C(GPA);
-				C(PAS);
-				C(QUI);
-				C(GET);
-				C(GFI);
-				C(SND);
-				C(SID);
-				C(CMD);
-				C(NAT);
-				C(RNT);
-				C(PSR);
-				C(PBD);
-				C(ZON);
-				C(ZOF);
-				C(TCP);
-				C(PMI);
-				C(UBN);
-				C(UBD);
-			default: 
-				dcdebug("Unknown ADC command: %.50s\n", aLine.c_str());
-				break;
-	#undef C
-	
+			if (!aNmdc && aOnCommandParsedF) {
+				aOnCommandParsedF(c);
 			}
-		} catch(const ParseException&) {
+
+			dispatch(c, std::forward<ArgT>(args)...);
+		} catch (const ParseException&) {
 			dcdebug("Invalid ADC command: %.50s\n", aLine.c_str());
 			return;
+		}
+	}
+
+	template<typename... ArgT>
+	void dispatch(AdcCommand& aCmd, ArgT&&... args) noexcept {
+#define C(n) case AdcCommand::CMD_##n: ((T*)this)->handle(AdcCommand::n(), aCmd, std::forward<ArgT>(args)...); break
+		switch(aCmd.getCommand()) {
+			C(SUP);
+			C(STA);
+			C(INF);
+			C(MSG);
+			C(SCH);
+			C(RES);
+			C(CTM);
+			C(RCM);
+			C(GPA);
+			C(PAS);
+			C(QUI);
+			C(GET);
+			C(GFI);
+			C(SND);
+			C(SID);
+			C(CMD);
+			C(NAT);
+			C(RNT);
+			C(ZON);
+			C(ZOF);
+			C(TCP);
+			C(PMI);
+		default: 
+			dcdebug("Unknown ADC command: %.50s\n", aCmd.toString().c_str());
+			break;
+#undef C
 		}
 	}
 };

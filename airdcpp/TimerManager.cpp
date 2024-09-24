@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,6 +20,11 @@
 #include "TimerManager.h"
 
 #include <boost/date_time/posix_time/ptime.hpp>
+
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
+
 
 namespace dcpp {
 
@@ -75,6 +80,10 @@ int TimerManager::run() {
 uint64_t TimerManager::getTick() {
 	static ptime start = microsec_clock::universal_time();
 	return (microsec_clock::universal_time() - start).total_milliseconds();
+}
+
+time_t TimerManager::getTime() {
+	return (time_t)time(NULL); 
 }
 
 time_t TimerManager::getStartTime() noexcept {

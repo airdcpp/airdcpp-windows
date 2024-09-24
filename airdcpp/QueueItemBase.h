@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -31,18 +31,10 @@ namespace dcpp {
 
 using std::string;
 
-typedef uint32_t QueueToken;
-typedef unordered_set<QueueToken> QueueTokenSet;
 class QueueItemBase : public Flags {
 public:
-	enum DownloadType {
-		TYPE_NONE,
-		TYPE_ANY,
-		TYPE_SMALL,
-		TYPE_MCN_NORMAL
-	};
-
 	QueueItemBase(const string& aTarget, int64_t aSize, Priority aPriority, time_t aAdded, QueueToken aToken, Flags::MaskType aFlags);
+	virtual ~QueueItemBase() = default;
 
 	const DownloadList& getDownloads() { return downloads; }
 

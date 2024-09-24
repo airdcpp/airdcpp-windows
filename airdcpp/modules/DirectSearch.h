@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -19,14 +19,14 @@
 #ifndef DCPLUSPLUS_DCPP_DIRECT_SEARCH_H
 #define DCPLUSPLUS_DCPP_DIRECT_SEARCH_H
 
-#include "forward.h"
+#include <airdcpp/forward.h>
 
-#include "ClientManagerListener.h"
-#include "SearchManagerListener.h"
+#include <airdcpp/ClientManagerListener.h>
+#include <airdcpp/SearchManagerListener.h>
 
-#include "GetSet.h"
-#include "SearchResult.h"
-#include "TimerManager.h"
+#include <airdcpp/GetSet.h>
+#include <airdcpp/SearchResult.h>
+#include <airdcpp/TimerManager.h>
 
 namespace dcpp {
 
@@ -36,7 +36,7 @@ namespace dcpp {
 	public:
 
 		DirectSearch(const HintedUser& aUser, const SearchPtr& aSearch, uint64_t aNoResultTimeout = 5000);
-		~DirectSearch();
+		~DirectSearch() override;
 
 		size_t getResultCount() const noexcept { return results.size(); }
 
@@ -52,10 +52,10 @@ namespace dcpp {
 			return timedOut;
 		}
 	private:
-		void on(SearchManagerListener::SR, const SearchResultPtr& aSR) noexcept;
+		void on(SearchManagerListener::SR, const SearchResultPtr& aSR) noexcept override;
 
 		// ClientManagerListener
-		void on(ClientManagerListener::DirectSearchEnd, const string& aToken, int resultCount) noexcept;
+		void on(ClientManagerListener::DirectSearchEnd, const string& aToken, int aResultCount) noexcept override;
 
 		void removeListeners() noexcept;
 

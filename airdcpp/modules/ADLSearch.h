@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -24,9 +24,8 @@
 #ifndef DCPLUSPLUS_DCPP_A_D_L_SEARCH_H
 #define DCPLUSPLUS_DCPP_A_D_L_SEARCH_H
 
-#include <airdcpp/DirectoryListing.h>
+#include <airdcpp/DirectoryListingDirectory.h>
 #include <airdcpp/Message.h>
-// #include <airdcpp/StringSearch.h>
 #include <airdcpp/Singleton.h>
 #include <airdcpp/StringMatch.h>
 
@@ -42,13 +41,13 @@ public:
 	ADLSearch();								 
 
 	// Active search
-	bool isActive;
+	bool isActive = true;
 
 	// Some Comment
 	string adlsComment;
 
 	// Auto Queue Results
-	bool isAutoQueue;
+	bool isAutoQueue = false;
 
 	// Search source type
 	enum SourceType {
@@ -57,7 +56,9 @@ public:
 		OnlyDirectory,
 		FullPath,
 		TypeLast
-	} sourceType;
+	};
+	
+	SourceType sourceType = OnlyFile;
 
 	SourceType StringToSourceType(const string& s);
 
@@ -67,8 +68,8 @@ public:
 
 	// Maximum & minimum file sizes (in bytes). 
 	// Negative values means do not check.
-	int64_t minFileSize;
-	int64_t maxFileSize;
+	int64_t minFileSize = -1;
+	int64_t maxFileSize = -1;
 
 	enum SizeType {
 		SizeBytes     = TypeFirst,
@@ -77,7 +78,7 @@ public:
 		SizeGigaBytes
 	};
 
-	SizeType typeFileSize;
+	SizeType typeFileSize = SizeBytes;
 
 	SizeType StringToSizeType(const string& s);
 	string SizeTypeToString(SizeType t);
@@ -86,7 +87,7 @@ public:
 
 	// Name of the destination directory (empty = 'ADLSearch') and its index
 	//string destDir;
-	unsigned long ddIndex;
+	unsigned long ddIndex = 0;
 
 	bool isRegEx() const;
 	void setRegEx(bool b);
@@ -127,14 +128,13 @@ public:
 		DirectoryListing::Directory* subdir = nullptr;
 		bool fileAdded = false;
 	};
-	typedef vector<DestDir> DestDirList;
+	using DestDirList = vector<DestDir>;
 
 	ADLSearchManager();
 	~ADLSearchManager();
 
 	// Search collections
-	//typedef vector<ADLSearch*> SearchCollection;
-	typedef vector<ADLSearch> SearchCollection;
+	using SearchCollection = vector<ADLSearch>;
 	SearchCollection collection;
 
 
@@ -153,10 +153,12 @@ public:
 	bool removeCollection(int index) noexcept;
 	bool changeState(int index, bool enabled) noexcept;
 	bool updateCollection(ADLSearch& search, int index) noexcept;
-	int8_t getRunning() { return running; }
+	int8_t getRunning() const noexcept { return running; }
 
 	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 private:
+	ADLSearch loadSearch(SimpleXML& xml);
+
 	ADLSearch::SourceType StringToSourceType(const string& s);
 	bool dirty = false;
 
@@ -172,6 +174,7 @@ private:
 
 	// Prepare destination directory indexing
 	void PrepareDestinationDirectories(DestDirList& destDirVector, DirectoryListing::Directory::Ptr& root) noexcept;
+	static void addRootDirectory(const string& aName, DestDirList& destDirs_, DirectoryListing::Directory::Ptr& root) noexcept;
 	// Finalize destination directories
 	void FinalizeDestinationDirectories(DestDirList& destDirVector, DirectoryListing::Directory::Ptr& root) noexcept;
 

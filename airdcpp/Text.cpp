@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -366,7 +366,7 @@ string wideToUtf8(const wstring& str) noexcept {
 	int size = 0;
 	tgt.resize(str.length() * 2);
 
-	while ((size = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), str.length(), &tgt[0], tgt.length(), NULL, NULL)) == 0) {
+	while ((size = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), &tgt[0], static_cast<int>(tgt.length()), NULL, NULL)) == 0) {
 		if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
 			tgt.resize(tgt.size() * 2);
 		else
@@ -399,7 +399,7 @@ wstring utf8ToWide(const string& str) noexcept {
 	wstring tgt;
 	int size = 0;
 	tgt.resize(str.length() + 1);
-	while ((size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), &tgt[0], (int)tgt.length())) == 0) {
+	while ((size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), &tgt[0], (int)tgt.length())) == 0) {
 		if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
 			tgt.resize(tgt.size() * 2);
 		}

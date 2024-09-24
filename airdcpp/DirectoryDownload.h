@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -26,7 +26,8 @@
 #include "Priority.h"
 
 namespace dcpp {
-	typedef uint32_t DirectoryDownloadId;
+	using DirectoryDownloadOwner = CallerPtr;
+	using DirectoryDownloadId = uint32_t;
 	class DirectoryDownload {
 	public:
 		enum class State {
@@ -50,11 +51,11 @@ namespace dcpp {
 		GETSET(string, error, Error);
 
 		struct HasOwner {
-			HasOwner(void* aOwner, const string& s) : a(s), owner(aOwner) { }
+			HasOwner(DirectoryDownloadOwner aOwner, const string& s) : a(s), owner(aOwner) { }
 			bool operator()(const DirectoryDownloadPtr& ddi) const noexcept;
 
 			const string& a;
-			void* owner;
+			DirectoryDownloadOwner owner;
 
 			HasOwner& operator=(const HasOwner&) = delete;
 		};
@@ -64,7 +65,7 @@ namespace dcpp {
 		const string& getTarget() const noexcept { return target; }
 		const string& getListPath() const noexcept { return listData.listPath; }
 		Priority getPriority() const noexcept { return priority; }
-		const void* getOwner() const noexcept { return listData.caller; }
+		DirectoryDownloadOwner getOwner() const noexcept { return listData.caller; }
 		DirectoryDownloadId getId() const noexcept { return id; }
 		ErrorMethod getErrorMethod() const noexcept { return errorMethod; }
 		const FilelistAddData& getListData() const noexcept { return listData; }

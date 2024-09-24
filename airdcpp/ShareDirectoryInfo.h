@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -24,9 +24,12 @@
 #include "forward.h"
 #include "typedefs.h"
 
-#include "AirUtil.h"
+#include "DirectoryContentInfo.h"
 #include "MerkleTree.h"
+#include "PathUtil.h"
 #include "SettingsManager.h"
+#include "Util.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 	class ShareDirectoryInfo;
@@ -39,10 +42,10 @@ namespace dcpp {
 	public:
 
 		ShareDirectoryInfo(const string& aPath, const string& aVname = Util::emptyString, bool aIncoming = false, const ProfileTokenSet& aProfiles = ProfileTokenSet()) :
-			virtualName(aVname), path(aPath), incoming(aIncoming), profiles(aProfiles), id(AirUtil::getPathId(aPath)) {
+			virtualName(aVname), path(aPath), incoming(aIncoming), profiles(aProfiles), id(ValueGenerator::generatePathId(aPath)) {
 		
 			if (virtualName.empty()) {
-				virtualName = Util::getLastDir(aPath);
+				virtualName = PathUtil::getLastDir(aPath);
 			}
 
 			if (profiles.empty()) {
@@ -76,7 +79,7 @@ namespace dcpp {
 		bool incoming = false;
 
 		int64_t size = 0;
-		DirectoryContentInfo contentInfo;
+		DirectoryContentInfo contentInfo = DirectoryContentInfo::empty();
 
 		uint8_t refreshState = 0;
 		time_t lastRefreshTime = 0;

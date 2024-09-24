@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -21,6 +21,7 @@
 
 #include "forward.h"
 #include "Client.h"
+#include "CriticalSection.h"
 
 namespace dcpp {
 
@@ -34,8 +35,16 @@ public:
 
 	int connect(const OnlineUser& aUser, const string& token, string& lastError_) noexcept override;
 
-	bool hubMessage(const string& aMessage, string& error_, bool /*thirdPerson*/ = false) noexcept override;
-	bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept override;
+
+	bool hubMessageHooked(const string& aMessage, string& /*error_*/, bool aThirdPerson = false) noexcept override {
+		return hubMessage(aMessage, aThirdPerson);
+	}
+	bool privateMessageHooked(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept override {
+		return privateMessage(aUser, aMessage, error_, aThirdPerson, aEcho);
+	}
+
+	bool hubMessage(const string& aMessage, bool thirdPerson = false) noexcept;
+	bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept;
 	void sendUserCmd(const UserCommand& command, const ParamMap& params) override;
 	void search(const SearchPtr& aSearch) noexcept override;
 	void password(const string& aPass) noexcept override;
@@ -46,7 +55,7 @@ public:
 	static string escape(string const& str) { return validateMessage(str, false); }
 	static string unescape(const string& str) { return validateMessage(str, true); }
 
-	bool send(const AdcCommand&) override { dcassert(0); return false; }
+	bool sendHooked(const AdcCommand&) override { dcassert(0); return false; }
 
 	static string validateMessage(string tmp, bool reverse);
 	void refreshUserList(bool) noexcept override;
@@ -54,7 +63,7 @@ public:
 	void getUserList(OnlineUserList& list, bool aListHidden) const noexcept override;
 
 	NmdcHub(const string& aHubURL, const ClientPtr& aOldClient = nullptr);
-	~NmdcHub();
+	~NmdcHub() override;
 	
 	NmdcHub(const NmdcHub&) = delete;
 	NmdcHub& operator=(const NmdcHub&) = delete;
@@ -64,32 +73,25 @@ private:
 		SUPPORTS_USERCOMMAND	= 0x01,
 		SUPPORTS_NOGETINFO		= 0x02,
 		SUPPORTS_USERIP2		= 0x04
-	};	
+	};
 
-	mutable CriticalSection cs;
-
-	typedef unordered_map<string, OnlineUser*, noCaseStringHash, noCaseStringEq> NickMap;
-	typedef NickMap::const_iterator NickIter;
+	using NickMap = unordered_map<string, OnlineUser *, noCaseStringHash, noCaseStringEq>;
+	using NickIter = NickMap::const_iterator;
 
 	NickMap users;
 
 	string localIp;
 	string lastMyInfo;
-	uint64_t lastUpdate;	
-	int64_t lastBytesShared;
-	int supportFlags;
-
-	typedef list<pair<string, uint64_t> > FloodMap;
-	typedef FloodMap::const_iterator FloodIter;
-	FloodMap seekers;
-	FloodMap flooders;
+	uint64_t lastUpdate = 0;	
+	int64_t lastBytesShared = 0;
+	int supportFlags = 0;
 
 	void clearUsers() noexcept override;
 	void onLine(const string& aLine) noexcept;
 
 	OnlineUser& getUser(const string& aNick) noexcept;
 	OnlineUserPtr findUser(const string& aNick) const noexcept override;
-	OnlineUser* findUser(const uint32_t aSID) const noexcept override;
+	OnlineUser* findUser(dcpp::SID aSID) const noexcept override;
 	void putUser(const string& aNick) noexcept;
 	
 	// don't convert to UTF-8 if string is already in this encoding
@@ -105,20 +107,19 @@ private:
 	void revConnectToMe(const OnlineUser& aUser);
 	void myInfo(bool alwaysSend);
 	void supports(const StringList& feat);
-	void clearFlooders(uint64_t tick);
 
 	void updateFromTag(Identity& id, const string& tag);
 	void refreshLocalIp() noexcept;
 
 	string checkNick(const string& aNick) noexcept override;
-	virtual bool v4only() const noexcept override { return true; }
+	bool v4only() const noexcept override { return true; }
 
 	// TimerManagerListener
-	virtual void on(Second, uint64_t aTick) noexcept override;
-	virtual void on(Minute, uint64_t aTick) noexcept override;
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
+	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
 
-	void on(Connected) noexcept override;
-	void on(Line, const string& l) noexcept override;
+	void on(BufferedSocketListener::Connected) noexcept override;
+	void on(BufferedSocketListener::Line, const string& l) noexcept override;
 };
 
 } // namespace dcpp

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,20 +20,18 @@
 #include "CryptoManager.h"
 
 #include <boost/scoped_array.hpp>
-#include "ScopedFunctor.h"
 
+#include "ClientManager.h"
 #include "Encoder.h"
 #include "File.h"
-#include "ClientManager.h"
 #include "LogManager.h"
+#include "SystemUtil.h"
 #include "version.h"
 
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/rsa.h>
-
-#include <bzlib.h>
 
 
 #ifdef _MSC_VER
@@ -47,6 +45,10 @@
 # endif
 #endif
 
+#ifdef _WIN32
+#include <openssl/applink.c>
+#endif
+
 namespace dcpp {
 
 int CryptoManager::idxVerifyData = 0;
@@ -56,7 +58,6 @@ CryptoManager::SSLVerifyData CryptoManager::trustedKeyprint = { false, "trusted_
 
 CryptoManager::CryptoManager()
 :
-	certsLoaded(false),
 	lock("EXTENDEDPROTOCOLABCABCABCABCABCABC"),
 	pk("DCPLUSPLUS" + VERSIONSTRING)
 {
@@ -80,7 +81,7 @@ CryptoManager::CryptoManager()
 	}
 }
 
-void CryptoManager::setContextOptions(SSL_CTX* aCtx, bool aServer) {
+void CryptoManager::setContextOptions(SSL_CTX* aCtx, bool aServer) noexcept {
 	// Only require TLS 1.2 => for now, other requirements need to be tested first for compatibility issues
 	SSL_CTX_set_min_proto_version(aCtx, TLS1_2_VERSION);
 	// SSL_CTX_set_security_level(aCtx, 2);
@@ -162,27 +163,6 @@ string CryptoManager::keyprintToString(const ByteVector& aKP) noexcept {
 	return "SHA256/" + Encoder::toBase32(&aKP[0], aKP.size());
 }
 
-optional<ByteVector> CryptoManager::calculateSha1(const string& aData) noexcept {
-	ByteVector ret(SHA_DIGEST_LENGTH);
-
-	EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
-	const EVP_MD* md = EVP_get_digestbyname("SHA1");
-	ScopedFunctor([mdctx] { EVP_MD_CTX_free(mdctx); });
-
-	unsigned int len = aData.size();
-	auto res = EVP_DigestInit_ex(mdctx, md, NULL);
-	if (res != 1)
-		return nullopt;
-	res = EVP_DigestUpdate(mdctx, aData.c_str(), len);
-	if (res != 1)
-		return nullopt;
-	res = EVP_DigestFinal_ex(mdctx, ret.data(), &len);
-	if (res != 1)
-		return nullopt;
-
-	return ret;
-}
-
 bool CryptoManager::TLSOk() const noexcept{
 	return SETTING(TLS_MODE) > 0 && certsLoaded && !keyprint.empty();
 }
@@ -259,7 +239,7 @@ void CryptoManager::generateCertificate() {
 		File::ensureDirectory(SETTING(TLS_PRIVATE_KEY_FILE));
 		FILE* f = dcpp_fopen(SETTING(TLS_PRIVATE_KEY_FILE).c_str(), "w");
 		if (!f) {
-			throw CryptoException(Util::formatLastError() + " (" + SETTING(TLS_PRIVATE_KEY_FILE) + ")");
+			throw CryptoException(SystemUtil::formatLastError() + " (" + SETTING(TLS_PRIVATE_KEY_FILE) + ")");
 		}
 
 		PEM_write_PrivateKey(f, pkey, NULL, NULL, 0, NULL, NULL);
@@ -270,14 +250,14 @@ void CryptoManager::generateCertificate() {
 		FILE* f = dcpp_fopen(SETTING(TLS_CERTIFICATE_FILE).c_str(), "w");
 		if (!f) {
 			File::deleteFile(SETTING(TLS_PRIVATE_KEY_FILE));
-			throw CryptoException(Util::formatLastError() + " (" + SETTING(TLS_CERTIFICATE_FILE) + ")");
+			throw CryptoException(SystemUtil::formatLastError() + " (" + SETTING(TLS_CERTIFICATE_FILE) + ")");
 		}
 		PEM_write_X509(f, x509ss);
 		fclose(f);
 	}
 }
 
-void CryptoManager::sslRandCheck() {
+void CryptoManager::sslRandCheck() noexcept {
 	if (!RAND_status()) {
 #ifdef _WIN32
 		RAND_poll();
@@ -285,7 +265,7 @@ void CryptoManager::sslRandCheck() {
 	}
 }
 
-int CryptoManager::getKeyLength(TLSTmpKeys key) {
+int CryptoManager::getKeyLength(TLSTmpKeys key) noexcept {
 	switch (key) {
 	case KEY_DH_2048:
 	case KEY_RSA_2048:
@@ -350,7 +330,7 @@ void CryptoManager::loadCertificates() noexcept{
 	auto certs2 = File::findFiles(SETTING(TLS_TRUSTED_CERTIFICATES_PATH), "*.crt", File::TYPE_FILE);
 	certs.insert(certs.end(), certs2.begin(), certs2.end());
 
-	for (auto& i : certs) {
+	for (const auto& i : certs) {
 		if (
 			SSL_CTX_load_verify_locations(clientContext, i.c_str(), NULL) != SSL_SUCCESS ||
 			SSL_CTX_load_verify_locations(serverContext, i.c_str(), NULL) != SSL_SUCCESS
@@ -370,7 +350,7 @@ bool CryptoManager::checkCertificate(int minValidityDays) noexcept{
 		return false;
 	}
 
-	ASN1_INTEGER* sn = X509_get_serialNumber(x509);
+	const ASN1_INTEGER* sn = X509_get_serialNumber(x509);
 	if (!sn || !ASN1_INTEGER_get(sn)) {
 		return false;
 	}
@@ -418,8 +398,8 @@ void CryptoManager::setCertPaths() {
 	if (!SETTING(USE_DEFAULT_CERT_PATHS))
 		return;
 
-	auto privPath = Util::getPath(Util::PATH_USER_LOCAL) + "Certificates" PATH_SEPARATOR_STR "client.key";
-	auto certPath = Util::getPath(Util::PATH_USER_LOCAL) + "Certificates" PATH_SEPARATOR_STR "client.crt";
+	auto privPath = AppUtil::getPath(AppUtil::PATH_USER_LOCAL) + "Certificates" PATH_SEPARATOR_STR "client.key";
+	auto certPath = AppUtil::getPath(AppUtil::PATH_USER_LOCAL) + "Certificates" PATH_SEPARATOR_STR "client.crt";
 
 	SettingsManager::getInstance()->set(SettingsManager::TLS_CERTIFICATE_FILE, certPath);
 	SettingsManager::getInstance()->set(SettingsManager::TLS_PRIVATE_KEY_FILE, privPath);
@@ -427,8 +407,8 @@ void CryptoManager::setCertPaths() {
 
 int CryptoManager::verify_callback(int preverify_ok, X509_STORE_CTX *ctx) {
 	int err = X509_STORE_CTX_get_error(ctx);
-	SSL* ssl = (SSL*)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
-	SSLVerifyData* verifyData = (SSLVerifyData*)SSL_get_ex_data(ssl, CryptoManager::idxVerifyData);
+	auto ssl = (SSL*)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
+	auto verifyData = (SSLVerifyData*)SSL_get_ex_data(ssl, CryptoManager::idxVerifyData);
 
 	// verifyData is unset only when KeyPrint has been pinned and we are not skipping errors due to incomplete chains
 	// we can fail here f.ex. if the certificate has expired but is still pinned with KeyPrint
@@ -465,7 +445,7 @@ int CryptoManager::verify_callback(int preverify_ok, X509_STORE_CTX *ctx) {
 
 			if (err != X509_V_OK) {
 				// This is the right way to get the certificate store, although it is rather roundabout
-				SSL_CTX* ssl_ctx = SSL_get_SSL_CTX(ssl);
+				auto ssl_ctx = SSL_get_SSL_CTX(ssl);
 
 #if OPENSSL_VERSION_NUMBER >= 0x1000200fL
 				X509_STORE* store = X509_STORE_CTX_get0_store(ctx);
@@ -544,7 +524,7 @@ int CryptoManager::verify_callback(int preverify_ok, X509_STORE_CTX *ctx) {
 
 }
 
-string CryptoManager::formatError(X509_STORE_CTX *ctx, const string& message) {
+string CryptoManager::formatError(const X509_STORE_CTX *ctx, const string& message) {
 	X509* cert = NULL;
 	if ((cert = X509_STORE_CTX_get_current_cert(ctx)) != NULL) {
 		X509_NAME* subject = X509_get_subject_name(cert);
@@ -577,8 +557,8 @@ string CryptoManager::getNameEntryByNID(X509_NAME* name, int nid) noexcept{
 		return Util::emptyString;
 	}
 
-	X509_NAME_ENTRY* entry = X509_NAME_get_entry(name, i);
-	ASN1_STRING* str = X509_NAME_ENTRY_get_data(entry);
+	const X509_NAME_ENTRY* entry = X509_NAME_get_entry(name, i);
+	const ASN1_STRING* str = X509_NAME_ENTRY_get_data(entry);
 	if (!str) {
 		return Util::emptyString;
 	}
@@ -595,48 +575,7 @@ string CryptoManager::getNameEntryByNID(X509_NAME* name, int nid) noexcept{
 	return out;
 }
 
-void CryptoManager::decodeBZ2(const uint8_t* is, size_t sz, string& os) {
-	bz_stream bs = { 0 };
-
-	if(BZ2_bzDecompressInit(&bs, 0, 0) != BZ_OK)
-		throw CryptoException(STRING(DECOMPRESSION_ERROR));
-
-	// We assume that the files aren't compressed more than 2:1...if they are it'll work anyway,
-	// but we'll have to do multiple passes...
-	size_t bufsize = 2*sz;
-	boost::scoped_array<char> buf(new char[bufsize]);
-
-	bs.avail_in = sz;
-	bs.avail_out = bufsize;
-	bs.next_in = reinterpret_cast<char*>(const_cast<uint8_t*>(is));
-	bs.next_out = &buf[0];
-
-	int err;
-
-	os.clear();
-
-	while((err = BZ2_bzDecompress(&bs)) == BZ_OK) {
-		if (bs.avail_in == 0 && bs.avail_out > 0) { // error: BZ_UNEXPECTED_EOF
-			BZ2_bzDecompressEnd(&bs);
-			throw CryptoException(STRING(DECOMPRESSION_ERROR));
-		}
-		os.append(&buf[0], bufsize-bs.avail_out);
-		bs.avail_out = bufsize;
-		bs.next_out = &buf[0];
-	}
-
-	if(err == BZ_STREAM_END)
-		os.append(&buf[0], bufsize-bs.avail_out);
-
-	BZ2_bzDecompressEnd(&bs);
-
-	if(err < 0) {
-		// This was a real error
-		throw CryptoException(STRING(DECOMPRESSION_ERROR));
-	}
-}
-
-string CryptoManager::keySubst(const uint8_t* aKey, size_t len, size_t n) {
+string CryptoManager::keySubst(const uint8_t* aKey, size_t len, size_t n) noexcept {
 	boost::scoped_array<uint8_t> temp(new uint8_t[len + n * 10]);
 
 	size_t j=0;

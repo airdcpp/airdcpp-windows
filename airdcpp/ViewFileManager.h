@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -36,11 +36,11 @@
 namespace dcpp {
 	class ViewFileManager : public Singleton<ViewFileManager>, public Speaker<ViewFileManagerListener>, public QueueManagerListener {
 	public:
-		typedef unordered_map<TTHValue, ViewFilePtr> ViewFileMap;
-		typedef vector<ViewFilePtr> ViewFileList;
+		using ViewFileMap = unordered_map<TTHValue, ViewFilePtr>;
+		using ViewFileList = vector<ViewFilePtr>;
 
 		ViewFileManager() noexcept;
-		~ViewFileManager() noexcept;
+		~ViewFileManager() noexcept final;
 
 		ViewFileList getFiles() const noexcept;
 
@@ -67,9 +67,9 @@ namespace dcpp {
 		ViewFilePtr createFile(const string& aFileName, const string& aPath, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile) noexcept;
 		static bool isViewedItem(const QueueItemPtr& aQI) noexcept;
 
-		void on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
-		void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& qi, bool finished) noexcept;
-		void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept;
+		void on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept override;
+		void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& qi, bool finished) noexcept override;
+		void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept override;
 
 		void onFileStateUpdated(const TTHValue& aTTH) noexcept;
 

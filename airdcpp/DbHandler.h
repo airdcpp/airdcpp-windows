@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -21,9 +21,8 @@
 #define DCPLUSPLUS_DCPP_DBHANDLER_H_
 
 #include "stdinc.h"
-#include "Exception.h"
+#include "PathUtil.h"
 #include "Text.h"
-#include "Util.h"
 
 #include <functional>
 
@@ -65,7 +64,7 @@ public:
 	const string& getPath() const noexcept { return dbPath; }
 	uint64_t getCacheSize() const noexcept { return cacheSize; }
 protected:
-	DbHandler(const string& aPath, const string& aFriendlyName, uint64_t aCacheSize) noexcept : dbPath(Util::validatePath(aPath, true)), friendlyName(aFriendlyName), cacheSize(aCacheSize) {
+	DbHandler(const string& aPath, const string& aFriendlyName, uint64_t aCacheSize) noexcept : dbPath(PathUtil::validatePath(aPath, true)), friendlyName(aFriendlyName), cacheSize(aCacheSize) {
 
 	}
 

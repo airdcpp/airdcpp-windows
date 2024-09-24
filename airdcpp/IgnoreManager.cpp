@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,7 +21,7 @@
 #include "IgnoreManager.h"
 
 #include "ClientManager.h"
-#include "FavoriteManager.h"
+#include "FavoriteUserManager.h"
 #include "LogManager.h"
 #include "PrivateChatManager.h"
 #include "SettingsManager.h"
@@ -29,7 +29,7 @@
 #include "Message.h"
 #include "Util.h"
 
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 #define CONFIG_NAME "IgnoredUsers.xml"
 #define IGNORE_HOOK_ID "chat_ignore"
 
@@ -167,7 +167,7 @@ ActionHookResult<MessageHighlightList> IgnoreManager::isIgnoredOrFiltered(const 
 	if (msg->getFrom()->getUser() == ClientManager::getInstance()->getMe())
 		return { nullptr, nullptr };
 
-	auto logIgnored = [&](bool filter) -> void {
+	auto logIgnored = [&](bool filter) {
 		if (SETTING(LOG_IGNORED)) {
 			string tmp;
 			if (aPM) {
@@ -213,12 +213,12 @@ void IgnoreManager::save() {
 
 	{
 		RLock l(cs);
-		for (const auto& u : ignoredUsers) {
+		for (const auto& [user, ignoreCount] : ignoredUsers) {
 			xml.addTag("User");
-			xml.addChildAttrib("CID", u.first->getCID().toBase32());
-			xml.addChildAttrib("IgnoredMessages", u.second);
+			xml.addChildAttrib("CID", user->getCID().toBase32());
+			xml.addChildAttrib("IgnoredMessages", ignoreCount);
 
-			FavoriteManager::getInstance()->addSavedUser(u.first);
+			FavoriteUserManager::getInstance()->addSavedUser(user);
 		}
 	}
 

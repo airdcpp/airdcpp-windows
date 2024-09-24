@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "GeoIP.h"
 
+#include "Exception.h"
 #include "File.h"
 #include "Localization.h"
 #include "format.h"
@@ -31,7 +32,7 @@
 namespace dcpp {
 
 // Application locales mapped to supported GeoIP languages
-map<string, string> localeGeoMappings = {
+const map<string, string> localeGeoMappings = {
 	{ "de-DE", "de" },
 	{ "en-US", "en" },
 	{ "es-ES", "es" },
@@ -47,8 +48,8 @@ static string parseLanguage() noexcept {
 	return i != localeGeoMappings.end() ? i->second : "en";
 }
 
-GeoIP::GeoIP(string&& aPath) : geo(nullptr), path(move(aPath)), language(parseLanguage()) {
-	if(File::getSize(path) > 0 || decompress()) {
+GeoIP::GeoIP(string&& aPath) : geo(nullptr), path(std::move(aPath)), language(parseLanguage()) {
+	if (File::getSize(path) > 0 || decompress()) {
 		open();
 	}
 }
@@ -87,7 +88,7 @@ string GeoIP::getCountry(const string& ip) const {
 	if (geo) {
 		int gai_error, mmdb_error;
 		MMDB_lookup_result_s res = MMDB_lookup_string(
-			const_cast<MMDB_s*>(geo), 
+			geo, 
 			ip.c_str(), 
 			&gai_error, 
 			&mmdb_error
@@ -99,7 +100,7 @@ string GeoIP::getCountry(const string& ip) const {
 			ParamMap params;
 			params["2code"] = [&] { return parseData(res, "country", "iso_code", NULL); };
 			params["continent"] = [&] { return parseData(res, "continent", "code", NULL); };
-			params["engname"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
+			params["engname"] = [&] { return parseData(res, "country", "names", "en", NULL); };
 			params["name"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
 			params["officialname"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
 

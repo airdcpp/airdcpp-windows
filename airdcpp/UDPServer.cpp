@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2011-2021 AirDC++ Project
+ * Copyright (C) 2011-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -21,14 +21,15 @@
 
 #include "ConnectivityManager.h"
 #include "ClientManager.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "LogManager.h"
+#include "PartialSharingManager.h"
 #include "ResourceManager.h"
 #include "SearchManager.h"
 #include "SettingsManager.h"
 #include "Socket.h"
 #include "UDPServer.h"
-#include "UploadManager.h"
+#include "UploadBundleManager.h"
 
 
 namespace dcpp {
@@ -66,7 +67,12 @@ void UDPServer::disconnect() {
 UDPServer::UDPServer() : stop(false), pp(true) { }
 UDPServer::~UDPServer() { }
 
-#define BUFSIZE 8192
+
+void UDPServer::addTask(Callback&& aTask) noexcept {
+	pp.addTask(std::move(aTask));
+}
+
+constexpr auto BUFSIZE = 8192;
 int UDPServer::run() {
 	int len;
 	string remoteAddr;
@@ -77,9 +83,9 @@ int UDPServer::run() {
 				continue;
 			}
 
-			auto buf = vector<uint8_t>(BUFSIZE);
-			if((len = socket->read(buf.data(), BUFSIZE, remoteAddr)) > 0) {
-				pp.addTask([=] { handlePacket(buf, len, remoteAddr); });
+			auto buffer = vector<uint8_t>(BUFSIZE);
+			if((len = socket->read(buffer.data(), BUFSIZE, remoteAddr)) > 0) {
+				pp.addTask([buf = std::move(buffer), len, remoteAddr, this] { handlePacket(buf, len, remoteAddr); });
 				continue;
 			}
 		} catch(const SocketException& e) {
@@ -126,7 +132,7 @@ void UDPServer::handlePacket(const ByteVector& aBuf, size_t aLen, const string& 
 	if (x.empty())
 		return;
 
-	COMMAND_DEBUG(x, DebugManager::TYPE_CLIENT_UDP, DebugManager::INCOMING, aRemoteIp);
+	COMMAND_DEBUG(x, ProtocolCommandManager::TYPE_CLIENT_UDP, ProtocolCommandManager::INCOMING, aRemoteIp);
 
 	if (x.compare(0, 1, "$") == 0) {
 		// NMDC commands
@@ -153,7 +159,9 @@ void UDPServer::handlePacket(const ByteVector& aBuf, size_t aLen, const string& 
 	}
 
 	// Dispatch without newline
-	dispatch(x.substr(0, x.length() - 1), false, aRemoteIp);
+	dispatch(x.substr(0, x.length() - 1), false, [&aRemoteIp](const AdcCommand& aCmd) {
+		ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::IncomingUDPCommand(), aCmd, aRemoteIp);
+	}, aRemoteIp);
 }
 
 void UDPServer::handle(AdcCommand::RES, AdcCommand& c, const string& aRemoteIp) noexcept {
@@ -173,61 +181,6 @@ void UDPServer::handle(AdcCommand::RES, AdcCommand& c, const string& aRemoteIp) 
 	c.getParameters().erase(c.getParameters().begin());
 
 	SearchManager::getInstance()->onRES(c, user, aRemoteIp);
-}
-
-void UDPServer::handle(AdcCommand::PSR, AdcCommand& c, const string& aRemoteIp) noexcept {
-	if (c.getParameters().empty())
-		return;
-
-	const auto cid = c.getParam(0);
-	if (cid.size() != 39)
-		return;
-
-	UserPtr user = ClientManager::getInstance()->findUser(CID(cid));
-	// when user == NULL then it is probably NMDC user, check it later
-
-	// Remove the CID
-	c.getParameters().erase(c.getParameters().begin());
-
-	SearchManager::getInstance()->onPSR(c, user, aRemoteIp);
-}
-
-void UDPServer::handle(AdcCommand::PBD, AdcCommand& c, const string&) noexcept {
-	if (!SETTING(USE_PARTIAL_SHARING)) {
-		return;
-	}
-
-	//LogManager::getInstance()->message("GOT PBD UDP: " + x);
-	if (c.getParameters().empty())
-		return;
-
-	const auto cid = c.getParam(0);
-	if (cid.size() != 39)
-		return;
-
-	const auto user = ClientManager::getInstance()->findUser(CID(cid));
-	if (!user) {
-		return;
-	}
-
-	// Remove the CID
-	c.getParameters().erase(c.getParameters().begin());
-
-	SearchManager::getInstance()->onPBD(c, user);
-}
-
-void UDPServer::handle(AdcCommand::UBD, AdcCommand& c, const string&) noexcept {
-	if (c.getParameters().empty())
-		return;
-
-	UploadManager::getInstance()->onUBD(c);
-}
-
-void UDPServer::handle(AdcCommand::UBN, AdcCommand& c, const string&) noexcept {
-	if (c.getParameters().empty())
-		return;
-
-	UploadManager::getInstance()->onUBN(c);
 }
 
 }

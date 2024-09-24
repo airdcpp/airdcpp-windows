@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -23,7 +23,11 @@
 #include "typedefs.h"
 #include <string>
 
+// #include "UpdateVersion.h"
+
 namespace dcpp {
+
+struct UpdateVersion;
 
 class UpdateManagerListener {
 public:
@@ -42,8 +46,8 @@ public:
 	typedef X<7> LanguageFinished;
 	typedef X<8> LanguageFailed;
 
-	virtual void on(UpdateAvailable, const string& /*title*/, const string& /*message*/, const string& /*version*/, const string& /*url*/, bool /*autoUpdate*/, int /*build*/, const string& /*updateUrl*/) noexcept { }
-	virtual void on(BadVersion, const string& /*message*/, const string& /*url*/, const string& /*update*/, int /*build*/, bool /*autoUpdate*/) noexcept { }
+	virtual void on(UpdateAvailable, const string& /*title*/, const string& /*message*/, const UpdateVersion&) noexcept { }
+	virtual void on(BadVersion, const string& /*message*/, const UpdateVersion&) noexcept { }
 	virtual void on(UpdateFailed, const string& /*line*/) noexcept { }
 	virtual void on(UpdateComplete, const string& /*updater*/) noexcept { }
 	virtual void on(VersionFileDownloaded, SimpleXML&) noexcept { }

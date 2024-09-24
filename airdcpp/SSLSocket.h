@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -22,7 +22,6 @@
 
 #include "CryptoManager.h"
 #include "Socket.h"
-#include "Singleton.h"
 
 #include "SSL.h"
 
@@ -34,39 +33,39 @@ using std::string;
 class SSLSocketException : public SocketException {
 public:
 #ifdef _DEBUG
-	SSLSocketException(const string& aError) noexcept : SocketException("SSLSocketException: " + aError) { }
+	explicit SSLSocketException(const string& aError) noexcept : SocketException("SSLSocketException: " + aError) { }
 #else //_DEBUG
 	SSLSocketException(const string& aError) noexcept : SocketException(aError) { }
 #endif // _DEBUG
-	SSLSocketException(int aError) noexcept : SocketException(aError) { }
-	virtual ~SSLSocketException() noexcept { }
+	explicit SSLSocketException(int aError) noexcept : SocketException(aError) { }
+	~SSLSocketException() noexcept final = default;
 };
 
 class SSLSocket : public Socket {
 public:
 	SSLSocket(CryptoManager::SSLContext context, bool allowUntrusted, const string& expKP);
 	/** Creates an SSL socket without any verification */
-	SSLSocket(CryptoManager::SSLContext context);
+	explicit SSLSocket(CryptoManager::SSLContext context);
 
-	virtual ~SSLSocket() { verifyData.reset(); }
+	~SSLSocket() override { verifyData.reset(); }
 
-	virtual int read(void* aBuffer, int aBufLen) override;
-	virtual int write(const void* aBuffer, int aLen) override;
-	virtual std::pair<bool, bool> wait(uint64_t millis, bool checkRead, bool checkWrite) override;
-	virtual void shutdown() noexcept override;
-	virtual void close() noexcept override;
+	int read(void* aBuffer, size_t aBufLen) override;
+	int write(const void* aBuffer, size_t aLen) override;
+	std::pair<bool, bool> wait(uint64_t millis, bool checkRead, bool checkWrite) override;
+	void shutdown() noexcept override;
+	void close() noexcept override;
 
-	virtual bool isSecure() const noexcept override { return true; }
-	virtual bool isTrusted() const noexcept override;
-	virtual bool isKeyprintMatch() const noexcept override;
-	virtual string getEncryptionInfo() const noexcept override;
-	virtual ByteVector getKeyprint() const noexcept override;
-	virtual bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept override;
+	bool isSecure() const noexcept override { return true; }
+	bool isTrusted() const noexcept override;
+	bool isKeyprintMatch() const noexcept override;
+	string getEncryptionInfo() const noexcept override;
+	ByteVector getKeyprint() const noexcept override;
+	bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept override;
 
-	virtual void connect(const AddressInfo& aAddr, const string& aPort, const string& aLocalPort = Util::emptyString) override;
+	void connect(const AddressInfo& aAddr, const string& aPort, const string& aLocalPort = Util::emptyString) override;
 
-	virtual bool waitConnected(uint64_t millis) override;
-	virtual bool waitAccepted(uint64_t millis) override;
+	bool waitConnected(uint64_t millis) override;
+	bool waitAccepted(uint64_t millis) override;
 
 private:
 

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2012-2021 AirDC++ Project
+ * Copyright (C) 2012-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -30,14 +30,14 @@
 namespace dcpp {
 
 struct HttpDownload;
-class Updater;
+class UpdateDownloader;
 
 class UpdateManager : public Singleton<UpdateManager>, public Speaker<UpdateManagerListener>, private TimerManagerListener
 {
 
 public:
 	UpdateManager();
-	~UpdateManager();
+	~UpdateManager() override;
 
 	struct {
 		string geoip;
@@ -47,7 +47,7 @@ public:
 	} links;
 
 	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
-	static bool verifyVersionData(const string& data, const ByteVector& singature);
+	static bool verifyVersionData(const string& data, const ByteVector& aSignature);
 
 	enum {
 		CONN_VERSION,
@@ -75,11 +75,11 @@ public:
 	void checkAdditionalUpdates(bool aManualCheck);
 	string getVersionUrl() const;
 
-	Updater& getUpdater() const noexcept {
+	UpdateDownloader& getUpdater() const noexcept {
 		return *updater.get();
 	}
 private:
-	unique_ptr<Updater> updater;
+	unique_ptr<UpdateDownloader> updater;
 
 	void failVersionDownload(const string& aError, bool aManualCheck);
 
@@ -99,7 +99,9 @@ private:
 	void completeLanguageDownload();
 	void completeIPCheck(bool aManualCheck, bool v6);
 
-	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept;
+	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
+
+	static string parseIP(const string& aText, bool v6);
 };
 
 } // namespace dcpp

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -47,7 +47,9 @@ public:
 	typedef X<3> Tick;
 	typedef X<4> Requesting;
 	typedef X<5> Status;
-	typedef X<8> BundleWaiting;
+	typedef X<6> Idle;
+	typedef X<7> Remove;
+
 	typedef X<9> BundleTick;
 
 	/**
@@ -64,15 +66,14 @@ public:
 	/**
 	 * Sent once a second if something has actually been downloaded.
 	 */
-	virtual void on(Tick, const DownloadList&) noexcept { }
+	virtual void on(Tick, const DownloadList&, uint64_t) noexcept { }
 
 	/**
 	 * This is the last message sent before a download is deleted.
 	 * No more messages will be sent after it.
 	 */
-	virtual void on(Complete, const Download*, bool) noexcept { }
+	virtual void on(Complete, const Download*, bool /*aIsTree*/) noexcept { }
 
-	virtual void on(BundleWaiting, const BundlePtr&) noexcept { }
 	virtual void on(BundleTick, const BundleList&, uint64_t) noexcept { }
 
 	/**
@@ -83,7 +84,8 @@ public:
 	 * display an error string.
 	 */
 	virtual void on(Failed, const Download*, const string&) noexcept { }
-	virtual void on(Status, const UserConnection*, const string&) noexcept { }
+	virtual void on(Idle, const UserConnection*, const string&) noexcept { }
+	virtual void on(Remove, const UserConnection*) noexcept { }
 };
 
 } // namespace dcpp

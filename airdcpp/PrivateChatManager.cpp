@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -28,7 +28,7 @@
 #include "PrivateChat.h"
 #include "Util.h"
 
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 #define CONFIG_NAME "IgnoredUsers.xml"
 
 namespace dcpp 
@@ -54,13 +54,18 @@ PrivateChatManager::~PrivateChatManager() noexcept {
 pair<PrivateChatPtr, bool> PrivateChatManager::addChat(const HintedUser& aUser, bool aReceivedMessage) noexcept {
 	PrivateChatPtr chat;
 
-	auto user = ClientManager::getInstance()->checkOnlineUrl(aUser);
+	// In case we need to update the hub address (the user is online in a different hub)
+	auto ou = ClientManager::getInstance()->findOnlineUser(aUser, true);
 
 	{
 		WLock l(cs);
-		auto res = chats.emplace(user.user, std::make_shared<PrivateChat>(user, getPMConn(user.user)));
-		chat = res.first->second;
-		if (!res.second) {
+		auto [chatPair, added] = chats.try_emplace(
+			aUser.user, 
+			std::make_shared<PrivateChat>(ou ? ou->getHintedUser() : aUser, getPMConn(aUser.user))
+		);
+
+		chat = chatPair->second;
+		if (!added) {
 			return { chat, false };
 		}
 	}
@@ -112,11 +117,11 @@ void PrivateChatManager::closeAll(bool aOfflineOnly) {
 
 	{
 		RLock l(cs);
-		for (const auto& i : chats) {
-			if (aOfflineOnly && i.first->isOnline())
+		for (const auto& [user, _] : chats) {
+			if (aOfflineOnly && user->isOnline())
 				continue;
 
-			toRemove.push_back(i.first);
+			toRemove.push_back(user);
 		}
 	}
 
@@ -178,7 +183,7 @@ void PrivateChatManager::onPrivateMessage(const ChatMessagePtr& aMessage) {
 	const auto client = aMessage->getFrom()->getClient();
 	const auto& identity = aMessage->getReplyTo()->getIdentity();
 	if ((identity.isBot() && !SETTING(POPUP_BOT_PMS)) || (identity.isHub() && !SETTING(POPUP_HUB_PMS))) {
-		client->addLine(STRING(PRIVATE_MESSAGE_FROM) + " " + identity.getNick() + ": " + aMessage->format());
+		client->statusMessage(STRING(PRIVATE_MESSAGE_FROM) + " " + identity.getNick() + ": " + aMessage->getText(), LogMessage::SEV_INFO);
 		return;
 	}
 
@@ -191,7 +196,7 @@ void PrivateChatManager::onPrivateMessage(const ChatMessagePtr& aMessage) {
 
 		string error;
 		const auto message = ActivityManager::getInstance()->getAwayMessage(client->get(HubSettings::AwayMsg), params);
-		chat->sendMessageHooked(OutgoingChatMessage(message, nullptr, false), error);
+		chat->sendMessageHooked(OutgoingChatMessage(message, nullptr, Util::emptyString, false), error);
 	}
 }
 

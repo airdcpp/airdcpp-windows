@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2012-2021 AirDC++ Project
+ * Copyright (C) 2012-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -27,6 +27,7 @@
 #include "HashValue.h"
 #include "TigerHash.h"
 #include "Util.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
@@ -63,7 +64,7 @@ class FileList {
 };
 
 class ShareProfileInfo;
-typedef std::shared_ptr<ShareProfileInfo> ShareProfileInfoPtr;
+using ShareProfileInfoPtr = std::shared_ptr<ShareProfileInfo>;
 
 class ShareProfileInfo : public FastAlloc<ShareProfileInfo> {
 public:
@@ -74,7 +75,7 @@ public:
 		STATE_RENAMED
 	};
 
-	ShareProfileInfo(const string& aName, ProfileToken aToken = Util::randInt(100), State aState = STATE_NORMAL);
+	ShareProfileInfo(const string& aName, ProfileToken aToken = ValueGenerator::randInt(100), State aState = STATE_NORMAL);
 	~ShareProfileInfo() {}
 
 	string name;
@@ -82,7 +83,7 @@ public:
 	bool isDefault = false;
 	State state;
 
-	typedef vector<ShareProfileInfoPtr> List;
+	using List = vector<ShareProfileInfoPtr>;
 	string getDisplayName() const;
 };
 
@@ -99,13 +100,13 @@ public:
 
 	GETSET(ProfileToken, token, Token);
 	GETSET(string, plainName, PlainName);
-	IGETSET(bool, profileInfoDirty, ProfileInfoDirty, true);
+	IGETSET(bool, profileContentInfoDirty, ProfileContentInfoDirty, true);
 
 	// For caching the last information (these should only be accessed from ShareManager, use ShareManager::getProfileInfo for up-to-date information)
 	IGETSET(int64_t, shareSize, ShareSize, 0);
 	IGETSET(size_t, sharedFiles, SharedFiles, 0);
 
-	ShareProfile(const string& aName = Util::emptyString, ProfileToken aToken = Util::randInt(100));
+	ShareProfile(const string& aName = Util::emptyString, ProfileToken aToken = ValueGenerator::randInt(100));
 	~ShareProfile();
 
 	FileList* getProfileList() noexcept;
@@ -113,19 +114,21 @@ public:
 	bool isHidden() const noexcept;
 	string getDisplayName() const noexcept;
 
-	typedef unordered_set<ShareProfilePtr, Hash> Set;
-	typedef vector<ShareProfilePtr> List;
+	using Set = unordered_set<ShareProfilePtr, Hash>;
+	using List = vector<ShareProfilePtr>;
 
 	struct NotHidden {
 		bool operator()(const ShareProfilePtr& aProfile) const {
 			return !aProfile->isHidden();
 		}
 	};
+
+	void setDirty(bool aForceRefresh) noexcept;
 private:
 	FileList fileList;
 };
 
-inline bool operator==(const ShareProfilePtr& ptr, ProfileToken aToken) { return ptr->getToken() == aToken; }
+inline bool operator==(const ShareProfilePtr& ptr, ProfileToken aToken) noexcept { return ptr->getToken() == aToken; }
 
 }
 

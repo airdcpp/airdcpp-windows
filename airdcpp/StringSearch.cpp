@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -159,6 +159,28 @@ int StringSearch::matchLower(const string& aText, bool aResumeOnNoMatch, ResultL
 
 void StringSearch::clear() {
 	patterns.clear();
+}
+
+string StringSearch::toString() const noexcept {
+	string searchStr;
+	for (const auto& p : patterns) {
+		if (!searchStr.empty()) {
+			searchStr += " ";
+		}
+
+		searchStr += p.str();
+	}
+
+	return searchStr;
+}
+
+StringList StringSearch::toStringList() const noexcept {
+	StringList lst;
+	for (const auto& p : patterns) {
+		lst.push_back(p.str());
+	}
+
+	return lst;
 }
 
 }

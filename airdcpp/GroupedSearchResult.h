@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -28,19 +28,18 @@
 #include <airdcpp/SearchResult.h>
 
 namespace dcpp {
-	//typedef uint64_t ResultToken;
-	typedef TTHValue GroupedResultToken;
+	using GroupedResultToken = TTHValue;
 
 	class GroupedSearchResult {
 	public:
-		typedef shared_ptr<GroupedSearchResult> Ptr;
+		using Ptr = shared_ptr<GroupedSearchResult>;
 		struct RelevanceSort {
 			bool operator()(const Ptr& left, const Ptr& right) const noexcept { return left->getTotalRelevance() > right->getTotalRelevance(); }
 		};
 
-		typedef vector<Ptr> List;
-		typedef unordered_map<TTHValue, Ptr> Map;
-		typedef multiset<Ptr, RelevanceSort> Set;
+		using List = vector<Ptr>;
+		using Map = unordered_map<TTHValue, Ptr>;
+		using Set = multiset<Ptr, RelevanceSort>;
 
 		GroupedSearchResult(const SearchResultPtr& aSR, SearchResult::RelevanceInfo&& aRelevance);
 		~GroupedSearchResult() { }
@@ -50,18 +49,19 @@ namespace dcpp {
 
 		// Selects the best individual files to download and queues them
 		// Throws if none of the children could not be queued
-		BundleAddInfo downloadFileHooked(const string& aTargetDirectory, const string& aTargetName, Priority p, const void* aCaller);
+		BundleAddInfo downloadFileHooked(const string& aTargetDirectory, const string& aTargetName, Priority p, CallerPtr aCaller);
 
 		// Selects the best individual folders to download and queues them
 		// Throws if none of the children could not be queued
-		DirectoryDownloadList downloadDirectoryHooked(const string& aTargetDirectory, const string& aTargetName, Priority p, const void* aCaller);
+		DirectoryDownloadList downloadDirectoryHooked(const string& aTargetDirectory, const string& aTargetName, Priority p, CallerPtr aCaller) const;
 
 		bool isDirectory() const noexcept {
-			return baseResult->getType() == SearchResult::TYPE_DIRECTORY;
+			return baseResult->getType() == SearchResult::Type::DIRECTORY;
 		}
 
 		double getTotalRelevance() const noexcept;
 		double getMatchRelevance() const noexcept;
+		string getFileName() const noexcept;
 
 		string getToken() const noexcept {
 			return baseResult->getTTH().toBase32();
@@ -81,10 +81,6 @@ namespace dcpp {
 
 		const string& getAdcPath() const noexcept {
 			return baseResult->getAdcPath();
-		}
-
-		string getFileName() const noexcept {
-			return baseResult->getFileName();
 		}
 
 		const HintedUser& getBaseUser() const noexcept {
@@ -120,8 +116,6 @@ namespace dcpp {
 		const SearchResultPtr baseResult;
 
 		const SearchResult::RelevanceInfo relevanceInfo;
-
-		//const GroupedResultToken token;
 
 		static FastCriticalSection cs;
 	};

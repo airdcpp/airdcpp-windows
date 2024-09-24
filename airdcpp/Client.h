@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -24,9 +24,11 @@
 
 #include "BufferedSocketListener.h"
 #include "ClientListener.h"
-#include "ShareManagerListener.h"
+#include "ShareProfileManagerListener.h"
 #include "TimerManagerListener.h"
 
+#include "AdcSupports.h"
+#include "FloodCounter.h"
 #include "HubSettings.h"
 #include "MessageCache.h"
 #include "OnlineUser.h"
@@ -47,8 +49,8 @@ public:
 	virtual string getHubName() const noexcept = 0;
 	virtual bool isOp() const noexcept = 0;
 	virtual int connect(const OnlineUser& user, const string& token, string& lastError_) noexcept = 0;
-	virtual bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept = 0;
-	virtual bool directSearch(const OnlineUser&, const SearchPtr&, string&) noexcept {
+	virtual bool privateMessageHooked(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept = 0;
+	virtual bool directSearchHooked(const OnlineUser&, const SearchPtr&, string&) noexcept {
 		dcassert(0);
 		return false;
 	}
@@ -57,10 +59,10 @@ public:
 /** Yes, this should probably be called a Hub */
 class Client : 
 	public ClientBase, public ChatHandlerBase, public Speaker<ClientListener>, public BufferedSocketListener, protected TimerManagerListener, 
-	private ShareManagerListener, public HubSettings, private boost::noncopyable {
+	private ShareProfileManagerListener, public HubSettings, private boost::noncopyable {
 public:
-	typedef unordered_map<string*, ClientPtr, noCaseStringHash, noCaseStringEq> UrlMap;
-	typedef unordered_map<ClientToken, ClientPtr> IdMap;
+	using UrlMap = unordered_map<string *, ClientPtr, noCaseStringHash, noCaseStringEq>;
+	using IdMap = unordered_map<ClientToken, ClientPtr>;
 
 	virtual void connect(bool withKeyprint = true) noexcept;
 	virtual void disconnect(bool graceless) noexcept;
@@ -73,8 +75,8 @@ public:
 	virtual void sendUserCmd(const UserCommand& command, const ParamMap& params) = 0;
 
 	uint64_t queueSearch(const SearchPtr& aSearch) noexcept;
-	optional<uint64_t> getQueueTime(const void* aOwner) const noexcept;
-	bool cancelSearch(const void* aOwner) noexcept { return searchQueue.cancelSearch(aOwner); }
+	optional<uint64_t> getQueueTime(CallerPtr aOwner) const noexcept;
+	bool cancelSearch(CallerPtr aOwner) noexcept { return searchQueue.cancelSearch(aOwner); }
 	int getSearchQueueSize() const noexcept { return searchQueue.getQueueSize(); }
 	bool hasSearchOverflow() const noexcept { return searchQueue.hasOverflow(); }
 	
@@ -84,7 +86,7 @@ public:
 	virtual size_t getUserCount() const noexcept = 0;
 	int64_t getTotalShare() const noexcept { return availableBytes; };
 	
-	virtual bool send(const AdcCommand& command) = 0;
+	virtual bool sendHooked(const AdcCommand& command) = 0;
 
 	void callAsync(AsyncF f) noexcept;
 
@@ -99,7 +101,7 @@ public:
 	virtual void refreshUserList(bool) noexcept = 0;
 	virtual void getUserList(OnlineUserList& list, bool aListHidden) const noexcept = 0;
 	virtual OnlineUserPtr findUser(const string& aNick) const noexcept = 0;
-	virtual OnlineUser* findUser(const uint32_t aSID) const noexcept = 0;
+	virtual OnlineUser* findUser(dcpp::SID aSID) const noexcept = 0;
 	
 	const string& getPort() const noexcept { return port; }
 	const string& getAddress() const noexcept { return address; }
@@ -123,8 +125,6 @@ public:
 	string getMyNick() const noexcept { return myIdentity.getNick(); }
 	string getHubName() const noexcept override { return hubIdentity.getNick().empty() ? getHubUrl() : hubIdentity.getNick(); }
 	string getHubDescription() const noexcept { return hubIdentity.getDescription(); }
-	
-	void addLine(const string& msg) noexcept;
 
 	GETSET(Identity, myIdentity, MyIdentity);
 	GETSET(Identity, hubIdentity, HubIdentity);
@@ -138,7 +138,7 @@ public:
 	
 	IGETSET(bool, registered, Registered, false);
 	IGETSET(bool, autoReconnect, AutoReconnect, false);
-	IGETSET(ProfileToken, favToken, FavToken, 0);
+	IGETSET(FavoriteHubToken, favToken, FavToken, 0);
 
 	ClientToken getToken() const noexcept {
 		return clientId;
@@ -162,10 +162,7 @@ public:
 
 	bool isSharingHub() const noexcept;
 
-	void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel, int = ClientListener::FLAG_NORMAL) noexcept;
-	void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel = Util::emptyString) noexcept override {
-		statusMessage(aMessage, aSeverity, aLabel, ClientListener::FLAG_NORMAL);
-	}
+	void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType = LogMessage::Type::SERVER, const string& aLabel = Util::emptyString, const string& aOwner = Util::emptyString) noexcept override;
 
 	virtual ~Client();
 
@@ -201,9 +198,15 @@ public:
 
 	void allowUntrustedConnect() noexcept;
 	bool isKeyprintMismatch() const noexcept;
+
+	AdcSupports& getSupports() noexcept {
+		return supports;
+	}
 protected:
-	virtual bool hubMessage(const string& aMessage, string& error_, bool aThirdPerson = false) noexcept = 0;
-	virtual bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept override = 0;
+	mutable SharedMutex cs;
+
+	virtual bool hubMessageHooked(const string& aMessage, string& error_, bool aThirdPerson = false) noexcept = 0;
+	virtual bool privateMessageHooked(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept override = 0;
 	virtual void clearUsers() noexcept = 0;
 
 	void setConnectState(State aState) noexcept;
@@ -241,8 +244,8 @@ protected:
 	virtual void on(BufferedSocketListener::Failed, const string&) noexcept override;
 
 	// ShareManagerListener
-	void on(ShareManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept override;
-	void on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept override;
+	void on(ShareProfileManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept override;
+	void on(ShareProfileManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept override;
 
 	virtual bool v4only() const noexcept = 0;
 	void onPassword() noexcept;
@@ -255,6 +258,17 @@ protected:
 	void onUserDisconnected(const OnlineUserPtr& aUser, bool aDisconnectTransfers) noexcept;
 
 	string redirectUrl;
+
+	FloodCounter ctmFloodCounter;
+	FloodCounter searchFloodCounter;
+
+	static FloodCounter::FloodLimits getCTMLimits(const OnlineUser* aAdcUser) noexcept;
+	static FloodCounter::FloodLimits getSearchLimits() noexcept;
+
+	bool checkIncomingCTM(const string& aTarget, const OnlineUser* aAdcUser = nullptr) noexcept;
+	bool checkIncomingSearch(const string& aTarget, const OnlineUser* aAdcUser = nullptr) noexcept;
+
+	AdcSupports supports;
 private:
 	const ClientToken clientId;
 	static atomic<long> allCounts[COUNT_UNCOUNTED];
@@ -276,6 +290,7 @@ private:
 	bool countIsSharing = false;
 
 	void destroySocket(const AsyncF& aShutdownAction = nullptr) noexcept;
+	void handleFlood(const FloodCounter::FloodResult& aResult, const string& aMessage) noexcept;
 };
 
 } // namespace dcpp

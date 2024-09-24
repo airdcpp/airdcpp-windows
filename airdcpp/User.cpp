@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,14 +19,12 @@
 #include "stdinc.h"
 #include "User.h"
 
-#include "AdcHub.h"
 #include "Client.h"
 #include "StringTokenizer.h"
 #include "FavoriteUser.h"
 #include "GeoManager.h"
 
 #include "ClientManager.h"
-#include "UserCommand.h"
 #include "ResourceManager.h"
 #include "FavoriteManager.h"
 
@@ -36,7 +34,20 @@ namespace dcpp {
 
 SharedMutex Identity::cs;
 
-OnlineUser::OnlineUser(const UserPtr& ptr, const ClientPtr& client_, uint32_t sid_) : identity(ptr, sid_), client(client_) {
+const string OnlineUser::CLIENT_PROTOCOL("ADC/1.0");
+const string OnlineUser::SECURE_CLIENT_PROTOCOL_TEST("ADCS/0.10");
+const string OnlineUser::ADCS_FEATURE("ADC0");
+const string OnlineUser::TCP4_FEATURE("TCP4");
+const string OnlineUser::TCP6_FEATURE("TCP6");
+const string OnlineUser::UDP4_FEATURE("UDP4");
+const string OnlineUser::UDP6_FEATURE("UDP6");
+const string OnlineUser::NAT0_FEATURE("NAT0");
+const string OnlineUser::SEGA_FEATURE("SEGA");
+const string OnlineUser::SUD1_FEATURE("SUD1");
+const string OnlineUser::ASCH_FEATURE("ASCH");
+const string OnlineUser::CCPM_FEATURE("CCPM");
+
+OnlineUser::OnlineUser(const UserPtr& ptr, const ClientPtr& client_, SID sid_) : identity(ptr, sid_), client(client_) {
 }
 
 OnlineUser::~OnlineUser() noexcept {
@@ -62,24 +73,24 @@ bool Identity::isTcp4Active(const ClientPtr& c) const noexcept {
 		}
 
 		// ADC
-		return !getIp4().empty() && supports(AdcHub::TCP4_FEATURE);
+		return !getIp4().empty() && hasSupport(OnlineUser::TCP4_FEATURE);
 	}
 }
 
 bool Identity::isTcp6Active() const noexcept {
-	return !getIp6().empty() && supports(AdcHub::TCP6_FEATURE);
+	return !getIp6().empty() && hasSupport(OnlineUser::TCP6_FEATURE);
 }
 
 bool Identity::isUdp4Active() const noexcept {
 	if(getIp4().empty() || getUdp4Port().empty())
 		return false;
-	return user->isSet(User::NMDC) ? !user->isSet(User::PASSIVE) : supports(AdcHub::UDP4_FEATURE);
+	return user->isSet(User::NMDC) ? !user->isSet(User::PASSIVE) : hasSupport(OnlineUser::UDP4_FEATURE);
 }
 
 bool Identity::isUdp6Active() const noexcept {
 	if(getIp6().empty() || getUdp6Port().empty())
 		return false;
-	return user->isSet(User::NMDC) ? false : supports(AdcHub::UDP6_FEATURE);
+	return user->isSet(User::NMDC) ? false : hasSupport(OnlineUser::UDP6_FEATURE);
 }
 
 string Identity::getUdpPort() const noexcept {
@@ -125,10 +136,11 @@ uint8_t Identity::getSlots() const noexcept {
 void Identity::getParams(ParamMap& sm, const string& prefix, bool compatibility) const noexcept {
 	{
 		RLock l(cs);
-		for(auto& i: info) {
-			sm[prefix + string((char*)(&i.first), 2)] = i.second;
+		for (const auto& [name, value] : info) {
+			sm[prefix + string((char*)(&name), 2)] = value;
 		}
 	}
+
 	if(user) {
 		sm[prefix + "NI"] = getNick();
 		sm[prefix + "SID"] = getSIDString();
@@ -188,7 +200,7 @@ string Identity::getV6ModeString() const noexcept {
 
 Identity::Identity() : sid(0) { }
 
-Identity::Identity(const UserPtr& ptr, uint32_t aSID) : user(ptr), sid(aSID) { }
+Identity::Identity(const UserPtr& ptr, dcpp::SID aSID) : user(ptr), sid(aSID) { }
 
 Identity::Identity(const Identity& rhs) : Flags(), sid(0) { 
 	*this = rhs;  // Use operator= since we have to lock before reading...
@@ -200,6 +212,7 @@ Identity& Identity::operator = (const Identity& rhs) {
 	user = rhs.user;
 	sid = rhs.sid;
 	info = rhs.info;
+	supports = rhs.supports;
 	adcTcpConnectMode = rhs.adcTcpConnectMode;
 	return *this;
 }
@@ -239,20 +252,38 @@ bool Identity::isSet(const char* name) const noexcept {
 
 void Identity::set(const char* name, const string& val) noexcept {
 	WLock l(cs);
-	if(val.empty())
+	if (val.empty()) {
 		info.erase(*(short*)name);
-	else
+	} else {
 		info[*(short*)name] = val;
+	}
 }
 
 StringList Identity::getSupports() const noexcept {
-	string su = get("SU");
-	return StringTokenizer<string>(su, ',').getTokens();
+	StringList ret;
+	for (const auto& s : supports) {
+		ret.push_back(AdcCommand::fromFourCC(s));
+	}
+
+	return ret;
 }
 
-bool Identity::supports(const string& name) const noexcept {
-	for (const auto& s: getSupports()) {
-		if (s == name)
+void Identity::setSupports(const string& aSupports) noexcept {
+	auto tokens = StringTokenizer<string>(aSupports, ',');
+
+	WLock l(cs);
+	supports.clear();
+	for (const auto& support : tokens.getTokens()) {
+		supports.push_back(AdcCommand::toFourCC(support.c_str()));
+	}
+}
+
+bool Identity::hasSupport(const string& name) const noexcept {
+	auto support = AdcCommand::toFourCC(name.c_str());
+
+	RLock l(cs);
+	for (const auto& s: supports) {
+		if (s == support)
 			return true;
 	}
 
@@ -267,8 +298,8 @@ std::map<string, string> Identity::getInfo() const noexcept {
 	std::map<string, string> ret;
 
 	RLock l(cs);
-	for(const auto& i: info) {
-		ret[string((char*)(&i.first), 2)] = i.second;
+	for(const auto& [name, value] : info) {
+		ret[string((char*)(&name), 2)] = value;
 	}
 
 	return ret;
@@ -278,7 +309,7 @@ int Identity::getTotalHubCount() const noexcept {
 	return Util::toInt(get("HN")) + Util::toInt(get("HR")) + Util::toInt(get("HO"));
 }
 
-Identity::Mode Identity::detectConnectMode(const Identity& aMe, const Identity& aOther, bool aMeActive4, bool aMeActive6, bool aOtherActive4, bool aOtherActive6, bool aNatTravelsal, const Client* aClient) noexcept {
+Identity::Mode Identity::detectConnectMode(const Identity& aMe, const Identity& aOther, const ActiveMode& aActiveMe, const ActiveMode& aActiveOther, bool aNatTravelsal, const Client* aClient) noexcept {
 	if (aMe.getUser() == aOther.getUser()) {
 		return MODE_ME;
 	}
@@ -287,28 +318,28 @@ Identity::Mode Identity::detectConnectMode(const Identity& aMe, const Identity& 
 
 	if (!aMe.getIp6().empty() && !aOther.getIp6().empty()) {
 		// IPv6? active / NAT-T
-		if (aOtherActive6) {
+		if (aActiveOther.v6) {
 			mode = MODE_ACTIVE_V6;
-		} else if (aMeActive6 || aNatTravelsal) {
+		} else if (aActiveMe.v6 || aNatTravelsal) {
 			mode = MODE_PASSIVE_V6;
 		}
 	}
 
 	if (!aMe.getIp4().empty() && !aOther.getIp4().empty()) {
-		if (aOtherActive4) {
+		if (aActiveOther.v4) {
 			mode = mode == MODE_ACTIVE_V6 ? MODE_ACTIVE_DUAL : MODE_ACTIVE_V4;
-		} else if (mode == MODE_NOCONNECT_IP && (aMeActive4 || aNatTravelsal)) { //passive v4 isn't any better than passive v6
+		} else if (mode == MODE_NOCONNECT_IP && (aActiveMe.v4 || aNatTravelsal)) { //passive v4 isn't any better than passive v6
 			mode = MODE_PASSIVE_V4;
 		}
 	}
 
 	if (mode == MODE_NOCONNECT_IP) {
 		// The hub doesn't support hybrid connectivity or we weren't able to authenticate the secondary protocol? We are passive via that protocol in that case
-		if (aOtherActive4 && aClient->get(HubSettings::Connection) != SettingsManager::INCOMING_DISABLED) {
+		if (aActiveOther.v4 && aClient->get(HubSettings::Connection) != SettingsManager::INCOMING_DISABLED) {
 			mode = MODE_ACTIVE_V4;
-		} else if (aOtherActive6 && aClient->get(HubSettings::Connection6) != SettingsManager::INCOMING_DISABLED) {
+		} else if (aActiveOther.v6 && aClient->get(HubSettings::Connection6) != SettingsManager::INCOMING_DISABLED) {
 			mode = MODE_ACTIVE_V6;
-		} else if (!aMeActive4 && !aMeActive6) {
+		} else if (!aActiveMe.v4 && !aActiveMe.v6) {
 			// Other user is passive with no NAT-T (or the hub is hiding all IP addresses)
 			if (!aNatTravelsal && !aClient->isActive()) {
 				mode = MODE_NOCONNECT_PASSIVE;
@@ -323,11 +354,21 @@ Identity::Mode Identity::detectConnectMode(const Identity& aMe, const Identity& 
 }
 
 Identity::Mode Identity::detectConnectModeTcp(const Identity& aMe, const Identity& aOther, const Client* aClient) noexcept {
-	return detectConnectMode(aMe, aOther, aMe.isTcp4Active(), aMe.isTcp6Active(), aOther.isTcp4Active(), aOther.isTcp6Active(), aOther.supports(AdcHub::NAT0_FEATURE), aClient);
+	return detectConnectMode(
+		aMe, aOther, 
+		{ aMe.isTcp4Active(), aMe.isTcp6Active() },
+		{ aOther.isTcp4Active(), aOther.isTcp6Active() },
+		aOther.hasSupport(OnlineUser::NAT0_FEATURE), aClient
+	);
 }
 
 Identity::Mode Identity::detectConnectModeUdp(const Identity& aMe, const Identity& aOther, const Client* aClient) noexcept {
-	return detectConnectMode(aMe, aOther, aMe.isUdp4Active(), aMe.isUdp6Active(), aOther.isUdp4Active(), aOther.isUdp6Active(), false, aClient);
+	return detectConnectMode(
+		aMe, aOther, 
+		{ aMe.isUdp4Active(), aMe.isUdp6Active() },
+		{ aOther.isUdp4Active(), aOther.isUdp6Active() },
+		false, aClient
+	);
 }
 
 Identity::Mode Identity::getTcpConnectMode() const noexcept {
@@ -388,15 +429,19 @@ bool Identity::isActiveMode(Mode aConnectMode) noexcept {
 	return aConnectMode == MODE_ACTIVE_V6 || aConnectMode == MODE_ACTIVE_V4 || aConnectMode == MODE_ACTIVE_DUAL;
 }
 
+bool Identity::isConnectModeParam(const string_view& aParam) noexcept {
+	return aParam.starts_with("SU") || aParam.starts_with("I4") || aParam.starts_with("I6");
+}
+
 const string& OnlineUser::getHubUrl() const noexcept {
 	return getClient()->getHubUrl();
 }
 
-bool OnlineUser::NickSort::operator()(const OnlineUserPtr& left, const OnlineUserPtr& right) const {
+bool OnlineUser::NickSort::operator()(const OnlineUserPtr& left, const OnlineUserPtr& right) const noexcept {
 	return compare(left->getIdentity().getNick(), right->getIdentity().getNick()) < 0;
 }
 
-string OnlineUser::HubName::operator()(const OnlineUserPtr& u) { 
+string OnlineUser::HubName::operator()(const OnlineUserPtr& u) const noexcept {
 	return u->getClient()->getHubName(); 
 }
 
@@ -421,7 +466,7 @@ string OnlineUser::getLogPath() const noexcept {
 }
 
 bool OnlineUser::supportsCCPM() const noexcept {
-	return getIdentity().supports(AdcHub::CCPM_FEATURE);
+	return getIdentity().hasSupport(OnlineUser::CCPM_FEATURE);
 }
 
 } // namespace dcpp

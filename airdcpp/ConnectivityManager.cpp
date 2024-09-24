@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -19,13 +19,14 @@
 #include "stdinc.h"
 #include "ConnectivityManager.h"
 
-#include "AirUtil.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "DCPlusPlus.h"
+#include "FavoriteManager.h"
 #include "format.h"
 #include "LogManager.h"
 #include "MappingManager.h"
+#include "NetworkUtil.h"
 #include "ResourceManager.h"
 #include "SearchManager.h"
 #include "SettingsManager.h"
@@ -33,16 +34,19 @@
 
 namespace dcpp {
 
-ConnectivityManager::ConnectivityManager() :
-autoDetectedV4(false),
-autoDetectedV6(false),
-runningV4(false),
-runningV6(false),
-mapperV6(true),
-mapperV4(false)
-{
-}
+const SettingsManager::SettingKeyList ConnectivityManager::commonIncomingSettings = { 
+	SettingsManager::TCP_PORT, SettingsManager::UDP_PORT, SettingsManager::TLS_PORT, SettingsManager::MAPPER 
+};
 
+const SettingsManager::SettingKeyList ConnectivityManager::incomingV4Settings = {
+	SettingsManager::INCOMING_CONNECTIONS, SettingsManager::BIND_ADDRESS, SettingsManager::AUTO_DETECT_CONNECTION,
+};
+
+const SettingsManager::SettingKeyList ConnectivityManager::incomingV6Settings = {
+	SettingsManager::INCOMING_CONNECTIONS6, SettingsManager::BIND_ADDRESS6, SettingsManager::AUTO_DETECT_CONNECTION6,
+};
+
+ConnectivityManager::ConnectivityManager() : mapperV6(true), mapperV4(false) { }
 
 void ConnectivityManager::startup(StartupLoader& aLoader) noexcept {
 	try {
@@ -57,6 +61,38 @@ void ConnectivityManager::startup(StartupLoader& aLoader) noexcept {
 		} catch (const SocketException& e) {
 			aLoader.messageF(e.getError(), false, true);
 		}
+	}
+
+	SettingsManager::SettingKeyList outgoingSettings = {
+		SettingsManager::OUTGOING_CONNECTIONS,
+		SettingsManager::SOCKS_SERVER, SettingsManager::SOCKS_PORT, SettingsManager::SOCKS_USER, SettingsManager::SOCKS_PASSWORD
+	};
+
+	auto incomingSettings = commonIncomingSettings;
+	Util::concatenate(incomingSettings, incomingV4Settings);
+	Util::concatenate(incomingSettings, incomingV6Settings);
+
+	SettingsManager::getInstance()->registerChangeHandler(incomingSettings, onIncomingSettingsChanged);
+	SettingsManager::getInstance()->registerChangeHandler(outgoingSettings, onProxySettingsChanged);
+}
+
+void ConnectivityManager::onIncomingSettingsChanged(const MessageCallback& errorF, const SettingsManager::SettingKeyList& aSettings) {
+	auto commonChanged = Util::hasCommonElements(aSettings, commonIncomingSettings);
+	auto v4Changed = commonChanged || Util::hasCommonElements(aSettings, incomingV4Settings);
+	auto v6Changed = commonChanged || Util::hasCommonElements(aSettings, incomingV6Settings);
+
+	try {
+		ConnectivityManager::getInstance()->setup(v4Changed, v6Changed);
+	} catch (const Exception& e) {
+		errorF(STRING_F(PORT_BYSY, e.getError()));
+	}
+}
+
+void ConnectivityManager::onProxySettingsChanged(const MessageCallback& errorF, const SettingsManager::SettingKeyList&) noexcept {
+	try {
+		Socket::socksUpdated();
+	} catch (const SocketException& e) {
+		errorF(e.getError());
 	}
 }
 
@@ -218,7 +254,7 @@ void ConnectivityManager::detectConnection() {
 	autoDetectedV6 = detectV6;
 
 	if (detectV4) {
-		if (Util::isPublicIp(AirUtil::getLocalIp(false), false)) {
+		if (NetworkUtil::isPublicIp(NetworkUtil::getLocalIp(false), false)) {
 			// Direct connection
 			{
 				WLock l(cs);
@@ -237,7 +273,7 @@ void ConnectivityManager::detectConnection() {
 	}
 
 	if (detectV6) {
-		if (Util::isPublicIp(AirUtil::getLocalIp(true), true)) {
+		if (NetworkUtil::isPublicIp(NetworkUtil::getLocalIp(true), true)) {
 			// Direct connection
 			{
 				WLock l(cs);
@@ -464,13 +500,23 @@ StringList ConnectivityManager::getMappers(bool v6) const {
 	}
 }
 
+bool ConnectivityManager::isActive() const noexcept {
+	if (CONNSETTING(INCOMING_CONNECTIONS) != SettingsManager::INCOMING_PASSIVE && CONNSETTING(INCOMING_CONNECTIONS) != SettingsManager::INCOMING_DISABLED)
+		return true;
+
+	if (CONNSETTING(INCOMING_CONNECTIONS6) != SettingsManager::INCOMING_PASSIVE && CONNSETTING(INCOMING_CONNECTIONS6) != SettingsManager::INCOMING_DISABLED)
+		return true;
+
+	return FavoriteManager::getInstance()->hasActiveHubs();
+}
+
 void ConnectivityManager::startSocket() {
 	autoDetectedV4 = false;
 	autoDetectedV6 = false;
 
 	disconnect();
 
-	if(ClientManager::getInstance()->isActive()) {
+	if (isActive()) {
 		listen();
 
 		// must be done after listen calls; otherwise ports won't be set

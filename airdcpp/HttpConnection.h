@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -38,7 +38,7 @@ public:
 };
 
 
-class HttpConnection : BufferedSocketListener, public Speaker<HttpConnectionListener>, boost::noncopyable
+class HttpConnection : private BufferedSocketListener, public Speaker<HttpConnectionListener>, public boost::noncopyable
 {
 public:
 	HttpConnection(bool aIsUnique = false, const HttpOptions& aOptions = HttpOptions());
@@ -79,11 +79,12 @@ private:
 	void abortRequest(bool disconnect);
 
 	// BufferedSocketListener
-	void on(Connected) noexcept;
-	void on(Line, const string&) noexcept;
-	void on(Data, uint8_t*, size_t) noexcept;
-	void on(ModeChange) noexcept;
-	void on(Failed, const string&) noexcept;
+	void on(BufferedSocketListener::Connected) noexcept override;
+	void on(BufferedSocketListener::Line, const string&) noexcept override;
+	void on(BufferedSocketListener::Data, uint8_t*, size_t) noexcept override;
+	void on(BufferedSocketListener::ModeChange) noexcept override;
+	void on(BufferedSocketListener::Failed, const string&) noexcept override;
+
 	const bool isUnique;
 	const HttpOptions options;
 };

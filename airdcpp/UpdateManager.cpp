@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2012-2021 AirDC++ Project
+ * Copyright (C) 2012-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,22 +18,21 @@
 
 #include "stdinc.h"
 #include "UpdateManager.h"
+#include "UpdateDownloader.h"
 
-#include <openssl/rsa.h>
-
-#include "CryptoManager.h"
+#include "CryptoUtil.h"
 #include "GeoManager.h"
 #include "HashCalc.h"
 #include "HttpDownload.h"
 #include "Localization.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 #include "SettingsManager.h"
 #include "SimpleXML.h"
 #include "Text.h"
 #include "TimerManager.h"
-#include "Updater.h"
 #include "version.h"
 
 #include "pubkey.h"
@@ -55,6 +54,24 @@ UpdateManager::UpdateManager() : lastIPUpdate(GET_TICK()) {
 	links.ipcheck4 = "http://checkip.dyndns.org/";
 	links.ipcheck6 = "http://checkip.dyndns.org/";
 	links.language = "http://languages.airdcpp.net/tx/";
+
+	SettingsManager::getInstance()->registerChangeHandler({
+		SettingsManager::GET_USER_COUNTRY,
+		SettingsManager::UPDATE_CHANNEL,
+		SettingsManager::LANGUAGE_FILE
+	}, [this](auto, auto aChangedSettings) {
+		if (ranges::find(aChangedSettings, SettingsManager::UPDATE_CHANNEL) != aChangedSettings.end()) {
+			UpdateManager::getInstance()->checkVersion(false);
+		}
+		
+		if (ranges::find(aChangedSettings, SettingsManager::LANGUAGE_FILE) != aChangedSettings.end()) {
+			UpdateManager::getInstance()->checkLanguage();
+		}
+
+		if (ranges::find(aChangedSettings, SettingsManager::GET_USER_COUNTRY) != aChangedSettings.end() && SETTING(GET_USER_COUNTRY)) {
+			UpdateManager::getInstance()->checkGeoUpdate();
+		}
+	});
 }
 
 UpdateManager::~UpdateManager() { 
@@ -72,8 +89,8 @@ void UpdateManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 	}
 }
 
-bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVector& aPrivateKey) {
-	auto digest = CryptoManager::calculateSha1(aVersionData);
+bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVector& aSignature) {
+	auto digest = CryptoUtil::calculateSha1(aVersionData);
 	if (!digest) {
 		return false;
 	}
@@ -81,21 +98,7 @@ bool UpdateManager::verifyVersionData(const string& aVersionData, const ByteVect
 	const uint8_t* key = UpdateManager::publicKey;
 	auto keySize = sizeof(UpdateManager::publicKey);
 
-#define CHECK(n) if(!(n)) { dcassert(0); }
-	EVP_PKEY* pkey = EVP_PKEY_new();
-	CHECK(d2i_PublicKey(EVP_PKEY_RSA, &pkey, &key, keySize));
-
-	auto verify_ctx = EVP_PKEY_CTX_new(pkey, nullptr);
-	CHECK(EVP_PKEY_verify_init(verify_ctx));
-	CHECK(EVP_PKEY_CTX_set_rsa_padding(verify_ctx, RSA_PKCS1_PADDING));
-	CHECK(EVP_PKEY_CTX_set_signature_md(verify_ctx, EVP_sha1()));
-
-	auto res = EVP_PKEY_verify(verify_ctx, aPrivateKey.data(), aPrivateKey.size(), (*digest).data(), (*digest).size());
-
-	EVP_PKEY_free(pkey);
-	EVP_PKEY_CTX_free(verify_ctx);
-
-	return (res == 1);
+	return CryptoUtil::verifyDigest(*digest, aSignature, key, keySize);
 }
 
 void UpdateManager::completeSignatureDownload(bool aManualCheck) {
@@ -114,18 +117,38 @@ void UpdateManager::completeSignatureDownload(bool aManualCheck) {
 	);
 }
 
-void UpdateManager::checkIP(bool manual, bool v6) {
+void UpdateManager::checkIP(bool aManual, bool v6) {
 	HttpOptions options;
 	options.setV4Only(!v6);
 
 	conns[v6 ? CONN_IP6 : CONN_IP4] = make_unique<HttpDownload>(
 		v6 ? links.ipcheck6 : links.ipcheck4,
-		[=] { completeIPCheck(manual, v6); }, 
+		[this, aManual, v6] { completeIPCheck(aManual, v6); },
 		options
 	);
 }
 
-void UpdateManager::completeIPCheck(bool manual, bool v6) {
+string UpdateManager::parseIP(const string& aText, bool v6) {
+	const string pattern = !v6 ? 
+		"\\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b" : 
+		"(\\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,6}\\Z)|(\\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\\Z)|(\\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}\\Z)|(\\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}\\Z)|(\\A([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}\\Z)|(\\A([0-9a-f]{1,4}:){1,6}(:[0-9a-f]{1,4}){1,1}\\Z)|(\\A(([0-9a-f]{1,4}:){1,7}|:):\\Z)|(\\A:(:[0-9a-f]{1,4}){1,7}\\Z)|(\\A((([0-9a-f]{1,4}:){6})(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3})\\Z)|(\\A(([0-9a-f]{1,4}:){5}[0-9a-f]{1,4}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3})\\Z)|(\\A([0-9a-f]{1,4}:){5}:[0-9a-f]{1,4}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,4}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,3}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,2}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,1}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A(([0-9a-f]{1,4}:){1,5}|:):(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A:(:[0-9a-f]{1,4}){1,5}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)";
+
+	const boost::regex reg(pattern);
+	boost::match_results<string::const_iterator> results;
+	// RSX++ workaround for msvc std lib problems
+	auto start = aText.begin();
+	auto end = aText.end();
+
+	if (boost::regex_search(start, end, results, reg, boost::match_default)) {
+		if (!results.empty()) {
+			return results.str(0);
+		}
+	}
+
+	return Util::emptyString;
+}
+
+void UpdateManager::completeIPCheck(bool aManual, bool v6) {
 	auto& conn = conns[v6 ? CONN_IP6 : CONN_IP4];
 	if(!conn) { return; }
 
@@ -135,20 +158,9 @@ void UpdateManager::completeIPCheck(bool manual, bool v6) {
 
 	if (!conn->buf.empty()) {
 		try {
-			const string pattern = !v6 ? "\\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b" : "(\\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,6}\\Z)|(\\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\\Z)|(\\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}\\Z)|(\\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}\\Z)|(\\A([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}\\Z)|(\\A([0-9a-f]{1,4}:){1,6}(:[0-9a-f]{1,4}){1,1}\\Z)|(\\A(([0-9a-f]{1,4}:){1,7}|:):\\Z)|(\\A:(:[0-9a-f]{1,4}){1,7}\\Z)|(\\A((([0-9a-f]{1,4}:){6})(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3})\\Z)|(\\A(([0-9a-f]{1,4}:){5}[0-9a-f]{1,4}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3})\\Z)|(\\A([0-9a-f]{1,4}:){5}:[0-9a-f]{1,4}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,4}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,3}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,2}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,1}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A(([0-9a-f]{1,4}:){1,5}|:):(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)|(\\A:(:[0-9a-f]{1,4}){1,5}:(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}\\Z)";
-			const boost::regex reg(pattern);
-			boost::match_results<string::const_iterator> results;
-			// RSX++ workaround for msvc std lib problems
-			string::const_iterator start = conn->buf.begin();
-			string::const_iterator end = conn->buf.end();
-
-			if(boost::regex_search(start, end, results, reg, boost::match_default)) {
-				if(!results.empty()) {
-					ip = results.str(0);
-					//const string& ip = results.str(0);
-					if (!manual)
-						SettingsManager::getInstance()->set(setting, ip);
-				}
+			ip = parseIP(conn->buf, v6);
+			if (!aManual && !ip.empty()) {
+				SettingsManager::getInstance()->set(setting, ip);
 			}
 		} catch(...) { }
 	}
@@ -160,7 +172,7 @@ void UpdateManager::checkGeoUpdate() {
 	// update when the database is non-existent or older than X days 
 	try {
 		File f(GeoManager::getDbPath() + ".gz", File::READ, File::OPEN);
-		if(f.getSize() > 0 && static_cast<time_t>(f.getLastModified()) > GET_TIME() - 3600 * 24 * IP_DB_EXPIRATION_DAYS) {
+		if(f.getSize() > 0 && f.getLastModified() > GET_TIME() - 3600 * 24 * IP_DB_EXPIRATION_DAYS) {
 			return;
 		}
 	} catch(const FileException&) { }
@@ -205,7 +217,7 @@ void UpdateManager::completeLanguageDownload() {
 	if(!conn->buf.empty()) {
 		try {
 			auto path = Localization::getCurLanguageFilePath();
-			File::ensureDirectory(Util::getFilePath(path));
+			File::ensureDirectory(PathUtil::getFilePath(path));
 			File(path, File::WRITE, File::CREATE | File::TRUNCATE).write(conn->buf);
 			log(STRING_F(LANGUAGE_UPDATED, Localization::getCurLanguageName()), LogMessage::SEV_INFO);
 			fire(UpdateManagerListener::LanguageFinished());
@@ -325,7 +337,7 @@ void UpdateManager::completeLanguageCheck() {
 		if (Util::toDouble(conn->buf) > Localization::getCurLanguageVersion()) {
 			fire(UpdateManagerListener::LanguageDownloading());
 			conns[CONN_LANGUAGE_FILE] = make_unique<HttpDownload>(
-				links.language + Util::getFileName(Localization::getCurLanguageFilePath()),
+				links.language + PathUtil::getFileName(Localization::getCurLanguageFilePath()),
 				[this] { completeLanguageDownload(); }
 			);
 		} else {
@@ -357,7 +369,7 @@ string UpdateManager::getVersionUrl() const {
 }
 
 void UpdateManager::init() {
-	updater = make_unique<Updater>(this);
+	updater = make_unique<UpdateDownloader>(this);
 
 	checkVersion(false);
 }

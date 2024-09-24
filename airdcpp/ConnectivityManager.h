@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -72,12 +72,21 @@ public:
 	void close();
 	void disconnect();
 	StringList getMappers(bool v6) const;
+
+	bool isActive() const noexcept;
 private:
+	static const SettingsManager::SettingKeyList commonIncomingSettings;
+	static const SettingsManager::SettingKeyList incomingV4Settings;
+	static const SettingsManager::SettingKeyList incomingV6Settings;
+
+	static void onIncomingSettingsChanged(const MessageCallback& errorF, const SettingsManager::SettingKeyList& aSettings);
+	static void onProxySettingsChanged(const MessageCallback& errorF, const SettingsManager::SettingKeyList& aSettings) noexcept;
+
 	friend class Singleton<ConnectivityManager>;
 	friend class MappingManager;
 	
 	ConnectivityManager();
-	virtual ~ConnectivityManager() { }
+	~ConnectivityManager() override = default;
 
 	void startMapping();
 	void startMapping(bool v6);

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2013-2021 AirDC++ Project
+ * Copyright (C) 2013-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -20,20 +20,12 @@
 
 #include "SettingItem.h"
 #include "SettingsManager.h"
+#include "Util.h"
 
 namespace dcpp {
 
 SettingItem::SettingValue SettingItem::getCurValue(bool useDefault) const noexcept {
-	if(key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
-		return SettingsManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(key), useDefault);
-	} else if(key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
-		return SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(key), useDefault);
-	} else if(key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
-		return SettingsManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(key), useDefault);
-	} else {
-		dcassert(0);
-	}
-	return 0;
+	return SettingsManager::getInstance()->getSettingValue(key, useDefault);
 }
 
 bool SettingItem::isSet() const noexcept {
@@ -50,7 +42,7 @@ bool SettingItem::isDefault() const noexcept {
 	} else if(key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
 		return SettingsManager::getInstance()->isDefault(static_cast<SettingsManager::IntSetting>(key));
 	} else if(key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
-			return SettingsManager::getInstance()->isDefault(static_cast<SettingsManager::BoolSetting>(key));
+		return SettingsManager::getInstance()->isDefault(static_cast<SettingsManager::BoolSetting>(key));
 	} else {
 		dcassert(0);
 	}
@@ -70,20 +62,8 @@ SettingItem::SettingValue SettingItem::getDefaultValue() const noexcept {
 	return 0;
 }
 
-/*void useProfileValue() const {
-	if(key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
-		SettingsManager::getInstance()->set(static_cast<SettingsManager::StrSetting>(key), boost::get<string>(profileValue));
-	} else if(key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
-		return SettingsManager::getInstance()->set(static_cast<SettingsManager::IntSetting>(key), boost::get<int>(profileValue));
-	} else if(key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
-		return SettingsManager::getInstance()->set(static_cast<SettingsManager::BoolSetting>(key), boost::get<bool>(profileValue));
-	} else {
-		dcassert(0);
-	}
-}*/
-
 const string& SettingItem::getDescription() const noexcept {
-	return ResourceManager::getInstance()->getString(desc);
+	return STRING_I(desc);
 }
 
 string SettingItem::currentToString() const noexcept {
@@ -98,7 +78,7 @@ string SettingItem::ToString::operator()(const string& s) const noexcept {
 string SettingItem::ToString::operator()(int val) const noexcept {
 	auto enumStrings = SettingsManager::getEnumStrings(val, true);
 	if (!enumStrings.empty()) {
-		return ResourceManager::getInstance()->getString(enumStrings[val]);
+		return STRING_I(enumStrings[val]);
 	}
 
 	return Util::toString(val);
@@ -113,7 +93,7 @@ string SettingItem::ToString::operator()(bool b) const noexcept {
 }
 
 ProfileSettingItem::ProfileSettingItem(int aKey, const SettingValue& aProfileValue, ResourceManager::Strings aName) :
-profileValue(aProfileValue), SettingItem({ aKey, aName }) {
+	SettingItem({ aKey, aName }), profileValue(aProfileValue) {
 
 }
 
@@ -126,8 +106,8 @@ string ProfileSettingItem::profileToString() const noexcept {
 	return boost::apply_visitor(ToString(key), profileValue);
 }
 
-void ProfileSettingItem::setProfileToDefault(bool reset) const noexcept {
-	if (reset)
+void ProfileSettingItem::setProfileToDefault(bool aReset) const noexcept {
+	if (aReset)
 		SettingsManager::getInstance()->unsetKey(key);
 
 	if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {

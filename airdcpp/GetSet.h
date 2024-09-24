@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -35,6 +35,15 @@ public: std::conditional<std::is_class<t>::value, const t&, t>::type get##name2(
 protected: t name = init; \
 public: std::conditional<std::is_class<t>::value, const t&, t>::type get##name2() const noexcept { return name; } \
 	template<typename GetSetT> void set##name2(GetSetT&& name) { this->name = std::forward<GetSetT>(name); }
+
+
+#define GETPROP(t, name, name2) \
+protected: t name; \
+public: std::conditional<std::is_class<t>::value, const t&, t>::type get##name2() const noexcept { return name; }
+
+#define IGETPROP(t, name, name2, init) \
+protected: t name = init; \
+public: std::conditional<std::is_class<t>::value, const t&, t>::type get##name2() const noexcept { return name; }
 
 #else
 

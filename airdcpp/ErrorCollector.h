@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -21,13 +21,6 @@
 
 #include <airdcpp/forward.h>
 #include <airdcpp/typedefs.h>
-/*#include <airdcpp/GetSet.h>
-
-#include <airdcpp/ShareManagerListener.h>
-#include <airdcpp/TimerManagerListener.h>
-
-#include <airdcpp/ShareDirectoryInfo.h>
-#include <airdcpp/Singleton.h>*/
 
 namespace dcpp {
 
@@ -40,8 +33,8 @@ public:
 		bool isMinor;
 	};
 
-	ErrorCollector() {}
-	ErrorCollector(int aTotalFileCount);
+	ErrorCollector() = default;
+	explicit ErrorCollector(int aTotalFileCount);
 
 	void add(const string& aError, const string& aFile, bool aIsMinor) noexcept;
 	void clearMinor() noexcept;

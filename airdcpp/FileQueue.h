@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -23,9 +23,9 @@
 #include "forward.h"
 #include "typedefs.h"
 
-#include "DirectoryListing.h"
+#include "DirectoryListingDirectory.h"
 #include "DupeType.h"
-#include "HashBloom.h"
+// #include "HashBloom.h"
 #include "QueueItem.h"
 
 namespace dcpp {
@@ -36,8 +36,7 @@ public:
 	FileQueue() { }
 	~FileQueue();
 
-	void getBloom(HashBloom& bloom) const noexcept;
-	typedef vector<pair<QueueItem::SourceConstIter, const QueueItemPtr> > PFSSourceList;
+	// void getBloom(HashBloom& bloom) const noexcept;
 
 	pair<QueueItem::StringMap::const_iterator, bool> add(QueueItemPtr& qi) noexcept;
 	pair<QueueItemPtr, bool> add(const string& aTarget, int64_t aSize, Flags::MaskType aFlags, Priority p, const string& aTempTarget, time_t aAdded, const TTHValue& root) noexcept;
@@ -48,9 +47,6 @@ public:
 	void findFiles(const TTHValue& tth, QueueItemList& ql_) const noexcept;
 	void matchListing(const DirectoryListing& dl, QueueItemList& ql_) const noexcept;
 	void matchDir(const DirectoryListing::Directory::Ptr& dir, QueueItemList& ql_) const noexcept;
-
-	// find some PFS sources to exchange parts info
-	void findPFSSources(PFSSourceList&) const noexcept;
 
 	size_t getSize() noexcept { return pathQueue.size(); }
 	QueueItem::StringMap& getPathQueue() noexcept { return pathQueue; }

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -21,9 +21,8 @@
 
 namespace dcpp {
 
-HttpDownload::HttpDownload(const string& address, CompletionF f, const HttpOptions& aOptions) :
-	c(new HttpConnection(true, aOptions)),
-f(f)
+HttpDownload::HttpDownload(const string& address, CompletionF&& f, const HttpOptions& aOptions) :
+	c(new HttpConnection(true, aOptions)), f(std::move(f))
 {
 	c->addListener(this);
 	c->downloadFile(address);
@@ -46,11 +45,6 @@ void HttpDownload::on(HttpConnectionListener::Failed, HttpConnection*, const str
 void HttpDownload::on(HttpConnectionListener::Complete, HttpConnection*, const string& status_) noexcept {
 	status = status_;
 	f();
-}
-
-void HttpDownload::on(HttpConnectionListener::Retried, HttpConnection*, bool connected) noexcept {
-	if(connected)
-		buf.clear();
 }
 
 } // namespace dcpp

@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -60,14 +60,14 @@ namespace dcpp {
 		UserConnection* getPMConn(const UserPtr& user); //LOCK usage!!
 
 		// ConnectionManagerListener
-		void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept;
-		void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
+		void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept override;
+		void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept override;
 
 		// UserConnectionListener
-		void on(UserConnectionListener::PrivateMessage, UserConnection*, const ChatMessagePtr& message) noexcept;
-		void on(AdcCommand::PMI, UserConnection* uc, const AdcCommand& cmd) noexcept;
+		void on(UserConnectionListener::PrivateMessage, UserConnection*, const ChatMessagePtr& message) noexcept override;
+		void on(AdcCommand::PMI, UserConnection* uc, const AdcCommand& cmd) noexcept override;
 
-		void on(ClientManagerListener::PrivateMessage, const ChatMessagePtr& aMessage) noexcept;
+		void on(ClientManagerListener::PrivateMessage, const ChatMessagePtr& aMessage) noexcept override;
 	};
 
 }

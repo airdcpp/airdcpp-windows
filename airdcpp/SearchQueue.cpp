@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -23,7 +23,7 @@
 
 namespace dcpp {
 
-using boost::range::for_each;
+using ranges::for_each;
 	
 SearchQueue::SearchQueue() : lastSearchTick(GET_TICK()) {
 
@@ -135,7 +135,7 @@ SearchPtr SearchQueue::maybePop() noexcept {
 	{
 		Lock l(cs);
 		if(!searchQueue.empty()){
-			auto s = move(searchQueue.front());
+			auto s = std::move(searchQueue.front());
 			searchQueue.pop_front();
 			lastSearchTick = GET_TICK();
 			return s;
@@ -145,11 +145,11 @@ SearchPtr SearchQueue::maybePop() noexcept {
 	return nullptr;
 }
 
-bool SearchQueue::cancelSearch(const void* aOwner) noexcept {
+bool SearchQueue::cancelSearch(CallerPtr aOwner) noexcept {
 	dcassert(aOwner);
 
 	Lock l(cs);
-	auto i = find_if(searchQueue.begin(), searchQueue.end(), Search::CompareOwner(aOwner));
+	auto i = ranges::find_if(searchQueue, Search::CompareOwner(aOwner));
 	if (i != searchQueue.end()) {
 		searchQueue.erase(i);
 		return true;

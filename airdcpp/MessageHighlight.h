@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -28,8 +28,6 @@
 
 
 namespace dcpp {
-	typedef uint32_t MessageHighlightToken;
-
 	struct Position {
 		Position(size_t aStart, size_t aEnd) : start(aStart), end(aEnd) {}
 
@@ -62,8 +60,7 @@ namespace dcpp {
 
 		DupeType getDupe() const noexcept;
 
-		// typedef size_t KeyT;
-		typedef Position KeyT;
+		using KeyT = Position;
 
 		struct HighlightSort {
 			int operator()(const KeyT& a, const KeyT& b) const noexcept;
@@ -73,9 +70,19 @@ namespace dcpp {
 			const KeyT& operator()(const MessageHighlightPtr& a) const noexcept;
 		};
 
-		typedef SortedVector<MessageHighlightPtr, vector, KeyT, HighlightSort, HighlightPosition> SortedList;
+		using SortedList = SortedVector<MessageHighlightPtr, std::vector, KeyT, HighlightSort, HighlightPosition>;
 
-		static MessageHighlight::SortedList parseHighlights(const string& aText, const string& aMyNick, const UserPtr& aUser);
+		static string TAG_ME;
+		static string TAG_FAVORITE;
+		static string TAG_RELEASE;
+		static string TAG_MAGNET;
+		static string TAG_TEMP_SHARE;
+
+		static MessageHighlight::SortedList parseHighlights(const string& aText, const string& aMyNick, const UserPtr& aTo);
+
+		static void parseLinkHighlights(const string& aText, MessageHighlight::SortedList& highlights_, const UserPtr& aTo);
+		static void parseReleaseHighlights(const string& aText, MessageHighlight::SortedList& highlights_);
+		static void parseUserHighlights(const string& aText, MessageHighlight::SortedList& highlights_, const string& aMyNick);
 	private:
 		MessageHighlightToken token;
 		string text;

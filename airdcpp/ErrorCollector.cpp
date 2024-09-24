@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2011-2021 AirDC++ Project
+* Copyright (C) 2011-2024 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -23,8 +23,6 @@
 #include "ResourceManager.h"
 #include "Util.h"
 
-#include <boost/range/algorithm/remove_if.hpp>
-
 namespace dcpp {
 
 ErrorCollector::ErrorCollector(int aTotalFileCount) : totalFileCount(aTotalFileCount) { }
@@ -35,7 +33,7 @@ void ErrorCollector::add(const string& aError, const string& aFile, bool aIsMino
 }
 
 void ErrorCollector::clearMinor() noexcept {
-	errors.erase(boost::remove_if(errors | map_values, [](const Error& e) { return e.isMinor; }).base(), errors.end());
+	std::erase_if(errors, [](const auto& errorPair) { return errorPair.second.isMinor; });
 }
 
 string ErrorCollector::getMessage() const noexcept {
@@ -47,25 +45,25 @@ string ErrorCollector::getMessage() const noexcept {
 
 	//get individual errors
 	StringSet errorNames;
-	for (const auto& p : errors | map_keys) {
+	for (const auto& p : errors | views::keys) {
 		errorNames.insert(p);
 	}
 
-	for (const auto& e : errorNames) {
-		auto errorCount = errors.count(e);
+	for (const auto& errorName: errorNames) {
+		auto errorCount = errors.count(errorName);
 		if (errorCount <= 3) {
 			// Report each file
 			StringList paths;
-			auto k = errors.equal_range(e);
-			for (auto i = k.first; i != k.second; ++i) {
-				paths.push_back(i->second.file);
+			auto k = errors.equal_range(errorName);
+			for (const auto& errorDetails: k | pair_to_range | views::values) {
+				paths.push_back(errorDetails.file);
 			}
 
 			auto pathStr = Util::toString(", ", paths);
-			msg.push_back(STRING_F(X_FILE_NAMES, e % pathStr));
+			msg.push_back(STRING_F(X_FILE_NAMES, errorName % pathStr));
 		} else {
 			// Too many errors, report the total failed count
-			msg.push_back(STRING_F(X_FILE_COUNT, e % errorCount % totalFileCount));
+			msg.push_back(STRING_F(X_FILE_COUNT, errorName % errorCount % totalFileCount));
 		}
 	}
 

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -33,8 +33,8 @@ namespace dcpp {
 	class ShareProfile;
 	class FavoriteHubEntry : public HubSettings, public intrusive_ptr_base<FavoriteHubEntry> {
 	public:
-		typedef FavoriteHubEntry* Ptr;
-		typedef vector<Ptr> List;
+		using Ptr = FavoriteHubEntry *;
+		using List = vector<Ptr>;
 
 		enum ConnectState {
 			STATE_DISCONNECTED,
@@ -66,7 +66,7 @@ namespace dcpp {
 
 		IGETSET(bool, autoConnect, AutoConnect, true);
 		GETSET(string, group, Group);
-		GETSET(ProfileToken, token, Token);
+		GETSET(FavoriteHubToken, token, Token);
 
 		bool isAdcHub() const noexcept;
 		string getShareProfileName() const noexcept;

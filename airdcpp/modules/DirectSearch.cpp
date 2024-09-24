@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -19,8 +19,10 @@
 #include "stdinc.h"
 
 #include "DirectSearch.h"
-#include "ClientManager.h"
-#include "SearchManager.h"
+
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/SearchManager.h>
 
 
 namespace dcpp {
@@ -33,7 +35,7 @@ namespace dcpp {
 		maxResultCount = aSearch->maxResults;
 
 		string error;
-		ClientManager::getInstance()->directSearch(aUser, aSearch, error);
+		ClientManager::getInstance()->directSearchHooked(aUser, aSearch, error);
 	}
 
 	DirectSearch::~DirectSearch() {
@@ -89,7 +91,7 @@ namespace dcpp {
 			auto path = sr->getAdcPath();
 			if (aParents && !sr->getUser().user->isSet(User::ASCH)) {
 				//convert the regular search results
-				path = sr->getType() == SearchResult::TYPE_DIRECTORY ? Util::getAdcParentDir(sr->getAdcPath()) : sr->getAdcFilePath();
+				path = sr->getType() == SearchResult::Type::DIRECTORY ? PathUtil::getAdcParentDir(sr->getAdcPath()) : sr->getAdcFilePath();
 			}
 
 			paths_.insert(path);

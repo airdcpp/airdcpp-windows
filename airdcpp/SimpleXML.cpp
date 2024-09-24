@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -18,6 +18,8 @@
 
 #include "stdinc.h"
 #include "SimpleXML.h"
+
+#include "Exception.h"
 #include "Streams.h"
 
 #include "File.h"
@@ -25,6 +27,10 @@
 namespace dcpp {
 
 const string SimpleXML::utf8Header = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\r\n";
+
+SimpleXML::SimpleXML() : root("BOGUSROOT", Util::emptyString, nullptr), current(&root) {
+	resetCurrentChild();
+}
 
 string& SimpleXML::escape(string& aString, bool aAttrib, bool aLoading /* = false */) {
 	string::size_type i = 0;
@@ -77,16 +83,16 @@ string& SimpleXML::escape(string& aString, bool aAttrib, bool aLoading /* = fals
 	return aString;
 }
 
-void SimpleXML::Tag::appendAttribString(string& tmp) {
-	for(auto& i: attribs) {
-		tmp.append(i.first);
+void SimpleXML::Tag::appendAttribString(string& tmp) const {
+	for (const auto& [attribName, value] : attribs) {
+		tmp.append(attribName);
 		tmp.append("=\"", 2);
-		if(needsEscape(i.second, true)) {
-			string tmp2(i.second);
+		if(needsEscape(value, true)) {
+			string tmp2(value);
 			escape(tmp2, true);
 			tmp.append(tmp2);
 		} else {
-			tmp.append(i.second);
+			tmp.append(value);
 		}
 		tmp.append("\" ", 2);
 	}
@@ -98,7 +104,7 @@ void SimpleXML::Tag::appendAttribString(string& tmp) {
  * with streams and only one code set but streams are slow...the file f should be a buffered
  * file, otherwise things will be very slow (I assume write is not expensive and call it a lot
  */
-void SimpleXML::Tag::toXML(int indent, OutputStream* f, bool /*noIndent*/ /*false*/) {
+void SimpleXML::Tag::toXML(int indent, OutputStream* f, bool /*noIndent*/ /*false*/) const {
 	if(children.empty() && data.empty() && !forceEndTag) {
 		string tmp;
 		tmp.reserve(indent + name.length() + 30);
@@ -142,7 +148,7 @@ void SimpleXML::Tag::toXML(int indent, OutputStream* f, bool /*noIndent*/ /*fals
 }
 
 bool SimpleXML::findChild(const string& aName) noexcept {
-	dcassert(current != NULL);
+	dcassert(current);
 	if (!current)
 		return false;
 
@@ -179,13 +185,13 @@ void SimpleXML::addAttrib(const string& aName, const string& aData) {
 	current->attribs.emplace_back(aName, aData);
 }
 
-void SimpleXML::addChildAttrib(const string& aName, const string& aData) {
+void SimpleXML::addChildAttrib(const string& aName, const string& aData) const {
 	checkChildSelected();
 
 	(*currentChild)->attribs.emplace_back(aName, aData);
 }
 
-void SimpleXML::replaceChildAttrib(const string& aName, const string& aData) {
+void SimpleXML::replaceChildAttrib(const string& aName, const string& aData) const {
 	checkChildSelected();
 
 	auto i = find_if((*currentChild)->attribs.begin(), (*currentChild)->attribs.end(), CompareFirst<string,string>(aName));
@@ -208,7 +214,7 @@ void SimpleXML::toXML(OutputStream* f) {
 		root.children[0]->toXML(0, f); 
 }
 
-string SimpleXML::childToXML() {
+string SimpleXML::childToXML() const {
 	string tmp; 
 	StringOutputStream os(tmp); 
 	(*currentChild)->toXML(0, &os, true); 
@@ -231,5 +237,44 @@ void SimpleXML::fromXML(const string& aXML, int aFlags) {
 	current = &root;
 	resetCurrentChild();
 }
+
+void SimpleXML::stepIn() {
+	checkChildSelected();
+	current = *currentChild;
+	currentChild = current->children.begin();
+	found = false;
+}
+
+void SimpleXML::stepOut() {
+	if (current == &root)
+		throw SimpleXMLException("Already at lowest level");
+
+	dcassert(current->parent);
+
+	currentChild = find(current->parent->children.begin(), current->parent->children.end(), current);
+
+	current = current->parent;
+	found = true;
+}
+
+void SimpleXML::resetCurrentChild() noexcept {
+	found = false;
+	dcassert(current);
+	currentChild = current->children.begin();
+}
+
+void SimpleXML::TagReader::startTag(const string& name, StringPairList& attribs, bool simple) {
+	cur->children.push_back(new Tag(name, attribs, cur));
+	if (!simple)
+		cur = cur->children.back();
+}
+
+void SimpleXML::TagReader::endTag(const string&) {
+	if (!cur->parent)
+		throw SimpleXMLException("Invalid end tag");
+	cur = cur->parent;
+}
+
+
 
 } // namespace dcpp

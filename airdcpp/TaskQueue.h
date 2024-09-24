@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -16,30 +16,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_DCPP_TASK_H
-#define DCPLUSPLUS_DCPP_TASK_H
+#ifndef DCPLUSPLUS_DCPP_TASKQUEUE_H
+#define DCPLUSPLUS_DCPP_TASKQUEUE_H
 
 #include <functional>
 
 #include "forward.h"
+
+#include "Task.h"
 #include "Thread.h"
 
 namespace dcpp {
-
-struct Task {
-	virtual ~Task() { };
-};
-
-struct AsyncTask : public Task {
-	AsyncTask(AsyncF aF) : f(aF) { }
-	AsyncF f;
-};
-
-struct StringTask : public Task {
-	StringTask(const string& str_) : str(str_) { }
-	string str;
-};
-
 
 class TaskQueue {
 public:
@@ -56,19 +43,19 @@ public:
 
 	void add(UniqueTaskPair& t) { 
 		Lock l(cs); 
-		tasks.push_back(move(t)); 
+		tasks.push_back(std::move(t)); 
 	}
 
 	void add(uint8_t type, std::unique_ptr<Task> && data) { 
 		Lock l(cs); 
-		tasks.emplace_back(type, move(data)); 
+		tasks.emplace_back(type, std::move(data)); 
 	}
 
 	bool addUnique(uint8_t type, std::unique_ptr<Task> && data) { 
 		Lock l(cs);
-		auto p = boost::find_if(tasks, [type, this](const UniqueTaskPair& tp) { return tp.first == type; });
+		auto p = ranges::find_if(tasks, [type, this](const UniqueTaskPair& tp) { return tp.first == type; });
 		if (p == tasks.end()) {
-			tasks.emplace_back(type, move(data));
+			tasks.emplace_back(type, std::move(data));
 			return true;
 		}
 		return false;

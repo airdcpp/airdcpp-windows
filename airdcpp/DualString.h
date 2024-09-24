@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2013-2021 AirDC++ Project
+ * Copyright (C) 2013-2024 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -27,27 +27,30 @@ using std::string;
 
 /* Class for storing a string as lowercase and normal with minimum memory usage overhead. Optimized for accessing the lowercase representation. */
 
-class DualString : private string {
+class DualString {
 public:
 	typedef uint32_t MaskType;
 
 	DualString(const string& aStr);
-	~DualString();
 
-	const string& getLower() const { return *this; }
-	string getNormal() const;
+	const string& getLower() const noexcept { return str; }
+	string getNormal() const noexcept;
 
-	size_t size() const noexcept { return std::string::size(); }
+	size_t length() const noexcept;
 
 	bool lowerCaseOnly() const noexcept;
 
-	DualString(DualString&& rhs);
-	DualString& operator=(DualString&&);
+	DualString(DualString&& rhs) noexcept;
 	DualString(const DualString&) = delete;
+
+	DualString& operator=(DualString&& rhs) = delete;
 	DualString& operator= (const DualString& other) = delete;
 private:
-	size_t initSizeArray(size_t strLen);
-	MaskType* charSizes = nullptr;
+	void init(const string& aNormalStr) noexcept;
+	size_t initSizeArray(size_t strLen) noexcept;
+	std::unique_ptr<MaskType[]> charSizes;
+
+	const string str;
 };
 
 #endif

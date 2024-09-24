@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -30,8 +30,8 @@
 
 namespace dcpp {
 
-typedef boost::detail::spinlock	FastCriticalSection;
-typedef std::lock_guard<boost::detail::spinlock> FastLock;
+using FastCriticalSection = boost::detail::spinlock;
+using FastLock = std::lock_guard<boost::detail::spinlock>;
 
 
 #ifndef _WIN32
@@ -76,12 +76,12 @@ typedef LockBase<CriticalSection> Lock;
 
 #else
 
-typedef std::recursive_mutex	CriticalSection;
-typedef std::lock_guard<std::recursive_mutex> Lock;
+using CriticalSection = std::recursive_mutex;
+using Lock = std::scoped_lock <std::recursive_mutex>;
 
-typedef std::shared_mutex	SharedMutex;
-typedef std::shared_lock<std::shared_mutex> RLock;
-typedef std::unique_lock<std::shared_mutex> WLock;
+using SharedMutex = std::shared_mutex;
+using RLock = std::shared_lock<std::shared_mutex>;
+using WLock = std::unique_lock<std::shared_mutex>;
 
 #endif
 

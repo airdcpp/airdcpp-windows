@@ -1,9 +1,9 @@
 /*
-* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
+* the Free Software Foundation; either version 3 of the License, or
 * (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
@@ -58,13 +58,11 @@ public:
 		FLAG_HIGHEST_PRIO		= 0x2000
 	};
 
-	bool operator==(const Download* d) const;
-
 	Download(UserConnection& conn, QueueItem& qi) noexcept;
 
-	void getParams(const UserConnection& aSource, ParamMap& params) const noexcept;
+	void getParams(const UserConnection& aSource, ParamMap& params) const noexcept override;
 
-	~Download();
+	~Download() override;
 
 	/** @return Target filename without path. */
 	string getTargetFileName() const noexcept;
@@ -77,6 +75,7 @@ public:
 
 	/** @internal */
 	TigerTree& getTigerTree() { return tt; }
+	const TigerTree& getTigerTree() const noexcept { return tt; }
 	const string& getPFS() const { return pfs; }
 
 	/** @internal */
@@ -92,8 +91,15 @@ public:
 
 	string getBundleStringToken() const noexcept;
 
-	void appendFlags(OrderedStringSet& flags_) const noexcept;
+	void appendFlags(OrderedStringSet& flags_) const noexcept override;
+	void flush() const noexcept;
 private:
+	void initFlags(const QueueItem& aQI) noexcept;
+	void initOverlapped(const QueueItem& aQI) noexcept;
+	void initSegment(QueueItem& aQI) noexcept;
+
+	void disconnectOverlappedThrow();
+
 	Download(const Download&);
 	Download& operator=(const Download&) = delete;
 
