@@ -25,7 +25,7 @@
 #include "ShareDirectories.h"
 #include "Wizard.h"
 
-#include "WTL\atldlgs.h"
+#include <atldlgs.h>
 
 namespace wingui {
 

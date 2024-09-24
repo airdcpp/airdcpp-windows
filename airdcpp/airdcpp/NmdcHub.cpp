@@ -807,8 +807,8 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 			StringTokenizer<string> t(param, "$$");
 			StringList& sl = t.getTokens();
 
-			for(StringIter it = sl.begin(); it != sl.end(); ++it) {
-				v.push_back(&getUser(*it));
+			for(const auto& it: sl) {
+				v.push_back(&getUser(it));
 			}
 
 			if(!(supportFlags & SUPPORTS_NOGETINFO)) {
@@ -833,8 +833,8 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 			OnlineUserList v;
 			StringTokenizer<string> t(param, "$$");
 			StringList& sl = t.getTokens();
-			for(StringIter it = sl.begin(); it != sl.end(); ++it) {
-				OnlineUser& ou = getUser(*it);
+			for(const auto& it: sl) {
+				OnlineUser& ou = getUser(it);
 				ou.getIdentity().setOp(true);
 				if(ou.getUser() == getMyIdentity().getUser()) {
 					setMyIdentity(ou.getIdentity());

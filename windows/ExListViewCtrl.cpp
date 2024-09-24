@@ -17,7 +17,7 @@
  */
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "resource.h"
 
 #include "ExListViewCtrl.h"
 #include "WinUtil.h"
@@ -49,7 +49,7 @@ int ExListViewCtrl::moveItem(int oldPos, int newPos) {
 	}
 	int i = InsertItem(&lvi);
 	int m = 0;
-	for(TStringIter k = l.begin(); k != l.end(); ++k, m++) {
+	for (auto k = l.begin(); k != l.end(); ++k, m++) {
 		SetItemText(i, m, k->c_str());
 	}
 	EnsureVisible(i, FALSE);
@@ -157,7 +157,7 @@ int ExListViewCtrl::insert(TStringList& aList, int iImage, LPARAM lParam) {
 	a.iSubItem = 0;
 	int i = InsertItem(&a);
 	int k = 0;
-	for(TStringIter j = aList.begin(); j != aList.end(); ++j, k++) {
+	for (auto j = aList.begin(); j != aList.end(); ++j, k++) {
 		SetItemText(i, k, j->c_str());
 	}
 	return loc;
@@ -170,7 +170,7 @@ int ExListViewCtrl::insert(int nItem, TStringList& aList, int iImage, LPARAM lPa
 	int i = insert(nItem, aList[0], iImage, lParam);
 
 	int k = 0;
-	for(TStringIter j = aList.begin(); j != aList.end(); ++j, k++) {
+	for (auto j = aList.begin(); j != aList.end(); ++j, k++) {
 		SetItemText(i, k, j->c_str());
 	}
 	return i;	
@@ -178,7 +178,7 @@ int ExListViewCtrl::insert(int nItem, TStringList& aList, int iImage, LPARAM lPa
 
 
 int CALLBACK ExListViewCtrl::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
-	ExListViewCtrl* p = (ExListViewCtrl*)lParamSort;
+	auto* p = (ExListViewCtrl*)lParamSort;
 	TCHAR buf[128];
 	TCHAR buf2[128];
 

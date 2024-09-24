@@ -22,3 +22,4 @@
 *- Copy*
 *.tmp
 /enc_temp_folder
+vcpkg_installed

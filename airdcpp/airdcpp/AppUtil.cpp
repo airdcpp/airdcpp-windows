@@ -26,16 +26,11 @@
 #include <airdcpp/Exception.h>
 #include <airdcpp/FastAlloc.h>
 #include <airdcpp/File.h>
-#include <airdcpp/LogManager.h>
 #include <airdcpp/PathUtil.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/StartupParams.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/ValueGenerator.h>
-
-#include <random>
+#include <airdcpp/version.h>
 
 namespace dcpp {
 

@@ -113,12 +113,11 @@ tstring ChatCommands::DiskSpaceInfo(bool onlyTotal /* = false */) {
 
 	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0, netFree = 0, netSize = 0;
 
-   TStringList volumes = FindVolumes();
-
-   for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
-	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
+   auto volumes = FindVolumes();
+   for (const auto& vol: volumes) {
+	   if(GetDriveType(vol.c_str()) == DRIVE_CDROM || GetDriveType(vol.c_str()) == DRIVE_REMOVABLE)
 		   continue;
-	   if(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
+	   if(GetDiskFreeSpaceEx(vol.c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
 				totalFree += free;
 				totalSize += size;
 		}
@@ -186,16 +185,15 @@ tstring ChatCommands::diskInfo() {
 	int64_t free = 0, size = 0 , totalFree = 0, totalSize = 0;
 	int disk_count = 0;
    
-	std::vector<tstring> results; //add in vector for sorting, nicer to look at :)
+	TStringList results; //add in vector for sorting, nicer to look at :)
 	// lookup drive volumes.
-	TStringList volumes = FindVolumes();
-
-	for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
-		if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
+	auto volumes = FindVolumes();
+	for (const auto& vol: volumes) {
+		if(GetDriveType(vol.c_str()) == DRIVE_CDROM || GetDriveType(vol.c_str()) == DRIVE_REMOVABLE)
 			continue;
 	    
-		if((GetVolumePathNamesForVolumeName((*i).c_str(), buf, 256, NULL) != 0) &&
-			(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free) !=0)){
+		if((GetVolumePathNamesForVolumeName(vol.c_str(), buf, 256, NULL) != 0) &&
+			(GetDiskFreeSpaceEx(vol.c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free) !=0)){
 			tstring mountpath = buf; 
 			if(!mountpath.empty()) {
 				totalFree += free;
@@ -223,9 +221,9 @@ tstring ChatCommands::diskInfo() {
 	}
 
 	sort(results.begin(), results.end()); //sort it
-	for(std::vector<tstring>::iterator i = results.begin(); i != results.end(); ++i) {
+	for(const auto& res: results) {
 		disk_count++;
-		result += _T("\r\n ") + *i; 
+		result += _T("\r\n ") + res; 
 	}
 	result +=  _T("\r\n\r\n Total HDD space (free/total): ") + Util::formatBytesW((totalFree)) + _T("/") + Util::formatBytesW(totalSize);
 	result += _T("\r\n Total Drives count: ") + Text::toT(Util::toString(disk_count));

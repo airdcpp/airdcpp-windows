@@ -34,21 +34,6 @@
 #include <openssl/rsa.h>
 
 
-#ifdef _MSC_VER
-#   pragma comment(lib, "Crypt32.lib")
-# ifdef _DEBUG
-#   pragma comment(lib, "libcryptoMTd.lib")
-#   pragma comment(lib, "libsslMTd.lib")
-# else
-#   pragma comment(lib, "libcryptoMT.lib")
-#   pragma comment(lib, "libsslMT.lib")
-# endif
-#endif
-
-#ifdef _WIN32
-#include <openssl/applink.c>
-#endif
-
 namespace dcpp {
 
 int CryptoManager::idxVerifyData = 0;

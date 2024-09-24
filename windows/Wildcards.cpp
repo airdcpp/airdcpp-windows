@@ -293,8 +293,8 @@ bool Wildcard::patternMatch(const string& text, const string& patternlist, char 
 
 	try {
 		StringTokenizer<string> st(patternlist, delimiter);
-		for(StringIter i = st.getTokens().begin(); i != st.getTokens().end(); ++i) {
-			auto bMatched = patternMatch(text, *i, useSet);
+		for (const auto& i: st.getTokens()) {
+			auto bMatched = patternMatch(text, i, useSet);
 			if (bMatched) {
 				return true;
 			}
@@ -306,8 +306,8 @@ bool Wildcard::patternMatch(const string& text, const string& patternlist, char 
 bool Wildcard::patternMatch(const wstring& text, const wstring& patternlist, wchar_t delimiter, bool useSet) {
 	StringTokenizer<wstring> st(patternlist, delimiter);
 	bool bMatched = false;
-	for(WStringIter i = st.getTokens().begin(); i != st.getTokens().end(); ++i) {
-		bMatched = patternMatch(text, *i, useSet);
+	for (const auto& i: st.getTokens()) {
+		bMatched = patternMatch(text, i, useSet);
 		if (bMatched) {
 			return true;
 		}

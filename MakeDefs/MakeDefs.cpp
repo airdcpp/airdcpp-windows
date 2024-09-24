@@ -1,7 +1,7 @@
 // MakeDefs.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 #include <airdcpp/Exception.h>
 #include <airdcpp/SimpleXML.h>
@@ -37,14 +37,13 @@ int __cdecl main(int argc, char* argv[])
 
 		StringList l = StringTokenizer<string>(x, '\n').getTokens();
 
-		StringIter i;
 		string varStr;
 		string varName;
 		string start;
 
 		SimpleXML ex;
 
-		for(i = l.begin(); i != l.end(); ) {
+		for(auto i = l.begin(); i != l.end(); ) {
 			if( (k = i->find("// @Strings: ")) != string::npos) {
 				varStr = i->substr(k + 13);
 				i = l.erase(i);
@@ -76,11 +75,9 @@ int __cdecl main(int argc, char* argv[])
 		string name;
 		string def;
 		string xmldef;
-		string s;
-		for(i = l.begin(); i != l.end(); i++) {
+		for(const auto& s: l) {
 
 			name.clear();
-			s = *i;
 
 			bool u = true;
 			for(k = s.find_first_not_of(" \t"); s[k] != ','; k++) {
@@ -107,10 +104,10 @@ int __cdecl main(int argc, char* argv[])
 				xmldef.replace(k, 2, "\n");
 			}
 
-			while( (k = xmldef.find("\\\\")) != string::npos) {
+			while( (k = xmldef.find(R"(\\)")) != string::npos) {
 				xmldef.replace(k, 2, "\\");
 			}
-			while( (k = xmldef.find("\\\"")) != string::npos) {
+			while( (k = xmldef.find(R"(\")")) != string::npos) {
 				xmldef.replace(k, 2, "\"");
 			}
 
@@ -133,7 +130,7 @@ int __cdecl main(int argc, char* argv[])
 
 		example.write(SimpleXML::utf8Header);
 		example.write(ex.toXML());
-	} catch(Exception e) {
+	} catch(const Exception& e) {
 		printf("%s\n", e.getError().c_str());
 	}
 

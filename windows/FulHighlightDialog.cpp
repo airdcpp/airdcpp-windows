@@ -18,7 +18,7 @@
 
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "resource.h"
 
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/StringTokenizer.h>
@@ -80,7 +80,7 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	//add alternatives
 	StringTokenizer<tstring> s(Text::toT(STRING(HIGHLIGHT_MATCH_TYPES)), _T(','));
 	TStringList l = s.getTokens();
-	for(TStringIter i = l.begin(); i != l.end(); ++i)
+	for(auto i = l.begin(); i != l.end(); ++i)
 		ctrlMatchType.AddString((*i).c_str());
 
 	ctrlMatchType.SetCurSel(1);

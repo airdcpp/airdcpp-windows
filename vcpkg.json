@@ -1,0 +1,38 @@
+{
+  "name": "airdcpp-windows",
+  "version": "3.22",
+  "dependencies": [
+    "boost-bimap",
+    "boost-format",
+    "boost-headers",
+    "boost-interprocess",
+    "boost-lockfree",
+    "boost-logic",
+    "boost-regex",
+    "boost-system",
+    "boost-thread",
+    "boost-uuid",
+    "boost-variant",
+    {
+      "name": "leveldb",
+      "features": [
+        "snappy"
+      ]
+    },
+    "libmaxminddb",
+    "snappy",
+    {
+      "name": "minizip",
+      "features": [
+        "bzip2"
+      ]
+    },
+    "miniupnpc",
+    "nlohmann-json",
+    "openssl",
+    "websocketpp",
+    "wtl",
+    "zlib"
+  ],
+  "builtin-baseline": "f176b58f35a75f9f8f54099cd9df97d2e2793a2e"
+}
