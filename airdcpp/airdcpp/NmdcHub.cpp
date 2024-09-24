@@ -17,29 +17,29 @@
  */
 
 #include "stdinc.h"
-#include "NmdcHub.h"
+#include <airdcpp/NmdcHub.h>
 
-#include "ConnectivityManager.h"
-#include "ResourceManager.h"
-#include "Message.h"
-#include "ClientManager.h"
-#include "SearchManager.h"
-#include "ShareManager.h"
-#include "CryptoManager.h"
-#include "ConnectionManager.h"
-#include "version.h"
+#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/Message.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/SearchManager.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/CryptoManager.h>
+#include <airdcpp/ConnectionManager.h>
+#include <airdcpp/version.h>
 
-#include "Socket.h"
-#include "UserCommand.h"
-#include "StringTokenizer.h"
-#include "ProtocolCommandManager.h"
-#include "QueueManager.h"
-#include "ZUtils.h"
-#include "ThrottleManager.h"
-#include "UploadManager.h"
-#include "ActivityManager.h"
-#include "NetworkUtil.h"
-#include "ValueGenerator.h"
+#include <airdcpp/Socket.h>
+#include <airdcpp/UserCommand.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ProtocolCommandManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/ZUtils.h>
+#include <airdcpp/ThrottleManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/ActivityManager.h>
+#include <airdcpp/NetworkUtil.h>
+#include <airdcpp/ValueGenerator.h>
 
 namespace dcpp {
 

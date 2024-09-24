@@ -17,25 +17,25 @@
  */
 
 #include "stdinc.h"
-#include "UpdateManager.h"
-#include "UpdateDownloader.h"
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/UpdateDownloader.h>
 
-#include "CryptoUtil.h"
-#include "GeoManager.h"
-#include "HashCalc.h"
-#include "HttpDownload.h"
-#include "Localization.h"
-#include "LogManager.h"
-#include "PathUtil.h"
-#include "ResourceManager.h"
-#include "ScopedFunctor.h"
-#include "SettingsManager.h"
-#include "SimpleXML.h"
-#include "Text.h"
-#include "TimerManager.h"
-#include "version.h"
+#include <airdcpp/CryptoUtil.h>
+#include <airdcpp/GeoManager.h>
+#include <airdcpp/HashCalc.h>
+#include <airdcpp/HttpDownload.h>
+#include <airdcpp/Localization.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/Text.h>
+#include <airdcpp/TimerManager.h>
+#include <airdcpp/version.h>
 
-#include "pubkey.h"
+#include <airdcpp/pubkey.h>
 
 #define IP_DB_EXPIRATION_DAYS 90 
 

@@ -17,7 +17,7 @@
 */
 
 #include "stdinc.h"
-#include "version.h"
+#include <airdcpp/version.h>
 
 #include "version.inc"
 

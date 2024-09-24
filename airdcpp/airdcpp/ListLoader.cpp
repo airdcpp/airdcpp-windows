@@ -18,27 +18,27 @@
 
 #include "stdinc.h"
 
-#include "ListLoader.h"
-// #include "DirectoryListingDirectory.h"
+#include <airdcpp/ListLoader.h>
+// #include <airdcpp/DirectoryListingDirectory.h>
 
-//#include "BZUtils.h"
-//#include "ClientManager.h"
-//#include "DirectSearch.h"
-//#include "DupeUtil.h"
-//#include "FilteredFile.h"
-//#include "LogManager.h"
-//#include "QueueManager.h"
-//#include "ResourceManager.h"
-//#include "ShareManager.h"
-//#include "SearchQuery.h"
-#include "DupeUtil.h"
-#include "PathUtil.h"
-#include "SettingsManager.h"
-#include "SimpleXML.h"
-//#include "SimpleXMLReader.h"
-//#include "Streams.h"
-//#include "StringTokenizer.h"
-//#include "User.h"
+//#include <airdcpp/BZUtils.h>
+//#include <airdcpp/ClientManager.h>
+//#include <airdcpp/DirectSearch.h>
+//#include <airdcpp/DupeUtil.h>
+//#include <airdcpp/FilteredFile.h>
+//#include <airdcpp/LogManager.h>
+//#include <airdcpp/QueueManager.h>
+//#include <airdcpp/ResourceManager.h>
+//#include <airdcpp/ShareManager.h>
+//#include <airdcpp/SearchQuery.h>
+#include <airdcpp/DupeUtil.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/SimpleXML.h>
+//#include <airdcpp/SimpleXMLReader.h>
+//#include <airdcpp/Streams.h>
+//#include <airdcpp/StringTokenizer.h>
+//#include <airdcpp/User.h>
 
 
 namespace dcpp {

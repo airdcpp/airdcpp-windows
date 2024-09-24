@@ -20,7 +20,7 @@
 #define DCPLUSPLUS_DCPP_TYPEDEFS_H_
 
 #include <stdint.h>
-#include "forward.h"
+#include <airdcpp/forward.h>
 
 #include "boost/variant.hpp"
 

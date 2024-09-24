@@ -20,11 +20,11 @@
 
 #include "Mapper_MiniUPnPc.h"
 
-#include "LinkUtil.h"
-#include "NetworkUtil.h"
+#include <airdcpp/LinkUtil.h>
+#include <airdcpp/NetworkUtil.h>
 
-#include "Util.h"
-#include "Socket.h"
+#include <airdcpp/Util.h>
+#include <airdcpp/Socket.h>
 
 extern "C" {
 #ifndef MINIUPNP_STATICLIB

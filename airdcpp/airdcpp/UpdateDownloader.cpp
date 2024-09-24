@@ -18,8 +18,8 @@
 
 #include "stdinc.h"
 
-#include "UpdateDownloader.h"
-#include "UpdateConstants.h"
+#include <airdcpp/UpdateDownloader.h>
+#include <airdcpp/UpdateConstants.h>
 
 #include <airdcpp/File.h>
 #include <airdcpp/Exception.h>

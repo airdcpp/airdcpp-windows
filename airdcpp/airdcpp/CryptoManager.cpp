@@ -17,16 +17,16 @@
  */
 
 #include "stdinc.h"
-#include "CryptoManager.h"
+#include <airdcpp/CryptoManager.h>
 
 #include <boost/scoped_array.hpp>
 
-#include "ClientManager.h"
-#include "Encoder.h"
-#include "File.h"
-#include "LogManager.h"
-#include "SystemUtil.h"
-#include "version.h"
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/Encoder.h>
+#include <airdcpp/File.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/SystemUtil.h>
+#include <airdcpp/version.h>
 
 #include <openssl/bn.h>
 #include <openssl/err.h>
