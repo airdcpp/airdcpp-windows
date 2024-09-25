@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E82610AA-B6FD-4813-B5B9-E717CBD0F23B}</ProjectGuid>
     <RootNamespace>AirDC</RootNamespace>
-    <ProjectName>WinGUI</ProjectName>
+    <ProjectName>AirDC</ProjectName>
     <UseNativeEnvironment>true</UseNativeEnvironment>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
