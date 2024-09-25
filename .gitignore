@@ -21,5 +21,6 @@
 *.exe
 *- Copy*
 *.tmp
+/airdcpp/scripts/translations
 /enc_temp_folder
 vcpkg_installed
