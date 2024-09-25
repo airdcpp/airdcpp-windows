@@ -1825,7 +1825,7 @@ void DirectoryListingFrame::handleSearchByName(bool usingTree, bool dirsOnly) {
 }
 
 void DirectoryListingFrame::handleCopyDir() {
-	handleItemAction(true, [this](const ItemInfo* ii) {
+	handleItemAction(true, [](const ItemInfo* ii) {
 		auto sCopy = Text::toT(ii->dir->getName());
 		if (!sCopy.empty()) {
 			WinUtil::setClipboard(sCopy);

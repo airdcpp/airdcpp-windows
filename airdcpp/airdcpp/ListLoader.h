@@ -55,7 +55,6 @@ private:
 
 	const string base;
 	const bool updating;
-	const bool checkDupe;
 	const bool partialList;
 	const time_t listDownloadDate;
 };
