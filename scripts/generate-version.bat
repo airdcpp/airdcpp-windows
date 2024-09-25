@@ -9,6 +9,9 @@ for /F "tokens=*" %%a in ('git describe --abbrev"="4  --dirty"="-d') do echo #de
 :: Commit count
 for /F "tokens=*" %%a in ('git rev-list HEAD --count') do echo #define GIT_COMMIT_COUNT %%a >> %tmpfile%
 
+:: Commit
+for /F "tokens=*" %%a in ('git rev-parse HEAD') do echo #define GIT_COMMIT "%%a" >> %tmpfile%
+
 :: Commit date
 for /F "tokens=*" %%a in ('git log -1 --format"="%%at') do echo #define VERSION_DATE %%a >> %tmpfile%
 

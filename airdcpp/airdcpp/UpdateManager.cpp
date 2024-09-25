@@ -53,7 +53,7 @@ UpdateManager::UpdateManager() : lastIPUpdate(GET_TICK()) {
 	links.geoip = "http://geoip.airdcpp.net";
 	links.ipcheck4 = "http://checkip.dyndns.org/";
 	links.ipcheck6 = "http://checkip.dyndns.org/";
-	links.language = "http://languages.airdcpp.net/tx/";
+	links.language = "http://languages.airdcpp.net/tx/checkLangVersion.php?lc=%[locale]";
 
 	SettingsManager::getInstance()->registerChangeHandler({
 		SettingsManager::GET_USER_COUNTRY,
@@ -322,8 +322,12 @@ void UpdateManager::checkLanguage() {
 		return;
 	}
 
+	ParamMap params;
+	params["locale"] = curLanguage->getLocale();
+
+	auto url = Util::formatParams(links.language, params);
 	conns[CONN_LANGUAGE_CHECK] = make_unique<HttpDownload>(
-		links.language + "checkLangVersion.php?lc=" + curLanguage->getLocale(),
+		Util::formatParams(links.language, params),
 		[this] { completeLanguageCheck(); }
 	);
 }
