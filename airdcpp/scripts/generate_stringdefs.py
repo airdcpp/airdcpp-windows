@@ -67,8 +67,8 @@ def generate_stringdefs(directory, force = False):
             formatted_texts = "\n".join('\t"{}",'.format(t) for t in strings)
             f.write(template.format(name=name, texts=formatted_texts))
 
-        write_text(texts.keys(), "strings")
-        write_text(texts.values(), "names")
+        write_text(texts.values(), "strings")
+        write_text(texts.keys(), "names")
 
     print("-- StringDefs.cpp was generated")
     return True
@@ -108,11 +108,13 @@ if __name__ == "__main__":
     parser.add_argument("directory", help="Directory containing StringDefs.h")
     parser.add_argument("--xml_output_path", help="Generate an XML file that can be upload to Transifex", required=False)
     parser.add_argument("--quiet", required=False, action='store_true')
+    parser.add_argument("--force", required=False, action='store_true')
     parser.set_defaults(quiet=False)
+    parser.set_defaults(force=False)
 
     args = parser.parse_args()
 
-    generate_stringdefs(args.directory)
+    generate_stringdefs(args.directory, args.force)
     
     if (args.xml_output_path):
         generate_xml(args.directory, args.xml_output_path)
