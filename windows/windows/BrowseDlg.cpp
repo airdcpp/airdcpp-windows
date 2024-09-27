@@ -20,9 +20,9 @@
 
 #include <windows/BrowseDlg.h>
 
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/Text.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/text/Text.h>
+#include <airdcpp/util/Util.h>
 
 
 namespace wingui {

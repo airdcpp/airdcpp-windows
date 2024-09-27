@@ -18,10 +18,10 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/favorites/FavoriteManager.h>
 
 #include <windows/BrowseDlg.h>
 #include <windows/Resource.h>

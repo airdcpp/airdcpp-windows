@@ -18,9 +18,9 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/UserCommandManager.h>
-#include <airdcpp/UserCommand.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/hub/user_command/UserCommandManager.h>
+#include <airdcpp/hub/user_command/UserCommand.h>
+#include <airdcpp/util/text/Text.h>
 
 #include <windows/Resource.h>
 #include <windows/UCPage.h>

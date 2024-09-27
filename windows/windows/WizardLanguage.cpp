@@ -21,7 +21,7 @@
 #include <windows/WizardLanguage.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/Localization.h>
+#include <airdcpp/core/localization/Localization.h>
 
 namespace wingui {
 

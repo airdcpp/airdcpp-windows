@@ -21,11 +21,11 @@
 
 #pragma once
 
-#include <airdcpp/Client.h>
-#include <airdcpp/DupeType.h>
-#include <airdcpp/Message.h>
-#include <airdcpp/UserInfoBase.h>
-#include <airdcpp/SortedVector.h>
+#include <airdcpp/hub/Client.h>
+#include <airdcpp/core/types/DupeType.h>
+#include <airdcpp/message/Message.h>
+#include <airdcpp/user/UserInfoBase.h>
+#include <airdcpp/core/classes/SortedVector.h>
 
 #include <boost/algorithm/string.hpp>
 

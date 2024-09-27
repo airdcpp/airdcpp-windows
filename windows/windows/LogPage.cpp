@@ -18,9 +18,9 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/LogManager.h>
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
 
 #include <windows/BrowseDlg.h>
 #include <windows/Resource.h>

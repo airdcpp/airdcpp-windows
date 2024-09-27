@@ -27,9 +27,9 @@
 #define __ATLTYPES_H__
 #endif
 
-#include <airdcpp/Util.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Singleton.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/Singleton.h>
 
 #include <windows/resource.h>
 #include <windows/ExCImage.h>

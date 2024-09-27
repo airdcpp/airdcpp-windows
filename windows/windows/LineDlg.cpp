@@ -19,8 +19,8 @@
 #include <windows/stdafx.h>
 #include <windows/LineDlg.h>
 
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/text/Text.h>
 
 #include <windows/resource.h>
 #include <windows/WinUtil.h>

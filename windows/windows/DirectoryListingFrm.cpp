@@ -33,19 +33,19 @@
 #include <windows/ActionUtil.h>
 #include <windows/FormatUtil.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/FavoriteUserManager.h>
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/SearchQuery.h>
-#include <airdcpp/ShareProfile.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/User.h>
-#include <airdcpp/ValueGenerator.h>
-#include <airdcpp/ViewFileManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/filelist/DirectoryListingManager.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/search/SearchQuery.h>
+#include <airdcpp/share/profiles/ShareProfile.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/user/User.h>
+#include <airdcpp/util/ValueGenerator.h>
+#include <airdcpp/viewed_files/ViewFileManager.h>
 
 #include <airdcpp/modules/ADLSearch.h>
 #include <airdcpp/modules/HighlightManager.h>

@@ -19,10 +19,10 @@
 #ifndef FORMAT_UTIL_H
 #define FORMAT_UTIL_H
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
-#include <airdcpp/HintedUser.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/user/HintedUser.h>
+#include <airdcpp/util/Util.h>
 
 
 

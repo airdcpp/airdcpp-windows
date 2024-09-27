@@ -21,7 +21,7 @@
 #include <windows/WizardGeneral.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/Localization.h>
+#include <airdcpp/core/localization/Localization.h>
 
 namespace wingui {
 PropPage::TextItem WizardGeneral::texts[] = {

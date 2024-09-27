@@ -33,25 +33,25 @@
 #include <windows/BrowseDlg.h>
 #include <windows/ExMessageBox.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/FavoriteUserManager.h>
-#include <airdcpp/GeoManager.h>
-#include <airdcpp/LinkUtil.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/Magnet.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/RegexUtil.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/SearchInstance.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/ReservedSlotManager.h>
-#include <airdcpp/UserCommand.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/ValueGenerator.h>
-#include <airdcpp/ViewFileManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/core/geo/GeoManager.h>
+#include <airdcpp/util/LinkUtil.h>
+#include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/core/classes/Magnet.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/util/RegexUtil.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
+#include <airdcpp/search/SearchInstance.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/favorites/ReservedSlotManager.h>
+#include <airdcpp/hub/user_command/UserCommand.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/util/ValueGenerator.h>
+#include <airdcpp/viewed_files/ViewFileManager.h>
 
 #include <airdcpp/modules/PreviewAppManager.h>
 

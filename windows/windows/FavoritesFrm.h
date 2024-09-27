@@ -26,9 +26,9 @@
 #include <windows/StaticFrame.h>
 #include <windows/ExListViewCtrl.h>
 
-#include <airdcpp/FavoriteManagerListener.h>
-#include <airdcpp/ClientManagerListener.h>
-#include <airdcpp/Client.h>
+#include <airdcpp/favorites/FavoriteManagerListener.h>
+#include <airdcpp/hub/ClientManagerListener.h>
+#include <airdcpp/hub/Client.h>
 
 #define SERVER_MESSAGE_MAP 7
 

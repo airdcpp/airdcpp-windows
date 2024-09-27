@@ -20,11 +20,11 @@
 
 #include <windows/FormatUtil.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/GeoManager.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/core/geo/GeoManager.h>
+#include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/Util.h>
 
 
 namespace wingui {

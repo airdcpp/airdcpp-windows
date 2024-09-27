@@ -24,8 +24,8 @@
 #endif // _MSC_VER > 1000
 
 #include <windows/StaticFrame.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/TaskQueue.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/core/queue/TaskQueue.h>
 
 #define SYSTEM_LOG_MESSAGE_MAP 42
 

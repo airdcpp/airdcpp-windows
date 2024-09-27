@@ -29,7 +29,7 @@
 #include <windows/TypedListViewCtrl.h>
 #include <windows/UserInfoBaseHandler.h>
 
-#include <airdcpp/UploadQueueManager.h>
+#include <airdcpp/transfer/upload/UploadQueueManager.h>
 
 #define SHOWTREE_MESSAGE_MAP 12
 

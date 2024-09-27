@@ -28,9 +28,9 @@
 #include <windows/WinUtil.h>
 #include <windows/Wizard.h>
 
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/version.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/core/version.h>
 
 #include <airdcpp/modules/ADLSearch.h>
 #include <airdcpp/modules/AutoSearchManager.h>

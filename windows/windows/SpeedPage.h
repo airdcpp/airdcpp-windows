@@ -26,7 +26,7 @@
 #include <atlcrack.h>
 #include <windows/PropPage.h>
 
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 namespace wingui {
 class SpeedPage : public CPropertyPage<IDD_SPEEDPAGE>, public PropPage

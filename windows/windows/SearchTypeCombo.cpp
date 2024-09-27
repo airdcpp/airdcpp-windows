@@ -21,8 +21,8 @@
 #include <windows/SearchTypeCombo.h>
 #include <windows/ResourceLoader.h>
 
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchTypes.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchTypes.h>
 
 
 namespace wingui {

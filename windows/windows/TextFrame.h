@@ -27,8 +27,8 @@
 #include <windows/RichTextBox.h>
 #include <atlstr.h>
 
-#include <airdcpp/ViewFileManagerListener.h>
-#include <airdcpp/SimpleXML.h>
+#include <airdcpp/viewed_files/ViewFileManagerListener.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
 
 namespace wingui {
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener, private ViewFileManagerListener

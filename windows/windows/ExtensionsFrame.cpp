@@ -29,7 +29,7 @@
 
 #include <semver/semver.hpp>
 
-#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerSettings.h>

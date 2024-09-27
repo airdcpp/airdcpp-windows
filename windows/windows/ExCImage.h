@@ -25,8 +25,8 @@
 #define __ATLTYPES_H__
 #endif
 
-#include <airdcpp/Pointer.h>
-#include <airdcpp/FastAlloc.h>
+#include <airdcpp/core/classes/Pointer.h>
+#include <airdcpp/core/classes/FastAlloc.h>
 
 #define byte BYTE // 'byte': ambiguous symbol (C++17)
 #include <atlimage.h>

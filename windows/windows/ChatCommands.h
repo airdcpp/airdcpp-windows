@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class ChatCommands {

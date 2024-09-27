@@ -33,21 +33,21 @@
 
 #include <airdcpp/modules/AutoSearchManager.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/HashManager.h>
-#include <airdcpp/LinkUtil.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ShareProfileManager.h>
-#include <airdcpp/TempShareManager.h>
-#include <airdcpp/ThrottleManager.h>
-#include <airdcpp/UpdateManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/hash/HashManager.h>
+#include <airdcpp/util/LinkUtil.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/share/profiles/ShareProfileManager.h>
+#include <airdcpp/share/temp_share/TempShareManager.h>
+#include <airdcpp/connection/ThrottleManager.h>
+#include <airdcpp/core/update/UpdateManager.h>
+#include <airdcpp/util/Util.h>
 
-#include <airdcpp/version.h>
+#include <airdcpp/core/version.h>
 
 namespace wingui {
 extern EmoticonsManager* emoticonsManager;

@@ -18,8 +18,8 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchTypes.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchTypes.h>
 
 #include <windows/Resource.h>
 #include <windows/SearchTypesPage.h>

@@ -23,8 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/SearchManagerListener.h>
-#include <airdcpp/TimerManagerListener.h>
+#include <airdcpp/search/SearchManagerListener.h>
+#include <airdcpp/core/timer/TimerManagerListener.h>
 
 #include <windows/StaticFrame.h>
 #include <windows/ExListViewCtrl.h>

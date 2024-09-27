@@ -25,16 +25,16 @@
 #include <windows/SplashWindow.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/SystemUtil.h>
-#include <airdcpp/Text.h>
-#include <airdcpp/UpdateDownloader.h>
-#include <airdcpp/ValueGenerator.h>
-#include <airdcpp/ZipFile.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/SystemUtil.h>
+#include <airdcpp/util/text/Text.h>
+#include <airdcpp/core/update/UpdateDownloader.h>
+#include <airdcpp/util/ValueGenerator.h>
+#include <airdcpp/core/io/compress/ZipFile.h>
 
-#include <airdcpp/updater/Updater.h>
-#include <airdcpp/updater/UpdaterCreator.h>
+#include <airdcpp/core/update/updater/Updater.h>
+#include <airdcpp/core/update/updater/UpdaterCreator.h>
 
 #include <web-server/WebServerSettings.h>
 

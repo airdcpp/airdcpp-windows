@@ -16,11 +16,11 @@
 
 #include <windows/stdafx.h>
 #include <airdcpp/modules/HighlightManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/SimpleXML.h>
-#include <airdcpp/Streams.h>
-#include <airdcpp/version.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
+#include <airdcpp/core/io/stream/Streams.h>
+#include <airdcpp/core/version.h>
 
 #include <windows/BrowseDlg.h>
 #include <windows/Resource.h>

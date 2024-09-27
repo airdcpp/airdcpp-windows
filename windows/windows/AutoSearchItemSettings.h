@@ -22,8 +22,8 @@
 #include <windows/stdafx.h>
 
 #include <airdcpp/modules/AutoSearchManager.h>
-#include <airdcpp/Search.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/search/Search.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 
 namespace wingui {

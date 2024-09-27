@@ -26,7 +26,7 @@
 #include <windows/PropPage.h>
 
 #include <windows/ExListViewCtrl.h>
-#include <airdcpp/IgnoreManager.h>
+#include <airdcpp/user/ignore/IgnoreManager.h>
 
 namespace wingui {
 class ChatFilterPage : public CPropertyPage<IDD_CHATFILTERPAGE>, public PropPage

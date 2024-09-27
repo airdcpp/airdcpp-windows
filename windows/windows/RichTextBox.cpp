@@ -21,18 +21,18 @@
 
 #include <windows/RichTextBox.h>
 
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/IgnoreManager.h>
-#include <airdcpp/LinkUtil.h>
-#include <airdcpp/Magnet.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/RegexUtil.h>
-#include <airdcpp/TempShareManager.h>
-#include <airdcpp/UploadManager.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/version.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/user/ignore/IgnoreManager.h>
+#include <airdcpp/util/LinkUtil.h>
+#include <airdcpp/core/classes/Magnet.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/util/RegexUtil.h>
+#include <airdcpp/share/temp_share/TempShareManager.h>
+#include <airdcpp/transfer/upload/UploadManager.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/core/version.h>
 
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/modules/HighlightManager.h>

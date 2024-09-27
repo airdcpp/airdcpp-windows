@@ -22,7 +22,7 @@
 
 #include <atlcrack.h>
 
-#include <airdcpp/TempShareItem.h>
+#include <airdcpp/share/temp_share/TempShareItem.h>
 
 namespace wingui {
 class TempShareDlg : public CDialogImpl<TempShareDlg>

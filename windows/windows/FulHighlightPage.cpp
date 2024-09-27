@@ -19,9 +19,9 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/text/StringTokenizer.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 #include <windows/Resource.h>

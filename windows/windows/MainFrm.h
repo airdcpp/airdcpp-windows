@@ -23,19 +23,19 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include <airdcpp/concurrency.h>
+#include <airdcpp/core/thread/concurrency.h>
 
-#include <airdcpp/ActivityManager.h>
-#include <airdcpp/ClientManagerListener.h>
-#include <airdcpp/DirectoryListingManagerListener.h>
-#include <airdcpp/LogManagerListener.h>
-#include <airdcpp/PrivateChatManagerListener.h>
-#include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/TimerManagerListener.h>
-#include <airdcpp/UpdateManagerListener.h>
-#include <airdcpp/ViewFileManagerListener.h>
+#include <airdcpp/hub/activity/ActivityManager.h>
+#include <airdcpp/hub/ClientManagerListener.h>
+#include <airdcpp/filelist/DirectoryListingManagerListener.h>
+#include <airdcpp/events/LogManagerListener.h>
+#include <airdcpp/private_chat/PrivateChatManagerListener.h>
+#include <airdcpp/queue/QueueManagerListener.h>
+#include <airdcpp/core/timer/TimerManagerListener.h>
+#include <airdcpp/core/update/UpdateManagerListener.h>
+#include <airdcpp/viewed_files/ViewFileManagerListener.h>
 
-#include <airdcpp/StartupParams.h>
+#include <airdcpp/core/classes/StartupParams.h>
 
 #include <windows/Async.h>
 #include <windows/Dispatchers.h>

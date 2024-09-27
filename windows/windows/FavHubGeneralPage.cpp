@@ -24,12 +24,12 @@
 #include <windows/FavHubGeneralPage.h>
 #include <windows/PropertiesDlg.h>
 
-#include <airdcpp/LinkUtil.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/tribool.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/ShareProfileManager.h>
+#include <airdcpp/util/LinkUtil.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/core/classes/tribool.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/share/profiles/ShareProfileManager.h>
 
 
 namespace wingui {

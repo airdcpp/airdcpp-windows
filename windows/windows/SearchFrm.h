@@ -29,16 +29,16 @@
 #include <windows/UserInfoBaseHandler.h>
 #include <windows/DownloadBaseHandler.h>
 
-#include <airdcpp/CriticalSection.h>
-#include <airdcpp/GroupedSearchResult.h>
-#include <airdcpp/SearchTypes.h>
-#include <airdcpp/SearchResult.h>
+#include <airdcpp/core/thread/CriticalSection.h>
+#include <airdcpp/search/GroupedSearchResult.h>
+#include <airdcpp/search/SearchTypes.h>
+#include <airdcpp/search/SearchResult.h>
 
-#include <airdcpp/ClientManagerListener.h>
+#include <airdcpp/hub/ClientManagerListener.h>
 
-#include <airdcpp/SearchInstanceListener.h>
-#include <airdcpp/SettingsManagerListener.h>
-#include <airdcpp/TimerManagerListener.h>
+#include <airdcpp/search/SearchInstanceListener.h>
+#include <airdcpp/settings/SettingsManagerListener.h>
+#include <airdcpp/core/timer/TimerManagerListener.h>
 
 #include <windows/UCHandler.h>
 #include <windows/SearchTypeCombo.h>

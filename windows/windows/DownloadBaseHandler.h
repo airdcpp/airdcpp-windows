@@ -21,12 +21,12 @@
 
 #include <windows/OMenu.h>
 
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/util/Util.h>
 
 #include <windows/BrowseDlg.h>
 #include <windows/WinUtil.h>

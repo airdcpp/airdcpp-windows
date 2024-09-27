@@ -22,8 +22,8 @@
 #include <windows/NetworkPage.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/util/text/Text.h>
 
 namespace wingui {
 NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), protocols(new ProtocolBase(s)) {

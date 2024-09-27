@@ -13,7 +13,7 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #include <shlobj.h>
 #include <lm.h>
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class ShareDirectories;

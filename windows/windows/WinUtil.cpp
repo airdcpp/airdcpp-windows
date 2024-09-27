@@ -31,22 +31,22 @@
 #include <windows/ExMessageBox.h>
 #include <windows/SplashWindow.h>
 
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/File.h>
-#include <airdcpp/LinkUtil.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/NetworkUtil.h>
-#include <airdcpp/OnlineUser.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/RegexUtil.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/SystemUtil.h>
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/LinkUtil.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/NetworkUtil.h>
+#include <airdcpp/user/OnlineUser.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/RegexUtil.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/SystemUtil.h>
+#include <airdcpp/core/timer/TimerManager.h>
+#include <airdcpp/util/Util.h>
 
-#include <airdcpp/version.h>
+#include <airdcpp/core/version.h>
 
 #include <boost/format.hpp>
 

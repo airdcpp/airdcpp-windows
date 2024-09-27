@@ -21,7 +21,7 @@
 #ifndef __OMENU_H
 #define __OMENU_H
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 #include <forward.h>
 
 #include <windows/Dispatchers.h>

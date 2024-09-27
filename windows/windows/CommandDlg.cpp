@@ -19,9 +19,9 @@
 #include <windows/stdafx.h>
 #include <windows/Resource.h>
 
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/Text.h>
-#include <airdcpp/UserCommand.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/util/text/Text.h>
+#include <airdcpp/hub/user_command/UserCommand.h>
 
 #include <windows/ActionUtil.h>
 #include <windows/CommandDlg.h>

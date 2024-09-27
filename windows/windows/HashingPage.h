@@ -23,7 +23,7 @@
 #include <windows/PropPage.h>
 #include <windows/ExListViewCtrl.h>
 
-#include <airdcpp/HashManagerListener.h>
+#include <airdcpp/hash/HashManagerListener.h>
 
 namespace wingui {
 class HashingPage : public CPropertyPage<IDD_HASHINGPAGE>, public PropPage

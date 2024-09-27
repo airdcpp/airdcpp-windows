@@ -21,7 +21,7 @@
 #include <windows/WizardProfile.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/SettingHolder.h>
+#include <airdcpp/settings/SettingHolder.h>
 
 namespace wingui {
 PropPage::TextItem WizardProfile::texts[] = {

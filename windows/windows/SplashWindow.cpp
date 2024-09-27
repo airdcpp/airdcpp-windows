@@ -19,9 +19,9 @@
 #include <windows/stdafx.h>
 #include <windows/SplashWindow.h>
 
-#include <airdcpp/Text.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/version.h>
+#include <airdcpp/util/text/Text.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/core/version.h>
 
 #include <windows/resource.h>
 #include <windows/WinUtil.h>

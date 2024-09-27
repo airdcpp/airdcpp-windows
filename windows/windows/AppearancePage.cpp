@@ -23,7 +23,7 @@
 #include <windows/PropertiesDlg.h>
 #include <windows/BrowseDlg.h>
 
-#include <airdcpp/Text.h>
+#include <airdcpp/util/text/Text.h>
 
 namespace wingui {
 PropPage::TextItem AppearancePage::texts[] = {

@@ -23,7 +23,7 @@
 
 #include <atlcrack.h>
 
-#include <airdcpp/StringMatch.h>
+#include <airdcpp/util/text/StringMatch.h>
 
 namespace wingui {
 class ChatFilterDlg : public CDialogImpl<ChatFilterDlg> {

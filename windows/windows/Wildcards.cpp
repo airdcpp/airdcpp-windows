@@ -13,8 +13,8 @@
 
 #include <windows/Wildcards.h>
 
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/Util.h>
 
 
 namespace wingui {

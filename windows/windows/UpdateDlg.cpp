@@ -17,16 +17,16 @@
  */
 
 #include <windows/stdafx.h>
-#include <airdcpp/version.h>
+#include <airdcpp/core/version.h>
 
 #include <windows/Resource.h>
 #include <windows/ResourceLoader.h>
 #include <windows/UpdateDlg.h>
 
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/UpdateManager.h>
-#include <airdcpp/UpdateDownloader.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/core/update/UpdateManager.h>
+#include <airdcpp/core/update/UpdateDownloader.h>
 
 #include <windows/WinUtil.h>
 #include <windows/ActionUtil.h>

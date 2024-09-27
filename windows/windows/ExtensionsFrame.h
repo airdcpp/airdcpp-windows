@@ -24,7 +24,7 @@
 #include <windows/StatusBarTextHandler.h>
 #include <windows/TypedListViewCtrl.h>
 
-#include <airdcpp/HttpDownload.h>
+#include <airdcpp/connection/http/HttpDownload.h>
 
 #include <web-server/WebServerManager.h>
 #include <web-server/ExtensionManager.h>

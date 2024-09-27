@@ -26,8 +26,8 @@
 
 #include <windows/SearchTypeCombo.h>
 
-#include <airdcpp/DirectoryListing.h>
-#include <airdcpp/Search.h>
+#include <airdcpp/filelist/DirectoryListing.h>
+#include <airdcpp/search/Search.h>
 
 namespace wingui {
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {

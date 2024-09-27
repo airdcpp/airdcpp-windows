@@ -18,9 +18,9 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/CryptoManager.h>
-#include <airdcpp/Exception.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/core/crypto/CryptoManager.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/util/text/Text.h>
 
 #include <windows/Resource.h>
 #include <windows/EncryptionPage.h>

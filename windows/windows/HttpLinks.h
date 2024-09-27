@@ -20,7 +20,7 @@
 #define DCPLUSPLUS_HTTPLINKS_H_
 
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace dcpp {
 	class SimpleXML;

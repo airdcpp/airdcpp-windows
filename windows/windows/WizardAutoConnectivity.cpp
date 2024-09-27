@@ -19,7 +19,7 @@
 #include <windows/stdafx.h>
 
 #include <windows/WizardAutoConnectivity.h>
-#include <airdcpp/Message.h>
+#include <airdcpp/message/Message.h>
 
 namespace wingui {
 PropPage::TextItem WizardAutoConnectivity::texts[] = {

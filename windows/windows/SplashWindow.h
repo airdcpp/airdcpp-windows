@@ -24,7 +24,7 @@
 #endif
 
 #include <string>
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 #include <windows/ExCImage.h>
 #include <windows/Async.h>

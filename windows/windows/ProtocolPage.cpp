@@ -18,12 +18,12 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/NetworkUtil.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Socket.h>
-#include <airdcpp/UpdateManager.h>
-#include <airdcpp/version.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/util/NetworkUtil.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/connection/socket/Socket.h>
+#include <airdcpp/core/update/UpdateManager.h>
+#include <airdcpp/core/version.h>
 
 #include <windows/Resource.h>
 #include <windows/ProtocolPage.h>

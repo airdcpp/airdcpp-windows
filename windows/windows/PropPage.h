@@ -28,8 +28,8 @@
 #define SETTINGS_BUF_LEN 1024
 #define DIM_EDIT_EXPERIMENT 0
 
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 #include <windows/Dispatchers.h>
 

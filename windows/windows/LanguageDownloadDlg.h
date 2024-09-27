@@ -25,10 +25,10 @@
 
 #include <atldlgs.h>
 
-#include <airdcpp/UpdateManagerListener.h>
-#include <airdcpp/UpdateManager.h>
-#include <airdcpp/Text.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/core/update/UpdateManagerListener.h>
+#include <airdcpp/core/update/UpdateManager.h>
+#include <airdcpp/util/text/Text.h>
+#include <airdcpp/core/timer/TimerManager.h>
 
 namespace wingui {
 class LanguageDownloadDlg : private UpdateManagerListener, private TimerManagerListener { 

@@ -8,7 +8,7 @@
 #include <SHLGUID.h>
 
 #include <airdcpp/stdinc.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/util/text/Text.h>
 
 #include <sddl.h>
 

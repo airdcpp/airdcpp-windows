@@ -25,10 +25,10 @@
 #include <windows/FolderTree.h>
 #include <windows/PropPage.h>
 
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/ShareDirectoryInfo.h>
-#include <airdcpp/ShareProfile.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/share/ShareDirectoryInfo.h>
+#include <airdcpp/share/profiles/ShareProfile.h>
 
 namespace wingui {
 class SharePageBase {

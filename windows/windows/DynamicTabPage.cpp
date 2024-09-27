@@ -21,7 +21,7 @@
 
 #include <windows/DynamicTabPage.h>
 
-#include <airdcpp/Text.h>
+#include <airdcpp/util/text/Text.h>
 
 
 namespace wingui {

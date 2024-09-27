@@ -26,10 +26,10 @@
 #include <web-server/WebServerSettings.h>
 #include <web-server/version.h>
 
-#include <airdcpp/Exception.h>
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/SystemUtil.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/SystemUtil.h>
 
 
 namespace webserver {

@@ -28,11 +28,11 @@
 #include <windows/PrivateFrame.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/Bundle.h>
-#include <airdcpp/DownloadManagerListener.h>
-#include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/QueueItem.h>
-#include <airdcpp/TaskQueue.h>
+#include <airdcpp/queue/Bundle.h>
+#include <airdcpp/transfer/download/DownloadManagerListener.h>
+#include <airdcpp/queue/QueueManagerListener.h>
+#include <airdcpp/queue/QueueItem.h>
+#include <airdcpp/core/queue/TaskQueue.h>
 
 #define STATUS_MSG_MAP 19
 //#define CONTROL_MSG_MAP 22

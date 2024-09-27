@@ -4,7 +4,7 @@
 #include <atlcrack.h>
 #include <windows/PropPage.h>
 #include <windows/RichTextBox.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 namespace wingui {
 class PropPageTextStyles: public CPropertyPage<IDD_TEXT_STYLES>, public PropPage, private SettingsManagerListener

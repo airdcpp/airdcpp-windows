@@ -23,7 +23,7 @@
 
 #include <windows/PropertiesDlg.h>
 
-#include <airdcpp/ShareManager.h>
+#include <airdcpp/share/ShareManager.h>
 
 
 namespace wingui {

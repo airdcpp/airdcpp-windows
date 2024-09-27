@@ -23,7 +23,7 @@
 #include <windows/stdafx.h>
 #include <atlcrack.h>
 
-#include <airdcpp/HubEntry.h>
+#include <airdcpp/favorites/HubEntry.h>
 #include <windows/ActionUtil.h>
 #include <windows/TabbedDialog.h>
 

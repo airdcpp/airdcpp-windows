@@ -20,7 +20,7 @@
 #include <windows/Resource.h>
 
 #include <windows/ChatFilterPage.h>
-#include <airdcpp/version.h>
+#include <airdcpp/core/version.h>
 #include <windows/WinUtil.h>
 #include <windows/ChatFilterDlg.h>
 

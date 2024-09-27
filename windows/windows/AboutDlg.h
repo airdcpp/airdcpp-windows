@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/HttpConnection.h>
+#include <airdcpp/connection/http/HttpConnection.h>
 
 namespace wingui {
 class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener

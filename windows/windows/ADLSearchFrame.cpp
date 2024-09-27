@@ -27,7 +27,7 @@
 #include <windows/AdlsProperties.h>
 
 #include <airdcpp/modules/ADLSearch.h>
-#include <airdcpp/LogManager.h>
+#include <airdcpp/events/LogManager.h>
 
 namespace wingui {
 string ADLSearchFrame::id = "ADLSearch";

@@ -19,7 +19,7 @@
 
 #if defined(_WIN32)
 
-#include <airdcpp/File.h>
+#include <airdcpp/core/io/File.h>
 
 #include <tchar.h>
 #include <DbgHelp.h>

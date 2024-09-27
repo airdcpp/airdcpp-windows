@@ -20,7 +20,7 @@
 #define LINE_DLG_H
 
 #include <windows/resource.h>
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class LineDlg : public CDialogImpl<LineDlg>

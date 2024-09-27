@@ -17,7 +17,7 @@
  */
 
 #include <windows/stdafx.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 #include <windows/Resource.h>
 

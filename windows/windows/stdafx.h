@@ -21,7 +21,7 @@
 #define DCPLUSPLUS_WIN32_STDAFX_H
 
 #include <airdcpp/stdinc.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 
 #ifdef _DEBUG

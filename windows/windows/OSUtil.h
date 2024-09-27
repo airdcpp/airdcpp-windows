@@ -19,7 +19,7 @@
 #ifndef SYSTEM_UTIL_H
 #define SYSTEM_UTIL_H
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class OSUtil {

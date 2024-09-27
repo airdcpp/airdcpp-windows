@@ -23,13 +23,13 @@
 
 #include <boost/algorithm/string/trim.hpp>
 
-#include <airdcpp/debug.h>
-#include <airdcpp/Flags.h>
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/SimpleXML.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/core/header/debug.h>
+#include <airdcpp/core/classes/Flags.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/text/Text.h>
 
 
 namespace wingui {

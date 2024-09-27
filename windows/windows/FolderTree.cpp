@@ -17,10 +17,10 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #include <windows/LineDlg.h>
 #include <windows/ShareDirectories.h>
 
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/version.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/core/version.h>
 
 //Pull in the WNet Lib automatically
 #pragma comment(lib, "mpr.lib")

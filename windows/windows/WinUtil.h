@@ -21,9 +21,9 @@
 
 #include <windows/resource.h>
 
-#include <airdcpp/DupeType.h>
-#include <airdcpp/MerkleTree.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/core/types/DupeType.h>
+#include <airdcpp/hash/value/MerkleTree.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 namespace wingui {
 

@@ -18,9 +18,9 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/AutoLimitUtil.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/util/AutoLimitUtil.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/Util.h>
 
 #include <windows/Resource.h>
 #include <windows/SpeedPage.h>

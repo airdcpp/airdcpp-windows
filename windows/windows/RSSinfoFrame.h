@@ -33,8 +33,8 @@
 
 #include <airdcpp/modules/RSSManager.h>
 #include <airdcpp/modules/AutoSearchManagerListener.h>
-#include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/TaskQueue.h>
+#include <airdcpp/queue/QueueManagerListener.h>
+#include <airdcpp/core/queue/TaskQueue.h>
 
 namespace wingui {
 

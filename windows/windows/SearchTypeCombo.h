@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 #include <atlctrls.h>
 
 namespace wingui {

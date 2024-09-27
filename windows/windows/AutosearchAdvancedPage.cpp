@@ -21,7 +21,7 @@
 #include <windows/ActionUtil.h>
 #include <windows/AutosearchAdvancedPage.h>
 
-#include <airdcpp/Search.h>
+#include <airdcpp/search/Search.h>
 
 namespace wingui {
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))

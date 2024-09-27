@@ -19,8 +19,8 @@
 #ifndef FLAT_TAB_CTRL_H
 #define FLAT_TAB_CTRL_H
 
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 #include <windows/WinUtil.h>
 #include <windows/memdc.h>

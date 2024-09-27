@@ -25,8 +25,8 @@
 #include <windows/BarShader.h>
 #include <windows/FormatUtil.h>
 
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/transfer/upload/UploadManager.h>
 
 namespace dcpp {
 int UploadQueueItem::getImageIndex() const noexcept {

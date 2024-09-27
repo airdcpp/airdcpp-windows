@@ -23,8 +23,8 @@
 #include <windows/AutosearchParams.h>
 
 #include <windows/OSUtil.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchTypes.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchTypes.h>
 
 namespace wingui {
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))

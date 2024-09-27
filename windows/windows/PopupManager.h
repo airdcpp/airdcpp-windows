@@ -29,9 +29,9 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/GetSet.h>
-#include <airdcpp/Singleton.h>
-#include <airdcpp/TimerManagerListener.h>
+#include <airdcpp/core/types/GetSet.h>
+#include <airdcpp/core/Singleton.h>
+#include <airdcpp/core/timer/TimerManagerListener.h>
 
 #include <windows/PopupDlg.h>
 

@@ -20,9 +20,9 @@
 #include <windows/stdafx.h>
 #include <windows/resource.h>
 
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/version.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/core/version.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 #include <windows/FulHighlightDialog.h>

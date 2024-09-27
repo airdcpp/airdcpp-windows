@@ -17,9 +17,9 @@
  */
 
 #include <windows/stdafx.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/Util.h>
 
 #include <windows/BrowseDlg.h>
 #include <windows/Resource.h>

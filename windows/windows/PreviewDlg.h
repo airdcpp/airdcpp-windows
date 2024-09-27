@@ -19,7 +19,7 @@
 #pragma once
 
 #include <atlcrack.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/util/Util.h>
 #include <windows/WinUtil.h>
 
 namespace wingui {

@@ -22,9 +22,9 @@
 #include <windows/RssFilterPage.h>
 
 #include <airdcpp/modules/AutoSearchManager.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/SimpleXML.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
 
 namespace wingui {
 #define setMinMax(x, y, z) \

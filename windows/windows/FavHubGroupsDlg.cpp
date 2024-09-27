@@ -17,7 +17,7 @@
  */
 
 #include <windows/stdafx.h>
-#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/favorites/FavoriteManager.h>
 
 #include <windows/FavHubGroupsDlg.h>
 #include <windows/WinUtil.h>

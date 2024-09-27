@@ -24,7 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include <windows/stdafx.h>
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class PopupWnd : public CWindowImpl<PopupWnd, CWindow>

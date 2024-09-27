@@ -24,8 +24,8 @@
 #include <windows/Async.h>
 #include <windows/PropPage.h>
 
-#include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/UpdateManagerListener.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/core/update/UpdateManagerListener.h>
 
 namespace wingui {
 class ProtocolPage : public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener, private ConnectivityManagerListener, private Async<ProtocolPage>

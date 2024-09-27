@@ -19,18 +19,18 @@
 #include <windows/stdafx.h>
 #include <windows/Resource.h>
 
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ConnectionManager.h>
-#include <airdcpp/DownloadManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/TransferInfoManager.h>
-#include <airdcpp/UploadBundleManager.h>
-#include <airdcpp/QueueManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/connection/ConnectionManager.h>
+#include <airdcpp/transfer/download/DownloadManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/transfer/TransferInfoManager.h>
+#include <airdcpp/transfer/upload/upload_bundles/UploadBundleManager.h>
+#include <airdcpp/queue/QueueManager.h>
 
-#include <airdcpp/Download.h>
-#include <airdcpp/QueueItem.h>
-#include <airdcpp/UploadBundle.h>
+#include <airdcpp/transfer/download/Download.h>
+#include <airdcpp/queue/QueueItem.h>
+#include <airdcpp/transfer/upload/upload_bundles/UploadBundle.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>

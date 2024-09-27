@@ -30,21 +30,21 @@
 #include <windows/FormatUtil.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/CryptoManager.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/FavoriteUserManager.h>
-#include <airdcpp/IgnoreManager.h>
-#include <airdcpp/LinkUtil.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/Message.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/RegexUtil.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/ShareProfile.h>
-#include <airdcpp/ReservedSlotManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/core/crypto/CryptoManager.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/user/ignore/IgnoreManager.h>
+#include <airdcpp/util/LinkUtil.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/message/Message.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/RegexUtil.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/share/profiles/ShareProfile.h>
+#include <airdcpp/favorites/ReservedSlotManager.h>
+#include <airdcpp/util/Util.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 

@@ -29,8 +29,8 @@
 #include <windows/FormatUtil.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/DownloadManager.h>
-#include <airdcpp/PathUtil.h>
+#include <airdcpp/transfer/download/DownloadManager.h>
+#include <airdcpp/util/PathUtil.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>

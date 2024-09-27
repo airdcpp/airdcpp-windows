@@ -17,7 +17,7 @@
  */
 
 #include <windows/stdafx.h>
-#include <airdcpp/version.h>
+#include <airdcpp/core/version.h>
 #include <windows/Resource.h>
 
 
@@ -26,8 +26,8 @@
 #include <windows/LineDlg.h>
 #include <windows/PropertiesDlg.h>
 
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/util/Util.h>
 
 namespace wingui {
 PropPage::TextItem MiscPage::texts[] = {

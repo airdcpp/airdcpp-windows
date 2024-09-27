@@ -21,7 +21,7 @@
 #include <windows.h>
 #include <tchar.h>
 
-#include <airdcpp/File.h>
+#include <airdcpp/core/io/File.h>
 
 #pragma comment( lib, "dbghelp.lib" )
 

@@ -24,7 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include <windows/resource.h>
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class TreePropertySheet : public CPropertySheetImpl<TreePropertySheet> {

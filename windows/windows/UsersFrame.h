@@ -30,9 +30,9 @@
 #include <windows/RichTextBox.h>
 #include <windows/ListFilter.h>
 
-#include <airdcpp/FavoriteUserManagerListener.h>
-#include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/IgnoreManagerListener.h>
+#include <airdcpp/favorites/FavoriteUserManagerListener.h>
+#include <airdcpp/queue/QueueManagerListener.h>
+#include <airdcpp/user/ignore/IgnoreManagerListener.h>
 
 #define STATUS_MAP 10
 

@@ -28,7 +28,7 @@
 #include <windows/ExListViewCtrl.h>
 
 #include <airdcpp/modules/HighlightManager.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 namespace wingui {
 class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage, private SettingsManagerListener

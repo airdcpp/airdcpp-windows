@@ -25,8 +25,8 @@
 #include <windows/TypedListViewCtrl.h>
 #include <windows/OMenu.h>
 
-#include <airdcpp/DupeType.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/core/types/DupeType.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 #define KEY_MESSAGE_MAP 7
 

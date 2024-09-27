@@ -33,8 +33,8 @@
 #include <windows/ResourceLoader.h>
 #include <windows/TextFrame.h>
 
-#include <airdcpp/FavoriteUserManager.h>
-#include <airdcpp/ReservedSlotManager.h>
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/favorites/ReservedSlotManager.h>
 
 #include <airdcpp/modules/FinishedManager.h>
 

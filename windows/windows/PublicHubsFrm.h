@@ -31,7 +31,7 @@
 #include <airdcpp/modules/HublistEntry.h>
 #include <airdcpp/modules/HublistManagerListener.h>
 
-#include <airdcpp/SettingsManagerListener.h>
+#include <airdcpp/settings/SettingsManagerListener.h>
 
 namespace wingui {
 #define FILTER_MESSAGE_MAP 8

@@ -23,9 +23,9 @@
 #include <windows/SearchFrm.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchQuery.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchQuery.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 namespace wingui {
 string SpyFrame::id = "SpyFrame";

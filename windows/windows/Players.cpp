@@ -20,13 +20,13 @@
 #include <windows/Players.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/typedefs.h>
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/Text.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/File.h>
+#include <airdcpp/core/header/typedefs.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/util/text/Text.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/io/File.h>
 
 #include <windows/iTunesCOMInterface.h>
 #include <windows/WMPlayerRemoteApi.h>

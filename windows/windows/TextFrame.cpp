@@ -22,11 +22,11 @@
 #include <windows/TextFrame.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/ViewFileManager.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/viewed_files/ViewFileManager.h>
 
 
 namespace wingui {

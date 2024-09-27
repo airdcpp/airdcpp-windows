@@ -27,11 +27,11 @@
 #include <windows/FavHubGroupsDlg.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/version.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/core/version.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>

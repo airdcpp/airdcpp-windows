@@ -20,7 +20,7 @@
 #include <windows/stdafx.h>
 #include <windows/Resource.h>
 #include <windows/TabbedDialog.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/util/text/Text.h>
 
 namespace wingui {
 TabbedDialog::TabbedDialog(const string& aTitle) : wTitle(aTitle) { }

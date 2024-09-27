@@ -21,7 +21,7 @@
 #include <windows/TreePropertySheet.h>
 #include <windows/ResourceLoader.h>
 
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 
 namespace wingui {

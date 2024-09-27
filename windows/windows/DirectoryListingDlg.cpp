@@ -22,9 +22,9 @@
 #include <windows/WinUtil.h>
 #include <windows/DirectoryListingDlg.h>
 
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchTypes.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchTypes.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 
 namespace wingui {

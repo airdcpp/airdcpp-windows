@@ -21,11 +21,11 @@
 #include <windows/WinUtil.h>
 #include <windows/SearchTypeDlg.h>
 
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchTypes.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchTypes.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 namespace wingui {
 #define GET_TEXT(id, var) \

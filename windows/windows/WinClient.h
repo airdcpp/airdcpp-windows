@@ -22,7 +22,7 @@
 #include <windows/stdafx.h>
 
 #include <airdcpp/DCPlusPlus.h>
-#include <airdcpp/StartupParams.h>
+#include <airdcpp/core/classes/StartupParams.h>
 
 #include <windows/WinUpdater.h>
 

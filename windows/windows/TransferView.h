@@ -25,13 +25,13 @@
 
 #include <airdcpp/forward.h>
 
-#include <airdcpp/DownloadManagerListener.h>
-#include <airdcpp/UploadBundleInfoReceiverListener.h>
-#include <airdcpp/ConnectionManagerListener.h>
-#include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/TaskQueue.h>
-#include <airdcpp/TransferInfoManagerListener.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/transfer/download/DownloadManagerListener.h>
+#include <airdcpp/transfer/upload/upload_bundles/UploadBundleInfoReceiverListener.h>
+#include <airdcpp/connection/ConnectionManagerListener.h>
+#include <airdcpp/queue/QueueManagerListener.h>
+#include <airdcpp/core/queue/TaskQueue.h>
+#include <airdcpp/transfer/TransferInfoManagerListener.h>
+#include <airdcpp/util/Util.h>
 
 #include <windows/OMenu.h>
 #include <windows/UCHandler.h>

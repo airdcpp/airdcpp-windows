@@ -21,8 +21,8 @@
 #include <windows/WinUtil.h>
 #include <windows/ChatFilterDlg.h>
 
-#include <airdcpp/IgnoreManager.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/user/ignore/IgnoreManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 namespace wingui {
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))

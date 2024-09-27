@@ -31,8 +31,8 @@
 #include <web-server/WebServerSettings.h>
 #include <web-server/WebUserManager.h>
 
-#include <airdcpp/LogManager.h>
-#include <airdcpp/NetworkUtil.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/NetworkUtil.h>
 
 namespace wingui {
 

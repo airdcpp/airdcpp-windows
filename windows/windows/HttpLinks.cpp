@@ -20,7 +20,7 @@
 
 #include <windows/HttpLinks.h>
 
-#include <airdcpp/SimpleXML.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
 
 namespace wingui {
 

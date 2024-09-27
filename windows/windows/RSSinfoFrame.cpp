@@ -27,9 +27,9 @@
 
 #include <airdcpp/modules/AutoSearchManager.h>
 
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/File.h>
-#include <airdcpp/LogManager.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/events/LogManager.h>
 
 #include <boost/algorithm/cxx11/all_of.hpp>
 

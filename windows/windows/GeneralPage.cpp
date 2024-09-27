@@ -18,8 +18,8 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/Localization.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/util/text/Text.h>
 
 #include <windows/Resource.h>
 

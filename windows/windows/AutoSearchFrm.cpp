@@ -30,7 +30,7 @@
 #include <windows/AutosearchSearchTimesPage.h>
 #include <windows/AutoSearchItemSettings.h>
 
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 namespace wingui {
 #define MAX_STATUS_LINES 10

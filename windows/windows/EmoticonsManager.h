@@ -19,8 +19,8 @@
 #ifndef EMOTICONSMANAGER_H
 #define EMOTICONSMANAGER_H
 
-#include <airdcpp/FastAlloc.h>
-#include <airdcpp/GetSet.h>
+#include <airdcpp/core/classes/FastAlloc.h>
+#include <airdcpp/core/types/GetSet.h>
 
 #include <windows/ExCImage.h>
 

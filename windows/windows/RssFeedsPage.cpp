@@ -21,8 +21,8 @@
 #include <windows/WinUtil.h>
 #include <windows/RssFeedsPage.h>
 
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 namespace wingui {
 #define setMinMax(x, y, z) \

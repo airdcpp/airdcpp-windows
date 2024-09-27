@@ -22,8 +22,8 @@
 
 #include <windows/ResourceLoader.h>
 
-#include <airdcpp/OnlineUser.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/user/OnlineUser.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 
 namespace wingui {

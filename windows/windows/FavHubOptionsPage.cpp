@@ -21,10 +21,10 @@
 
 #include <windows/FavHubOptionsPage.h>
 
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/tribool.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/classes/tribool.h>
 
 
 namespace wingui {

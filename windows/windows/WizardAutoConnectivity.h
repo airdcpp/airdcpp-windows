@@ -25,7 +25,7 @@
 #include <windows/Wizard.h>
 #include <windows/RichTextBox.h>
 
-#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
 
 #include <atldlgs.h>
 

@@ -24,7 +24,7 @@
 #include <windows/Sounds.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/Text.h>
+#include <airdcpp/util/text/Text.h>
 
 namespace wingui {
 PropPage::TextItem Sounds::texts[] = {

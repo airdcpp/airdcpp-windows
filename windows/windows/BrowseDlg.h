@@ -21,7 +21,7 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class BrowseDlg {

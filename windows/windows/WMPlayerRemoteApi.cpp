@@ -1,7 +1,7 @@
 
 #include <windows/stdafx.h>
 #include <windows/WMPlayerRemoteApi.h>
-#include <airdcpp/version.h>
+#include <airdcpp/core/version.h>
 
 namespace wingui {
 

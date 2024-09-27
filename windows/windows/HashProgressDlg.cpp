@@ -19,12 +19,12 @@
 #include <windows/stdafx.h>
 #include <windows/HashProgressDlg.h>
 
-#include <airdcpp/HashManager.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/Text.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Thread.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/hash/HashManager.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/util/text/Text.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/thread/Thread.h>
+#include <airdcpp/core/timer/TimerManager.h>
 
 
 namespace wingui {

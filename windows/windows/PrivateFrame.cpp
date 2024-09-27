@@ -26,15 +26,15 @@
 #include <windows/FormatUtil.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/Client.h>
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/FavoriteUserManager.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/PrivateChatManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/ReservedSlotManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/hub/Client.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/private_chat/PrivateChatManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/favorites/ReservedSlotManager.h>
+#include <airdcpp/util/Util.h>
 
 
 namespace wingui {

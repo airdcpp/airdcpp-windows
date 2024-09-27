@@ -26,15 +26,15 @@
 #include <windows/MainFrm.h>
 #include <windows/ResourceLoader.h>
 
-#include <airdcpp/File.h>
-#include <airdcpp/LogManager.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/events/LogManager.h>
 
-#include <airdcpp/version.h>
-#include <airdcpp/format.h>
+#include <airdcpp/core/version.h>
+#include <airdcpp/core/header/format.h>
 #include <airdcpp/modules/AutoSearchManager.h>
 
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/PathUtil.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/util/PathUtil.h>
 
 namespace wingui {
 #define ICON_SIZE 16

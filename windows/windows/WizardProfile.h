@@ -27,7 +27,7 @@
 #include <windows/PropPage.h>
 #include <windows/Wizard.h>
 
-#include <airdcpp/SettingItem.h>
+#include <airdcpp/settings/SettingItem.h>
 
 namespace wingui {
 

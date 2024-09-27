@@ -22,7 +22,7 @@
 #include <windows/ListFilter.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/core/timer/TimerManager.h>
 
 
 namespace wingui {

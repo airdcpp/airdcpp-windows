@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <airdcpp/concurrency.h>
+#include <airdcpp/core/thread/concurrency.h>
 
 #include <windows/Async.h>
 #include <windows/OMenu.h>

@@ -19,7 +19,7 @@
 #ifndef __EMOTICONS_DLG
 #define __EMOTICONS_DLG
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
 namespace wingui {
 class EmoticonsDlg : public CDialogImpl<EmoticonsDlg>

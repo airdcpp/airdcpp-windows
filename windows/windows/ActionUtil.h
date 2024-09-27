@@ -21,12 +21,12 @@
 
 #include <windows/resource.h>
 
-#include <airdcpp/DupeType.h>
-#include <airdcpp/MerkleTree.h>
-#include <airdcpp/Priority.h>
-#include <airdcpp/SettingItem.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/User.h>
+#include <airdcpp/core/types/DupeType.h>
+#include <airdcpp/hash/value/MerkleTree.h>
+#include <airdcpp/core/types/Priority.h>
+#include <airdcpp/settings/SettingItem.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/user/User.h>
 
 
 namespace wingui {

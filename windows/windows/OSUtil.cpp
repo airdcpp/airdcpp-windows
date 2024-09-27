@@ -23,7 +23,7 @@
 #include <mmsystem.h>
 #include <powrprof.h>
 
-#include <airdcpp/Text.h>
+#include <airdcpp/util/text/Text.h>
 
 #define byte BYTE // 'byte': ambiguous symbol (C++17)
 #include <atlcomtime.h>

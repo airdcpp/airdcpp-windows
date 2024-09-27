@@ -29,13 +29,13 @@
 
 #include <windows/Async.h>
 
-#include <airdcpp/concurrency.h>
-#include <airdcpp/DirectoryListing.h>
-#include <airdcpp/DirectoryListingListener.h>
+#include <airdcpp/core/thread/concurrency.h>
+#include <airdcpp/filelist/DirectoryListing.h>
+#include <airdcpp/filelist/DirectoryListingListener.h>
 #include <airdcpp/modules/DirectoryListingSearch.h>
 
-#include <airdcpp/User.h>
-#include <airdcpp/FastAlloc.h>
+#include <airdcpp/user/User.h>
+#include <airdcpp/core/classes/FastAlloc.h>
 
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11

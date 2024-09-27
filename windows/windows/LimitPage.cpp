@@ -19,8 +19,8 @@
 #include <windows/stdafx.h>
 #include <windows/Resource.h>
 
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/Util.h>
 
 #include <windows/LimitPage.h>
 

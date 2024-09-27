@@ -26,7 +26,7 @@
 #include <windows/OMenu.h>
 #include <windows/resource.h>
 
-#include <airdcpp/UserCommandManager.h>
+#include <airdcpp/hub/user_command/UserCommandManager.h>
 
 namespace wingui {
 template<class T>

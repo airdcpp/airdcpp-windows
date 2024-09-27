@@ -29,10 +29,10 @@
 #include <windows/ChatFrameBase.h>
 #include <windows/UserUtil.h>
 
-#include <airdcpp/Client.h>
-#include <airdcpp/FastAlloc.h>
-#include <airdcpp/FavoriteUserManagerListener.h>
-#include <airdcpp/TaskQueue.h>
+#include <airdcpp/hub/Client.h>
+#include <airdcpp/core/classes/FastAlloc.h>
+#include <airdcpp/favorites/FavoriteUserManagerListener.h>
+#include <airdcpp/core/queue/TaskQueue.h>
 
 #include <atlstr.h>
 #include <windows/WinUtil.h>

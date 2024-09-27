@@ -23,7 +23,7 @@
 #include <windows/TempShare_dlg.h>
 #include <windows/FormatUtil.h>
 
-#include <airdcpp/TempShareManager.h>
+#include <airdcpp/share/temp_share/TempShareManager.h>
 
 
 namespace wingui {

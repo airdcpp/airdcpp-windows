@@ -18,14 +18,14 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/Exception.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/SimpleXML.h>
-#include <airdcpp/Pointer.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/File.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/SystemUtil.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
+#include <airdcpp/core/classes/Pointer.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/SystemUtil.h>
 
 #include "boost/algorithm/string/replace.hpp"
 

@@ -21,8 +21,8 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/StartupParams.h>
-#include <airdcpp/updater/Updater.h>
+#include <airdcpp/core/classes/StartupParams.h>
+#include <airdcpp/core/update/updater/Updater.h>
 
 namespace wingui {
 class WinUpdater {

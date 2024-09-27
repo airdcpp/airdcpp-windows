@@ -25,7 +25,7 @@
 #include <windows/StaticFrame.h>
 #include <windows/FilteredListViewCtrl.h>
 
-#include <airdcpp/RecentManager.h>
+#include <airdcpp/recents/RecentManager.h>
 
 namespace wingui {
 class RecentsFrame : public MDITabChildWindowImpl<RecentsFrame>, public StaticFrame<RecentsFrame, ResourceManager::RECENTS, IDC_RECENTS>, 

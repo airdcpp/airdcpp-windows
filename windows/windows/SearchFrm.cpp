@@ -27,18 +27,18 @@
 #include <windows/Wildcards.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/Search.h>
-#include <airdcpp/SearchInstance.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchQuery.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/filelist/DirectoryListingManager.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/search/Search.h>
+#include <airdcpp/search/SearchInstance.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchQuery.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/core/timer/TimerManager.h>
+#include <airdcpp/util/ValueGenerator.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 

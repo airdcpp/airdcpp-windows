@@ -19,11 +19,11 @@
 #ifndef PRIVATE_FRAME_H
 #define PRIVATE_FRAME_H
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
-#include <airdcpp/User.h>
-#include <airdcpp/UserInfoBase.h>
-#include <airdcpp/PrivateChatListener.h>
+#include <airdcpp/user/User.h>
+#include <airdcpp/user/UserInfoBase.h>
+#include <airdcpp/private_chat/PrivateChatListener.h>
 
 #include <windows/UserInfoBaseHandler.h>
 #include <windows/ChatFrameBase.h>

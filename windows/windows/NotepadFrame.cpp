@@ -23,8 +23,8 @@
 #include <windows/ActionUtil.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/Exception.h>
-#include <airdcpp/File.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/core/io/File.h>
 
 namespace wingui {
 string NotepadFrame::id = "Notepad";

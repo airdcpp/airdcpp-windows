@@ -16,11 +16,11 @@
 
 #include <windows/StaticFrame.h>
 
-#include <airdcpp/ProtocolCommandManager.h>
+#include <airdcpp/protocol/ProtocolCommandManager.h>
 #include <web-server/WebServerManagerListener.h>
 
-#include <airdcpp/Semaphore.h>
-#include <airdcpp/Thread.h>
+#include <airdcpp/core/thread/Semaphore.h>
+#include <airdcpp/core/thread/Thread.h>
 
 #include <boost/lockfree/queue.hpp>
 

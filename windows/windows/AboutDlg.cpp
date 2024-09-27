@@ -24,13 +24,13 @@
 #include <windows/HttpLinks.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/format.h>
-#include <airdcpp/Exception.h>
-#include <airdcpp/HttpDownload.h>
-#include <airdcpp/SimpleXML.h>
-#include <airdcpp/version.h>
-#include <airdcpp/UpdateDownloader.h>
-#include <airdcpp/UpdateManager.h>
+#include <airdcpp/core/header/format.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/connection/http/HttpDownload.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
+#include <airdcpp/core/version.h>
+#include <airdcpp/core/update/UpdateDownloader.h>
+#include <airdcpp/core/update/UpdateManager.h>
 
 namespace wingui {
 static const TCHAR Airthanks[] = 

@@ -25,7 +25,7 @@
 #include <windows/PropertiesDlg.h>
 #include <windows/MainFrm.h>
 
-#include <airdcpp/HashManager.h>
+#include <airdcpp/hash/HashManager.h>
 
 
 namespace wingui {

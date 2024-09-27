@@ -22,7 +22,7 @@
 #include <windows/ExListViewCtrl.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/Util.h>
+#include <airdcpp/util/Util.h>
 
 namespace wingui {
 // TODO: make sure that moved items maintain their selection state

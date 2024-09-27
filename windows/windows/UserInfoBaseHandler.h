@@ -22,10 +22,10 @@
 #include <windows/resource.h>
 #include <windows/OMenu.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/HintedUser.h>
-#include <airdcpp/UserInfoBase.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/user/HintedUser.h>
+#include <airdcpp/user/UserInfoBase.h>
+#include <airdcpp/util/Util.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>

@@ -21,7 +21,7 @@
 
 #include <windows/stdafx.h>
 #include <windows/TypedListViewCtrl.h>
-#include <airdcpp/StringMatch.h>
+#include <airdcpp/util/text/StringMatch.h>
 
 namespace wingui {
 /*

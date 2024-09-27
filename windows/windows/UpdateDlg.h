@@ -21,7 +21,7 @@
 
 #include <windows/RichTextBox.h>
 
-#include <airdcpp/UpdateVersion.h>
+#include <airdcpp/core/update/UpdateVersion.h>
 
 #if _MSC_VER > 1000
 #pragma once

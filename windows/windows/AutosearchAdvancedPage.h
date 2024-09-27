@@ -25,7 +25,7 @@
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
 
-#include <airdcpp/Util.h>
+#include <airdcpp/util/Util.h>
 #include <airdcpp/modules/AutoSearchManager.h>
 
 #include <windows/AutoSearchItemSettings.h>

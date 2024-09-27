@@ -30,16 +30,16 @@
 #include <WinInet.h>
 #include <atlwin.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/UploadManager.h>
-#include <airdcpp/DownloadManager.h>
-#include <airdcpp/SystemUtil.h>
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/version.h>
-#include <airdcpp/Socket.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/transfer/upload/UploadManager.h>
+#include <airdcpp/transfer/download/DownloadManager.h>
+#include <airdcpp/util/SystemUtil.h>
+#include <airdcpp/core/timer/TimerManager.h>
+#include <airdcpp/core/version.h>
+#include <airdcpp/connection/socket/Socket.h>
 
 #include "boost/format.hpp"
 

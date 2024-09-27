@@ -25,8 +25,8 @@
 
 #include <atlcrack.h>
 
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/util/text/Text.h>
 
 namespace wingui {
 class SharePageDlg : public CDialogImpl<SharePageDlg>

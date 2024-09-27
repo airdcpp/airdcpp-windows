@@ -40,10 +40,10 @@
 #include <windows/WinClient.h>
 #include <windows/WinUtil.h>
 
-#include <airdcpp/MerkleTree.h>
-#include <airdcpp/SSLSocket.h>
+#include <airdcpp/hash/value/MerkleTree.h>
+#include <airdcpp/connection/socket/SSLSocket.h>
 
-#include <airdcpp/version.h>
+#include <airdcpp/core/version.h>
 
 #include <delayimp.h>
 

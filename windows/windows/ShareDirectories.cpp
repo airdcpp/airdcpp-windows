@@ -18,12 +18,12 @@
 
 #include <windows/stdafx.h>
 
-#include <airdcpp/Util.h>
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/ShareProfileManager.h>
-#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/share/profiles/ShareProfileManager.h>
+#include <airdcpp/util/ValueGenerator.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>

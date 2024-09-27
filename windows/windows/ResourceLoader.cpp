@@ -17,9 +17,9 @@
  */
 
 #include <windows/stdafx.h>
-#include <airdcpp/UserInfoBase.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
+#include <airdcpp/user/UserInfoBase.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
 
 #include <windows/ResourceLoader.h>
 

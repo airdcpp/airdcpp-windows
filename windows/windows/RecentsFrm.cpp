@@ -23,7 +23,7 @@
 #include <windows/HubFrame.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/RecentManager.h>
+#include <airdcpp/recents/RecentManager.h>
 
 namespace wingui {
 string RecentsFrame::id = "Recents";

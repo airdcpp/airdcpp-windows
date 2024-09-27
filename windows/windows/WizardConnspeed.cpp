@@ -24,8 +24,8 @@
 #include <windows/ActionUtil.h>
 #include <windows/HttpLinks.h>
 
-#include <airdcpp/AutoLimitUtil.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/util/AutoLimitUtil.h>
+#include <airdcpp/util/Util.h>
 
 namespace wingui {
 

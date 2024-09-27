@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/util/text/StringTokenizer.h>
 #include <windows/MainFrm.h>
 
 namespace wingui {

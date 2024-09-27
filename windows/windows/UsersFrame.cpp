@@ -26,13 +26,13 @@
 #include <windows/FormatUtil.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/FavoriteUserManager.h>
-#include <airdcpp/IgnoreManager.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/QueueManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/user/ignore/IgnoreManager.h>
+#include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/queue/QueueManager.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>

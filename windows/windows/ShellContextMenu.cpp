@@ -24,8 +24,8 @@
 #include <windows/resource.h>
 #include <windows/ActionUtil.h>
 
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/text/Text.h>
 
 namespace wingui {
 ShellMenu* ShellMenu::curMenu = nullptr;

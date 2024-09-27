@@ -24,10 +24,10 @@
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
 
-#include <airdcpp/typedefs.h>
+#include <airdcpp/core/header/typedefs.h>
 
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/core/timer/TimerManager.h>
+#include <airdcpp/util/Util.h>
 
 #ifdef _WIN32
 #include <Wincrypt.h>

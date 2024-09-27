@@ -26,7 +26,7 @@
 #include <windows/PublicHubsListDlg.h>
 
 #include <airdcpp/modules/HublistManager.h>
-#include <airdcpp/Localization.h>
+#include <airdcpp/core/localization/Localization.h>
 
 namespace wingui {
 string PublicHubsFrame::id = "PublicHubs";

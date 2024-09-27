@@ -23,8 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Text.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/text/Text.h>
 #include <airdcpp/modules/HublistManager.h>
 #include <windows/ExListViewCtrl.h>
 #include <windows/LineDlg.h>

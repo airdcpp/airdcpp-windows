@@ -17,8 +17,8 @@
 */
 
 #include <windows/stdafx.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/ActivityManager.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/hub/activity/ActivityManager.h>
 
 #include <windows/WinUtil.h>
 #include <windows/PopupManager.h>
