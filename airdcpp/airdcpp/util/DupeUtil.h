@@ -42,9 +42,16 @@ public:
 	static StringList getAdcDirectoryDupePaths(DupeType aType, const string& aAdcPath);
 	static StringList getFileDupePaths(DupeType aType, const TTHValue& aTTH);
 
-	static bool isShareDupe(DupeType aType) noexcept;
-	static bool isQueueDupe(DupeType aType) noexcept;
-	static bool isFinishedDupe(DupeType aType) noexcept;
+	// Strict checks with no mixed types
+	static bool isShareOnlyDupe(DupeType aType) noexcept;
+	static bool isQueueOnlyDupe(DupeType aType) noexcept;
+	static bool isFinishedOnlyDupe(DupeType aType) noexcept;
+
+	// Full dupe or optionally partial/mixed type
+	static bool isShareDupe(DupeType aType, bool aAllowPartial = true) noexcept;
+	static bool isQueueDupe(DupeType aType, bool aAllowPartial = true) noexcept;
+	static bool isFinishedDupe(DupeType aType, bool aAllowPartial = true) noexcept;
+
 	static bool allowOpenDupe(DupeType aType) noexcept;
 
 	static void init();

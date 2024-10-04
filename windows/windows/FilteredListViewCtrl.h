@@ -27,6 +27,7 @@
 
 #include <airdcpp/core/types/DupeType.h>
 #include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/DupeUtil.h>
 
 #define KEY_MESSAGE_MAP 7
 
@@ -74,7 +75,7 @@ public:
 	END_MSG_MAP();
 
 	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings, int aInitialColumn) : 
-		onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
+		updateF(aUpdateF), parent(aParent), settings(aSettings),
 		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), initialColumn(aInitialColumn),
 		filterMethodContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP),
 		filterContainer(WC_EDIT, this, KEY_MESSAGE_MAP),
@@ -84,8 +85,8 @@ public:
 		optionsContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP)
 	{
 		if (style & FLV_HAS_CHECKBOXES) {
-			filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
-			filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
+			showShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
+			showQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
 		}
 		if (style & FLV_HAS_DUPE_OPTIONS) {
 			filterPartialDupes = SettingsManager::getInstance()->get(settings[SETTING_PARTIAL_DUPES]);
@@ -109,13 +110,13 @@ public:
 			ctrlQueued.SetWindowText(CTSTRING(QUEUED));
 			ctrlQueued.SetButtonStyle(BS_AUTOCHECKBOX, false);
 			ctrlQueued.SetFont(WinUtil::systemFont);
-			ctrlQueued.SetCheck(filterQueued ? BST_CHECKED : BST_UNCHECKED);
+			ctrlQueued.SetCheck(showQueued ? BST_CHECKED : BST_UNCHECKED);
 
 			ctrlShared.Create(this->m_hWnd, this->rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_SHARED);
 			ctrlShared.SetWindowText(CTSTRING(SHARED));
 			ctrlShared.SetButtonStyle(BS_AUTOCHECKBOX, false);
 			ctrlShared.SetFont(WinUtil::systemFont);
-			ctrlShared.SetCheck(filterShared ? BST_CHECKED : BST_UNCHECKED);
+			ctrlShared.SetCheck(showShared ? BST_CHECKED : BST_UNCHECKED);
 			
 			queuedContainer.SubclassWindow(ctrlQueued.m_hWnd);
 			sharedContainer.SubclassWindow(ctrlShared.m_hWnd);
@@ -293,14 +294,14 @@ public:
 	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
 		switch (wID) {
 			case IDC_FILTER_QUEUED: {
-				filterQueued = !filterQueued;
-				SettingsManager::getInstance()->set(settings[SETTING_QUEUED], filterQueued);
+				showQueued = !showQueued;
+				SettingsManager::getInstance()->set(settings[SETTING_QUEUED], showQueued);
 				updateF();
 				break;
 			}
 			case IDC_FILTER_SHARED: {
-				filterShared = !filterShared;
-				SettingsManager::getInstance()->set(settings[SETTING_SHARED], filterShared);
+				showShared = !showShared;
+				SettingsManager::getInstance()->set(settings[SETTING_SHARED], showShared);
 				updateF();
 				break;
 			}
@@ -316,9 +317,17 @@ public:
 	}
 
 	bool checkDupe(DupeType aDupe) {
-		if (!filterQueued && (aDupe == DUPE_QUEUE_FULL || (filterPartialDupes && aDupe == DUPE_QUEUE_PARTIAL))) {
+		if (!showQueued && (DupeUtil::isQueueDupe(aDupe, filterPartialDupes) || DupeUtil::isFinishedDupe(aDupe, filterPartialDupes))) {
+			if (showShared && DupeUtil::isShareDupe(aDupe)) { // We still want to show it if it's a mixed queue/share dupe
+				return true;
+			}
+
 			return false;
-		} else if (!filterShared && (aDupe == DUPE_SHARE_FULL || (filterPartialDupes && aDupe == DUPE_SHARE_PARTIAL))) {
+		} else if (!showShared && DupeUtil::isShareDupe(aDupe, filterPartialDupes)) {
+			if (showQueued && (DupeUtil::isQueueDupe(aDupe) || DupeUtil::isFinishedDupe(aDupe))) { // We still want to show it if it's a mixed share/queue dupe
+				return true;
+			}
+
 			return false;
 		}
 
@@ -391,11 +400,11 @@ private:
 	CButton ctrlQueued;
 	CButton ctrlShared;
 	CButton ctrlOptions;
-	bool filterQueued;
-	bool filterShared;
-	bool resetOnChange;
-	bool filterPartialDupes;
-	bool onTop;
+	bool showQueued = true;
+	bool showShared = true;
+	bool resetOnChange = true;
+	bool filterPartialDupes = false;
+	bool onTop = true;
 	int initialColumn;
 
 	CContainedWindow filterContainer;

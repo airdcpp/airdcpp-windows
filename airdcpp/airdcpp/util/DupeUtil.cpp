@@ -55,16 +55,52 @@ StringList DupeUtil::getFileDupePaths(DupeType aType, const TTHValue& aTTH) {
 	return ret;
 }
 
-bool DupeUtil::isShareDupe(DupeType aType) noexcept { 
+bool DupeUtil::isShareOnlyDupe(DupeType aType) noexcept { 
 	return aType == DUPE_SHARE_FULL || aType == DUPE_SHARE_PARTIAL; 
 }
 
-bool DupeUtil::isQueueDupe(DupeType aType) noexcept {
+bool DupeUtil::isQueueOnlyDupe(DupeType aType) noexcept {
 	return aType == DUPE_QUEUE_FULL || aType == DUPE_QUEUE_PARTIAL;
 }
 
-bool DupeUtil::isFinishedDupe(DupeType aType) noexcept {
+bool DupeUtil::isFinishedOnlyDupe(DupeType aType) noexcept {
 	return aType == DUPE_FINISHED_FULL || aType == DUPE_FINISHED_PARTIAL;
+}
+
+bool DupeUtil::isShareDupe(DupeType aType, bool aAllowPartial) noexcept {
+	if (aType == DUPE_SHARE_FULL) {
+		return true;
+	}
+
+	if (aAllowPartial && (aType == DUPE_SHARE_PARTIAL || aType == DUPE_SHARE_QUEUE_FINISHED || aType == DUPE_SHARE_QUEUE || aType == DUPE_SHARE_FINISHED)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool DupeUtil::isQueueDupe(DupeType aType, bool aAllowPartial) noexcept {
+	if (aType == DUPE_QUEUE_FULL) {
+		return true;
+	}
+
+	if (aAllowPartial && (aType == DUPE_QUEUE_PARTIAL || aType == DUPE_SHARE_QUEUE_FINISHED || aType == DUPE_SHARE_QUEUE || aType == DUPE_QUEUE_FINISHED)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool DupeUtil::isFinishedDupe(DupeType aType, bool aAllowPartial) noexcept {
+	if (aType == DUPE_FINISHED_FULL) {
+		return true;
+	}
+
+	if (aAllowPartial && (aType == DUPE_FINISHED_PARTIAL || aType == DUPE_SHARE_QUEUE_FINISHED || aType == DUPE_SHARE_FINISHED || aType == DUPE_QUEUE_FINISHED)) {
+		return true;
+	}
+
+	return false;
 }
 
 DupeType DupeUtil::checkAdcDirectoryDupe(const string& aAdcPath, int64_t aSize) {
@@ -216,28 +252,28 @@ DupeType DupeUtil::parseDirectoryContentDupe(const DupeSet& aDupeSet) noexcept {
 	}
 
 	// Partial dupes
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isShareDupe(d) || d == DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isShareOnlyDupe(d) || d == DupeType::DUPE_NONE; })) {
 		return DUPE_SHARE_PARTIAL;
 	}
 
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueDupe(d) || d == DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueOnlyDupe(d) || d == DupeType::DUPE_NONE; })) {
 		return DUPE_QUEUE_PARTIAL;
 	}
 
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || d == DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedOnlyDupe(d) || d == DupeType::DUPE_NONE; })) {
 		return DUPE_FINISHED_PARTIAL;
 	}
 
 	// Mixed
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || DupeUtil::isQueueDupe(d) || d == DUPE_QUEUE_FINISHED || d == DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedOnlyDupe(d) || DupeUtil::isQueueOnlyDupe(d) || d == DUPE_QUEUE_FINISHED || d == DupeType::DUPE_NONE; })) {
 		return DUPE_QUEUE_FINISHED;
 	}
 
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedDupe(d) || DupeUtil::isShareDupe(d) || d == DUPE_SHARE_FINISHED || d == DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isFinishedOnlyDupe(d) || DupeUtil::isShareOnlyDupe(d) || d == DUPE_SHARE_FINISHED || d == DupeType::DUPE_NONE; })) {
 		return DUPE_SHARE_FINISHED;
 	}
 
-	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueDupe(d) || DupeUtil::isShareDupe(d) || d == DUPE_SHARE_QUEUE || d == DupeType::DUPE_NONE; })) {
+	if (ranges::all_of(aDupeSet, [](auto d) { return DupeUtil::isQueueOnlyDupe(d) || DupeUtil::isShareOnlyDupe(d) || d == DUPE_SHARE_QUEUE || d == DupeType::DUPE_NONE; })) {
 		return DUPE_SHARE_QUEUE;
 	}
 
