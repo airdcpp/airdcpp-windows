@@ -304,16 +304,14 @@ int64_t File::getSize(const string& aFileName) noexcept {
 int File::ensureDirectory(const string& aFile) noexcept {
 	int result = 0;
 
-	auto file(Text::toT(aFile));
-
 	// Skip the first dir...
-	auto start = file.find_first_of(_T("\\/"));
+	auto start = aFile.find_first_of("\\/");
 	if(start == string::npos)
 		return ERROR_INVALID_NAME;
 
 	start++;
-	while((start = file.find_first_of(_T("\\/"), start)) != string::npos) {
-		result = ::CreateDirectory((PathUtil::formatPathW(file.substr(0, start+1))).c_str(), NULL);
+	while((start = aFile.find_first_of("\\/", start)) != string::npos) {
+		result = ::CreateDirectory(Text::toT(PathUtil::formatPath(aFile.substr(0, start+1))).c_str(), NULL);
 		start++;
 	}
 
@@ -360,6 +358,19 @@ int64_t File::getBlockSize(const string& aFileName) noexcept {
 	auto ret = GetDiskFreeSpace(Text::toT(PathUtil::formatPath(aFileName)).c_str(), &clusterSectors, &sectorBytes, &tmp2, &tmp3);
 	return ret > 0 ? static_cast<int64_t>(sectorBytes)*static_cast<int64_t>(clusterSectors) : 4096;
 }
+
+std::string File::makeAbsolutePath(const std::string& aPath, const std::string& aFilename) {
+	auto ret = Text::toT(aPath);
+	ret.reserve(UNC_MAX_PATH);
+	auto res = _wfullpath(&ret[0], Text::toT(aFilename).c_str(), UNC_MAX_PATH);
+	if (!res) {
+		dcassert(0);
+		return aFilename + aPath;
+	}
+
+	return Text::fromT(res);
+}
+
 
 #else // !_WIN32
 
@@ -693,6 +704,16 @@ time_t File::getLastWriteTime(const string& aPath) noexcept {
 	return inode.st_mtime;
 }
 
+std::string File::makeAbsolutePath(const std::string& aPath, const std::string& aFilename) {
+	string ret;
+	ret.reserve(MAX_PATH);
+
+	string input = aFilename + aPath;
+	realpath(input.c_str(), &ret[0]);
+	return ret;
+}
+
+
 #endif // !_WIN32
 
 File::~File() {
@@ -701,10 +722,6 @@ File::~File() {
 
 std::string File::makeAbsolutePath(const std::string& aFilename) {
 	return makeAbsolutePath(AppUtil::getAppFilePath(), aFilename);
-}
-
-std::string File::makeAbsolutePath(const std::string& aPath, const std::string& aFilename) {
-	return isAbsolutePath(aFilename) ? aFilename : aPath + aFilename;
 }
 
 void File::removeDirectoryForced(const string& aPath) {

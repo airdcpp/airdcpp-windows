@@ -340,6 +340,7 @@ bool AppUtil::loadBootConfig(const string& aDirectoryPath) noexcept {
 	
 		if (boot.findChild("ConfigPath")) {
 			paths[PATH_USER_CONFIG] = Util::formatParams(boot.getChildData(), getSystemPathParams());
+			validatePath(PATH_USER_CONFIG);
 		}
 		boot.resetCurrentChild();
 
