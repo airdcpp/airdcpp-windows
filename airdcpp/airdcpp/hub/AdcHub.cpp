@@ -1148,6 +1148,17 @@ uint8_t AdcHub::groupExtensions(StringList& exts_, StringList& excluded_) noexce
 }
 
 void AdcHub::handleSearchExtensions(AdcCommand& c, const SearchPtr& aSearch, const OnlineUser* aDirectUser) noexcept {
+	auto appendAllExtensions = [&aSearch](AdcCommand& aCmd) {
+		for (const auto& ex : aSearch->exts)
+			aCmd.addParam("EX", ex);
+	};
+
+	if (aSearch->exts.size() <= 2) {
+		// No need for grouping
+		appendAllExtensions(c);
+		return;
+	}
+
 	StringList exts = aSearch->exts;
 	sort(exts.begin(), exts.end());
 
@@ -1165,11 +1176,6 @@ void AdcHub::handleSearchExtensions(AdcCommand& c, const SearchPtr& aSearch, con
 		aCmd.addParam("GR", Util::toString(group));
 		for(const auto& i: excluded)
 			aCmd.addParam("RX", i);
-	};
-
-	auto appendAllExtensions = [&aSearch](AdcCommand& aCmd) {
-		for (const auto& ex : aSearch->exts)
-			aCmd.addParam("EX", ex);
 	};
 
 	if (aDirectUser) {
@@ -1242,9 +1248,7 @@ bool AdcHub::sendSearchHooked(AdcCommand& c, const SearchPtr& aSearch, const Onl
 			c.addParam("KY", aSearch->key);
 		}
 
-		if(aSearch->exts.size() > 2) {
-			handleSearchExtensions(c, aSearch, aDirectUser);
-		}
+		handleSearchExtensions(c, aSearch, aDirectUser);
 	}
 
 	return sendHooked(c);
