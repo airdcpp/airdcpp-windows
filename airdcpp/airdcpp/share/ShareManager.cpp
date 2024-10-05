@@ -1258,7 +1258,7 @@ string ShareManager::validateVirtualName(const string& aVirt) const noexcept {
 void ShareManager::validateRootPath(const string& aRealPath, bool aMatchCurrentRoots) const {
 	validator->validateRootPath(aRealPath);
 
-	if (!aMatchCurrentRoots) {
+	if (aMatchCurrentRoots) {
 		auto shareProfiles = profiles->getProfiles();
 		auto formatProfiles = [&shareProfiles](const ProfileTokenSet& aProfiles) {
 			auto rootProfileNames = ShareProfile::getProfileNames(aProfiles, shareProfiles);
