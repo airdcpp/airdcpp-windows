@@ -23,6 +23,7 @@
 
 #include <windows/ActionUtil.h>
 #include <windows/HttpLinks.h>
+#include <windows/WinUtil.h>
 
 #include <airdcpp/util/AutoLimitUtil.h>
 #include <airdcpp/util/Util.h>
@@ -233,10 +234,10 @@ void WizardConnspeed::setDownloadLimits(double value) {
 	if (cAutoDL.GetCheck() > 0) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
 		int dlSlots=AutoLimitUtil::getSlots(true, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
-		SetDlgItemText(IDC_DOWNLOAD_SLOTS, Util::toStringW(dlSlots).c_str());
+		SetDlgItemText(IDC_DOWNLOAD_SLOTS, WinUtil::toStringW(dlSlots).c_str());
 	
 		int dlLimit=AutoLimitUtil::getSpeedLimitKbps(true, value);
-		SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Util::toStringW(dlLimit).c_str());
+		SetDlgItemText(IDC_MAX_DOWNLOAD_SP, WinUtil::toStringW(dlLimit).c_str());
 	}
 }
 
@@ -244,13 +245,13 @@ void WizardConnspeed::setUploadLimits(double value) {
 	if (cAutoUL.GetCheck() > 0) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
 		int ulSlots=AutoLimitUtil::getSlots(false, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
-		SetDlgItemText(IDC_UPLOAD_SLOTS, Util::toStringW(ulSlots).c_str());
+		SetDlgItemText(IDC_UPLOAD_SLOTS, WinUtil::toStringW(ulSlots).c_str());
 	
 		int ulLimit=AutoLimitUtil::getSpeedLimitKbps(false, value);
-		SetDlgItemText(IDC_MAX_UPLOAD_SP, Util::toStringW(ulLimit).c_str());
+		SetDlgItemText(IDC_MAX_UPLOAD_SP, WinUtil::toStringW(ulLimit).c_str());
 
 		int autoOpened=AutoLimitUtil::getMaxAutoOpened(value);
-		SetDlgItemText(IDC_MAX_AUTO_OPENED, Util::toStringW(autoOpened).c_str());
+		SetDlgItemText(IDC_MAX_AUTO_OPENED, WinUtil::toStringW(autoOpened).c_str());
 	}
 }
 

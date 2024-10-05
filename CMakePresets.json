@@ -1,0 +1,119 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-base",
+      "displayName": "Default configuration | release",
+      "description": "Default configuration with all the options set to their default values, release build type",
+      "binaryDir": "${sourceDir}/compiled/${presetName}",
+      "generator": "Ninja",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        },
+        "CMAKE_INSTALL_BINDIR": ""
+      }
+    },
+    {
+      "name": "windows-base-x64",
+      "displayName": "Default configuration | x64",
+      "description": "x64",
+      "inherits": "windows-base",
+      "installDir": "${sourceDir}/compiled/x64",
+      "hidden": true,
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": {
+          "type": "STRING",
+          "value": "x64-windows-static"
+        }
+      }
+    },
+    {
+      "name": "windows-base-x86",
+      "displayName": "Default configuration | x86",
+      "description": "x86",
+      "installDir": "${sourceDir}/compiled/Win32",
+      "inherits": "windows-base",
+      "hidden": true,
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": {
+          "type": "STRING",
+          "value": "x86-windows-static"
+        }
+      }
+    },
+    {
+      "name": "x64-debug",
+      "displayName": "x64 Debug",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
+      "inherits": "windows-base-x64",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "x64-release",
+      "displayName": "x64 Release",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (RelWithDebInfo)",
+      "inherits": "x64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "x86-debug",
+      "displayName": "x86 Debug",
+      "description": "Target Windows (32-bit) with the Visual Studio development environment. (Debug)",
+      "inherits": "windows-base-x86",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "x86-release",
+      "displayName": "x86 Release",
+      "description": "Target Windows (32-bit) with the Visual Studio development environment. (RelWithDebInfo)",
+      "inherits": "x86-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "x64-debug",
+      "configurePreset": "x64-debug",
+      "targets": "install"
+    },
+    {
+      "name": "x64-release",
+      "configurePreset": "x64-release",
+      "targets": "install"
+    },
+    {
+      "name": "x86-debug",
+      "configurePreset": "x86-debug",
+      "targets": "install"
+    },
+    {
+      "name": "x86-release",
+      "configurePreset": "x86-release",
+      "targets": "install"
+    }
+  ]
+}

@@ -324,6 +324,47 @@ public:
 	static tstring formatMessageWithTimestamp(const tstring& aMessage, time_t aTime = time(nullptr)) noexcept;
 
 	static void insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBox& combo_, const string& aCurValue) noexcept;
+
+#ifdef WIN32
+	static wstring toStringW(int32_t val) noexcept {
+		wchar_t buf[32];
+		snwprintf(buf, sizeof(buf), L"%ld", val);
+		return buf;
+	}
+
+	static wstring toStringW(uint32_t val) noexcept {
+		wchar_t buf[32];
+		snwprintf(buf, sizeof(buf), L"%d", val);
+		return buf;
+	}
+
+	static wstring toStringW(DWORD val) noexcept {
+		wchar_t buf[32];
+		snwprintf(buf, sizeof(buf), L"%d", val);
+		return buf;
+	}
+
+	static wstring toStringW(int64_t val) noexcept {
+		wchar_t buf[32];
+		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
+		return buf;
+	}
+
+	static wstring toStringW(uint64_t val) noexcept {
+		wchar_t buf[32];
+		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
+		return buf;
+	}
+
+	static wstring toStringW(double val) noexcept {
+		wchar_t buf[32];
+		snwprintf(buf, sizeof(buf), L"%0.2f", val);
+		return buf;
+	}
+
+	static wstring formatDateTimeW(time_t t) noexcept;
+#endif
+
 private:
 	static string paths[PATH_LAST];
 };

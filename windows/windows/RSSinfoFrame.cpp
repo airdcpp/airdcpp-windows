@@ -269,7 +269,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		else if (hitTreeitem && treeParent == ctrlTree.GetSelectedItem()) {
 			bool allEnabled = ranges::all_of(feeds | views::keys, [&](const RSSPtr& r) { return r->getEnable(); });
 			bool allDisabled = ranges::all_of(feeds | views::keys, [&](const RSSPtr& r) { return !r->getEnable(); });
-			menu.InsertSeparatorFirst(Util::toStringW(feeds.size()) + _T(" ") + TSTRING(FEEDS));
+			menu.InsertSeparatorFirst(WinUtil::toStringW(feeds.size()) + _T(" ") + TSTRING(FEEDS));
 			//menu.appendItem(TSTRING(UPDATE), [=] { for_each(feeds | views::keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->downloadFeed(feed, true); }); }, OMenu::FLAG_THREADED);
 			if(!allEnabled)
 				menu.appendItem(TSTRING(ENABLE_RSS), [=] { ranges::for_each(feeds | views::keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, true); }); }, OMenu::FLAG_THREADED);

@@ -418,7 +418,7 @@ void ActionUtil::openTextFile(const string& aFileName, int64_t aSize, const TTHV
 void ActionUtil::openFile(const tstring& aFileName) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (PathUtil::fileExists(Text::fromT(aFileName))) {
-			::ShellExecute(NULL, NULL, PathUtil::formatPathW(aFileName).c_str(), NULL, NULL, SW_SHOWNORMAL);
+			::ShellExecute(NULL, NULL, Text::toT(PathUtil::formatPath(Text::fromT(aFileName))).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		}
 	});
 }
@@ -429,7 +429,7 @@ void ActionUtil::openFolder(const tstring& aFileName) {
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (PathUtil::fileExists(Text::fromT(aFileName))) {
-			::ShellExecute(NULL, Text::toT("open").c_str(), PathUtil::formatPathW(PathUtil::getFilePath(aFileName)).c_str(), NULL, NULL, SW_SHOWNORMAL);
+			::ShellExecute(NULL, Text::toT("open").c_str(), Text::toT(PathUtil::formatPath(Text::fromT(PathUtil::getFilePath(aFileName)))).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		}
 	});
 }
@@ -535,7 +535,7 @@ void ActionUtil::appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundle
 	auto pauseMenu = aParent.createSubMenu(TSTRING(PAUSE_BUNDLE_FOR), true);
 	auto pauseTimes = { 5, 10, 30, 60, 90, 120, 180 };
 	for (auto t : pauseTimes) {
-		pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES_LOWER), [=] {
+		pauseMenu->appendItem(WinUtil::toStringW(t) + _T(" ") + TSTRING(MINUTES_LOWER), [=] {
 			for (auto b : aBundles)
 				QueueManager::getInstance()->setBundlePriority(b, Priority::PAUSED_FORCE, false, GET_TIME() + (t * 60));
 			}, OMenu::FLAG_THREADED);

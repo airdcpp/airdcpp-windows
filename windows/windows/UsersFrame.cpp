@@ -291,7 +291,7 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				usersMenu.appendSeparator();
 
 				auto formatBundle = [this](pair<BundlePtr, Bundle::BundleSource>& bs) -> tstring {
-					return Text::toT(bs.first->getName()) + _T(" (") + Util::toStringW(bs.second.files) + _T(" ") + TSTRING(FILES) + _T(", ") + Util::formatBytesW(bs.second.size) + _T(")");
+					return Text::toT(bs.first->getName()) + _T(" (") + WinUtil::toStringW(bs.second.files) + _T(" ") + TSTRING(FILES) + _T(", ") + Util::formatBytesW(bs.second.size) + _T(")");
 				};
 
 				//current sources

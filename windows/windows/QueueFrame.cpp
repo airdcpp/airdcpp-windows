@@ -545,7 +545,7 @@ tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 	auto& u = bs.getUser();
 	tstring nick = WinUtil::escapeMenu(FormatUtil::getNicks(u));
 
-	nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
+	nick += _T(" (") + TSTRING(FILES) + _T(": ") + WinUtil::toStringW(bs.files);
 	if (u.user->getSpeed() > 0) {
 		nick += _T(", ");
 		nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
@@ -1299,39 +1299,39 @@ void QueueFrame::updateStatus() {
 		while (ht != NULL) {
 			switch (ctrlTree.GetItemData(ht)) {
 			case TREE_BUNDLES:
-				ctrlTree.SetItemText(ht, (TSTRING(BUNDLES) + _T(" ( ") + Util::toStringW(finishedBundles + queuedBundles) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(BUNDLES) + _T(" ( ") + WinUtil::toStringW(finishedBundles + queuedBundles) + _T(" )")).c_str());
 				ht = ctrlTree.GetChildItem(bundleParent);
 				break;
 			case TREE_FINISHED:
-				ctrlTree.SetItemText(ht, (TSTRING(FINISHED) + _T(" ( ") + (Util::toStringW(finishedBundles)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(FINISHED) + _T(" ( ") + (WinUtil::toStringW(finishedBundles)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			case TREE_QUEUED:
-				ctrlTree.SetItemText(ht, (TSTRING(QUEUED) + _T(" ( ") + (Util::toStringW(queuedBundles)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(QUEUED) + _T(" ( ") + (WinUtil::toStringW(queuedBundles)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			case TREE_FAILED:
-				ctrlTree.SetItemText(ht, (TSTRING(FAILED) + _T(" ( ") + (Util::toStringW(failedBundles)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(FAILED) + _T(" ( ") + (WinUtil::toStringW(failedBundles)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			case TREE_PAUSED:
-				ctrlTree.SetItemText(ht, (TSTRING(PAUSED) + _T(" ( ") + (Util::toStringW(pausedItems)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(PAUSED) + _T(" ( ") + (WinUtil::toStringW(pausedItems)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			case TREE_AUTOSEARCH:
-				ctrlTree.SetItemText(ht, (TSTRING(AUTO_SEARCH) + _T(" ( ") + (Util::toStringW(autosearchAdded)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(AUTO_SEARCH) + _T(" ( ") + (WinUtil::toStringW(autosearchAdded)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			case TREE_LOCATION:
-				ctrlTree.SetItemText(ht, (TSTRING(LOCATIONS) + _T(" ( ") + (Util::toStringW(finishedBundles + queuedBundles)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(LOCATIONS) + _T(" ( ") + (WinUtil::toStringW(finishedBundles + queuedBundles)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(bundleParent); //End of bundle sub items, get next parent item.
 				break;
 			case TREE_FILELIST:
-				ctrlTree.SetItemText(ht, (TSTRING(FILE_LISTS) + _T(" ( ") + (Util::toStringW(filelistItems)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(FILE_LISTS) + _T(" ( ") + (WinUtil::toStringW(filelistItems)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			case TREE_TEMP:
-				ctrlTree.SetItemText(ht, (TSTRING(TEMP_ITEMS) + _T(" ( ") + (Util::toStringW(queuedItems - filelistItems)) + _T(" )")).c_str());
+				ctrlTree.SetItemText(ht, (TSTRING(TEMP_ITEMS) + _T(" ( ") + (WinUtil::toStringW(queuedItems - filelistItems)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 
@@ -1351,7 +1351,7 @@ void QueueFrame::updateStatus() {
 				ctrlStatus.SetIcon(1, NULL);
 			}
 
-			tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + Util::toStringW(finishedBundles);
+			tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + WinUtil::toStringW(finishedBundles);
 			int w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[1] < w) {
 				statusSizes[1] = w;
@@ -1359,7 +1359,7 @@ void QueueFrame::updateStatus() {
 			}
 			ctrlStatus.SetText(2, (tmp).c_str());
 
-			tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(queuedBundles);
+			tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + WinUtil::toStringW(queuedBundles);
 			w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[2] < w) {
 				statusSizes[2] = w;

@@ -1012,13 +1012,13 @@ void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize
 	tstring tmp = TSTRING(ITEMS) + _T(": ");
 
 	if (aSelectedCount != 0) {
-		tmp += Util::toStringW(aSelectedCount);
+		tmp += WinUtil::toStringW(aSelectedCount);
 	}
 	else if (aDisplayCount != aTotalCount) {
-		tmp += Util::toStringW(aDisplayCount) + _T("/") + Util::toStringW(aTotalCount);
+		tmp += WinUtil::toStringW(aDisplayCount) + _T("/") + WinUtil::toStringW(aTotalCount);
 	}
 	else {
-		tmp += Util::toStringW(aDisplayCount);
+		tmp += WinUtil::toStringW(aDisplayCount);
 	}
 	bool u = false;
 
@@ -2101,7 +2101,7 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const noexce
 			}
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSizeW(dir->getTotalSize(true)) : Util::formatExactSizeW(file->getSize());
 		case COLUMN_SIZE: return type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
-		case COLUMN_DATE: return Util::formatDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
+		case COLUMN_DATE: return WinUtil::formatDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 		default: return Text::toT(getTextNormal(col));
 	}
 }

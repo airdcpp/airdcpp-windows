@@ -8,10 +8,7 @@
 *.psess
 *.vspx
 *.aps
-/installer/Web-resources
-/installer/Strings.xml
-/installer/.transifexrc
-/installer/dummy.transifexrc
+
 /ipch
 /.vs
 *.suo
@@ -20,7 +17,18 @@
 *.opendb
 *.exe
 *- Copy*
+
+
 *.tmp
-/airdcpp/scripts/translations
 /enc_temp_folder
 vcpkg_installed
+
+
+/installer/Web-resources
+/installer/Strings.xml
+/airdcpp/scripts/translations
+
+CMakeCache.txt
+CMakeFiles
+
+msvc

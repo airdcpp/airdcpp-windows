@@ -88,8 +88,8 @@ void WebServerPage::initBindAddresses() noexcept {
 LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
 
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT), Util::toStringW(WEBCFG(PLAIN_PORT).num()).c_str());
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT), Util::toStringW(WEBCFG(TLS_PORT).num()).c_str());
+	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT), WinUtil::toStringW(WEBCFG(PLAIN_PORT).num()).c_str());
+	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT), WinUtil::toStringW(WEBCFG(TLS_PORT).num()).c_str());
 
 	ctrlTlsPort.Attach(GetDlgItem(IDC_WEBSERVER_TLSPORT));
 	ctrlPort.Attach(GetDlgItem(IDC_WEBSERVER_PORT));

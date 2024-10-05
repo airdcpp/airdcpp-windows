@@ -363,7 +363,7 @@ protected:
 
 	void updateStatus() {
 		int count = ctrlList.GetItemCount();
-		ctrlStatus.SetText(1, (Util::toStringW(count) + _T(" ") + TSTRING(ITEMS)).c_str());
+		ctrlStatus.SetText(1, (WinUtil::toStringW(count) + _T(" ") + TSTRING(ITEMS)).c_str());
 		ctrlStatus.SetText(2, Util::formatBytesW(totalBytes).c_str());
 		ctrlStatus.SetText(3, (Util::formatBytesW(count > 0 ? totalSpeed / count : 0) + _T("/s")).c_str());
 	}

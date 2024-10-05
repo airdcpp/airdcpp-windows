@@ -80,9 +80,9 @@ public:
 		updown.SetRange32(0, 999);
 		updown.Detach();
 
-		ctrlCurNumber.SetWindowText(Util::toStringW(p->options.curNumber).c_str());
-		ctrlMaxNumber.SetWindowText(Util::toStringW(p->options.maxNumber).c_str());
-		ctrlNumberLen.SetWindowText(Util::toStringW(p->options.numberLen).c_str());
+		ctrlCurNumber.SetWindowText(WinUtil::toStringW(p->options.curNumber).c_str());
+		ctrlMaxNumber.SetWindowText(WinUtil::toStringW(p->options.maxNumber).c_str());
+		ctrlNumberLen.SetWindowText(WinUtil::toStringW(p->options.numberLen).c_str());
 
 		url.SubclassWindow(GetDlgItem(IDC_TIMEVAR_LINK));
 		url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);

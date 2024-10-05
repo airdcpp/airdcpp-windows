@@ -416,15 +416,15 @@ void PublicHubsFrame::updateList() {
 			l.resize(COLUMN_LAST);
 			l[COLUMN_NAME] = Text::toT(i.getName());
 			l[COLUMN_DESCRIPTION] = Text::toT(i.getDescription());
-			l[COLUMN_USERS] = Util::toStringW(i.getUsers());
+			l[COLUMN_USERS] = WinUtil::toStringW(i.getUsers());
 			l[COLUMN_SERVER] = Text::toT(i.getServer());
 			l[COLUMN_COUNTRY] = Text::toT(i.getCountry());
 			l[COLUMN_SHARED] = Util::formatBytesW(i.getShared());
 			l[COLUMN_MINSHARE] = Util::formatBytesW(i.getMinShare());
-			l[COLUMN_MINSLOTS] = Util::toStringW(i.getMinSlots());
-			l[COLUMN_MAXHUBS] = Util::toStringW(i.getMaxHubs());
-			l[COLUMN_MAXUSERS] = Util::toStringW(i.getMaxUsers());
-			l[COLUMN_RELIABILITY] = Util::toStringW(i.getReliability());
+			l[COLUMN_MINSLOTS] = WinUtil::toStringW(i.getMinSlots());
+			l[COLUMN_MAXHUBS] = WinUtil::toStringW(i.getMaxHubs());
+			l[COLUMN_MAXUSERS] = WinUtil::toStringW(i.getMaxUsers());
+			l[COLUMN_RELIABILITY] = WinUtil::toStringW(i.getReliability());
 			l[COLUMN_RATING] = Text::toT(i.getRating());
 			ctrlHubs.insert(ctrlHubs.GetItemCount(), l, Localization::getFlagIndexByName(i.getCountry().c_str()));
 			visibleHubs++;
@@ -449,8 +449,8 @@ void PublicHubsFrame::onFinished(const tstring& aStatus) {
 }
 
 void PublicHubsFrame::updateStatus() {
-	ctrlStatus.SetText(1, (TSTRING(HUBS) + _T(": ") + Util::toStringW(visibleHubs)).c_str());
-	ctrlStatus.SetText(2, (TSTRING(USERS) + _T(": ") + Util::toStringW(users)).c_str());
+	ctrlStatus.SetText(1, (TSTRING(HUBS) + _T(": ") + WinUtil::toStringW(visibleHubs)).c_str());
+	ctrlStatus.SetText(2, (TSTRING(USERS) + _T(": ") + WinUtil::toStringW(users)).c_str());
 }
 
 LRESULT PublicHubsFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

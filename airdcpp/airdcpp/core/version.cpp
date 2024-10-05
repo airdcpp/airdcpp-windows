@@ -19,7 +19,7 @@
 #include "stdinc.h"
 #include <airdcpp/core/version.h>
 
-#include "version.inc"
+#include <airdcpp/core/version.inc>
 
 #ifndef _WIN32
 #include <sys/utsname.h>

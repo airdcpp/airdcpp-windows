@@ -20,6 +20,7 @@
 #include <windows/Resource.h>
 
 #include <windows/FavHubOptionsPage.h>
+#include <windows/WinUtil.h>
 
 #include <airdcpp/favorites/FavoriteManager.h>
 #include <airdcpp/core/localization/ResourceManager.h>
@@ -56,7 +57,7 @@ LRESULT FavHubOptionsPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	auto searchInterval = entry->get(HubSettings::SearchInterval);
 	CheckDlgButton(IDC_SEARCH_INTERVAL_DEFAULT, searchInterval == HUB_SETTING_DEFAULT_INT ? BST_CHECKED : BST_UNCHECKED);
-	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(searchInterval).c_str());
+	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, WinUtil::toStringW(searchInterval).c_str());
 	
 	// connection modes
 	auto appendCombo = [](CComboBox& combo, int curMode) {
@@ -106,7 +107,7 @@ void FavHubOptionsPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_SPIN), !usingDefaultInterval);
 	::EnableWindow(GetDlgItem(IDC_SETTINGS_SECONDS), !usingDefaultInterval);
 	if (usingDefaultInterval)
-		SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(SettingsManager::getInstance()->get(SettingsManager::MINIMUM_SEARCH_INTERVAL)).c_str());
+		SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, WinUtil::toStringW(SettingsManager::getInstance()->get(SettingsManager::MINIMUM_SEARCH_INTERVAL)).c_str());
 }
 
 

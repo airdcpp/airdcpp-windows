@@ -330,7 +330,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(!initialString.empty()) {
 		ctrlSearch.SetWindowText(initialString.c_str());
 		ctrlSizeMode.SetCurSel(initialMode);
-		ctrlSize.SetWindowText(Util::toStringW(initialSize).c_str());
+		ctrlSize.SetWindowText(WinUtil::toStringW(initialSize).c_str());
 		SetWindowText((TSTRING(SEARCH) + _T(" - ") + initialString).c_str());
 		callAsync([=] { onEnter(); });
 	} else {
@@ -573,7 +573,7 @@ void SearchFrame::onSearchStarted(const string& aSearchString, uint64_t aQueueTi
 	}
 
 	ctrlSizeMode.SetCurSel(initialMode);
-	ctrlSize.SetWindowText(Util::toStringW(initialSize).c_str());
+	ctrlSize.SetWindowText(WinUtil::toStringW(initialSize).c_str());
 	SetWindowText((TSTRING(SEARCH) + _T(" - ") + target).c_str());
 	::InvalidateRect(m_hWndStatusBar, NULL, TRUE);
 
@@ -712,7 +712,7 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_FILENAME: return Text::toT(getFileName());
-		case COLUMN_RELEVANCE: return Util::toStringW(getTotalRelevance());
+		case COLUMN_RELEVANCE: return WinUtil::toStringW(getTotalRelevance());
 		case COLUMN_HITS: return sr ? Util::emptyStringW : TSTRING_F(X_USERS, groupedResult->getHits());
 		case COLUMN_USERS: return FormatUtil::getNicks(getHintedUser());
 		case COLUMN_TYPE:
@@ -740,7 +740,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_EXACT_SIZE: return getSize() > 0 ? Util::formatExactSizeW(getSize()) : Util::emptyStringT;
 		case COLUMN_IP: return countryInfo.text;
 		case COLUMN_TTH: return !isDirectory() ? Text::toT(getTTH().toBase32()) : Util::emptyStringT;
-		case COLUMN_DATE: return Util::formatDateTimeW(getDate());
+		case COLUMN_DATE: return WinUtil::formatDateTimeW(getDate());
 		default: return Util::emptyStringT;
 	}
 }
@@ -1384,16 +1384,16 @@ LRESULT SearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		tstring text;
 		auto curCount = ctrlResults.list.getTotalItemCount();
 		if (curCount != static_cast<size_t>(resultsCount)) {
-			text = Util::toStringW(curCount) + _T("/") + Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES);
+			text = WinUtil::toStringW(curCount) + _T("/") + WinUtil::toStringW(resultsCount) + _T(" ") + TSTRING(FILES);
 		} else if (running || pausedResults.size() == 0) {
-			text = Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES);
+			text = WinUtil::toStringW(resultsCount) + _T(" ") + TSTRING(FILES);
 		} else {
-			text = Util::toStringW(resultsCount) + _T("/") + Util::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES);
+			text = WinUtil::toStringW(resultsCount) + _T("/") + WinUtil::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES);
 		}
 
 		ctrlStatus.SetText(3, text.c_str());
 
-		ctrlStatus.SetText(4, (Util::toStringW(search->getFilteredResultCount()) + _T(" ") + TSTRING(FILTERED)).c_str());
+		ctrlStatus.SetText(4, (WinUtil::toStringW(search->getFilteredResultCount()) + _T(" ") + TSTRING(FILTERED)).c_str());
 	}
 
 	return 0;

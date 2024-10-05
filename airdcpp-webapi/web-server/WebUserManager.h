@@ -76,6 +76,8 @@ namespace webserver {
 			TIMEOUT,
 		};
 	private:
+		static string generateUUID() noexcept;
+
 		enum class AuthType {
 			UNKNOWN,
 			BASIC,

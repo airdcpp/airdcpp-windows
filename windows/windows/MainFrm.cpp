@@ -1419,9 +1419,9 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		nid.uID = trayUID;
 		nid.uFlags = NIF_TIP;
 		_tcsncpy(nid.szTip, (_T("D: ") + Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
-			Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T(")\r\nU: ") +
+			WinUtil::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T(")\r\nU: ") +
 			Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
-			Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T(")")
+			WinUtil::toStringW(UploadManager::getInstance()->getUploadCount()) + _T(")")
 			+ _T("\r\nUptime: ") + Util::formatSecondsW(TimerManager::getUptime())
 			).c_str(), 64);
 		
@@ -1743,13 +1743,13 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	TStringList* str = new TStringList();
 	str->push_back(Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
 	str->push_back(Text::toT(Client::getAllCountsStr()));
-	str->push_back(Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
+	str->push_back(WinUtil::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + WinUtil::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + WinUtil::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + WinUtil::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
 
 	str->push_back(Util::formatBytesW(Socket::getTotalDown()));
 	str->push_back(Util::formatBytesW(Socket::getTotalUp()));
 
-	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("][");
-	tstring up = _T("[") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
+	tstring down = _T("[") + WinUtil::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("][");
+	tstring up = _T("[") + WinUtil::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
 
 	auto dl = ThrottleManager::getDownLimit();
 	if (dl > 0)

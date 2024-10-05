@@ -170,7 +170,7 @@ void SplashWindow::draw() {
 		SelectObject(dc, hFontStatus);
 		::SetTextColor(dc, RGB(104,104,104)); //grey text
 
-		tstring tmp = (_T(".:: ") + status + (progress > 0 ? _T(" (") + Util::toStringW(static_cast<int>(progress*100.00)) + _T("%)") : Util::emptyStringT) + _T(" ::."));
+		tstring tmp = (_T(".:: ") + status + (progress > 0 ? _T(" (") + WinUtil::toStringW(static_cast<int>(progress*100.00)) + _T("%)") : Util::emptyStringT) + _T(" ::."));
 		::DrawText(dc, tmp.c_str(), _tcslen((tmp).c_str()), &rc2, DT_RIGHT);
 	}
 

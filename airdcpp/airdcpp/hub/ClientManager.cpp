@@ -670,7 +670,7 @@ bool ClientManager::sendUDPHooked(AdcCommand& cmd, const CID& aCID, bool aNoCID 
 
 		cmd.setType(AdcCommand::TYPE_DIRECT);
 		cmd.setTo(u->getIdentity().getSID());
-		u->getClient()->sendHooked(cmd);
+		return u->getClient()->sendHooked(cmd);
 	} else {
 		// Hooks
 		{

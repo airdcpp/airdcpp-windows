@@ -57,7 +57,7 @@ LRESULT RssFeedsPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 	ctrlUrl.SetWindowText(Text::toT(feedItem->getUrl()).c_str());
 	ctrlName.SetWindowText(Text::toT(feedItem->getFeedName()).c_str());
-	ctrlInterval.SetWindowText(Util::toStringW(feedItem->getUpdateInterval()).c_str());
+	ctrlInterval.SetWindowText(WinUtil::toStringW(feedItem->getUpdateInterval()).c_str());
 	CheckDlgButton(IDC_RSS_ENABLE, feedItem->getEnable() ? TRUE : FALSE);
 	
 	CenterWindow(GetParent());

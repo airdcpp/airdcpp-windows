@@ -495,7 +495,7 @@ namespace webserver {
 		}
 
 		// Start the process
-		tstring commandT = Text::toT(command);
+		auto commandT = Text::toT(command);
 		dcdebug("Starting extension %s, command %s\n", name.c_str(), command.c_str());
 
 #ifdef _DEBUG

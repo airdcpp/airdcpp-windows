@@ -1,0 +1,10 @@
+{
+    "registries": [
+		{
+			"kind": "git",
+			"repository": "git@github.com:retifrav/vcpkg-registry.git",
+			"baseline": "3d73b476ba5eb5227af29f64aa9df22c874bb37f",
+			"packages": [ "natpmp", "decovar-vcpkg-cmake" ]
+		}
+	]
+}

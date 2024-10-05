@@ -1319,7 +1319,7 @@ void HubFrame::updateStatusBar() {
 	tstring text[3];
 
 	if(AllUsers != ShownUsers) {
-		text[0] = Util::toStringW(ShownUsers) + _T("/") + Util::toStringW(AllUsers) + _T(" ") + Text::toLower(TSTRING(USERS));
+		text[0] = WinUtil::toStringW(ShownUsers) + _T("/") + WinUtil::toStringW(AllUsers) + _T(" ") + Text::toLower(TSTRING(USERS));
 	} else {
 		text[0] = TSTRING_F(X_USERS, AllUsers);
 	}

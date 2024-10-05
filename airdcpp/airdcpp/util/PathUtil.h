@@ -134,24 +134,10 @@ public:
 		}
 
 		if (aPath[0] == '\\' && aPath[1] == '\\') {
-			return "\\\\?\\UNC\\" + aPath.substr(2);
+			return R"(\\?\UNC\)" + aPath.substr(2);
 		}
 
-		return "\\\\?\\" + aPath;
-	}
-
-	inline static wstring formatPathW(const tstring& aPath) noexcept {
-		//dont format unless its needed
-		//also we want to limit the unc path lower, no point on endless paths. 
-		if (aPath.size() < 250 || aPath.size() > UNC_MAX_PATH) {
-			return aPath;
-		}
-
-		if (aPath[0] == '\\' && aPath[1] == '\\') {
-			return _T("\\\\?\\UNC\\") + aPath.substr(2);
-		}
-
-		return _T("\\\\?\\") + aPath;
+		return R"(\\?\)" + aPath;
 	}
 #endif
 

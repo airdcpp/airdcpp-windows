@@ -21,15 +21,16 @@
 #include <windows/OSUtil.h>
 
 #include <mmsystem.h>
-#include <powrprof.h>
 
 #include <airdcpp/util/text/Text.h>
 
 #define byte BYTE // 'byte': ambiguous symbol (C++17)
-#include <atlcomtime.h>
+#include <ATLComTime.h>
 #undef byte
 
 namespace wingui {
+
+#include <powrprof.h> // Inside namespace: 'ACCESS_DESCRIPTION': redefinition; previous definition was 'typedef'
 
 string OSUtil::getCompileDate() {
 	COleDateTime tCompileDate;

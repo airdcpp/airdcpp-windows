@@ -223,7 +223,7 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
 		cMatcherType.SetCurSel(item->getMethod());
 		cAction.SetCurSel(item->getFilterAction());
-		ctrlExpireDays.SetWindowText(Util::toStringW(item->getExpireDays()).c_str());
+		ctrlExpireDays.SetWindowText(WinUtil::toStringW(item->getExpireDays()).c_str());
 
 		int g = cGroups.FindString(0, Text::toT(item->getAutosearchGroup()).c_str());
 		cGroups.SetCurSel(g > 0 ? g : 0);

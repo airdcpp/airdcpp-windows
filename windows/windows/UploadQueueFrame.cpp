@@ -18,12 +18,13 @@
  */
 
 #include <windows/stdafx.h>
-#include <windows/Resource.h>
+#include <windows/resource.h>
 #include <windows/UploadQueueFrame.h>
 #include <windows/ResourceLoader.h>
 
 #include <windows/BarShader.h>
 #include <windows/FormatUtil.h>
+#include <windows/WinUtil.h>
 
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/transfer/upload/UploadManager.h>
@@ -51,7 +52,7 @@ const tstring UploadQueueItem::getText(uint8_t col) const noexcept {
 	case COLUMN_HUB: return wingui::FormatUtil::getHubNames(user);
 	case COLUMN_SIZE: return Util::formatBytesW(size);
 	case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", time));
-	case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + (size > 0 ? Util::toStringW((double)pos * 100.0 / (double)size) : _T("0")) + _T("%)");
+	case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + (size > 0 ? wingui::WinUtil::toStringW((double)pos * 100.0 / (double)size) : _T("0")) + _T("%)");
 	case COLUMN_WAITING: return Util::formatSecondsW(GET_TIME() - time);
 	default: return Util::emptyStringT;
 	}
@@ -404,11 +405,11 @@ void UploadQueueFrame::updateStatus() {
 
 		tstring tmp[2];
 		if(showTree) {
-			tmp[0] = TSTRING(USERS) + _T(": ") + Util::toStringW(users);
+			tmp[0] = TSTRING(USERS) + _T(": ") + WinUtil::toStringW(users);
 		} else {
 			tmp[0] = _T("");
 		}    		  
-		tmp[1] = TSTRING(ITEMS) + _T(": ") + Util::toStringW(cnt);
+		tmp[1] = TSTRING(ITEMS) + _T(": ") + WinUtil::toStringW(cnt);
 		bool u = false;
 
 		for(int i = 1; i < 3; i++) {

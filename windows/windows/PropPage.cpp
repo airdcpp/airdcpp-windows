@@ -101,7 +101,7 @@ void SettingTab::read(HWND page, Item const* items, ListItem* listItems /* = NUL
 			break;
 		/*case T_INT64:
 			if(!SettingsManager::getInstance()->isDefault(i->setting)) {
-				tstring s = Util::toStringW(settings->get((SettingsManager::Int64Setting)i->setting, useDef));
+				tstring s = WinUtil::toStringW(settings->get((SettingsManager::Int64Setting)i->setting, useDef));
 				::SetDlgItemText(page, i->itemID, s.c_str());
 			}
 			break;*/

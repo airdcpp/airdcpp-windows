@@ -17,12 +17,13 @@
  */
 
 #include <windows/stdafx.h>
-#include <windows/Resource.h>
+#include <windows/resource.h>
 
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/util/Util.h>
 
 #include <windows/LimitPage.h>
+#include <windows/WinUtil.h>
 
 namespace wingui {
 PropPage::TextItem LimitPage::texts[] = {
@@ -99,15 +100,15 @@ LRESULT LimitPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	timeCtrlEnd.AddString(CTSTRING(MIDNIGHT));
 	for (int i = 1; i < 12; ++i)
 	{
-		timeCtrlBegin.AddString((Util::toStringW(i) + CTSTRING(AM)).c_str());
-		timeCtrlEnd.AddString((Util::toStringW(i) + CTSTRING(AM)).c_str());
+		timeCtrlBegin.AddString((WinUtil::toStringW(i) + CTSTRING(AM)).c_str());
+		timeCtrlEnd.AddString((WinUtil::toStringW(i) + CTSTRING(AM)).c_str());
 	}
 	timeCtrlBegin.AddString(CTSTRING(NOON));
 	timeCtrlEnd.AddString(CTSTRING(NOON));
 	for (int i = 1; i < 12; ++i)
 	{
-		timeCtrlBegin.AddString((Util::toStringW(i) + CTSTRING(PM)).c_str());
-		timeCtrlEnd.AddString((Util::toStringW(i) + CTSTRING(PM)).c_str());
+		timeCtrlBegin.AddString((WinUtil::toStringW(i) + CTSTRING(PM)).c_str());
+		timeCtrlEnd.AddString((WinUtil::toStringW(i) + CTSTRING(PM)).c_str());
 	}
 
 	timeCtrlBegin.SetCurSel(SETTING(BANDWIDTH_LIMIT_START));

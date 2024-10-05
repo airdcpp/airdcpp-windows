@@ -144,9 +144,6 @@ public:
 	// Current datetime based on the DATE_FORMAT setting
 	// Default: %Y-%m-%d %H:%M
 	static string formatDateTime(time_t t) noexcept;
-#ifdef _WIN32
-	static wstring formatDateTimeW(time_t t) noexcept;
-#endif
 
 	static string formatTime(const string& msg, const time_t t) noexcept;
 	static string formatDuration(uint64_t aSec, bool aTranslate, bool aPerMinute = false) noexcept;
@@ -362,43 +359,6 @@ public:
 	template<typename ListT>
 	static string listToString(const ListT& lst) noexcept { return listToStringT<ListT, StrChar>(lst, false, true); }
 
-#ifdef WIN32
-	static wstring toStringW( int32_t val ) noexcept {
-		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), L"%ld", val);
-		return buf;
-	}
-
-	static wstring toStringW( uint32_t val ) noexcept {
-		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), L"%d", val);
-		return buf;
-	}
-	
-	static wstring toStringW( DWORD val ) noexcept {
-		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), L"%d", val);
-		return buf;
-	}
-	
-	static wstring toStringW( int64_t val ) noexcept {
-		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
-		return buf;
-	}
-
-	static wstring toStringW( uint64_t val ) noexcept {
-		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
-		return buf;
-	}
-
-	static wstring toStringW( double val ) noexcept {
-		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), L"%0.2f", val);
-		return buf;
-	}
-#endif
 	static string toHexEscape(char val) noexcept {
 		char buf[sizeof(int)*2+1+1];
 		snprintf(buf, sizeof(buf), "%%%X", val&0x0FF);

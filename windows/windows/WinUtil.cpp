@@ -226,8 +226,6 @@ void WinUtil::init(HWND hWnd) {
 	paths[PATH_EMOPACKS] = AppUtil::getPath(AppUtil::PATH_RESOURCES) + "EmoPacks" PATH_SEPARATOR_STR;
 	paths[PATH_THEMES] = AppUtil::getPath(AppUtil::PATH_RESOURCES) + "Themes" PATH_SEPARATOR_STR;
 
-	File::ensureDirectory(paths[PATH_THEMES]);
-
 	pathReg.assign(Text::toT(RegexUtil::getPathReg()));
 	chatReleaseReg.assign(Text::toT(DupeUtil::getReleaseRegLong(true)));
 	chatLinkReg.assign(Text::toT(LinkUtil::getUrlReg()), boost::regex_constants::icase);
@@ -612,11 +610,11 @@ tstring WinUtil::encodeFont(LOGFONT const& aFont)
 {
 	tstring res(aFont.lfFaceName);
 	res += L',';
-	res += Util::toStringW((int64_t)aFont.lfHeight);
+	res += WinUtil::toStringW((int64_t)aFont.lfHeight);
 	res += L',';
-	res += Util::toStringW((int64_t)aFont.lfWeight);
+	res += WinUtil::toStringW((int64_t)aFont.lfWeight);
 	res += L',';
-	res += Util::toStringW(aFont.lfItalic);
+	res += WinUtil::toStringW(aFont.lfItalic);
 	return res;
 }
 
@@ -706,7 +704,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 			return;
 		}
 	
-		TCHAR* tmp = _T("URL:Direct Connect Protocol");
+		auto tmp = _T("URL:Direct Connect Protocol");
 		::RegSetValueEx(hk, NULL, 0, REG_SZ, (LPBYTE)tmp, sizeof(TCHAR) * (_tcslen(tmp) + 1));
 		::RegSetValueEx(hk, _T("URL Protocol"), 0, REG_SZ, (LPBYTE)_T(""), sizeof(TCHAR));
 		::RegCloseKey(hk);
@@ -745,7 +743,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 			 return;
 		 }
 
-		 TCHAR* tmp = _T("URL:Direct Connect Protocol");
+		 auto tmp = _T("URL:Direct Connect Protocol");
 		 ::RegSetValueEx(hk, NULL, 0, REG_SZ, (LPBYTE)tmp, sizeof(TCHAR) * (_tcslen(tmp) + 1));
 		 ::RegSetValueEx(hk, _T("URL Protocol"), 0, REG_SZ, (LPBYTE)_T(""), sizeof(TCHAR));
 		 ::RegCloseKey(hk);
@@ -784,25 +782,24 @@ void WinUtil::registerADCShubHandler() {
 	
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if(::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR, STRING(APPLICATION));
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			return;
-			}
+		}
 
-			 TCHAR* tmp = _T("URL:Direct Connect Protocol");
-		 ::RegSetValueEx(hk, NULL, 0, REG_SZ, (LPBYTE)tmp, sizeof(TCHAR) * (_tcslen(tmp) + 1));
-		 ::RegSetValueEx(hk, _T("URL Protocol"), 0, REG_SZ, (LPBYTE)_T(""), sizeof(TCHAR));
-		 ::RegCloseKey(hk);
+		auto tmp = _T("URL:Direct Connect Protocol");
+		::RegSetValueEx(hk, NULL, 0, REG_SZ, (LPBYTE)tmp, sizeof(TCHAR) * (_tcslen(tmp) + 1));
+		::RegSetValueEx(hk, _T("URL Protocol"), 0, REG_SZ, (LPBYTE)_T(""), sizeof(TCHAR));
+		::RegCloseKey(hk);
 
-		 ::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs\\Shell\\Open\\Command"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		 ::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
-		 ::RegCloseKey(hk);
+		::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs\\Shell\\Open\\Command"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
+		::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
+		::RegCloseKey(hk);
 
-		 ::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		 app = Text::toT(AppUtil::getAppPath());
-		 ::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
-		 ::RegCloseKey(hk);
-	    }
-
+		::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
+		app = Text::toT(AppUtil::getAppPath());
+		::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
+		::RegCloseKey(hk);
+	}
 }
 
 void WinUtil::unRegisterADCShubHandler() {
@@ -1484,4 +1481,22 @@ void WinUtil::insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBo
 	auto curItem = ranges::find_if(aBindAdapters, [&aCurValue](const AdapterInfo& aInfo) { return aInfo.ip == aCurValue; });
 	combo_.SetCurSel(distance(aBindAdapters.begin(), curItem));
 }
+
+wstring WinUtil::formatDateTimeW(time_t t) noexcept {
+	if (t == 0)
+		return Util::emptyStringT;
+
+	TCHAR buf[64];
+	tm _tm;
+	auto err = localtime_s(&_tm, &t);
+	if (err > 0) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", t, SystemUtil::translateError(err).c_str());
+		return Util::emptyStringW;
+	}
+
+	wcsftime(buf, 64, Text::toT(SETTING(DATE_FORMAT)).c_str(), &_tm);
+
+	return buf;
+}
+
 }

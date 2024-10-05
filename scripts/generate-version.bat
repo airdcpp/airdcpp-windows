@@ -1,6 +1,6 @@
 @echo off
-set file=%1airdcpp\airdcpp\version.inc
-set tmpfile=%1airdcpp\airdcpp\version.inc.tmp
+set file=%1airdcpp\airdcpp\core\version.inc
+set tmpfile=%1airdcpp\airdcpp\core\version.inc.tmp
 
 cd %1
 

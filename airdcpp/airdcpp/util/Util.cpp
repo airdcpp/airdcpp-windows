@@ -518,23 +518,6 @@ string Util::formatDateTime(time_t t) noexcept {
 
 	return buf;
 }
-
-wstring Util::formatDateTimeW(time_t t) noexcept {
-	if (t == 0)
-		return Util::emptyStringT;
-
-	TCHAR buf[64];
-	tm _tm;
-	auto err = localtime_s(&_tm, &t);
-	if (err > 0) {
-		dcdebug("Failed to parse date " I64_FMT ": %s\n", t, SystemUtil::translateError(err).c_str());
-		return Util::emptyStringW;
-	}
-
-	wcsftime(buf, 64, Text::toT(SETTING(DATE_FORMAT)).c_str(), &_tm);
-	
-	return buf;
-}
 #else
 string Util::formatDateTime(time_t t) noexcept {
 	if (t == 0)

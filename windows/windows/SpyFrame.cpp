@@ -138,10 +138,10 @@ void SpyFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 }
 
 void SpyFrame::updateStatus() noexcept {
-	ctrlStatus.SetText(2, (TSTRING(TOTAL) + _T(" ") + Util::toStringW(total)).c_str());
-	ctrlStatus.SetText(4, (TSTRING(HIT_COUNT) + _T(": ") + Util::toStringW(hits)).c_str());
+	ctrlStatus.SetText(2, (TSTRING(TOTAL) + _T(" ") + WinUtil::toStringW(total)).c_str());
+	ctrlStatus.SetText(4, (TSTRING(HIT_COUNT) + _T(": ") + WinUtil::toStringW(hits)).c_str());
 	double ratio = total > 0 ? ((double)hits) / (double)total : 0.0;
-	ctrlStatus.SetText(5, (TSTRING(HIT_RATIO) + _T(" ") + Util::toStringW(ratio)).c_str());
+	ctrlStatus.SetText(5, (TSTRING(HIT_RATIO) + _T(" ") + WinUtil::toStringW(ratio)).c_str());
 }
 
 void SpyFrame::addList(const tstring& aString) noexcept {
@@ -149,7 +149,7 @@ void SpyFrame::addList(const tstring& aString) noexcept {
 	if (j == -1) {
 		TStringList a;
 		a.push_back(aString);
-		a.push_back(Util::toStringW(1));
+		a.push_back(WinUtil::toStringW(1));
 		a.push_back(Text::toT(Util::formatCurrentTime()));
 		ctrlSearches.insert(a);
 		if (ctrlSearches.GetItemCount() > 500) {
@@ -158,7 +158,7 @@ void SpyFrame::addList(const tstring& aString) noexcept {
 	} else {
 		TCHAR tmp[32];
 		ctrlSearches.GetItemText(j, COLUMN_COUNT, tmp, 32);
-		ctrlSearches.SetItemText(j, COLUMN_COUNT, Util::toStringW(Util::toInt(Text::fromT(tmp)) + 1).c_str());
+		ctrlSearches.SetItemText(j, COLUMN_COUNT, WinUtil::toStringW(Util::toInt(Text::fromT(tmp)) + 1).c_str());
 		ctrlSearches.GetItemText(j, COLUMN_TIME, tmp, 32);
 		ctrlSearches.SetItemText(j, COLUMN_TIME, Text::toT(Util::formatCurrentTime()).c_str());
 		if (ctrlSearches.getSortColumn() == COLUMN_COUNT)
@@ -186,7 +186,7 @@ LRESULT SpyFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /
 		updateStatus();
 	} else if(wParam == TICK_AVG) {
 		float* x = (float*)lParam;
-		ctrlStatus.SetText(3, (TSTRING(AVERAGE) + _T(" ") + Util::toStringW(*x)).c_str());
+		ctrlStatus.SetText(3, (TSTRING(AVERAGE) + _T(" ") + WinUtil::toStringW(*x)).c_str());
 		delete x;
 	} else if (wParam == OUTGOING_RESPONSES) {
 		hits++;

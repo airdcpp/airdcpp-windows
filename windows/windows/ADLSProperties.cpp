@@ -69,8 +69,8 @@ LRESULT ADLSProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	ctrlSearch.SetWindowText(Text::toT(search.getPattern()).c_str());
 	ctrlComment.SetWindowText(Text::toT(search.adlsComment).c_str());
 	ctrlDestDir.SetWindowText(Text::toT(search.getDestDir()).c_str());
-	ctrlMinSize.SetWindowText((search.minFileSize > 0 ? Util::toStringW(search.minFileSize) : _T("")).c_str());
-	ctrlMaxSize.SetWindowText((search.maxFileSize > 0 ? Util::toStringW(search.maxFileSize) : _T("")).c_str());
+	ctrlMinSize.SetWindowText((search.minFileSize > 0 ? WinUtil::toStringW(search.minFileSize) : _T("")).c_str());
+	ctrlMaxSize.SetWindowText((search.maxFileSize > 0 ? WinUtil::toStringW(search.maxFileSize) : _T("")).c_str());
 	ctrlActive.SetCheck(search.isActive ? 1 : 0);
 	ctrlAutoQueue.SetCheck(search.isAutoQueue ? 1 : 0);
 	ctrlRegexp.SetCheck(search.isRegEx() ? 1 : 0);

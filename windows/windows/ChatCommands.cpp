@@ -20,6 +20,7 @@
 #include <windows/ChatCommands.h>
 
 #include <windows/HttpLinks.h>
+#include <windows/WinUtil.h>
 
 #define COMPILE_MULTIMON_STUBS 1
 
@@ -60,7 +61,7 @@ tstring ChatCommands::UselessInfo() {
 		result += Util::formatBytesW( mem.ullAvailPageFile ) + _T("/") + Util::formatBytesW( mem.ullTotalPageFile );
 		result += _T("\n");
 		result += _T("Memory load: ");
-		result += Util::toStringW(mem.dwMemoryLoad);
+		result += WinUtil::toStringW(mem.dwMemoryLoad);
 		result += _T("%\n\n");
 	}
 
@@ -78,7 +79,7 @@ tstring ChatCommands::UselessInfo() {
 		DWORD speed;
 		if(key.QueryDWORDValue(_T("~MHz"), speed) == ERROR_SUCCESS){
 			result += _T("Speed: ");
-			result += Util::toStringW(speed);
+			result += WinUtil::toStringW(speed);
 			result += _T("MHz\n");
 		}
 		len = 255;
@@ -290,12 +291,12 @@ tstring ChatCommands::Speedinfo() {
 result += _T("-= ");
 result += _T("Downloading: ");
 result += Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s  [");
-result += Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("]");
+result += WinUtil::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("]");
 result += _T(" =- ");
 result += _T(" -= ");
 result += _T("Uploading: ");
 result += Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s  [");
-result += Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("]");
+result += WinUtil::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("]");
 result += _T(" =-");
 
 return result;
@@ -379,7 +380,7 @@ string ChatCommands::CPUInfo() {
 		DWORD speed;
 		if(key.QueryDWORDValue(_T("~MHz"), speed) == ERROR_SUCCESS){
 			result += _T(" (");
-			result += Util::toStringW((uint32_t)speed);
+			result += WinUtil::toStringW((uint32_t)speed);
 			result += _T(" MHz)");
 		}
 	}
