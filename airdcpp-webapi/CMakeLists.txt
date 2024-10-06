@@ -3,7 +3,6 @@ project(
 	DESCRIPTION "AirDC++ Web API"
 )
 cmake_minimum_required(VERSION 3.16)
-#cmake_policy(SET CMP0167 NEW) # The FindBoost module is removed.
 
 # ######### General setup ##########
 
