@@ -44,8 +44,6 @@ if (WIN32)
 		
 	target_link_libraries (${PROJECT_NAME} 
 		bcrypt # for Boost::uuid
-		# ${OPENSSL_LIBRARIES} 
-		# ${Boost_LIBRARIES}
 	)
 
 	# C1128	number of sections exceeded object file format limit: compile with /bigobj (WebServerManager.cpp)
@@ -55,6 +53,8 @@ endif()
 
 target_link_libraries (${PROJECT_NAME} 
 	airdcpp 
+	websocketpp::websocketpp
+	nlohmann_json::nlohmann_json
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${VERSION} OUTPUT_NAME "airdcpp-webapi")
 
