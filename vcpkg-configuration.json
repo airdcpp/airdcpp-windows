@@ -3,7 +3,7 @@
     {
       "kind": "git",
       "baseline": "b0dbab2b35493a150b1614065b69539a32de72c6",
-      "repository": "git@github.com:retifrav/vcpkg-registry.git",
+      "repository": "https://github.com/retifrav/vcpkg-registry.git",
       "packages": [
         "natpmp",
         "decovar-vcpkg-cmake"
