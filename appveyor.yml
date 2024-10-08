@@ -1,6 +1,8 @@
 image: Visual Studio 2022
 configuration: Debug
 platform: x64
+environment:
+  VCPKG_ROOT: C:\Tools\vcpkg
 install:
 - cd C:\Tools\vcpkg
 - git pull
