@@ -1,13 +1,19 @@
 image: Visual Studio 2022
 configuration: Debug
 platform: x64
+install:
+- cd C:\Tools\vcpkg
+- git pull
+- .\bootstrap-vcpkg.bat
+- cd %APPVEYOR_BUILD_FOLDER%
 before_build:
-- cmd: scripts\generate-version.bat
+  - cmake "-DCMAKE_VS_GLOBALS=UseMultiToolTask=true;EnforceProcessCountAcrossBuilds=true" -B msvc -G "Visual Studio 17 2022" . --preset %PLATFORM%-debug
 build:
-  project: AirDC.sln
+  project: $(APPVEYOR_BUILD_FOLDER)\build\$(APPVEYOR_PROJECT_NAME).sln
   parallel: true
   verbosity: normal
-
+cache:
+- c:\tools\vcpkg\installed\
 init:
   # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
