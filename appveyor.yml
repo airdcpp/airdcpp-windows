@@ -9,7 +9,7 @@ install:
 before_build:
   - cmake "-DCMAKE_VS_GLOBALS=UseMultiToolTask=true;EnforceProcessCountAcrossBuilds=true" -B msvc -G "Visual Studio 17 2022" . --preset %PLATFORM%-debug
 build:
-  project: $(APPVEYOR_BUILD_FOLDER)\build\$(APPVEYOR_PROJECT_NAME).sln
+  project: $(APPVEYOR_BUILD_FOLDER)\msvc\$(APPVEYOR_PROJECT_NAME).sln
   parallel: true
   verbosity: normal
 cache:
