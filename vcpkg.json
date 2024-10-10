@@ -20,6 +20,7 @@
       ]
     },
     "libmaxminddb",
+    "libnatpmp",
     "snappy",
     {
       "name": "minizip",
@@ -32,8 +33,7 @@
     "openssl",
     "websocketpp",
     "wtl",
-    "natpmp",
     "zlib"
   ],
-  "builtin-baseline": "2ddc10c8afa00a762a69f21f6427849fe906ede0"
+  "builtin-baseline": "c45ac46dcc16dd588daa029f7ce5bcacc5d7645b"
 }

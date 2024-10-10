@@ -35,14 +35,6 @@ add_link_options("$<$<NOT:$<CONFIG:Debug>>:/OPT:ICF>")
 
 add_compile_options("/permissive-")
 
-# The unofficial natpmp port has headers incorrectly inside a subdirectory
-include_directories (
-	compiled/x64-release/vcpkg_installed/x64-windows-static/include/natpmp
-	compiled/x64-debug/vcpkg_installed/x64-windows-static/include/natpmp
-	compiled/x86-release/vcpkg_installed/x86-windows-static/include/natpmp
-	compiled/x86-debug/vcpkg_installed/x86-windows-static/include/natpmp
-)
-
 add_subdirectory(airdcpp)
 add_subdirectory(airdcpp-webapi)
 add_subdirectory(windows)
