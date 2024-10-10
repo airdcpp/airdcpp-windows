@@ -38,7 +38,7 @@ goto :end
 :UpdateRevision
 
 ::Compare the current revision to server version
-set fileName=updater_%arch%_%~1.zip
+set outputName=updater_%arch%_%~1.zip
 
 cd %compiledpath%
 
@@ -48,7 +48,7 @@ echo ls>> checkftp.txt
 echo quit>> checkftp.txt
 
 for /f "usebackq delims=" %%i in (`sftp -b checkftp.txt %ftpaddress%`) do (
-echo %%i | find "%fileName%" > nul
+echo %%i | find "%outputName%" > nul
 if not errorlevel 1 goto :ExistsFTP
 )
 
@@ -68,17 +68,18 @@ ECHO Y | DEL fetchversionxml.txt
 
 :: Install Node.js
 echo Installing Node.js...
-call %SOLUTION_DIR%\scripts\update_node.bat %arch%
+call %SOLUTION_DIR%\scripts\update_node.bat %arch% > nul
 
 :: Create updater
 echo Creating the updater file...
 cd %archdir%
 AirDC.exe /createupdate --resource-directory=%installerpath% --output-directory=%compiledpath%
-cd ..
+
+cd %compiledpath%
 
 :: Send (if enabled)
 IF %dryrun%==true goto :end 
-call :SendFTP %fileName%
+call :SendFTP %outputName%
 goto :end
 
 :SendFTP
