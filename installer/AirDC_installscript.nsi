@@ -13,6 +13,9 @@
 !include "FileFunc.nsh"   ; for ${GetSize}
 !include "WinVer.nsh"
 
+!define BINARY_DIR_32 "..\compiled\x86-release\windows"
+!define BINARY_DIR_64 "..\compiled\x64-release\windows"
+
 Unicode true
 
 !if 0x3000000 >= "${NSIS_PACKEDVERSION}"
@@ -27,7 +30,7 @@ Var INSTBACKUPDIR ; Replaces the backup path for the program folder
 
 !macro GetAirDCVersion
 ; Get the AirDC++ version and store it in $VERSION
-  GetDllVersionLocal "..\compiled\x64\AirDC.exe" $R0 $R1
+  GetDllVersionLocal "${BINARY_DIR_64}\AirDC.exe" $R0 $R1
   IntOp $R2 $R0 / 0x00010000
   IntOp $R3 $R0 & 0x0000FFFF
   IntOp $R4 $R1 / 0x00010000
@@ -194,11 +197,11 @@ no_backup:
   File "popup.bmp"
 
   ${If} $TargetArch64 == "1"
-    File "..\compiled\x64\AirDC.pdb"
-    File "..\compiled\x64\AirDC.exe"
+    File "${BINARY_DIR_64}\AirDC.pdb"
+    File "${BINARY_DIR_64}\AirDC.exe"
   ${Else}
-	File "..\compiled\Win32\AirDC.pdb"
-	File "..\compiled\Win32\AirDC.exe"
+	File "${BINARY_DIR_32}\AirDC.pdb"
+	File "${BINARY_DIR_32}\AirDC.exe"
   ${EndIf}
   ; Uncomment to get DCPP core version from AirDC.exe we just installed and store in $1
   ;Function GetDCPlusPlusVersion
@@ -261,10 +264,10 @@ SectionEnd
 Section "$(SecNode)" DescNode
   SetOutPath $INSTDIR
    ${If} $TargetArch64 == "1"
-	File /r "..\compiled\x64\Node.js"
+	File /r "${BINARY_DIR_64}\Node.js"
     ; File /oname=nodejs\node.exe "nodejs\node64.exe"
   ${Else}
-	File /r "..\compiled\Win32\Node.js"
+	File /r "${BINARY_DIR_32}\Node.js"
     ; File /oname=nodejs\node.exe "nodejs\node32.exe"
   ${EndIf}
 SectionEnd 

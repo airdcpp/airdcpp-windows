@@ -2,13 +2,21 @@
 
 set dryrun=false
 set disabled=false
+
+:: Remote constants
 set ftpaddress=airdcpp-www@builds.airdcpp.net
 set ftpdir=windows/builds
 set updaterdir=updater
 set versiondir=version
+
+:: Local constants
 set startupdir=%CD%
+set installerdir=
 
 SET SOLUTION_DIR=%~dp0\..\
+
+set installerpath=%SOLUTION_DIR%\installer
+set compiledpath=%SOLUTION_DIR%\compiled
 
 cd %SOLUTION_DIR%
 
@@ -16,7 +24,8 @@ cd %SOLUTION_DIR%
 IF %disabled%==true goto :SendDisabled 
 IF [%1]==[] goto :invalidParameters
 set arch=%1
-IF NOT EXIST compiled\%arch%\AirDC.exe goto :exeNotFound
+set archdir=%arch%-release\windows
+IF NOT EXIST %compiledpath%\%archdir%\AirDC.exe goto :exeNotFound
 
 
 ::Check revision
@@ -28,12 +37,10 @@ goto :end
 
 :UpdateRevision
 
-::Compare the current revision to ftp
-set archString=%arch%
-if %arch%==Win32 set archString=x86
-set fileName=updater_%archString%_%~1.zip
+::Compare the current revision to server version
+set fileName=updater_%arch%_%~1.zip
 
-cd compiled
+cd %compiledpath%
 
 echo cd %ftpdir%>> checkftp.txt
 echo cd %updaterdir%>> checkftp.txt
@@ -61,12 +68,12 @@ ECHO Y | DEL fetchversionxml.txt
 
 :: Install Node.js
 echo Installing Node.js...
-call %SOLUTION_DIR%\scripts\update_node.bat %arch%  > nul
+call %SOLUTION_DIR%\scripts\update_node.bat %arch%
 
 :: Create updater
 echo Creating the updater file...
-cd %arch%
-AirDC.exe /createupdate
+cd %archdir%
+AirDC.exe /createupdate --resource-directory=%installerpath% --output-directory=%compiledpath%
 cd ..
 
 :: Send (if enabled)
@@ -102,11 +109,11 @@ echo Error get version from GIT
 goto :end
 
 :invalidParameters
-echo Please choose the architecture (Win32/x64)!
+echo Please choose the architecture (x86/x64)!
 goto :end
 
 :exeNotFound
-echo Please choose a proper architecture (Win32/x64) and check that all files are in place!
+echo Please choose a proper architecture (x86/x64) and check that all files are in place!
 goto :end
 
 :SendDisabled

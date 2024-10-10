@@ -85,7 +85,16 @@ void StartupParams::addParam(const string& aParam) noexcept {
 }
 
 bool StartupParams::removeParam(const string& aParam) noexcept {
-	if (auto param = find(params.begin(), params.end(), aParam); param != params.end()) {
+	auto param = ranges::find_if(params, [&aParam](const string& aCurrentParam) {
+		auto pos = aCurrentParam.find("=");
+		if (pos != string::npos && pos != aCurrentParam.length()) {
+			return Util::strnicmp(aCurrentParam, aParam, pos) == 0;
+		}
+
+		return Util::stricmp(aParam, aCurrentParam) == 0;
+	});
+
+	if (param != params.end()) {
 		params.erase(param);
 		return true;
 	}

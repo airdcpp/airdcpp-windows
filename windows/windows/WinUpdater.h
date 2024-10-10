@@ -42,7 +42,7 @@ public:
 	// Returns false if the application should exit
 	bool isUpdaterAction(const StartupParams& aStartupParams) noexcept;
 private:
-	static void listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept;
+	static void listUpdaterFiles(const string& aResourceDirectoryPath, StringPairList& files_) noexcept;
 
 	void createUpdater(const StartupParams& aStartupParams);
 

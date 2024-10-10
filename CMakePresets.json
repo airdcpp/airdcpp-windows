@@ -26,7 +26,6 @@
       "displayName": "Default configuration | x64",
       "description": "x64",
       "inherits": "windows-base",
-      "installDir": "${sourceDir}/compiled/x64",
       "hidden": true,
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": {
@@ -39,7 +38,6 @@
       "name": "windows-base-x86",
       "displayName": "Default configuration | x86",
       "description": "x86",
-      "installDir": "${sourceDir}/compiled/Win32",
       "inherits": "windows-base",
       "hidden": true,
       "cacheVariables": {
@@ -97,23 +95,19 @@
   "buildPresets": [
     {
       "name": "x64-debug",
-      "configurePreset": "x64-debug",
-      "targets": "install"
+      "configurePreset": "x64-debug"
     },
     {
       "name": "x64-release",
-      "configurePreset": "x64-release",
-      "targets": "install"
+      "configurePreset": "x64-release"
     },
     {
       "name": "x86-debug",
-      "configurePreset": "x86-debug",
-      "targets": "install"
+      "configurePreset": "x86-debug"
     },
     {
       "name": "x86-release",
-      "configurePreset": "x86-release",
-      "targets": "install"
+      "configurePreset": "x86-release"
     }
   ]
 }

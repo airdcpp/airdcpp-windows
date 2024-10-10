@@ -50,7 +50,7 @@ void updateCreatorErrorF(const string& aMessage) {
 };
 
 
-void WinUpdater::listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept {
+void WinUpdater::listUpdaterFiles(const string& aResourceDirectoryPath, StringPairList& files_) noexcept {
 	auto assertFiles = [](const string& title, int minExpected, int added) {
 		if (added < minExpected) {
 			::MessageBox(
@@ -65,33 +65,50 @@ void WinUpdater::listUpdaterFiles(StringPairList& files_, const string& aUpdateF
 
 	// Node
 	// Note: secondary executables must be added before the application because of an extraction issue in version before 4.00
-	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, PathUtil::getFilePath(AppUtil::getAppFilePath()), Util::emptyString, "^(" + webserver::WebServerSettings::localNodeDirectoryName + ")$"));
+	assertFiles(
+		webserver::WebServerSettings::localNodeDirectoryName,
+		1, 
+		ZipFile::CreateZipFileList(files_, PathUtil::getFilePath(AppUtil::getAppFilePath()), Util::emptyString, "^(" + webserver::WebServerSettings::localNodeDirectoryName + ")$")
+	);
 
 	// Application
 	assertFiles("Exe", 2, ZipFile::CreateZipFileList(files_, AppUtil::getAppFilePath(), Util::emptyString, "^(AirDC.exe|AirDC.pdb)$"));
 
 	// Additional resources
-	auto installerDirectory = PathUtil::getParentDir(aUpdateFilePath) + "installer" + PATH_SEPARATOR;
-	assertFiles("Themes", 1, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Themes)$"));
-	assertFiles("Web resources", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Web-resources)$"));
-	assertFiles("Emopacks", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(EmoPacks)$"));
+	assertFiles("Themes", 1, ZipFile::CreateZipFileList(files_, aResourceDirectoryPath, Util::emptyString, "^(Themes)$"));
+	assertFiles("Web resources", 10, ZipFile::CreateZipFileList(files_, aResourceDirectoryPath, Util::emptyString, "^(Web-resources)$"));
+	assertFiles("Emopacks", 10, ZipFile::CreateZipFileList(files_, aResourceDirectoryPath, Util::emptyString, "^(EmoPacks)$"));
 }
 
 void WinUpdater::createUpdater(const StartupParams& aStartupParams) {
 	SplashWindow::create();
 	WinUtil::splash->update("Creating updater");
 
-	auto updaterFilePath = UpdaterCreator::createUpdate([this](auto&&... args) { listUpdaterFiles(args...); }, updateCreatorErrorF);
+	auto parseDirectoryPath = [&aStartupParams](const string& aParam) {
+		auto value = aStartupParams.getValue(aParam);
+		if (!value) {
+			updateCreatorErrorF("Param " + aParam + " missing");
+			ExitProcess(1);
+		}
 
+		return PathUtil::ensureTrailingSlash(*value);
+	};
+
+	auto resourceDirectory = parseDirectoryPath("--resource-directory");
+	auto outputDirectory = parseDirectoryPath("--output-directory");
+	
+	auto updaterPath = UpdaterCreator::createUpdate(std::bind_front(&listUpdaterFiles, resourceDirectory), outputDirectory, updateCreatorErrorF);
 	if (aStartupParams.hasParam("/test")) {
 		WinUtil::splash->update("Extracting updater");
-		auto updaterExeFile = UpdateDownloader::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(ValueGenerator::rand()));
+		auto updaterExeFile = UpdateDownloader::extractUpdater(updaterPath, BUILD_NUMBER + 1, Util::toString(ValueGenerator::rand()));
 
 		addUpdate(updaterExeFile);
 
 		{
 			auto newStartupParams = aStartupParams;
 			newStartupParams.pop_front(); // remove /createupdate
+			newStartupParams.removeParam("--output-directory");
+			newStartupParams.removeParam("--resource-directory");
 			runPendingUpdate(newStartupParams);
 		}
 
@@ -176,6 +193,7 @@ bool WinUpdater::isUpdaterAction(const StartupParams& aStartupParams) noexcept {
 	// Thread::sleep(10000);
 
 	if (aStartupParams.hasParam("/createupdate", 0)) {
+		// AirDC++.exe /createupdate --resource-directory="C:\Projects\airdcpp-windows\installer" --output-directory="C:\Projects\airdcpp-windows\compiled"
 		createUpdater(aStartupParams);
 		return true;
 	} else if (aStartupParams.hasParam("/sign", 0)) {

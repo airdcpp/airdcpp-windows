@@ -14,7 +14,8 @@ set fileName=airdcpp_%~1_x86.7z
 cd installer
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes popup.bmp dcppboot.xml
 cd ..
-cd compiled\Win32
+
+cd compiled\x86-release\windows
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb Node.js
 cd %solutionDir%
 
@@ -23,7 +24,7 @@ set fileName=airdcpp_%~1_x64.7z
 cd installer
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes popup.bmp dcppboot.xml
 cd ..
-cd compiled\x64
+cd compiled\x64-release\windows
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb Node.js
 cd %solutionDir%
 
