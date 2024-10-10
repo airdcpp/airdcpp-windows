@@ -8,10 +8,6 @@ set NVM_VERSION=20.18.0
 :: Architecture argument (Win32/x64)
 IF [%1]==[] goto :invalidParameters
 
-::# 
-:: set ARCH=%1%
-:: if %ARCH%==Win32 set ARCH=x86
-
 set ARCH=%1%
 if %ARCH%==x64 (set NVM_ARCH=64) else (set NVM_ARCH=32)
 if %ARCH%==x64 (set NVM_FILE_SUFFIX=) else (set NVM_FILE_SUFFIX=32)

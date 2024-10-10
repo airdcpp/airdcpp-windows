@@ -66,9 +66,6 @@ target_link_libraries (
 	
 	WinMM # PlaySound
 	powrprof # SetSuspendState
-
-    # ShFolder
-    # WS2_32
 )
 
 install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION bin OPTIONAL)
