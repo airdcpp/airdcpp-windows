@@ -15,7 +15,7 @@ build:
   parallel: true
   verbosity: normal
 cache:
-- c:\tools\vcpkg\installed\
+- C:\Tools\vcpkg\packages\
 init:
   # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
