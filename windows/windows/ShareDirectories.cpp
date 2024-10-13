@@ -588,7 +588,7 @@ LRESULT ShareDirectories::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 bool ShareDirectories::addDirectory(const tstring& aPath){
-	auto path = PathUtil::validatePath(Text::fromT(aPath), true);
+	auto path = PathUtil::validateDirectoryPath(Text::fromT(aPath));
 
 	/* Check if we are trying to share a directory which exists already in this profile */
 	for(const auto& sdi: shareDirs) {

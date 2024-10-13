@@ -120,7 +120,7 @@ LRESULT SearchTypeDlg::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	for (auto i = t.getTokens().begin(); i != t.getTokens().end(); ++i) {
 		if(!i->empty()) {
 			if (PathUtil::checkExtension(Text::fromT(*i))) {
-				extList.push_back(Text::fromT(buf));
+				extList.push_back(Text::fromT(*i));
 			} else {
 				MessageBox(CTSTRING_F(INVALID_EXTENSION, *i));
 			}

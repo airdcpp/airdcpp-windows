@@ -64,7 +64,7 @@ void WINAPI invalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 static string getDownloadsPath(const string& def) noexcept {
 	PWSTR path = NULL;
 	if (SHGetKnownFolderPath(FOLDERID_Downloads, KF_FLAG_CREATE, NULL, &path) == S_OK) {
-		return PathUtil::validatePath(Text::fromT(path), true);
+		return PathUtil::validateDirectoryPath(Text::fromT(path));
 	}
 
 	return def + "Downloads\\";
@@ -178,7 +178,7 @@ void AppUtil::initialize(const string& aConfigPath) {
 				paths[PATH_USER_CONFIG] = paths[PATH_GLOBAL_CONFIG] + paths[PATH_USER_CONFIG];
 			}
 
-			paths[PATH_USER_CONFIG] = PathUtil::validatePath(paths[PATH_USER_CONFIG], true);
+			paths[PATH_USER_CONFIG] = PathUtil::validateDirectoryPath(paths[PATH_USER_CONFIG]);
 		}
 
 		if (localMode) {
