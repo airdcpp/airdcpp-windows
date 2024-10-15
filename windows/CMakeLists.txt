@@ -3,8 +3,13 @@ cmake_minimum_required (VERSION 3.16)
 
 find_path(WTL_INCLUDE_DIRS "atlapp.h")
 
-file (GLOB_RECURSE wingui_hdrs ${PROJECT_SOURCE_DIR}/*.h)
-file (GLOB_RECURSE wingui_srcs ${PROJECT_SOURCE_DIR}/*.cpp ${PROJECT_SOURCE_DIR}/*.c)
+# Get files
+file (GLOB_RECURSE wingui_hdrs ${PROJECT_SOURCE_DIR}/windows/*.h)
+file (GLOB_RECURSE wingui_srcs ${PROJECT_SOURCE_DIR}/windows/*.cpp ${PROJECT_SOURCE_DIR}/windows/*.c)
+
+# Project file generation
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${wingui_srcs})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${wingui_hdrs})
 
 unset(CMAKE_INSTALL_BINDIR)
 add_executable(${PROJECT_NAME} WIN32)
@@ -17,6 +22,7 @@ set(resources
 target_sources(${PROJECT_NAME}
     PRIVATE
         ${wingui_srcs}
+        ${wingui_hdrs}
         ${resources}
 )
 
