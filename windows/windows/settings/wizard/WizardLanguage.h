@@ -24,7 +24,7 @@
 #include <windows/settings/base/PropPage.h>
 
 #include <windows/settings/wizard/Wizard.h>
-#include <windows/LanguageDownloadDlg.h>
+#include <windows/dialog/LanguageDownloadDlg.h>
 
 #include <atldlgs.h>
 

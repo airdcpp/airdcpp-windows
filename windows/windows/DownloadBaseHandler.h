@@ -19,7 +19,7 @@
 #ifndef DOWNLOADBASEHANDLER_H
 #define DOWNLOADBASEHANDLER_H
 
-#include <windows/OMenu.h>
+#include <windows/components/OMenu.h>
 
 #include <airdcpp/favorites/FavoriteManager.h>
 #include <airdcpp/core/io/File.h>
@@ -28,8 +28,8 @@
 #include <airdcpp/queue/QueueManager.h>
 #include <airdcpp/util/Util.h>
 
-#include <windows/BrowseDlg.h>
-#include <windows/WinUtil.h>
+#include <windows/dialog/BrowseDlg.h>
+#include <windows/util/WinUtil.h>
 
 namespace wingui {
 template<class T>

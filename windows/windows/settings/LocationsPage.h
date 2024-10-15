@@ -25,7 +25,7 @@
 
 #include <atlcrack.h>
 #include <windows/settings/base/PropPage.h>
-#include <windows/ExListViewCtrl.h>
+#include <windows/components/ExListViewCtrl.h>
 
 namespace wingui {
 class LocationsPage : public CPropertyPage<IDD_LOCATIONSPAGE>, public PropPage

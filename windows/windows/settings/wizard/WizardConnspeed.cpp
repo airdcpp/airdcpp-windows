@@ -21,9 +21,9 @@
 #include <windows/settings/wizard/WizardConnspeed.h>
 #include <windows/settings/wizard/WizardProfile.h>
 
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 #include <windows/HttpLinks.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #include <airdcpp/util/AutoLimitUtil.h>
 #include <airdcpp/util/Util.h>

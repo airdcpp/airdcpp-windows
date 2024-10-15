@@ -24,7 +24,7 @@
 #include <airdcpp/core/version.h>
 
 #include <windows/resource.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 namespace wingui {
 LRESULT SplashWindow::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {

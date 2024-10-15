@@ -28,16 +28,16 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/Resource.h>
 #include <windows/settings/ShareDirectories.h>
-#include <windows/WinUtil.h>
-#include <windows/LineDlg.h>
+#include <windows/util/WinUtil.h>
+#include <windows/dialog/LineDlg.h>
 #include <windows/settings/base/PropertiesDlg.h>
-#include <windows/TempShare_dlg.h>
+#include <windows/settings/TempShare_dlg.h>
 #include <windows/settings/SharePageDlg.h>
 #include <windows/MainFrm.h>
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 
 namespace wingui {
 #define curProfile parent->getCurProfile()

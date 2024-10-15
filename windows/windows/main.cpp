@@ -29,7 +29,7 @@
 //#include <vld.h>
 #endif
 
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 #include <windows/ExtendedTrace.h>
 #include <windows/HttpLinks.h>
 #include <windows/MainFrm.h>
@@ -38,7 +38,7 @@
 #include <windows/SingleInstance.h>
 #include <windows/SplashWindow.h>
 #include <windows/WinClient.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #include <airdcpp/hash/value/MerkleTree.h>
 #include <airdcpp/connection/socket/SSLSocket.h>

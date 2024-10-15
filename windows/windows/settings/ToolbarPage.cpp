@@ -21,10 +21,10 @@
 #include <airdcpp/util/text/StringTokenizer.h>
 #include <airdcpp/util/Util.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/Resource.h>
 #include <windows/settings/ToolbarPage.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/MainFrm.h>
 
 namespace wingui {

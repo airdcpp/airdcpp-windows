@@ -24,7 +24,7 @@
 
 #include <windows/Resource.h>
 #include <windows/settings/UCPage.h>
-#include <windows/CommandDlg.h>
+#include <windows/settings/CommandDlg.h>
 
 namespace wingui {
 PropPage::TextItem UCPage::texts[] = {

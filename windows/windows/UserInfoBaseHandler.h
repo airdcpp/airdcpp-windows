@@ -20,7 +20,7 @@
 #define USERINFOBASEHANDLER_H
 
 #include <windows/resource.h>
-#include <windows/OMenu.h>
+#include <windows/components/OMenu.h>
 
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/user/HintedUser.h>
@@ -30,7 +30,7 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 
 namespace wingui {
 // emulation for non-list objects

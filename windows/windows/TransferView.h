@@ -33,12 +33,12 @@
 #include <airdcpp/transfer/TransferInfoManagerListener.h>
 #include <airdcpp/util/Util.h>
 
-#include <windows/OMenu.h>
+#include <windows/components/OMenu.h>
 #include <windows/UCHandler.h>
-#include <windows/TypedListViewCtrl.h>
+#include <windows/components/TypedListViewCtrl.h>
 #include <windows/resource.h>
 #include <windows/UserInfoBaseHandler.h>
-#include <windows/FormatUtil.h>
+#include <windows/util/FormatUtil.h>
 
 namespace wingui {
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 

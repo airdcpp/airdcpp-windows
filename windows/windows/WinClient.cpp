@@ -25,7 +25,7 @@
 #include <windows/Resource.h>
 #include <windows/ResourceLoader.h>
 #include <windows/SplashWindow.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/settings/wizard/Wizard.h>
 
 #include <airdcpp/events/LogManager.h>

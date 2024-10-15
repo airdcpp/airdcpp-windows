@@ -41,9 +41,9 @@
 #include <windows/Dispatchers.h>
 #include <windows/FlatTabCtrl.h>
 #include <windows/SingleInstance.h>
-#include <windows/OMenu.h>
+#include <windows/components/OMenu.h>
 #include <windows/picturewindow.h>
-#include <windows/CProgressCtrlEx.h>
+#include <windows/components/CProgressCtrlEx.h>
 
 namespace wingui {
 #define STATUS_MESSAGE_MAP 9

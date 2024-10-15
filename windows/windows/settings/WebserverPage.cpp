@@ -20,11 +20,11 @@
 #include <windows/stdafx.h>
 #include <windows/resource.h>
 
-#include <windows/LineDlg.h>
+#include <windows/dialog/LineDlg.h>
 #include <windows/HttpLinks.h>
 #include <windows/MainFrm.h>
 #include <windows/settings/WebserverPage.h>
-#include <windows/WebUserDlg.h>
+#include <windows/settings/WebUserDlg.h>
 
 #include <web-server/FileServer.h>
 #include <web-server/HttpManager.h>

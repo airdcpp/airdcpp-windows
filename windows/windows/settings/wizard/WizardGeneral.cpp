@@ -19,7 +19,7 @@
 #include <windows/stdafx.h>
 
 #include <windows/settings/wizard/WizardGeneral.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #include <airdcpp/core/localization/Localization.h>
 

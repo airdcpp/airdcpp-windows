@@ -26,7 +26,7 @@
 #include <string>
 #include <airdcpp/core/header/typedefs.h>
 
-#include <windows/ExCImage.h>
+#include <windows/components/ExCImage.h>
 #include <windows/Async.h>
 
 using std::string;

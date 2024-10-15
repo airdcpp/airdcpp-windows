@@ -20,9 +20,9 @@
 
 #include <windows/Resource.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/settings/Sounds.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #include <airdcpp/util/text/Text.h>
 

@@ -31,13 +31,13 @@
 
 #include <airdcpp/modules/ColorSettings.h>
 
-#include <windows/ShellContextMenu.h>
-#include <windows/TypedListViewCtrl.h>
-#include <windows/ImageDataObject.h>
+#include <windows/components/ShellContextMenu.h>
+#include <windows/components/TypedListViewCtrl.h>
+#include <windows/components/ImageDataObject.h>
 #include <windows/UCHandler.h>
 #include <windows/DownloadBaseHandler.h>
 #include <windows/UserInfoBaseHandler.h>
-#include <windows/UserUtil.h>
+#include <windows/util/UserUtil.h>
 
 namespace wingui {
 class UserInfo;

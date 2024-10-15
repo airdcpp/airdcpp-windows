@@ -25,7 +25,7 @@
 
 #include <atlcrack.h>
 #include <windows/settings/base/PropPage.h>
-#include <windows/ExListViewCtrl.h>
+#include <windows/components/ExListViewCtrl.h>
 #include <windows/resource.h>
 
 #include <airdcpp/modules/PreviewAppManager.h>

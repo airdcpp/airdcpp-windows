@@ -41,15 +41,15 @@
 #include <boost/format.hpp>
 #include <boost/scoped_array.hpp>
 
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 #include <windows/EmoticonsManager.h>
 #include <windows/HtmlToRtf.h>
 #include <windows/HttpLinks.h>
-#include <windows/HubFrame.h>
+#include <windows/frames/hub/HubFrame.h>
 #include <windows/MainFrm.h>
-#include <windows/PrivateFrame.h>
+#include <windows/frames/private_chat/PrivateFrame.h>
 #include <windows/ResourceLoader.h>
-#include <windows/TextFrame.h>
+#include <windows/frames/text/TextFrame.h>
 
 
 namespace wingui {

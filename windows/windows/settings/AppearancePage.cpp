@@ -21,7 +21,7 @@
 #include <windows/Resource.h>
 #include <windows/settings/AppearancePage.h>
 #include <windows/settings/base/PropertiesDlg.h>
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 
 #include <airdcpp/util/text/Text.h>
 

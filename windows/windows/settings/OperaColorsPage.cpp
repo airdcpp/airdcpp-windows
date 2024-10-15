@@ -22,9 +22,9 @@
 
 #include <windows/Resource.h>
 #include <windows/settings/OperaColorsPage.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/settings/base/PropertiesDlg.h>
-#include <windows/BarShader.h>
+#include <windows/components/BarShader.h>
 
 namespace wingui {
 PropPage::TextItem OperaColorsPage::texts[] = {

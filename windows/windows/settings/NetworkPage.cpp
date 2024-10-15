@@ -20,7 +20,7 @@
 
 #include <windows/Resource.h>
 #include <windows/settings/NetworkPage.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #include <airdcpp/connectivity/ConnectivityManager.h>
 #include <airdcpp/util/text/Text.h>

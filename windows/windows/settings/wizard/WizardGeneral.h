@@ -22,7 +22,7 @@
 #include <windows/stdafx.h>
 #include <windows/resource.h>
 #include <windows/settings/base/PropPage.h>
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 
 #include <windows/settings/wizard/Wizard.h>
 

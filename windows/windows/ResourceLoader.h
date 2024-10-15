@@ -32,7 +32,7 @@
 #include <airdcpp/core/Singleton.h>
 
 #include <windows/resource.h>
-#include <windows/ExCImage.h>
+#include <windows/components/ExCImage.h>
 
 namespace wingui {
 #define GET_ICON(id, size) ResourceLoader::getIcon(id, size)

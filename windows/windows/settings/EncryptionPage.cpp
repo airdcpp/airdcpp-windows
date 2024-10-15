@@ -24,7 +24,7 @@
 
 #include <windows/Resource.h>
 #include <windows/settings/EncryptionPage.h>
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 
 namespace wingui {
 PropPage::TextItem EncryptionPage::texts[] = {

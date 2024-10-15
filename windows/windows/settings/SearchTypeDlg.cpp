@@ -18,7 +18,7 @@
 
 #include <windows/stdafx.h>
 #include <windows/Resource.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/settings/SearchTypeDlg.h>
 
 #include <airdcpp/util/PathUtil.h>

@@ -24,12 +24,12 @@
 #include <airdcpp/core/thread/concurrency.h>
 
 #include <windows/Async.h>
-#include <windows/OMenu.h>
+#include <windows/components/OMenu.h>
 #include <windows/resource.h>
 #include <windows/RichTextBox.h>
 #include <windows/ResourceLoader.h>
-#include <windows/ExCImage.h>
-#include <windows/StaticFrame.h>
+#include <windows/components/ExCImage.h>
+#include <windows/frames/StaticFrame.h>
 
 
 namespace wingui {

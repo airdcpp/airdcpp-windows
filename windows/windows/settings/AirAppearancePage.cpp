@@ -20,7 +20,7 @@
 #include <windows/Resource.h>
 #include <windows/settings/AirAppearancePage.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/settings/base/PropertiesDlg.h>
 
 namespace wingui {

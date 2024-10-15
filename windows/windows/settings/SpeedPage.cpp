@@ -25,8 +25,8 @@
 #include <windows/Resource.h>
 #include <windows/settings/SpeedPage.h>
 #include <windows/settings/base/PropertiesDlg.h>
-#include <windows/WinUtil.h>
-#include <windows/ActionUtil.h>
+#include <windows/util/WinUtil.h>
+#include <windows/util/ActionUtil.h>
 
 namespace wingui {
 PropPage::TextItem SpeedPage::texts[] = {

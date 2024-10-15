@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <windows/OMenu.h>
+#include <windows/components/OMenu.h>
 #include <windows/resource.h>
 
 #include <airdcpp/hub/user_command/UserCommandManager.h>

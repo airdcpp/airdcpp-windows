@@ -22,10 +22,10 @@
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/core/localization/ResourceManager.h>
 
-#include <windows/WinUtil.h>
-#include <windows/memdc.h>
-#include <windows/OMenu.h>
-#include <windows/ShellContextMenu.h>
+#include <windows/util/WinUtil.h>
+#include <windows/components/memdc.h>
+#include <windows/components/OMenu.h>
+#include <windows/components/ShellContextMenu.h>
 #include <windows/resource.h>
 
 namespace wingui {

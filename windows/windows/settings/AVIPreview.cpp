@@ -19,7 +19,7 @@
 #include <windows/stdafx.h>
 
 #include <windows/settings/AVIPreview.h>
-#include <windows/PreviewDlg.h>
+#include <windows/settings/PreviewDlg.h>
 
 namespace wingui {
 PropPage::TextItem AVIPreview::texts[] = {

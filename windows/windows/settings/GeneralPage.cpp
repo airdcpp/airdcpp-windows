@@ -24,7 +24,7 @@
 #include <windows/Resource.h>
 
 #include <windows/settings/GeneralPage.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 
 namespace wingui {

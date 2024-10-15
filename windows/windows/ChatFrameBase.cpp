@@ -18,18 +18,18 @@
 
 #include <windows/stdafx.h>
 
-#include <windows/ActionUtil.h>
-#include <windows/BrowseDlg.h>
+#include <windows/util/ActionUtil.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/ChatFrameBase.h>
 #include <windows/ChatCommands.h>
 #include <windows/EmoticonsDlg.h>
 #include <windows/EmoticonsManager.h>
-#include <windows/ExMessageBox.h>
+#include <windows/components/ExMessageBox.h>
 #include <windows/HttpLinks.h>
 #include <windows/MainFrm.h>
-#include <windows/Players.h>
-#include <windows/SearchFrm.h>
-#include <windows/WinUtil.h>
+#include <windows/players/Players.h>
+#include <windows/frames/search/SearchFrm.h>
+#include <windows/util/WinUtil.h>
 
 #include <airdcpp/modules/AutoSearchManager.h>
 

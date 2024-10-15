@@ -20,7 +20,7 @@
 #include <windows/Resource.h>
 
 #include <windows/EmoticonsDlg.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <math.h>
 
 #include <windows/EmoticonsManager.h>

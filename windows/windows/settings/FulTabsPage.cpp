@@ -21,7 +21,7 @@
 
 
 #include <windows/settings/FulTabsPage.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 
 namespace wingui {

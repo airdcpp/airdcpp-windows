@@ -35,13 +35,13 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/TransferView.h>
 #include <windows/MainFrm.h>
 #include <windows/ResourceLoader.h>
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 
-#include <windows/BarShader.h>
+#include <windows/components/BarShader.h>
 
 namespace wingui {
 int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB_CONNECTIONS, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_IP/*, COLUMN_ENCRYPTION*/ };

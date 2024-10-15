@@ -23,10 +23,10 @@
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/favorites/FavoriteManager.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/Resource.h>
 #include <windows/settings/LocationsPage.h>
-#include <windows/LineDlg.h>
+#include <windows/dialog/LineDlg.h>
 
 
 namespace wingui {

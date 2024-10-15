@@ -23,7 +23,7 @@
 #include <airdcpp/util/Util.h>
 
 #include <windows/settings/LimitPage.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 namespace wingui {
 PropPage::TextItem LimitPage::texts[] = {

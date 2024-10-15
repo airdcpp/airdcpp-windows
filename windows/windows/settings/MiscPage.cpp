@@ -22,8 +22,8 @@
 
 
 #include <windows/settings/MiscPage.h>
-#include <windows/ActionUtil.h>
-#include <windows/LineDlg.h>
+#include <windows/util/ActionUtil.h>
+#include <windows/dialog/LineDlg.h>
 #include <windows/settings/base/PropertiesDlg.h>
 
 #include <airdcpp/core/localization/ResourceManager.h>

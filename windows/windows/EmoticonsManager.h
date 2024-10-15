@@ -22,7 +22,7 @@
 #include <airdcpp/core/classes/FastAlloc.h>
 #include <airdcpp/core/types/GetSet.h>
 
-#include <windows/ExCImage.h>
+#include <windows/components/ExCImage.h>
 
 #if _MSC_VER > 1000
 #pragma once

@@ -21,7 +21,7 @@
 
 #include <windows/settings/HashingPage.h>
 
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/settings/base/PropertiesDlg.h>
 #include <windows/MainFrm.h>
 

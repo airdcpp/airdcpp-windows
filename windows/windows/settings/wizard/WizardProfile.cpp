@@ -19,7 +19,7 @@
 #include <windows/stdafx.h>
 
 #include <windows/settings/wizard/WizardProfile.h>
-#include <windows/ActionUtil.h>
+#include <windows/util/ActionUtil.h>
 
 #include <airdcpp/settings/SettingHolder.h>
 

@@ -14,7 +14,7 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 
 #include <windows/settings/FolderTree.h>
 
-#include <windows/LineDlg.h>
+#include <windows/dialog/LineDlg.h>
 #include <windows/settings/ShareDirectories.h>
 
 #include <airdcpp/util/PathUtil.h>

@@ -25,7 +25,7 @@
 
 #include <windows/settings/base/PropPage.h>
 
-#include <windows/ExListViewCtrl.h>
+#include <windows/components/ExListViewCtrl.h>
 #include <airdcpp/user/ignore/IgnoreManager.h>
 
 namespace wingui {

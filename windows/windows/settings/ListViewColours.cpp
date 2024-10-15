@@ -18,7 +18,7 @@
 
 #include <windows/Resource.h>
 #include <windows/settings/ListViewColours.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/settings/base/PropertiesDlg.h>
 #include <windows/ResourceLoader.h>
 

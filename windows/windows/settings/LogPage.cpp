@@ -22,7 +22,7 @@
 #include <airdcpp/core/io/File.h>
 #include <airdcpp/util/PathUtil.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/Resource.h>
 #include <windows/settings/LogPage.h>
 

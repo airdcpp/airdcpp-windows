@@ -26,10 +26,10 @@
 
 #include <windows/Resource.h>
 #include <windows/settings/SharePage.h>
-#include <windows/WinUtil.h>
-#include <windows/LineDlg.h>
+#include <windows/util/WinUtil.h>
+#include <windows/dialog/LineDlg.h>
 #include <windows/settings/base/PropertiesDlg.h>
-#include <windows/TempShare_dlg.h>
+#include <windows/settings/TempShare_dlg.h>
 #include <windows/settings/SharePageDlg.h>
 #include <windows/MainFrm.h>
 

@@ -26,7 +26,7 @@
 
 #include <airdcpp/modules/HighlightManager.h>
 #include <windows/settings/FulHighlightDialog.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 
 namespace wingui {

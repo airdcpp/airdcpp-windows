@@ -21,9 +21,9 @@
 
 #include <windows/Resource.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/settings/Popups.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/MainFrm.h>
 
 namespace wingui {

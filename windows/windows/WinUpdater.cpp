@@ -20,10 +20,10 @@
 
 #include <windows/WinUpdater.h>
 
-#include <windows/OSUtil.h>
+#include <windows/util/OSUtil.h>
 #include <windows/ShellExecAsUser.h>
 #include <windows/SplashWindow.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #include <airdcpp/events/LogManager.h>
 #include <airdcpp/util/PathUtil.h>

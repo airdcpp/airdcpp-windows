@@ -22,10 +22,10 @@
 #include <airdcpp/core/io/stream/Streams.h>
 #include <airdcpp/core/version.h>
 
-#include <windows/BrowseDlg.h>
+#include <windows/dialog/BrowseDlg.h>
 #include <windows/Resource.h>
 #include <windows/settings/PropPageTextStyles.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/settings/OperaColorsPage.h>
 #include <windows/settings/base/PropertiesDlg.h>
 

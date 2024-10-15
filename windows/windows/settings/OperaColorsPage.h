@@ -26,7 +26,7 @@
 #include <windows/StdAfx.h>
 #include <windows/settings/base/PropPage.h>
 #include <windows/settings/PropPageTextStyles.h>
-#include <windows/ExListViewCtrl.h>
+#include <windows/components/ExListViewCtrl.h>
 
 namespace wingui {
 class OperaColorsPage : public CPropertyPage<IDD_OPERACOLORS>, public PropPage, private SettingsManagerListener

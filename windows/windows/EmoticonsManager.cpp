@@ -30,7 +30,7 @@
 #include "boost/algorithm/string/replace.hpp"
 
 #include <windows/EmoticonsManager.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #include <cmath>
 

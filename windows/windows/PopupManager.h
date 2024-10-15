@@ -33,7 +33,7 @@
 #include <airdcpp/core/Singleton.h>
 #include <airdcpp/core/timer/TimerManagerListener.h>
 
-#include <windows/PopupDlg.h>
+#include <windows/dialog/PopupDlg.h>
 
 namespace wingui {
 class PopupManager : public Singleton< PopupManager >, private TimerManagerListener

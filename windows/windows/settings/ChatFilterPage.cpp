@@ -21,8 +21,8 @@
 
 #include <windows/settings/ChatFilterPage.h>
 #include <airdcpp/core/version.h>
-#include <windows/WinUtil.h>
-#include <windows/ChatFilterDlg.h>
+#include <windows/util/WinUtil.h>
+#include <windows/settings/ChatFilterDlg.h>
 
 namespace wingui {
 PropPage::TextItem ChatFilterPage::texts[] = {

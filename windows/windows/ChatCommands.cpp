@@ -20,7 +20,7 @@
 #include <windows/ChatCommands.h>
 
 #include <windows/HttpLinks.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 #define COMPILE_MULTIMON_STUBS 1
 

@@ -20,10 +20,10 @@
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/hub/activity/ActivityManager.h>
 
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 #include <windows/PopupManager.h>
 #include <windows/MainFrm.h>
-#include <windows/PopupDlg.h>
+#include <windows/dialog/PopupDlg.h>
 
 namespace wingui {
 PopupManager::PopupManager() : height(90), width(200), offset(0), activated(true), id(0) {

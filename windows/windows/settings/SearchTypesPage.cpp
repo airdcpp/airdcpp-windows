@@ -24,7 +24,7 @@
 #include <windows/Resource.h>
 #include <windows/settings/SearchTypesPage.h>
 #include <windows/settings/SearchTypeDlg.h>
-#include <windows/WinUtil.h>
+#include <windows/util/WinUtil.h>
 
 namespace wingui {
 PropPage::TextItem SearchTypesPage::texts[] = {
