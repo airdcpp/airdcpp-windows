@@ -22,7 +22,7 @@
 #include <windows/MainFrm.h>
 
 #include <windows/FavHubGeneralPage.h>
-#include <windows/PropertiesDlg.h>
+#include <windows/settings/base/PropertiesDlg.h>
 
 #include <airdcpp/util/LinkUtil.h>
 #include <airdcpp/favorites/FavoriteManager.h>

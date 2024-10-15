@@ -24,7 +24,7 @@
 #include <windows/HubFrame.h>
 #include <windows/SearchFrm.h>
 #include <windows/PublicHubsFrm.h>
-#include <windows/PropertiesDlg.h>
+#include <windows/settings/base/PropertiesDlg.h>
 #include <windows/UsersFrame.h>
 #include <windows/DirectoryListingFrm.h>
 #include <windows/RecentsFrm.h>
@@ -43,7 +43,7 @@
 #include <windows/CDMDebugFrame.h>
 #include <windows/InputBox.h>
 #include <windows/PopupManager.h>
-#include <windows/Wizard.h>
+#include <windows/settings/wizard/Wizard.h>
 #include <windows/AutoSearchFrm.h>
 #include <windows/QueueFrame.h>
 #include <windows/BrowseDlg.h>
