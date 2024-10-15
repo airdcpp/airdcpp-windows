@@ -113,14 +113,17 @@ endif(NOT PYTHON_EXECUTABLE)
 
 
 # Version information for the client
-find_package (Git)
+# Having the version file up-to-date isn't that relevant with a debug build (the build step will be skipped entirely if there are no changed files)
+if (NOT CMAKE_BUILD_TYPE STREQUAL Debug OR NOT EXISTS "${PROJECT_SOURCE_DIR}/airdcpp/core/version.inc")
+  find_package (Git)
 
-add_custom_target(version_file ALL DEPENDS 
-  COMMAND ${PYTHON_EXECUTABLE} scripts/generate_version.py ./airdcpp/core/version.inc ${VERSION} ${TAG_APPLICATION} ${APPLICATION_ID}
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-)
+  add_custom_target(version_file ALL DEPENDS 
+    COMMAND ${PYTHON_EXECUTABLE} scripts/generate_version.py ./airdcpp/core/version.inc ${VERSION} ${TAG_APPLICATION} ${APPLICATION_ID}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
 
-add_dependencies(${PROJECT_NAME} version_file)
+  add_dependencies(${PROJECT_NAME} version_file)
+endif ()
 
 # Stringdefs
 add_custom_target(stringdefs ALL DEPENDS 
