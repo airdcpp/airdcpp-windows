@@ -121,7 +121,8 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL Debug OR NOT EXISTS "${PROJECT_SOURCE_DIR}/air
     COMMAND ${PYTHON_EXECUTABLE} scripts/generate_version.py ./airdcpp/core/version.inc ${VERSION} ${TAG_APPLICATION} ${APPLICATION_ID}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   )
-
+  
+  list (APPEND airdcpp_hdrs ${PROJECT_SOURCE_DIR}/airdcpp/core/version.inc)
   add_dependencies(${PROJECT_NAME} version)
 endif ()
 
