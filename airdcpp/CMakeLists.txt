@@ -122,7 +122,7 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL Debug OR NOT EXISTS "${PROJECT_SOURCE_DIR}/air
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   )
   
-  list (APPEND airdcpp_hdrs ${PROJECT_SOURCE_DIR}/airdcpp/core/version.inc)
+  list (PREPEND airdcpp_hdrs ${PROJECT_SOURCE_DIR}/airdcpp/core/version.inc)
   add_dependencies(${PROJECT_NAME} version)
 endif ()
 
@@ -138,7 +138,7 @@ add_custom_command(
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
-list (APPEND airdcpp_srcs ${PROJECT_SOURCE_DIR}/airdcpp/core/localization/StringDefs.cpp)
+list (PREPEND airdcpp_srcs ${PROJECT_SOURCE_DIR}/airdcpp/core/localization/StringDefs.cpp)
 add_dependencies(${PROJECT_NAME} stringdefs)
 
 
