@@ -305,7 +305,9 @@ LRESULT ListFilter::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl
 		if (hWndCtl == methodCombo.m_hWnd)
 			usingTypedMethod = false;
 
-		updateFunction();
+		if (!empty()) {
+			updateFunction();
+		}
 	}
 	bHandled = FALSE;
 	return 0;
