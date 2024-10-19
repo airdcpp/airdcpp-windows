@@ -22,12 +22,13 @@
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/core/localization/ResourceManager.h>
 
-#include <airdcpp/util/text/StringTokenizer.h>
 #include <airdcpp/protocol/AdcCommand.h>
 #include <airdcpp/transfer/Transfer.h>
 #include <airdcpp/protocol/ProtocolCommandManager.h>
 #include <airdcpp/favorites/FavoriteManager.h>
 #include <airdcpp/message/Message.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/ValueGenerator.h>
 
 
 #include <airdcpp/transfer/download/Download.h>
@@ -248,7 +249,7 @@ void UserConnection::inf(bool withToken, int mcnSlots) {
 	if(mcnSlots > 0)
 		c.addParam("CO", Util::toString(mcnSlots));
 	if(withToken) {
-		c.addParam("TO", getToken());
+		c.addParam("TO", getConnectToken());
 	}
 	if (isSet(FLAG_PM)) {
 		c.addParam("PM", "1");
@@ -282,7 +283,7 @@ bool UserConnection::sendHooked(const AdcCommand& c, CallerPtr aOwner, string& e
 	if (!isNmdc) {
 		{
 			try {
-				auto results = ClientManager::getInstance()->outgoingTcpCommandHook.runHooksDataThrow(aOwner, c, getRemoteIp(), getHintedUser());
+				auto results = ClientManager::getInstance()->outgoingTcpCommandHook.runHooksDataThrow(aOwner, c, *this);
 				params = ActionHook<AdcCommand::ParamMap>::normalizeMap(results);
 			} catch (const HookRejectException& e) {
 				error_ = ActionHookRejection::formatError(e.getRejection());
@@ -290,7 +291,7 @@ bool UserConnection::sendHooked(const AdcCommand& c, CallerPtr aOwner, string& e
 			}
 		}
 
-		ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::OutgoingTCPCommand(), c, getRemoteIp(), getHintedUser());
+		ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::OutgoingTCPCommand(), c, *this);
 	}
 
 	if (!params.empty()) {
@@ -338,7 +339,7 @@ void UserConnection::handle(AdcCommand::PMI t, const AdcCommand& c) {
 }
 
 
-void UserConnection::handlePM(const AdcCommand& c, bool aEcho) noexcept{
+void UserConnection::handlePM(const AdcCommand& c, bool aEcho) noexcept {
 	const string& message = c.getParam(0);
 
 	auto cm = ClientManager::getInstance();
@@ -484,12 +485,12 @@ void UserConnection::send(const string& aString) {
 	socket->write(aString);
 }
 
-UserConnection::UserConnection() noexcept : encoding(SETTING(NMDC_ENCODING)), download(nullptr) {
+UserConnection::UserConnection() noexcept : encoding(SETTING(NMDC_ENCODING)), download(nullptr), token(ValueGenerator::rand()) {
 }
 
 UserConnection::~UserConnection() {
 	BufferedSocket::putSocket(socket);
-	dcdebug("User connection %s was deleted\n", getToken().c_str());
+	dcdebug("User connection %s was deleted\n", getConnectToken().c_str());
 }
 
 } // namespace dcpp

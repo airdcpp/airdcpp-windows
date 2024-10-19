@@ -47,7 +47,7 @@ template<int I>	struct X { enum { TYPE = I };  };
 
 	virtual void on(OutgoingHubCommand, const AdcCommand&, const Client&) noexcept { }
 	virtual void on(OutgoingUDPCommand, const AdcCommand&, const string&, const OnlineUserPtr&) noexcept { }
-	virtual void on(OutgoingTCPCommand, const AdcCommand&, const string&, const HintedUser&) noexcept { }
+	virtual void on(OutgoingTCPCommand, const AdcCommand&, const UserConnection&) noexcept { }
 };
 
 class ProtocolCommandManager : public Singleton<ProtocolCommandManager>, public Speaker<ProtocolCommandManagerListener>

@@ -86,7 +86,7 @@ public:
 	virtual size_t getUserCount() const noexcept = 0;
 	int64_t getTotalShare() const noexcept { return availableBytes; };
 	
-	virtual bool sendHooked(const AdcCommand& command) = 0;
+	virtual bool sendHooked(const AdcCommand& command, CallerPtr aOwner, string& error_) = 0;
 
 	void callAsync(AsyncF f) noexcept;
 

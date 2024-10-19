@@ -55,7 +55,7 @@ public:
 	static string escape(string const& str) { return validateMessage(str, false); }
 	static string unescape(const string& str) { return validateMessage(str, true); }
 
-	bool sendHooked(const AdcCommand&) override { dcassert(0); return false; }
+	bool sendHooked(const AdcCommand&, CallerPtr, string&) override { dcassert(0); return false; }
 
 	static string validateMessage(string tmp, bool reverse);
 	void refreshUserList(bool) noexcept override;

@@ -25,6 +25,7 @@
 
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/connection/ConnectionManager.h>
+#include <airdcpp/util/LinkUtil.h>
 
 namespace webserver {
 
@@ -69,10 +70,10 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		);
 	}
 
-	ActionHookResult<AdcCommand::ParamMap> AdcCommandApi::outgoingTcpMessageHook(const AdcCommand& aCmd, const string& aRemoteIp, const HintedUser& aUser, const ActionHookResultGetter<AdcCommand::ParamMap>& aResultGetter) {
+	ActionHookResult<AdcCommand::ParamMap> AdcCommandApi::outgoingTcpMessageHook(const AdcCommand& aCmd, const UserConnection& aUserConnection, const ActionHookResultGetter<AdcCommand::ParamMap>& aResultGetter) {
 		return HookCompletionData::toResult<AdcCommand::ParamMap>(
 			maybeFireHook(HOOK_OUTGOING_TCP_COMMAND, aCmd.getCommand(), WEBCFG(OUTGOING_TCP_COMMAND_HOOK_TIMEOUT).num(), [&]() {
-				return serializeOutgoingTCPCommand(aCmd, aUser, aRemoteIp);
+				return serializeOutgoingTCPCommand(aCmd, aUserConnection);
 			}),
 			aResultGetter,
 			deserializeHookParams
@@ -101,6 +102,7 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		// Command methods
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("hub_command")), AdcCommandApi::handlePostHubCommand);
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("udp_command")), AdcCommandApi::handlePostUDPCommand);
+		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("user_connection_command")), AdcCommandApi::handlePostTCPCommand);
 
 		// Supports
 		SUPPORT_HANDLER("hub", hubSupports);
@@ -152,11 +154,10 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		});
 	}
 
-	json AdcCommandApi::serializeOutgoingTCPCommand(const AdcCommand& aCmd, const HintedUser& aUser, const string& aRemoteIp) noexcept {
+	json AdcCommandApi::serializeOutgoingTCPCommand(const AdcCommand& aCmd, const UserConnection& aUserConnection) noexcept {
 		return json({
 			{ "command", serializeCommand(aCmd) },
-			{ "ip", aRemoteIp },
-			{ "user", aUser ? Serializer::serializeHintedUser(aUser) : json()},
+			{ "user_connection", serializeUserConnection(aUserConnection) },
 		});
 	}
 
@@ -198,6 +199,9 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		const auto& reqJson = aRequest.getRequestBody();
 
 		auto hub = Deserializer::deserializeClient(reqJson, false);
+		if (!LinkUtil::isAdcHub(hub->getHubUrl())) {
+			JsonUtil::throwError("hub_url", JsonUtil::ERROR_INVALID, "This endpoint can only be used with ADC hubs");
+		}
 
 		auto cmd = deserializeCommand(reqJson);
 		deserializeCommandRecipient(reqJson, cmd, hub);
@@ -209,14 +213,55 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 			complete = aRequest.defer(),
 			caller = aRequest.getOwnerPtr()
 		]{
+			string error;
+
 			// Send
-			auto success = hub->sendHooked(cmd);
+			auto success = hub->sendHooked(cmd, caller, error);
 			if (!success) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("Command rejected"));
+				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(error));
 				return;
 			}
 
 			complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+		});
+
+		return CODE_DEFERRED;
+	}
+
+	api_return AdcCommandApi::handlePostTCPCommand(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto cmd = deserializeCommand(reqJson);
+		if (cmd.getType() != AdcCommand::TYPE_CLIENT) {
+			JsonUtil::throwError("type", JsonUtil::ERROR_INVALID, "Invalid type for a user connection command");
+		}
+
+		auto userConnectionToken = JsonUtil::getField<UserConnectionToken>("user_connection", reqJson, false);
+
+		ConnectionManager::getInstance()->findUserConnection(userConnectionToken, [&](UserConnection* uc) {
+			uc->callAsync([
+				adcCmd = std::move(cmd),
+				complete = aRequest.defer(),
+				caller = aRequest.getOwnerPtr(),
+				uc
+			] {
+				if (uc->getSocket()->getMode() != BufferedSocket::MODE_LINE) {
+					complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("User connection is not in command mode"));
+					return;
+				}
+
+				auto cmd = adcCmd;
+				string error;
+
+				// Send
+				auto success = uc->sendHooked(cmd, caller, error);
+				if (!success) {
+					complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(error));
+					return;
+				}
+
+				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+			});
 		});
 
 		return CODE_DEFERRED;
@@ -241,11 +286,13 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 			caller = aRequest.getOwnerPtr()
 		]{
 			auto cmd = adcCmd;
+			string error;
 
 			// Send
-			auto success = ClientManager::getInstance()->sendUDPHooked(cmd, user.user->getCID(), false, !passiveFallback, Util::emptyString, user.hint);
+			ClientManager::OutgoingUDPCommandOptions options(caller, !passiveFallback);
+			auto success = ClientManager::getInstance()->sendUDPHooked(cmd, user, options, error);
 			if (!success) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("Command rejected"));
+				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(error));
 				return;
 			}
 
@@ -311,9 +358,9 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		});
 	}
 
-	void AdcCommandApi::on(ProtocolCommandManagerListener::OutgoingTCPCommand, const AdcCommand& aCmd, const string& aRemoteIp, const HintedUser& aUser) noexcept {
+	void AdcCommandApi::on(ProtocolCommandManagerListener::OutgoingTCPCommand, const AdcCommand& aCmd, const UserConnection& aUserConnection) noexcept {
 		maybeSend("outgoing_user_connection_command", aCmd.getCommand(), [&] {
-			return serializeOutgoingTCPCommand(aCmd, aUser, aRemoteIp);
+			return serializeOutgoingTCPCommand(aCmd, aUserConnection);
 		});
 	}
 
@@ -341,6 +388,14 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		return nullptr;
 	}
 
+	json AdcCommandApi::serializeUserConnection(const UserConnection& aUserConnection) noexcept {
+		auto user = aUserConnection.getHintedUser();
+		return json({
+			{ "id", aUserConnection.getToken() },
+			{ "user", user ? Serializer::serializeHintedUser(user) : json()},
+			{ "ip", aUserConnection.getRemoteIp() },
+		});
+	}
 
 	string AdcCommandApi::deserializeSupportString(const json& aCmd, const string& aFieldName) {
 		auto support = JsonUtil::parseValue<string>(aFieldName, aCmd, false);
@@ -375,7 +430,7 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		return deserializeNamedParams(aJson, true);
 	}
 
-	AdcCommandApi::AdcParam AdcCommandApi::deserializeNamedParam(const json& aJson, const string& aFieldName) {
+	AdcCommandApi::NamedAdcParam AdcCommandApi::deserializeNamedParam(const json& aJson, const string& aFieldName) {
 		auto name = JsonUtil::getField<string>("name", aJson, false);
 		if (!boost::regex_match(name, paramReg)) {
 			JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid param name " + name);
@@ -383,11 +438,11 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 
 		auto value = JsonUtil::getField<string>("value", aJson, false);
 
-		return AdcParam({ name, value });
+		return NamedAdcParam({ name, value });
 	}
 
 	AdcCommand::ParamMap AdcCommandApi::deserializeNamedParams(const json& aJson, bool aAllowEmpty) {
-		auto paramList = Deserializer::deserializeList<AdcParam>("params", aJson, deserializeNamedParam, aAllowEmpty);
+		auto paramList = Deserializer::deserializeList<NamedAdcParam>("params", aJson, deserializeNamedParam, aAllowEmpty);
 
 		AdcCommand::ParamMap paramMap;
 		for (const auto& param : paramList) {

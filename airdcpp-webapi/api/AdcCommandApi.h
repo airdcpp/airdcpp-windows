@@ -38,7 +38,7 @@ namespace webserver {
 		explicit AdcCommandApi(Session* aSession);
 		~AdcCommandApi() override;
 
-		struct AdcParam {
+		struct NamedAdcParam {
 			string name;
 			string value;
 		};
@@ -47,13 +47,14 @@ namespace webserver {
 		static json serializeTo(const AdcCommand& aCmd, const Client&) noexcept;
 		static json serializeFrom(const AdcCommand& aCmd, const Client&) noexcept;
 		static json serializeUser(dcpp::SID aSID, const Client&) noexcept;
+		static json serializeUserConnection(const UserConnection& aUserConnection) noexcept;
 
 		static string deserializeSupportString(const json& aCmd, const string& aFieldName);
 		static AdcCommand::CommandType deserializeCommandString(const json& aCmd, const string& aFieldName);
 		static AdcCommand::ParamMap deserializeHookParams(const json& aJson, const ActionHookResultGetter<AdcCommand::ParamMap>& aResultGetter);
 		static AdcCommand::ParamMap deserializeNamedParams(const json& aJson, bool aAllowEmpty);
 		static AdcCommand::ParamList deserializeIndexedParams(const json& aJson, bool aAllowEmpty);
-		static AdcParam deserializeNamedParam(const json& aJson, const string& aFieldName);
+		static NamedAdcParam deserializeNamedParam(const json& aJson, const string& aFieldName);
 
 		static AdcCommand deserializeCommand(const json& aJson);
 
@@ -76,14 +77,15 @@ namespace webserver {
 
 		api_return handlePostHubCommand(ApiRequest& aRequest);
 		api_return handlePostUDPCommand(ApiRequest& aRequest);
+		api_return handlePostTCPCommand(ApiRequest& aRequest);
 
 		static json serializeOutgoingHubCommand(const AdcCommand& aCmd, const Client& aClient) noexcept;
 		static json serializeOutgoingUDPCommand(const AdcCommand& aCmd, const OnlineUserPtr& aUser) noexcept;
-		static json serializeOutgoingTCPCommand(const AdcCommand& aCmd, const HintedUser& aUser, const string& aRemoteIp) noexcept;
+		static json serializeOutgoingTCPCommand(const AdcCommand& aCmd, const UserConnection& aUserConnection) noexcept;
 
 		ActionHookResult<AdcCommand::ParamMap> outgoingHubMessageHook(const AdcCommand& aCmd, const Client& aClient, const ActionHookResultGetter<AdcCommand::ParamMap>& aResultGetter);
 		ActionHookResult<AdcCommand::ParamMap> outgoingUdpMessageHook(const AdcCommand& aCmd, const OnlineUserPtr& aUser, const string& aIpPort, const ActionHookResultGetter<AdcCommand::ParamMap>& aResultGetter);
-		ActionHookResult<AdcCommand::ParamMap> outgoingTcpMessageHook(const AdcCommand& aCmd, const string& aRemoteIp, const HintedUser& aUser, const ActionHookResultGetter<AdcCommand::ParamMap>& aResultGetter);
+		ActionHookResult<AdcCommand::ParamMap> outgoingTcpMessageHook(const AdcCommand& aCmd, const UserConnection& aUserConnection, const ActionHookResultGetter<AdcCommand::ParamMap>& aResultGetter);
 
 		void on(ProtocolCommandManagerListener::IncomingHubCommand, const AdcCommand&, const Client&) noexcept override;
 		void on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand&, const string&) noexcept override;
@@ -91,7 +93,7 @@ namespace webserver {
 
 		void on(ProtocolCommandManagerListener::OutgoingHubCommand, const AdcCommand&, const Client&) noexcept override;
 		void on(ProtocolCommandManagerListener::OutgoingUDPCommand, const AdcCommand&, const string&, const OnlineUserPtr&) noexcept override;
-		void on(ProtocolCommandManagerListener::OutgoingTCPCommand, const AdcCommand&, const string&, const HintedUser&) noexcept override;
+		void on(ProtocolCommandManagerListener::OutgoingTCPCommand, const AdcCommand&, const UserConnection& aUserConnection) noexcept override;
 
 		static boost::regex paramReg;
 		static boost::regex commandReg;

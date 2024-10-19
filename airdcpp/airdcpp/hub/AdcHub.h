@@ -48,8 +48,8 @@ public:
 	size_t getUserCount() const noexcept override;
 
 	static string escape(const string& str) noexcept { return AdcCommand::escape(str, false); }
-	bool sendHooked(const AdcCommand& cmd, CallerPtr aOwner, string& error_);
-	bool sendHooked(const AdcCommand& c) override {
+	bool sendHooked(const AdcCommand& cmd, CallerPtr aOwner, string& error_) override;
+	bool sendHooked(const AdcCommand& c) {
 		string error;
 		return sendHooked(c, this, error);
 	}
