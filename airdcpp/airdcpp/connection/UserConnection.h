@@ -124,7 +124,11 @@ public:
 	void inf(bool withToken, int mcnSlots = 0);
 	void get(const string& aType, const string& aName, const int64_t aStart, const int64_t aBytes);
 	void snd(const string& aType, const string& aName, const int64_t aStart, const int64_t aBytes);
-	void send(const AdcCommand& c);
+	bool sendHooked(const AdcCommand& c, CallerPtr aOwner, string& error_);
+	bool sendHooked(const AdcCommand& c) {
+		string error;
+		return sendHooked(c, this, error);
+	}
 
 	void setDataMode(int64_t aBytes = -1) noexcept { dcassert(socket); socket->setDataMode(aBytes); }
 	void setLineMode(size_t rollback) noexcept { dcassert(socket); socket->setLineMode(rollback); }

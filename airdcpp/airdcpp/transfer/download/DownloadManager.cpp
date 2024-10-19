@@ -147,7 +147,7 @@ bool DownloadManager::checkIdle(const string& aToken) {
 	RLock l(cs);
 	for (auto uc : idlers) {
 		if (uc->getToken() == aToken) {
-			uc->callAsync([this, uc] { revive(uc); });
+			uc->callAsync([this, uc] { reviveThreaded(uc); });
 			return true;
 		}
 	}
@@ -162,14 +162,14 @@ bool DownloadManager::checkIdle(const UserPtr& aUser, bool aSmallSlot) {
 			if (aSmallSlot != uc->isSet(UserConnection::FLAG_SMALL_SLOT) && uc->isMCN())
 				continue;
 
-			uc->callAsync([this, uc] { revive(uc); });
+			uc->callAsync([this, uc] { reviveThreaded(uc); });
 			return true;
 		}	
 	}
 	return false;
 }
 
-void DownloadManager::revive(UserConnection* uc) {
+void DownloadManager::reviveThreaded(UserConnection* uc) {
 	{
 		WLock l(cs);
 		auto i = find(idlers.begin(), idlers.end(), uc);
@@ -307,7 +307,7 @@ void DownloadManager::checkDownloads(UserConnection* aConn) {
 
 	dcassert(aConn->getDownload());
 	fire(DownloadManagerListener::Requesting(), d, !mySID.empty());
-	aConn->send(d->getCommand(aConn->isSet(UserConnection::FLAG_SUPPORTS_ZLIB_GET), mySID));
+	aConn->sendHooked(d->getCommand(aConn->isSet(UserConnection::FLAG_SUPPORTS_ZLIB_GET), mySID));
 }
 
 void DownloadManager::on(AdcCommand::SND, UserConnection* aSource, const AdcCommand& cmd) noexcept {

@@ -514,7 +514,7 @@ void ConnectionManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcep
 			if ((j->getLastActivity() + MAX_UC_INACTIVITY_SECONDS * 1000) < aTick) {
 				AdcCommand c(AdcCommand::CMD_PMI);
 				c.addParam("\n");
-				j->send(c);
+				j->sendHooked(c);
 			}
 		} else if ((j->getLastActivity() + MAX_UC_INACTIVITY_SECONDS * 1000) < aTick) {
 			dcdebug("ConnectionManager::timer: disconnecting an inactive connection %s for user %s\n", j->getToken().c_str(), ClientManager::getInstance()->getFormattedNicks(j->getHintedUser()).c_str());
@@ -742,7 +742,7 @@ void ConnectionManager::on(AdcCommand::SUP, UserConnection* aSource, const AdcCo
 
 	// TODO: better error
 	if(!baseOk || !tigrOk) {
-		aSource->send(AdcCommand(AdcCommand::SEV_FATAL, AdcCommand::ERROR_PROTOCOL_GENERIC, "Invalid SUP"));
+		aSource->sendHooked(AdcCommand(AdcCommand::SEV_FATAL, AdcCommand::ERROR_PROTOCOL_GENERIC, "Invalid SUP"));
 		aSource->disconnect();
 		return;
 	}
@@ -786,7 +786,7 @@ void ConnectionManager::on(UserConnectionListener::Connected, UserConnection* aS
 		aSource->lock(CryptoManager::getInstance()->getLock(), CryptoManager::getInstance()->getPk() + "Ref=" + aSource->getHubUrl());
 	} else {
 		aSource->sup(getAdcFeatures());
-		aSource->send(AdcCommand(AdcCommand::SEV_SUCCESS, AdcCommand::SUCCESS, Util::emptyString).addParam("RF", aSource->getHubUrl()));
+		aSource->sendHooked(AdcCommand(AdcCommand::SEV_SUCCESS, AdcCommand::SUCCESS, Util::emptyString).addParam("RF", aSource->getHubUrl()));
 	}
 	aSource->setState(UserConnection::STATE_SUPNICK);
 }
@@ -1024,7 +1024,7 @@ void ConnectionManager::on(UserConnectionListener::Key, UserConnection* aSource,
 
 void ConnectionManager::on(AdcCommand::INF, UserConnection* aSource, const AdcCommand& cmd) noexcept {
 	if(aSource->getState() != UserConnection::STATE_INF) {
-		aSource->send(AdcCommand(AdcCommand::SEV_FATAL, AdcCommand::ERROR_PROTOCOL_GENERIC, "Expecting INF"));
+		aSource->sendHooked(AdcCommand(AdcCommand::SEV_FATAL, AdcCommand::ERROR_PROTOCOL_GENERIC, "Expecting INF"));
 		aSource->disconnect(true);
 		return;
 	}
@@ -1032,13 +1032,13 @@ void ConnectionManager::on(AdcCommand::INF, UserConnection* aSource, const AdcCo
 	string token;
 
 	auto fail = [&, this](AdcCommand::Error aCode, const string& aStr) {
-		aSource->send(AdcCommand(AdcCommand::SEV_FATAL, aCode, aStr));
+		aSource->sendHooked(AdcCommand(AdcCommand::SEV_FATAL, aCode, aStr));
 		aSource->disconnect(true);
 	};
 
 	if (aSource->isSet(UserConnection::FLAG_INCOMING)) {
 		if (!cmd.getParam("TO", 0, token)) {
-			aSource->send(AdcCommand(AdcCommand::SEV_FATAL, AdcCommand::ERROR_GENERIC, "TO missing"));
+			aSource->sendHooked(AdcCommand(AdcCommand::SEV_FATAL, AdcCommand::ERROR_GENERIC, "TO missing"));
 			putConnection(aSource);
 			return;
 		}

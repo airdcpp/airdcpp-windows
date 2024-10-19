@@ -51,7 +51,8 @@ public:
 	ActionHook<nullptr_t, const OutgoingChatMessage&, const Client&> outgoingHubMessageHook;
 
 	ActionHook<AdcCommand::ParamMap, const AdcCommand&, const Client&> outgoingHubCommandHook;
-	ActionHook<AdcCommand::ParamMap, const AdcCommand&, const OnlineUserPtr&> outgoingUdpCommandHook;
+	ActionHook<AdcCommand::ParamMap, const AdcCommand&, const OnlineUserPtr&, const string&> outgoingUdpCommandHook;
+	ActionHook<AdcCommand::ParamMap, const AdcCommand&, const string&, const HintedUser&> outgoingTcpCommandHook;
 
 
 	// MESSAGES

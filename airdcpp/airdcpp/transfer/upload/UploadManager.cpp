@@ -645,7 +645,7 @@ void UploadManager::on(AdcCommand::GET, UserConnection* aSource, const AdcComman
 			cmd.addParam("TL1");	 
 		}
 
-		aSource->send(cmd);
+		aSource->sendHooked(cmd);
 		
 		startTransfer(u);
 	}
@@ -774,7 +774,7 @@ void UploadManager::on(AdcCommand::GFI, UserConnection* aSource, const AdcComman
 	}
 	
 	if (c.getParameters().size() < 2) {
-		aSource->send(AdcCommand(AdcCommand::SEV_RECOVERABLE, AdcCommand::ERROR_PROTOCOL_GENERIC, "Missing parameters"));
+		aSource->sendHooked(AdcCommand(AdcCommand::SEV_RECOVERABLE, AdcCommand::ERROR_PROTOCOL_GENERIC, "Missing parameters"));
 		return;
 	}
 
@@ -784,7 +784,7 @@ void UploadManager::on(AdcCommand::GFI, UserConnection* aSource, const AdcComman
 
 		if (type == Transfer::names[Transfer::TYPE_FILE]) {
 			try {
-				aSource->send(ShareManager::getInstance()->getFileInfo(ident, *shareProfile));
+				aSource->sendHooked(ShareManager::getInstance()->getFileInfo(ident, *shareProfile));
 				return;
 			} catch (const ShareException&) { }
 		}

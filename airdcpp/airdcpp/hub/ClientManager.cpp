@@ -672,11 +672,13 @@ bool ClientManager::sendUDPHooked(AdcCommand& cmd, const CID& aCID, bool aNoCID 
 		cmd.setTo(u->getIdentity().getSID());
 		return u->getClient()->sendHooked(cmd);
 	} else {
+		auto ipPort = u->getIdentity().getUdpIp() + ":" + u->getIdentity().getUdpPort();
+
 		// Hooks
 		{
 			AdcCommand::ParamMap params;
 			try {
-				auto results = outgoingUdpCommandHook.runHooksDataThrow(this, cmd, u);
+				auto results = outgoingUdpCommandHook.runHooksDataThrow(this, cmd, u, ipPort);
 				params = ActionHook<AdcCommand::ParamMap>::normalizeMap(results);
 			} catch (const HookRejectException&) {
 				return false;
@@ -686,7 +688,6 @@ bool ClientManager::sendUDPHooked(AdcCommand& cmd, const CID& aCID, bool aNoCID 
 		}
 
 		// Listeners
-		auto ipPort = u->getIdentity().getUdpIp() + ":" + u->getIdentity().getUdpPort();
 		ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::OutgoingUDPCommand(), cmd, ipPort, u);
 		COMMAND_DEBUG(cmd.toString(), ProtocolCommandManager::TYPE_CLIENT_UDP, ProtocolCommandManager::OUTGOING, ipPort);
 
