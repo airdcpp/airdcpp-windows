@@ -30,6 +30,18 @@
 #include <api/common/Deserializer.h>
 
 namespace webserver {
+
+
+#define HOOK_HANDLER(name, hook, callback) \
+	HookApiModule::createHook(name, [this](ActionHookSubscriber&& aSubscriber) { \
+		return hook.addSubscriber(std::move(aSubscriber), HOOK_CALLBACK(callback)); \
+	}, [](const string& aId) { \
+		hook.removeSubscriber(aId); \
+	}, [] { \
+		return hook.getSubscribers(); \
+	});
+
+
 	class HookApiModule : public SubscribableApiModule {
 	public:
 		using HookAddF = std::function<bool (ActionHookSubscriber &&)>;

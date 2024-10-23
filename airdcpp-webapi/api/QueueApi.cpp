@@ -73,47 +73,15 @@ namespace webserver {
 		bundleView("queue_bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), 
 		fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) 
 	{
+		// Hooks
+		HOOK_HANDLER(HOOK_FILE_FINISHED,	QueueManager::getInstance()->fileCompletionHook,	QueueApi::fileCompletionHook);
+		HOOK_HANDLER(HOOK_BUNDLE_FINISHED,	QueueManager::getInstance()->bundleCompletionHook,	QueueApi::bundleCompletionHook);
 
-		createHook(HOOK_FILE_FINISHED, [this](ActionHookSubscriber&& aSubscriber) {
-			return QueueManager::getInstance()->fileCompletionHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::fileCompletionHook));
-		}, [](const string& aId) {
-			QueueManager::getInstance()->fileCompletionHook.removeSubscriber(aId);
-		}, [] {
-			return QueueManager::getInstance()->fileCompletionHook.getSubscribers();
-		});
+		HOOK_HANDLER(HOOK_ADD_BUNDLE,		QueueManager::getInstance()->bundleValidationHook,		QueueApi::bundleAddHook);
+		HOOK_HANDLER(HOOK_ADD_BUNDLE_FILE,	QueueManager::getInstance()->bundleFileValidationHook,	QueueApi::bundleFileAddHook);
+		HOOK_HANDLER(HOOK_ADD_SOURCE,		QueueManager::getInstance()->sourceValidationHook,		QueueApi::sourceAddHook);
 
-		createHook(HOOK_BUNDLE_FINISHED, [this](ActionHookSubscriber&& aSubscriber) {
-			return QueueManager::getInstance()->bundleCompletionHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleCompletionHook));
-		}, [](const string& aId) {
-			QueueManager::getInstance()->bundleCompletionHook.removeSubscriber(aId);
-		}, [] {
-			return QueueManager::getInstance()->bundleCompletionHook.getSubscribers();
-		});
-
-		createHook(HOOK_ADD_BUNDLE, [this](ActionHookSubscriber&& aSubscriber) {
-			return QueueManager::getInstance()->bundleValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleAddHook));
-		}, [](const string& aId) {
-			QueueManager::getInstance()->bundleValidationHook.removeSubscriber(aId);
-		}, [] {
-			return QueueManager::getInstance()->bundleValidationHook.getSubscribers();
-		});
-
-		createHook(HOOK_ADD_BUNDLE_FILE, [this](ActionHookSubscriber&& aSubscriber) {
-			return QueueManager::getInstance()->bundleFileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleFileAddHook));
-		}, [](const string& aId) {
-			QueueManager::getInstance()->bundleFileValidationHook.removeSubscriber(aId);
-		}, [] {
-			return QueueManager::getInstance()->bundleFileValidationHook.getSubscribers();
-		});
-
-		createHook(HOOK_ADD_SOURCE, [this](ActionHookSubscriber&& aSubscriber) {
-			return QueueManager::getInstance()->sourceValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::sourceAddHook));
-		}, [](const string& aId) {
-			QueueManager::getInstance()->sourceValidationHook.removeSubscriber(aId);
-		}, [] {
-			return QueueManager::getInstance()->sourceValidationHook.getSubscribers();
-		});
-
+		// Methods
 		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundles"), RANGE_START_PARAM, RANGE_MAX_PARAM),			QueueApi::handleGetBundles);
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), EXACT_PARAM("remove_completed")),				QueueApi::handleRemoveCompletedBundles);
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), EXACT_PARAM("priority")),						QueueApi::handleBundlePriorities);
@@ -150,6 +118,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),										QueueApi::handleFindDupePaths);
 		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("check_path_queued")),										QueueApi::handleIsPathQueued);
 
+		// Listeners
 		QueueManager::getInstance()->addListener(this);
 		DownloadManager::getInstance()->addListener(this);
 	}

@@ -110,29 +110,9 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 		SUPPORT_HANDLER("user_connection", userConnectionSupports);
 
 		// Hooks
-		HookApiModule::createHook(HOOK_OUTGOING_HUB_COMMAND, [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->outgoingHubCommandHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(AdcCommandApi::outgoingHubMessageHook));
-		}, [](const string& aId) {
-			ClientManager::getInstance()->outgoingHubCommandHook.removeSubscriber(aId);
-		}, [] {
-			return ClientManager::getInstance()->outgoingHubCommandHook.getSubscribers();
-		});
-
-		HookApiModule::createHook(HOOK_OUTGOING_UDP_COMMAND, [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->outgoingUdpCommandHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(AdcCommandApi::outgoingUdpMessageHook));
-		}, [](const string& aId) {
-			ClientManager::getInstance()->outgoingUdpCommandHook.removeSubscriber(aId);
-		}, [] {
-			return ClientManager::getInstance()->outgoingUdpCommandHook.getSubscribers();
-		});
-
-		HookApiModule::createHook(HOOK_OUTGOING_TCP_COMMAND, [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->outgoingTcpCommandHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(AdcCommandApi::outgoingTcpMessageHook));
-		}, [](const string& aId) {
-			ClientManager::getInstance()->outgoingTcpCommandHook.removeSubscriber(aId);
-		}, [] {
-			return ClientManager::getInstance()->outgoingTcpCommandHook.getSubscribers();
-		});
+		HOOK_HANDLER(HOOK_OUTGOING_HUB_COMMAND, ClientManager::getInstance()->outgoingHubCommandHook, AdcCommandApi::outgoingHubMessageHook);
+		HOOK_HANDLER(HOOK_OUTGOING_UDP_COMMAND, ClientManager::getInstance()->outgoingUdpCommandHook, AdcCommandApi::outgoingUdpMessageHook);
+		HOOK_HANDLER(HOOK_OUTGOING_TCP_COMMAND, ClientManager::getInstance()->outgoingTcpCommandHook, AdcCommandApi::outgoingTcpMessageHook);
 	}
 
 	AdcCommandApi::~AdcCommandApi() {

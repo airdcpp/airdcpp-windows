@@ -142,7 +142,7 @@ namespace dcpp {
 	template<typename DataT, typename... ArgT>
 	class ActionHook {
 	public:
-#define HOOK_HANDLER(func) &func, *this
+#define HOOK_CALLBACK(func) &func, *this
 
 		// Internal hook handler
 		class ActionHookHandler {

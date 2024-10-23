@@ -32,8 +32,8 @@
 
 namespace webserver {
 
-#define HOOK_LOAD_DIRECTORY "filelist_load_directory"
-#define HOOK_LOAD_FILE "filelist_load_file"
+#define HOOK_LOAD_DIRECTORY "filelist_load_directory_hook"
+#define HOOK_LOAD_FILE "filelist_load_file_hook"
 
 	StringList FilelistApi::subscriptionList = {
 		"filelist_created",
@@ -51,26 +51,11 @@ namespace webserver {
 			Access::FILELISTS_EDIT
 		) 
 	{
+		// Hooks
+		HOOK_HANDLER(HOOK_LOAD_DIRECTORY,	DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook,	FilelistApi::directoryLoadHook);
+		HOOK_HANDLER(HOOK_LOAD_FILE,		DirectoryListingManager::getInstance()->loadHooks.fileLoadHook,			FilelistApi::fileLoadHook);
 
-		HookApiModule::createHook(HOOK_LOAD_DIRECTORY, [this](ActionHookSubscriber&& aSubscriber) {
-			return DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(FilelistApi::directoryLoadHook));
-		}, [](const string& aId) {
-			DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.removeSubscriber(aId);
-		}, [] {
-			return DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.getSubscribers();
-		});
-
-		HookApiModule::createHook(HOOK_LOAD_FILE, [this](ActionHookSubscriber&& aSubscriber) {
-			return DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(FilelistApi::fileLoadHook));
-		}, [](const string& aId) {
-			DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.removeSubscriber(aId);
-		}, [] {
-			return DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.getSubscribers();
-		});
-
-
-		DirectoryListingManager::getInstance()->addListener(this);;
-
+		// Methods
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(),													FilelistApi::handlePostList);
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("self")),								FilelistApi::handleOwnList);
 
@@ -81,6 +66,10 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,		METHOD_POST,	(EXACT_PARAM("match_queue")),						FilelistApi::handleMatchQueue);
 
+		// Listeners
+		DirectoryListingManager::getInstance()->addListener(this);;
+
+		// Init
 		auto rawLists = DirectoryListingManager::getInstance()->getLists();
 		for (const auto& list : rawLists | views::values) {
 			addList(list);

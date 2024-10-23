@@ -70,25 +70,11 @@ namespace webserver {
 			Access::HUBS_EDIT
 		) 
 	{
+		// Hooks
+		HOOK_HANDLER(HOOK_INCOMING_MESSAGE, ClientManager::getInstance()->incomingHubMessageHook, HubApi::incomingMessageHook);
+		HOOK_HANDLER(HOOK_OUTGOING_MESSAGE, ClientManager::getInstance()->outgoingHubMessageHook, HubApi::outgoingMessageHook);
 
-		ClientManager::getInstance()->addListener(this);
-
-		HookApiModule::createHook(HOOK_INCOMING_MESSAGE, [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::incomingMessageHook));
-		}, [this](const string& aId) {
-			ClientManager::getInstance()->incomingHubMessageHook.removeSubscriber(aId);
-		}, [this] {
-			return ClientManager::getInstance()->incomingHubMessageHook.getSubscribers();
-		});
-
-		HookApiModule::createHook(HOOK_OUTGOING_MESSAGE, [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::outgoingMessageHook));
-		}, [this](const string& aId) {
-			ClientManager::getInstance()->outgoingHubMessageHook.removeSubscriber(aId);
-		}, [this] {
-			return ClientManager::getInstance()->outgoingHubMessageHook.getSubscribers();
-		});
-
+		// Methods
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(),										HubApi::handleConnect);
 
 		METHOD_HANDLER(Access::HUBS_VIEW,	METHOD_GET,		(EXACT_PARAM("stats")),					HubApi::handleGetStats);
@@ -97,6 +83,10 @@ namespace webserver {
 		METHOD_HANDLER(Access::HUBS_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			HubApi::handlePostMessage);
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("status_message")),		HubApi::handlePostStatus);
 
+		// Listeners
+		ClientManager::getInstance()->addListener(this);
+
+		// Init
 		{
 			auto cm = ClientManager::getInstance();
 
