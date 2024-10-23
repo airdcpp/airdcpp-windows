@@ -409,31 +409,31 @@ void UserConnection::handle(AdcCommand::STA t, const AdcCommand& c) {
 	fire(t, this, c);
 }
 
-void UserConnection::on(Connected) noexcept {
+void UserConnection::on(BufferedSocketListener::Connected) noexcept {
 	lastActivity = GET_TICK();
     fire(UserConnectionListener::Connected(), this); 
 }
 
-void UserConnection::on(Data, uint8_t* data, size_t len) noexcept { 
+void UserConnection::on(BufferedSocketListener::Data, uint8_t* data, size_t len) noexcept {
 	lastActivity = GET_TICK(); 
 	fire(UserConnectionListener::Data(), this, data, len); 
 }
 
-void UserConnection::on(BytesSent, size_t bytes, size_t actual) noexcept { 
+void UserConnection::on(BufferedSocketListener::BytesSent, size_t bytes, size_t actual) noexcept {
 	lastActivity = GET_TICK();
 	fire(UserConnectionListener::BytesSent(), this, bytes, actual); 
 }
 
-void UserConnection::on(ModeChange) noexcept { 
+void UserConnection::on(BufferedSocketListener::ModeChange) noexcept {
 	lastActivity = GET_TICK(); 
 	fire(UserConnectionListener::ModeChange(), this); 
 }
 
-void UserConnection::on(TransmitDone) noexcept {
+void UserConnection::on(BufferedSocketListener::TransmitDone) noexcept {
 	fire(UserConnectionListener::TransmitDone(), this);
 }
 
-void UserConnection::on(Failed, const string& aLine) noexcept {
+void UserConnection::on(BufferedSocketListener::Failed, const string& aLine) noexcept {
 	//setState(STATE_UNCONNECTED);  // let the listeners to see the old state
 	fire(UserConnectionListener::Failed(), this, aLine);
 
