@@ -418,7 +418,6 @@ boost::regex AdcCommandApi::supportReg(R"([A-Z][A-Z0-9]{3})");
 
 	json AdcCommandApi::serializeCommand(const AdcCommand& aCmd) noexcept {
 		auto code = aCmd.getFourCC();
-		// auto tmp = code[0];
 		return {
 			{ "command", code.substr(1) },
 			{ "type", string(1, code[0]) },

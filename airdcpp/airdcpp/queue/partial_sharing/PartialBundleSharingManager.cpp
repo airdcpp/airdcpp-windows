@@ -318,9 +318,9 @@ void PartialBundleSharingManager::on(ProtocolCommandManagerListener::IncomingUDP
 		return;
 	}
 
-	//if (!SETTING(USE_PARTIAL_SHARING)) {
-	//	return;
-	//}
+	if (!SETTING(USE_PARTIAL_SHARING)) {
+		return;
+	}
 
 	if (aCmd.getParameters().empty())
 		return;
@@ -333,9 +333,6 @@ void PartialBundleSharingManager::on(ProtocolCommandManagerListener::IncomingUDP
 	if (!user) {
 		return;
 	}
-
-	// Remove the CID
-	// c.getParameters().erase(c.getParameters().begin());
 
 	onPBD(aCmd, user);
 }
