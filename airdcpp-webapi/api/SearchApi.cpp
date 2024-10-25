@@ -48,12 +48,14 @@ namespace webserver {
 	};
 
 	SearchApi::SearchApi(Session* aSession) : 
-		ParentApiModule(TOKEN_PARAM, Access::SEARCH, aSession, subscriptionList, SearchEntity::subscriptionList,
+		ParentApiModule(TOKEN_PARAM, Access::SEARCH, aSession,
 			[](const string& aId) { return Util::toUInt32(aId); },
 			[](const SearchEntity& aInfo) { return serializeSearchInstance(aInfo.getSearch()); },
 			Access::SEARCH
 		)
 	{
+		createSubscriptions(subscriptionList, SearchEntity::subscriptionList);
+
 		// Hooks
 		HOOK_HANDLER(HOOK_INCOMING_USER_RESULT, SearchManager::getInstance()->incomingSearchResultHook, SearchApi::incomingUserResultHook);
 
@@ -94,7 +96,7 @@ namespace webserver {
 
 	ActionHookResult<> SearchApi::incomingUserResultHook(const SearchResultPtr& aResult, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_INCOMING_USER_RESULT, WEBCFG(SEARCH_INCOMING_USER_RESULT_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_INCOMING_USER_RESULT, WEBCFG(SEARCH_INCOMING_USER_RESULT_HOOK_TIMEOUT).num(), [&]() {
 				return SearchEntity::serializeSearchResult(aResult);
 			}),
 			aResultGetter

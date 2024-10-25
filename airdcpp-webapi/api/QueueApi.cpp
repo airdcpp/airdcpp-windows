@@ -43,36 +43,33 @@ namespace webserver {
 #define HOOK_ADD_SOURCE "queue_add_source_hook"
 
 	QueueApi::QueueApi(Session* aSession) : 
-		HookApiModule(
-			aSession, 
-			Access::QUEUE_VIEW, 
-			{
-				"queue_bundle_added",
-				"queue_bundle_removed",
-				"queue_bundle_updated",
-
-				// These are included in queue_bundle_updated events as well
-				"queue_bundle_tick",
-				"queue_bundle_content",
-				"queue_bundle_priority",
-				"queue_bundle_status",
-				"queue_bundle_sources",
-
-				"queue_file_added",
-				"queue_file_removed",
-				"queue_file_updated",
-
-				// These are included in queue_file_updated events as well
-				"queue_file_priority",
-				"queue_file_status",
-				"queue_file_sources",
-				"queue_file_tick",
-			}, 
-			Access::QUEUE_EDIT
-		), 
+		HookApiModule(aSession, Access::QUEUE_VIEW, Access::QUEUE_EDIT), 
 		bundleView("queue_bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), 
 		fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) 
 	{
+		createSubscriptions({
+			"queue_bundle_added",
+			"queue_bundle_removed",
+			"queue_bundle_updated",
+
+			// These are included in queue_bundle_updated events as well
+			"queue_bundle_tick",
+			"queue_bundle_content",
+			"queue_bundle_priority",
+			"queue_bundle_status",
+			"queue_bundle_sources",
+
+			"queue_file_added",
+			"queue_file_removed",
+			"queue_file_updated",
+
+			// These are included in queue_file_updated events as well
+			"queue_file_priority",
+			"queue_file_status",
+			"queue_file_sources",
+			"queue_file_tick",
+		});
+
 		// Hooks
 		HOOK_HANDLER(HOOK_FILE_FINISHED,	QueueManager::getInstance()->fileCompletionHook,	QueueApi::fileCompletionHook);
 		HOOK_HANDLER(HOOK_BUNDLE_FINISHED,	QueueManager::getInstance()->bundleCompletionHook,	QueueApi::bundleCompletionHook);
@@ -130,7 +127,7 @@ namespace webserver {
 
 	ActionHookResult<BundleFileAddHookResult> QueueApi::bundleFileAddHook(const string& aTarget, BundleFileAddData& aInfo, const ActionHookResultGetter<BundleFileAddHookResult>& aResultGetter) noexcept {
 		return HookCompletionData::toResult<BundleFileAddHookResult>(
-			fireHook(HOOK_ADD_BUNDLE_FILE, WEBCFG(QUEUE_ADD_BUNDLE_FILE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_ADD_BUNDLE_FILE, WEBCFG(QUEUE_ADD_BUNDLE_FILE_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "target_directory", aTarget },
 					{ "file_data", serializeBundleFileInfo(aInfo) },
@@ -153,7 +150,7 @@ namespace webserver {
 
 	ActionHookResult<BundleAddHookResult> QueueApi::bundleAddHook(const string& aTarget, BundleAddData& aData, const HintedUser& aUser, const bool aIsFile, const ActionHookResultGetter<BundleAddHookResult>& aResultGetter) noexcept {
 		return HookCompletionData::toResult<BundleAddHookResult>(
-			fireHook(HOOK_ADD_BUNDLE, WEBCFG(QUEUE_ADD_BUNDLE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_ADD_BUNDLE, WEBCFG(QUEUE_ADD_BUNDLE_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "target_directory", aTarget },
 					{ "bundle_data", {
@@ -186,7 +183,7 @@ namespace webserver {
 
 	ActionHookResult<> QueueApi::sourceAddHook(const HintedUser& aUser, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_ADD_SOURCE, WEBCFG(QUEUE_ADD_SOURCE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_ADD_SOURCE, WEBCFG(QUEUE_ADD_SOURCE_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "user", Serializer::serializeHintedUser(aUser) },
 				});
@@ -197,7 +194,7 @@ namespace webserver {
 
 	ActionHookResult<> QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_FILE_FINISHED, WEBCFG(QUEUE_FILE_FINISHED_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_FILE_FINISHED, WEBCFG(QUEUE_FILE_FINISHED_HOOK_TIMEOUT).num(), [&]() {
 				return Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler);
 			}),
 			aResultGetter
@@ -206,7 +203,7 @@ namespace webserver {
 
 	ActionHookResult<> QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_BUNDLE_FINISHED, WEBCFG(QUEUE_BUNDLE_FINISHED_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_BUNDLE_FINISHED, WEBCFG(QUEUE_BUNDLE_FINISHED_HOOK_TIMEOUT).num(), [&]() {
 				return Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler);
 			}),
 			aResultGetter

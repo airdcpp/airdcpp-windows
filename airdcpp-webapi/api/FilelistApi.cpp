@@ -45,12 +45,14 @@ namespace webserver {
 	};
 
 	FilelistApi::FilelistApi(Session* aSession) : 
-		ParentApiModule(CID_PARAM, Access::FILELISTS_VIEW, aSession, subscriptionList, FilelistInfo::subscriptionList, 
+		ParentApiModule(CID_PARAM, Access::FILELISTS_VIEW, aSession, 
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); },
 			Access::FILELISTS_EDIT
 		) 
 	{
+		createSubscriptions(subscriptionList, FilelistInfo::subscriptionList);
+
 		// Hooks
 		HOOK_HANDLER(HOOK_LOAD_DIRECTORY,	DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook,	FilelistApi::directoryLoadHook);
 		HOOK_HANDLER(HOOK_LOAD_FILE,		DirectoryListingManager::getInstance()->loadHooks.fileLoadHook,			FilelistApi::fileLoadHook);
@@ -82,7 +84,7 @@ namespace webserver {
 
 	ActionHookResult<> FilelistApi::directoryLoadHook(const DirectoryListing::Directory::Ptr& aDirectory, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_LOAD_DIRECTORY, WEBCFG(FILELIST_LOAD_DIRECTORY_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_LOAD_DIRECTORY, WEBCFG(FILELIST_LOAD_DIRECTORY_HOOK_TIMEOUT).num(), [&]() {
 				auto info = std::make_shared<FilelistItemInfo>(aDirectory, aList.getShareProfile());
 
 				return json({
@@ -95,7 +97,7 @@ namespace webserver {
 	}
 	ActionHookResult<> FilelistApi::fileLoadHook(const DirectoryListing::File::Ptr& aFile, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_LOAD_FILE, WEBCFG(FILELIST_LOAD_FILE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_LOAD_FILE, WEBCFG(FILELIST_LOAD_FILE_HOOK_TIMEOUT).num(), [&]() {
 				auto info = std::make_shared<FilelistItemInfo>(aFile, aList.getShareProfile());
 				return json({
 					{ "file", Serializer::serializeItem(info, FilelistUtils::propertyHandler) },

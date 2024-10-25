@@ -53,24 +53,19 @@
 #define HOOK_NEW_DIRECTORY_VALIDATION "new_share_directory_validation_hook"
 
 namespace webserver {
-	ShareApi::ShareApi(Session* aSession) : 
-		HookApiModule(
-			aSession, 
-			Access::SETTINGS_VIEW, 
-			{
-				"share_refresh_queued",
-				"share_refresh_started",
-				"share_refresh_completed",
-				
-				"share_exclude_added",
-				"share_exclude_removed",
+	ShareApi::ShareApi(Session* aSession) : HookApiModule(aSession, Access::SETTINGS_VIEW, Access::SETTINGS_EDIT) {
+		createSubscriptions({
+			"share_refresh_queued",
+			"share_refresh_started",
+			"share_refresh_completed",
 
-				"share_temp_item_added",
-				"share_temp_item_removed",
-			},
-			Access::SETTINGS_EDIT
-		) 
-	{
+			"share_exclude_added",
+			"share_exclude_removed",
+
+			"share_temp_item_added",
+			"share_temp_item_removed",
+		});
+
 		// Methods
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("grouped_root_paths")),				ShareApi::handleGetGroupedRootPaths);
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("stats")),								ShareApi::handleGetStats);
@@ -117,7 +112,7 @@ namespace webserver {
 
 	ActionHookResult<> ShareApi::fileValidationHook(const string& aPath, int64_t aSize, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_FILE_VALIDATION, WEBCFG(SHARE_FILE_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_FILE_VALIDATION, WEBCFG(SHARE_FILE_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "path", aPath },
 					{ "size", aSize },
@@ -129,7 +124,7 @@ namespace webserver {
 
 	ActionHookResult<> ShareApi::directoryValidationHook(const string& aPath, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_DIRECTORY_VALIDATION, WEBCFG(SHARE_DIRECTORY_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_DIRECTORY_VALIDATION, WEBCFG(SHARE_DIRECTORY_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "path", aPath },
 				});
@@ -140,7 +135,7 @@ namespace webserver {
 
 	ActionHookResult<> ShareApi::newFileValidationHook(const string& aPath, int64_t aSize, bool aNewParent, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_NEW_FILE_VALIDATION, WEBCFG(NEW_SHARE_FILE_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_NEW_FILE_VALIDATION, WEBCFG(NEW_SHARE_FILE_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "path", aPath },
 					{ "size", aSize },
@@ -153,7 +148,7 @@ namespace webserver {
 
 	ActionHookResult<> ShareApi::newDirectoryValidationHook(const string& aPath, bool aNewParent, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_NEW_DIRECTORY_VALIDATION, WEBCFG(NEW_SHARE_DIRECTORY_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_NEW_DIRECTORY_VALIDATION, WEBCFG(NEW_SHARE_DIRECTORY_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "path", aPath },
 					{ "new_parent", aNewParent },
