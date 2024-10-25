@@ -61,8 +61,9 @@ namespace webserver {
 // Module is a variable module with a module handler method as a member of the calling class
 #define MODULE_METHOD_HANDLER(module, access, method, params, func) MODULE_METHOD_HANDLER_BOUND(module, access, method, params, func, this)
 
-// Handler for the current module with a lambda handler
-#define INLINE_METHOD_HANDLER(access, method, params, func) INLINE_MODULE_METHOD_HANDLER(this, access, method, params, func)
+// Handler for the current module with a lambda handler (forwarding to INLINE_MODULE_METHOD_HANDLER causes errors with GCC in MenuApi...)
+// #define INLINE_METHOD_HANDLER(access, method, params, func) INLINE_MODULE_METHOD_HANDLER(this, access, method, params, func)
+#define INLINE_METHOD_HANDLER(access, method, params, func) (this->getRequestHandlers().push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, func)))
 
 // Regular handler for the current module with a module handler method
 #define METHOD_HANDLER(access, method, params, func) MODULE_METHOD_HANDLER(this, access, method, params, func)
