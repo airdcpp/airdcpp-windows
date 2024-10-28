@@ -9,6 +9,11 @@ Changed:
 - Lower the default minimum search interval
 - Lower the auto reconnect delay on severe flood
 - Idle (finished) download connections can now be forced
+- Show spam rate when receiving CTM/search/incoming connection flood
+- Improve parsing of relative config paths in dcppboot.xml
+- Parse HBRI validation addresses received from the hub with the correct IP protocol
+- Internal: rewrite build system to use CMake, use vcpkg for third-party libraries, new scripts for localizations
+- Dupe detection is now more accurate
 
 Fixed:
 
@@ -16,14 +21,19 @@ Fixed:
 - Fix possible issues with duplicate CIDs being generated for different clients
 - Ensure that the hub column stays up-to-date for transfer
 - Don't attempt to start filelist downloads via an incorrect hub when the user comes online
-- Filelist-related bug and crash fixes
+- Various filelist-related bug and crash fixes
 - Fix an incorrect error message when removing NAT-PMP port mappings
 - Add/remove port mappings when the auto detection mode is enabled/disabled
 - Fix the "engname" country format param (https://github.com/airdcpp/airdcpp-windows/issues/88)
+- Avoid unneeded list filter iterations (https://github.com/airdcpp/airdcpp-windows/issues/120)
+- Prevent adding duplicate search extensions for search types, fix adding of extensions separated with ; (https://github.com/airdcpp/airdcpp-windows/issues/148)
+- Ensure that no duplicate search results are being sent
+- Other misc stability fixes
 
 Removed:
 
 - Partial file sharing is no longer supported in NMDC hubs
+- Support for loading of legacy XML settings for web server (the new format was added in AirDC++ 4.10)
 
 
 4.21
