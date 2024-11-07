@@ -317,11 +317,11 @@ LRESULT PrivateFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	
 	if (!inactive && !isTyping && ctrlMessage.GetWindowTextLength() > 0) {
 		isTyping = true;
-		chat->sendPMInfo(PrivateChat::TYPING_ON);
+		chat->setTypingState(true);
 	}
 	else if ((inactive && isTyping) || isTyping && ctrlMessage.GetWindowTextLength() == 0) {
 		isTyping = false;
-		chat->sendPMInfo(PrivateChat::TYPING_OFF);
+		chat->setTypingState(false);
 	}
 
 	bHandled = TRUE;
