@@ -1311,7 +1311,9 @@ RichTextBox::LinkList::const_reverse_iterator RichTextBox::getLink(POINT& pt) {
 	if (LineFromChar(iCharPos) != LineFromChar(iNextWordPos))
 		return links.crend();
 
-	return find_if(links.crbegin(), links.crend(), [iCharPos](const ChatLinkPair& l) { return iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax; });
+	return ranges::find_if(links | views::reverse, [iCharPos](const ChatLinkPair& l) { 
+		return iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax; 
+	});
 }
 
 LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -1332,12 +1334,12 @@ void RichTextBox::handleOpenLink() {
 	}
 }
 
-bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
 	auto p = getLink(pt);
 	if (p == links.crend())
-		return false;
+		return FALSE;
 
 	auto highlight = p->second;
 	selectedWord = Text::toT(highlight->getText()); // for magnets
@@ -1346,7 +1348,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 	openLink(highlight);
 
-	return 1;
+	return TRUE;
 }
 
 void RichTextBox::openLink(const MessageHighlightPtr& aHighlight) {

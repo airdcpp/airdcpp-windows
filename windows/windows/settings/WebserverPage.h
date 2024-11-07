@@ -40,7 +40,6 @@ public:
 	~WebServerPage();
 
 	BEGIN_MSG_MAP_EX(WebServerPage)
-		NOTIFY_HANDLER(IDC_WEBSERVER_STATUS, EN_LINK, onClientEnLink)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		COMMAND_ID_HANDLER(IDC_WEBSERVER_ADD_USER, onAddUser)
@@ -62,10 +61,6 @@ public:
 	LRESULT onSelChange(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-
-	LRESULT onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-		return ctrlStatus.handleLink(*(ENLINK*)pnmh);
-	}
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() override { return (PROPSHEETPAGE *)*this; }

@@ -61,8 +61,6 @@ public:
 	
 	typedef MDITabChildWindowImpl<TextFrame> baseClass;
 	BEGIN_MSG_MAP(TextFrame)
-		MESSAGE_HANDLER(WM_LBUTTONUP, onClientEnLink)
-		MESSAGE_HANDLER(WM_RBUTTONUP, onClientEnLink)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
@@ -75,7 +73,7 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onClientEnLink(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) { return ctrlPad.onClientEnLink(uMsg, wParam, lParam, bHandled); }
+
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		PostMessage(WM_CLOSE);
 		return 0;

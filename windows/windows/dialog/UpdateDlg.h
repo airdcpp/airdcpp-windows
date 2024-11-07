@@ -46,7 +46,7 @@ public:
 	};
 
 	BEGIN_MSG_MAP(UpdateDlg)
-		NOTIFY_HANDLER(IDC_UPDATE_HISTORY_TEXT, EN_LINK, onClientEnLink)
+		NOTIFY_HANDLER(IDC_UPDATE_HISTORY_TEXT, EN_LINK, onClientEnLink) // RichTextBox won't handle links as we use custom link parsing instead of highlights
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
