@@ -507,8 +507,8 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
 			values.emplace(s.name, s.getValue());
 		}
 
-		UserList userReferences;
-		ii->ext->setValidatedSettingValues(values, userReferences);
+		webserver::SettingReferenceList references;
+		ii->ext->setValidatedSettingValues(values, references);
 	}
 }
 
