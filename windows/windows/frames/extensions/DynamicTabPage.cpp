@@ -135,11 +135,11 @@ void DynamicTabPage::addConfigItem(webserver::ExtensionSettingItem& aSetting) {
 
 bool DynamicTabPage::write() {
 	try {
-		for (auto cfg : configs) {
+		for (const auto& cfg : configs) {
 			cfg->write();
 		}
 	} catch (const webserver::ArgumentException& e) {
-		string error = e.getErrorJson().at("field") + " : " + e.getErrorJson().at("message");
+		string error = e.getField() + ": " + e.what();
 		MessageBox(Text::toT(error).c_str());
 		return false;
 	}
