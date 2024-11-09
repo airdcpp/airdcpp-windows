@@ -131,7 +131,7 @@ bool Mapper_MiniUPnPc::init() {
 
 		url = urls.controlURL;
 		service = data.first.servicetype;
-		device = "Generic";
+		device = localIp.empty() ? "Generic" : localIp;
 	}
 
 	if(ret) {
