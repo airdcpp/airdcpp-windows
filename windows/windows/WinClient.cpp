@@ -145,10 +145,6 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 			// Determine config
 			auto webResourcePath = startupParams.getValue("--web-resources");
 #ifdef _DEBUG
-			if (!webResourcePath) {
-				webResourcePath = PathUtil::getParentDir(PathUtil::getParentDir(AppUtil::getAppFilePath())) + "installer\\Web-resources\\";
-			}
-
 			wsm->setEnableSocketLogging(true);
 #endif
 
