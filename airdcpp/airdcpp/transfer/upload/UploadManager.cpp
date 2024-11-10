@@ -582,7 +582,7 @@ void UploadManager::removeUpload(Upload* aUpload, bool aDelay) noexcept {
 	}
 
 	if (deleteUpload) {
-		dcdebug("Deleting upload %s (no delay, conn %s, upload %zu)\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str(), aUpload->getToken());
+		dcdebug("Deleting upload %s (no delay, conn %s, upload " U32_FMT ")\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str(), aUpload->getToken());
 		fire(UploadManagerListener::Removed(), aUpload);
 		{
 			RLock l(cs);
@@ -590,7 +590,7 @@ void UploadManager::removeUpload(Upload* aUpload, bool aDelay) noexcept {
 		}
 		delete aUpload;
 	} else {
-		dcdebug("Adding delay upload %s (conn %s, upload %zu)\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str(), aUpload->getToken());
+		dcdebug("Adding delay upload %s (conn %s, upload " U32_FMT ")\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str(), aUpload->getToken());
 	}
 }
 
@@ -809,7 +809,7 @@ void UploadManager::deleteDelayUpload(Upload* aUpload, bool aResuming) noexcept 
 		logUpload(aUpload);
 	}
 
-	dcdebug("Deleting upload %s (delayed, conn %s, upload %zu, resuming: %s)\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str(), aUpload->getToken(), aResuming ? "true" : "false");
+	dcdebug("Deleting upload %s (delayed, conn %s, upload " U32_FMT ", resuming: %s)\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str(), aUpload->getToken(), aResuming ? "true" : "false");
 	fire(UploadManagerListener::Removed(), aUpload);
 
 #ifdef _DEBUG
@@ -826,7 +826,7 @@ void UploadManager::checkExpiredDelayUploads() {
 	RLock l(cs);
 	for (const auto& u : delayUploads) {
 		if (u->checkDelaySecond()) {
-			dcdebug("UploadManager::checkExpiredDelayUploads: adding delay upload %s for removal (conn %s, upload %zu)\n", u->getPath().c_str(), u->getConnectionToken().c_str(), u->getToken());
+			dcdebug("UploadManager::checkExpiredDelayUploads: adding delay upload %s for removal (conn %s, upload " U32_FMT ")\n", u->getPath().c_str(), u->getConnectionToken().c_str(), u->getToken());
 
 			dcassert(!findUpload(u->getToken(), uploads));
 

@@ -34,7 +34,7 @@
 
 namespace dcpp {
 
-IncrementingIdCounter<uint32_t> UserConnection::idCounter;
+IncrementingIdCounter<UserConnectionToken> UserConnection::idCounter;
 
 const string UserConnection::FEATURE_MINISLOTS = "MiniSlots";
 const string UserConnection::FEATURE_XML_BZLIST = "XmlBZList";
