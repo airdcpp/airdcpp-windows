@@ -937,6 +937,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		});
 	}
 
+	EXT_CONTEXT_MENU(tabMenu, Hub, vector<ClientToken>({ client->getToken() }));
 
 	prepareMenu(tabMenu, UserCommand::CONTEXT_HUB, client->getHubUrl());
 	tabMenu.AppendMenu(MF_SEPARATOR);

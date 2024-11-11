@@ -2199,6 +2199,9 @@ LRESULT DirectoryListingFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/
 		tabMenu.AppendMenu(MF_SEPARATOR);
 		tabMenu.AppendMenu(MF_STRING, IDC_RELOAD, CTSTRING(RELOAD));
 	}
+
+	EXT_CONTEXT_MENU(tabMenu, Filelist, vector<CID>({ dl->getUser()->getCID() }));
+
 	tabMenu.AppendMenu(MF_SEPARATOR);
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
 
