@@ -919,8 +919,8 @@ void DirectoryListingFrame::onFind() {
 	auto s = make_shared<Search>(Priority::HIGH, Util::toString(ValueGenerator::rand()));
 
 	s->query = dlg.searchStr;
-	s->size = dlg.size;
-	s->sizeType = dlg.sizeMode;
+
+	s->setLegacySize(dlg.size, dlg.sizeMode);
 
 	s->fileType = dlg.fileType;
 	s->exts = dlg.extList;

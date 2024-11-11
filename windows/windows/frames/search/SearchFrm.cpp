@@ -501,9 +501,8 @@ void SearchFrame::onEnter() {
 		ctrlStatus.SetText(1, CTSTRING(ENTER_SEARCH_STRING));
 		return;
 	}
-	
-	s->size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
-	s->sizeType = static_cast<Search::SizeModes>(ctrlSizeMode.GetCurSel());
+
+	s->setLegacySize(WinUtil::parseSize(ctrlSize, ctrlSizeUnit), static_cast<Search::SizeModes>(ctrlSizeMode.GetCurSel()));
 
 	auto date = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
 	if (date > 0) {
@@ -548,11 +547,7 @@ void SearchFrame::onEnter() {
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeId);
 
 	// perform the search
-	auto newSearch = SearchQuery::getSearch(s);
-	if (newSearch) {
-		search->hubSearch(clients, s);
-	}
-
+	search->hubSearch(clients, s);
 	ctrlStatus.SetText(2, (TSTRING(TIME_LEFT) + _T(" ") + Util::formatSecondsW((searchEndTime - searchStartTime) / 1000)).c_str());
 }
 

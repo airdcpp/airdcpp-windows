@@ -885,8 +885,7 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 		search->maxResults = 1;
 		search->path = aAdcPath;
 		search->exts = { ".nfo" };
-		search->size = 256 * 1024;
-		search->sizeType = Search::SIZE_ATMOST;
+		search->maxSize = 256 * 1024;
 		search->requireReply = true;
 
 		string error;
