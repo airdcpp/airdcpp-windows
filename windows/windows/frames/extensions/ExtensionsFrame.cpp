@@ -277,9 +277,28 @@ void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OM
 	bool hasManagedExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged(); });
 	bool hasRunningExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged() && ii->ext->isRunning(); });
 	bool hasStoppedExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged() && !ii->ext->isRunning(); });
+	bool hasDisabledExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged() && ii->ext->isDisabled(); });
+	bool hasEnabledExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged() && !ii->ext->isDisabled(); });
 
 	if (hasManagedExtensions && menu_.hasItems()) {
 		menu_.appendSeparator();
+	}
+
+
+	if (hasDisabledExtensions) {
+		menu_.appendItem(TSTRING(ENABLE), [=] {
+			for (const auto& ii : aItems) {
+				ii->ext->setDisabled(false);
+			}
+		});
+	}
+
+	if (hasEnabledExtensions) {
+		menu_.appendItem(TSTRING(DISABLE), [=] {
+			for (const auto& ii : aItems) {
+				ii->ext->setDisabled(true);
+			}
+		});
 	}
 
 	if (hasStoppedExtensions) {
@@ -873,6 +892,8 @@ LRESULT ExtensionsFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 			} else {
 				cd->clrText = SETTING(COLOR_STATUS_FINISHED);
 			}
+		} else if (ii->ext && ii->ext->isDisabled()) {
+			cd->clrText = SETTING(PASSIVE_COLOR);
 		} else {
 			cd->clrText = SETTING(NORMAL_COLOUR);
 		}

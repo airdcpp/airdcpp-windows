@@ -545,7 +545,7 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 		importData("IgnoredColor", IGNORED_COLOR);
 		importData("FavoriteColor", FAVORITE_COLOR);
 		importData("NormalColour", NORMAL_COLOUR);
-		importData("PasiveColor", PASIVE_COLOR);
+		importData("PasiveColor", PASSIVE_COLOR);
 		importData("OpColor", OP_COLOR);
 		importData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
 		importData("UnderlineLinks", UNDERLINE_LINKS);
@@ -693,7 +693,7 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 	exportData("IgnoredColor", IGNORED_COLOR);
 	exportData("FavoriteColor", FAVORITE_COLOR);
 	exportData("NormalColour", NORMAL_COLOUR);
-	exportData("PasiveColor", PASIVE_COLOR);
+	exportData("PasiveColor", PASSIVE_COLOR);
 	exportData("OpColor", OP_COLOR);
 	exportData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
 	exportData("UnderlineLinks", UNDERLINE_LINKS);

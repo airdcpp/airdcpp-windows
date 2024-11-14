@@ -43,7 +43,7 @@ LRESULT ListViewColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	favoriteColour = SETTING(FAVORITE_COLOR);
 	reservedSlotColour = SETTING(RESERVED_SLOT_COLOR);
 	ignoredColour = SETTING(IGNORED_COLOR);
-	pasiveColour = SETTING(PASIVE_COLOR);
+	pasiveColour = SETTING(PASSIVE_COLOR);
 	opColour = SETTING(OP_COLOR);
 
 	n_lsbList.Attach( GetDlgItem(IDC_USERLIST_COLORS) );
@@ -146,7 +146,7 @@ void ListViewColours::write() {
 	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, favoriteColour);
 	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, reservedSlotColour);
 	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, ignoredColour);
-	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, pasiveColour);
+	SettingsManager::getInstance()->set(SettingsManager::PASSIVE_COLOR, pasiveColour);
 	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, opColour);
 
 	//prevent changing the font handle unless its really changed, keeps it compareable for real changes.

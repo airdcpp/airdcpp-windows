@@ -1748,7 +1748,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 			} else if (ui->onlineUser->getIdentity().isOp()) {
 				cd->clrText = SETTING(OP_COLOR);
 			} else if (!ui->onlineUser->getIdentity().hasActiveTcpConnectivity(client)) {
-				cd->clrText = SETTING(PASIVE_COLOR);
+				cd->clrText = SETTING(PASSIVE_COLOR);
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);
 			}
