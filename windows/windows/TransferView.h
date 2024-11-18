@@ -329,6 +329,8 @@ private:
 	void updateItem(const ItemInfo* aII, uint32_t updateMask);
 	void setDefaultItem(OMenu& aMenu);
 
+	void regroupItem(ItemInfo* ii, const UpdateInfo& ui, int pos) noexcept;
+
 	static tstring getRunningStatus(const OrderedStringSet& aFlags) noexcept;
 };
 }

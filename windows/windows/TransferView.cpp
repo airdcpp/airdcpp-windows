@@ -476,6 +476,47 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 	return nullptr;
 }
 
+
+void TransferView::regroupItem(ItemInfo* ii, const UpdateInfo& ui, int pos) noexcept {
+	auto parent = ii->parent ? ii->parent : ii;
+
+	/* if bundle has changed, regroup the item */
+	bool changeParent = (ui.bundle != ii->bundle);
+	if (parent->isBundle) {
+		if (!ui.IP.empty() && parent->onlineUsers == 1) {
+			parent->encryption = ui.Encryption;
+			parent->ip = ui.IP;
+			parent->flagIndex = ui.flagIndex;
+			updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
+		} else if (parent->onlineUsers > 1 && !parent->ip.empty()) {
+			parent->encryption = Util::emptyStringT;
+			parent->ip = Util::emptyStringT;
+			parent->flagIndex = 0;
+			updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
+		}
+	}
+
+	if (changeParent) {
+		if (!ii->hasBundle()) {
+			ctrlTransfers.DeleteItem(pos);
+		} else if (ctrlTransfers.removeGroupedItem(ii, false)) {
+			parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
+		}
+	}
+	ii->update(ui);
+
+	if (changeParent) {
+		if (!ii->hasBundle()) {
+			ii->parent = nullptr;
+			ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
+		} else {
+			ctrlTransfers.insertGroupedItem(ii, ii->parent ? !ii->parent->collapsed : SETTING(EXPAND_BUNDLES));
+		}
+	} else if (ii == parent || !parent->collapsed) {
+		updateItem(ii, ui.updateMask);
+	}
+}
+
 LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	TaskQueue::List t;
 	tasks.get(t);
@@ -525,45 +566,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			auto ii = findItem(ui, pos);
 			if(ii) {
 				if(ii->hasBundle() || !ui.bundle.empty())  {
-					auto parent = ii->parent ? ii->parent : ii;
-
-					/* if bundle has changed, regroup the item */
-					bool changeParent = (ui.bundle != ii->bundle);
-					if (parent->isBundle) {
-						if (!ui.IP.empty() && parent->onlineUsers == 1) {
-							parent->encryption = ui.Encryption;
-							parent->ip = ui.IP;
-							parent->flagIndex = ui.flagIndex;
-							updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
-						} else if (parent->onlineUsers > 1 && !parent->ip.empty()) {
-							parent->encryption = Util::emptyStringT;
-							parent->ip = Util::emptyStringT;
-							parent->flagIndex = 0;
-							updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
-						}
-					}
-
-					if(changeParent) {
-						//LogManager::getInstance()->message("CHANGEPARENT, REMOVE");
-						if (!ii->hasBundle()) {
-							ctrlTransfers.DeleteItem(pos);
-						} else if (ctrlTransfers.removeGroupedItem(ii, false)) {
-							parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
-						}
-					}
-					ii->update(ui);
-
-					if(changeParent) {
-						if (!ii->hasBundle()) {
-							ii->parent = nullptr;
-							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
-						} else {
-							ctrlTransfers.insertGroupedItem(ii, ii->parent ? !ii->parent->collapsed : SETTING(EXPAND_BUNDLES));
-						}
-					} else if(ii == parent || !parent->collapsed) {
-						updateItem(ii, ui.updateMask);
-					}
-
+					regroupItem(ii, ui, pos);
 					continue;
 				}
 				ii->update(ui);
@@ -1087,7 +1090,10 @@ const string& TransferView::getBundle(const TransferInfoPtr& aInfo) noexcept {
 	} else {
 		auto bundle = UploadBundleManager::getInstance()->receiver.findByConnectionToken(aInfo->getStringToken());
 		if (bundle) {
+			// dcdebug("Found bundle %s for upload %s\n", bundle->getToken().c_str(), aInfo->getStringToken().c_str());
 			return bundle->getToken();
+		} else {
+			// dcdebug("No bundle for upload %s\n", aInfo->getStringToken().c_str());
 		}
 	}
 
