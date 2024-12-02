@@ -211,7 +211,7 @@ LRESULT CDMDebugFrame::onClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 int CDMDebugFrame::run() {
-	setThreadPriority(Thread::LOW);
+	setCurrentThreadPriority(Thread::LOW);
 	stop = false;
 
 	while(true) {
