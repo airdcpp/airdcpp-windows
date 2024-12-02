@@ -163,7 +163,7 @@ void Thread::join() {
 
 #ifdef __linux__ 
 
-void Thread::setThreadPriority(Priority, ThreadHandleType aHandle) noexcept {
+void Thread::setThreadPriority(Priority p, ThreadHandleType aHandle) noexcept {
 	if (!aHandle) {
 		return;
 	}
