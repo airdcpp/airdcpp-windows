@@ -307,11 +307,15 @@ void UploadBundleInfoReceiver::finishBundle(const AdcCommand& cmd) {
 }
 
 bool UploadBundleInfoReceiver::callAsync(const string& aToken, UploadCallback&& aCallback) const noexcept {
-	return ConnectionManager::getInstance()->findUserConnection(aToken, [&](UserConnection* uc) {
+	auto found = false;
+	ConnectionManager::getInstance()->findUserConnection(aToken, [&](UserConnection* uc) {
 		if (uc->isSet(UserConnection::FLAG_UPLOAD) && uc->getUpload()) {
+			found = true;
 			uc->callAsync(UploadManager::getInstance()->getAsyncWrapper(uc->getUpload()->getToken(), std::move(aCallback)));
 		}
 	});
+
+	return found;
 }
 
 void UploadBundleInfoReceiver::handleAddBundleConnection(const string& aConnectionToken, const UploadBundlePtr& aBundle) noexcept {

@@ -42,8 +42,6 @@ void UploadBundle::addUploadedSegment(int64_t aSize) noexcept {
 	if (singleUser && aSize + uploadedSegments <= size) {
 		uploadedSegments += aSize;
 		currentUploaded -= aSize;
-	} else {
-		dcassert(0);
 	}
 }
 
