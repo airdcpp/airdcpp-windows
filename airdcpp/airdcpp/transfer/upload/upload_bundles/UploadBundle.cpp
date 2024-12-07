@@ -110,7 +110,7 @@ uint64_t UploadBundle::getUploaded() const noexcept {
 
 constexpr auto BUNDLE_DELAY_SECONDS = 60;
 bool UploadBundle::checkDelaySecond() noexcept {
-	if (uploads.empty()) {
+	if (!uploads.empty()) {
 		return false;
 	}
 
