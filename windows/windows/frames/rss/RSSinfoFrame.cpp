@@ -229,7 +229,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			if (items.size() == 1) {
 				menu.appendItem(TSTRING(SEARCH), [=] { ActionUtil::search(Text::toT(items.front()->item->getTitle())); });
-				if (DupeUtil::allowOpenDupe(items.front()->getDupe())) {
+				if (DupeUtil::allowOpenDirectoryDupe(items.front()->getDupe())) {
 					menu.appendSeparator();
 					menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
 						auto paths = DupeUtil::getAdcDirectoryDupePaths(items.front()->getDupe(), items.front()->item->getTitle());

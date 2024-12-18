@@ -449,6 +449,8 @@ protected:
 	size_t getTotalListItemCount() const noexcept;
 
 private:
+	bool allowOpen(const ItemInfo* ii) const noexcept;
+
 	void onSearchFailed(bool aTimedOut) noexcept;
 	bool checkSearchDirectoryLoading(const string& aPath) noexcept;
 	void onSearchDirectoryLoaded() noexcept;

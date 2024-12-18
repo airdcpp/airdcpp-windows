@@ -906,7 +906,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, magnet.getTTH(), nullopt);
 				}
 
-				if ((!author.empty() && !isMyLink) || DupeUtil::allowOpenDupe(dupeType))
+				if ((!author.empty() && !isMyLink) || DupeUtil::allowOpenFileDupe(dupeType))
 					menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 			} else if (isRelease) {
 				//autosearch menus

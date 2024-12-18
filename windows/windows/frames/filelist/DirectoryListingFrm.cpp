@@ -1520,7 +1520,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 		}
 	}
 
-	bool isDupeOrOwnlist = ctrlFiles.list.GetSelectedCount() == 1 && (dl->getIsOwnList() || DupeUtil::allowOpenDupe(ii->getDupe()));
+	bool isDupeOrOwnlist = ctrlFiles.list.GetSelectedCount() == 1 && allowOpen(ii);
 
 	if (!dl->getIsOwnList()) {
 		// download menu
@@ -1646,11 +1646,11 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 		directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(); });
 	}
 
-	if (dl->getIsOwnList() || (dir && dl->getPartialList() && DupeUtil::allowOpenDupe(dir->getDupe()))) {
+	if (allowOpen(ii)) {
 		StringList paths;
 		if (getLocalPaths(paths, true, true)) {
 			directoryMenu.appendShellMenu(paths);
-			if (!DupeUtil::isFinishedDupe(dir->getDupe())) {
+			if (DupeUtil::isShareDupe(dir->getDupe())) {
 				// shared
 				directoryMenu.appendSeparator();
 				directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });
@@ -1754,7 +1754,7 @@ void DirectoryListingFrame::handleOpenFile() {
 			return;
 		}
 
-		if (dl->getIsOwnList() || DupeUtil::allowOpenDupe(ii->file->getDupe())) {
+		if (allowOpen(ii)) {
 			openDupe(ii->file, false);
 		} else {
 			ActionUtil::openTextFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), false);
@@ -2132,6 +2132,14 @@ int DirectoryListingFrame::ItemInfo::getImageIndex() const noexcept {
 
 bool DirectoryListingFrame::ItemInfo::isAdl() const noexcept {
 	return type == DIRECTORY ? dir->isVirtual() : !!file->getOwner(); 
+}
+
+bool DirectoryListingFrame::allowOpen(const ItemInfo* ii) const noexcept {
+	if (dl->getIsOwnList()) {
+		return true;
+	}
+	
+	return ii->type == ItemInfo::DIRECTORY ? DupeUtil::allowOpenDirectoryDupe(ii->getDupe()) : DupeUtil::allowOpenFileDupe(ii->getDupe());
 }
 
 int DirectoryListingFrame::getIconIndex(const ItemInfo* ii) const noexcept {

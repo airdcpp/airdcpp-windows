@@ -85,23 +85,23 @@ public:
 
 
 	/* Menu creation */
-	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isSizeUnknown, const optional<TTHValue>& aTTH, 
-		const optional<string>& aVirtualPath, bool appendPrioMenu = true, bool addDefault = true) {
+	void appendDownloadMenu(OMenu& aMenu, Type aType, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, 
+		const optional<string>& aVirtualPath, bool aAppendPrioMenu = true, bool aIsDefaultMenuItem = true) {
 
 		auto volumes = File::getVolumes();
 
 		// Download
 		aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { 
-			onDownload(SETTING(DOWNLOAD_DIRECTORY), aType == TYPE_SECONDARY, isSizeUnknown, Priority::DEFAULT);
-		}, addDefault ? OMenu::FLAG_DEFAULT : 0);
+			onDownload(SETTING(DOWNLOAD_DIRECTORY), aType == TYPE_SECONDARY, aIsSizeUnknown, Priority::DEFAULT);
+		}, aIsDefaultMenuItem ? OMenu::FLAG_DEFAULT : 0);
 
 		// Download to
 		auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aVirtualPath, volumes);
+		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, aIsSizeUnknown, aTTH, aVirtualPath, volumes);
 
 		// Download with priority
-		if (appendPrioMenu) {
-			appendPriorityMenu(aMenu, aType == TYPE_SECONDARY, isSizeUnknown);
+		if (aAppendPrioMenu) {
+			appendPriorityMenu(aMenu, aType == TYPE_SECONDARY, aIsSizeUnknown);
 		}
 
 		if (aType == TYPE_BOTH) {
