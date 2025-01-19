@@ -1,5 +1,10 @@
 4.22
 
+API and Web UI changes: 
+
+- https://airdcpp.net/2024/12/07/version-2.13.2.html
+- https://airdcpp.net/2024/07/07/version-2.12.2.html
+
 Changed:
 
 - Change the license to GPLv3
@@ -12,8 +17,8 @@ Changed:
 - Show spam rate when receiving CTM/search/incoming connection flood
 - Improve parsing of relative config paths in dcppboot.xml
 - Parse HBRI validation addresses received from the hub with the correct IP protocol
-- Internal: rewrite build system to use CMake, use vcpkg for third-party libraries, new scripts for localizations
 - Dupe detection is now more accurate
+- Internal: rewrite build system to use CMake, use vcpkg for third-party libraries, new scripts for localizations
 
 Fixed:
 
@@ -38,7 +43,7 @@ Removed:
 
 4.21
 
-API and Web UI changes: http://airdcpp.net/2023/05/22/version-2.12.0.html
+API and Web UI changes: https://airdcpp.net/2023/05/22/version-2.12.0.html
 
 Added:
 
