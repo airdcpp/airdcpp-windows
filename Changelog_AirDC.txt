@@ -2,6 +2,7 @@
 
 API and Web UI changes: 
 
+- https://airdcpp.net/2025/01/19/version-2.13.3.html
 - https://airdcpp.net/2024/12/07/version-2.13.2.html
 - https://airdcpp.net/2024/07/07/version-2.12.2.html
 
@@ -33,6 +34,7 @@ Fixed:
 - Avoid unneeded list filter iterations (https://github.com/airdcpp/airdcpp-windows/issues/120)
 - Prevent adding duplicate search extensions for search types, fix adding of extensions separated with ; (https://github.com/airdcpp/airdcpp-windows/issues/148)
 - Ensure that no duplicate search results are being sent
+- Detect all auto speed limits correctly from the limiter values
 - Other misc stability fixes
 
 Removed:
