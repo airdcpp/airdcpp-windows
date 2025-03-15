@@ -2,10 +2,11 @@
   "registries": [
     {
       "kind": "git",
-      "baseline": "3cf3cb49fca1e61a942609584a487804ba396b6c",
+      "baseline": "771655ef579eb1d21481c37bdb58519582d6d8c9",
       "repository": "https://github.com/airdcpp/vcpkg-registry.git",
       "packages": [
-        "libnatpmp"
+        "libnatpmp",
+        "websocketpp"
       ]
     }
   ]
