@@ -19,7 +19,7 @@
 #include <windows/stdafx.h>
 #include <windows/Resource.h>
 
-#include <windows/util/ActionUtil.h>
+#include "ActionUtil.h"
 
 #include <windows/frames/filelist/DirectoryListingFrm.h>
 #include <windows/frames/private_chat/PrivateFrame.h>
