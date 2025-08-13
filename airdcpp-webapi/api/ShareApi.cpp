@@ -103,10 +103,12 @@ namespace webserver {
 
 		// Listeners
 		ShareManager::getInstance()->addListener(this);
+		TempShareManager::getInstance()->addListener(this);
 	}
 
 	ShareApi::~ShareApi() {
 		ShareManager::getInstance()->removeListener(this);
+		TempShareManager::getInstance()->removeListener(this);
 	}
 
 	ActionHookResult<> ShareApi::fileValidationHook(const string& aPath, int64_t aSize, const ActionHookResultGetter<>& aResultGetter) noexcept {
