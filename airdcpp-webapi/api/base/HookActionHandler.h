@@ -27,6 +27,7 @@
 #include <api/base/SubscribableApiModule.h>
 
 namespace webserver {
+	class HookActionHandler;
 	struct HookCompletionData {
 		HookCompletionData(bool aRejected, const json& aJson);
 
@@ -52,11 +53,11 @@ namespace webserver {
 						return data;
 					} catch (const ArgumentException& e) {
 						dcdebug("Failed to deserialize hook data for subscriber %s: %s (field %s)\n", aResultGetter.getSubscriber().getId().c_str(), e.what(), e.getField().c_str());
-						aModule->getSession()->reportError("Failed to deserialize hook data for subscriber " + aResultGetter.getSubscriber().getId() + ": " + e.what() + " (field \"" + e.getField() + "\")");
+						HookActionHandler::reportError("Failed to deserialize hook data for subscriber " + aResultGetter.getSubscriber().getId() + ": " + e.what() + " (field \"" + e.getField() + "\")", aModule);
 						return aResultGetter.getDataRejection(e);
 					} catch (const std::exception& e) {
 						dcdebug("Failed to deserialize hook data for subscriber %s: %s\n", aResultGetter.getSubscriber().getId().c_str(), e.what());
-						aModule->getSession()->reportError("Failed to deserialize hook data for subscriber " + aResultGetter.getSubscriber().getId() + ": " + e.what());
+						HookActionHandler::reportError("Failed to deserialize hook data for subscriber " + aResultGetter.getSubscriber().getId() + ": " + e.what(), aModule);
 						return aResultGetter.getDataRejection(e);
 					}
 				}
@@ -74,6 +75,8 @@ namespace webserver {
 
 		api_return handleResolveHookAction(ApiRequest& aRequest);
 		api_return handleRejectHookAction(ApiRequest& aRequest);
+
+		static void reportError(const string& aError, SubscribableApiModule* aModule) noexcept;
 	private:
 		api_return handleHookAction(ApiRequest& aRequest, bool aRejected);
 		mutable SharedMutex cs;
