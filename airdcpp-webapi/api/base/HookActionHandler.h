@@ -42,7 +42,7 @@ namespace webserver {
 		using HookDataGetter = std::function<DataT(const json& aDataJson, const ActionHookResultGetter<DataT>& aResultGetter)>;
 
 		template <typename DataT = nullptr_t>
-		static ActionHookResult<DataT> toResult(const HookCompletionData::Ptr& aData, const ActionHookResultGetter<DataT>& aResultGetter, const HookDataGetter<DataT>& aDataGetter = nullptr) noexcept {
+		static ActionHookResult<DataT> toResult(const HookCompletionData::Ptr& aData, const ActionHookResultGetter<DataT>& aResultGetter, SubscribableApiModule* aModule, const HookDataGetter<DataT>& aDataGetter = nullptr) noexcept {
 			if (aData) {
 				if (aData->rejected) {
 					return aResultGetter.getRejection(aData->rejectId, aData->rejectMessage);
@@ -50,8 +50,13 @@ namespace webserver {
 					try {
 						const auto data = aResultGetter.getData(aDataGetter(aData->resolveJson, aResultGetter));
 						return data;
+					} catch (const ArgumentException& e) {
+						dcdebug("Failed to deserialize hook data for subscriber %s: %s (field %s)\n", aResultGetter.getSubscriber().getId().c_str(), e.what(), e.getField().c_str());
+						aModule->getSession()->reportError("Failed to deserialize hook data for subscriber " + aResultGetter.getSubscriber().getId() + ": " + e.what() + " (field \"" + e.getField() + "\")");
+						return aResultGetter.getDataRejection(e);
 					} catch (const std::exception& e) {
 						dcdebug("Failed to deserialize hook data for subscriber %s: %s\n", aResultGetter.getSubscriber().getId().c_str(), e.what());
+						aModule->getSession()->reportError("Failed to deserialize hook data for subscriber " + aResultGetter.getSubscriber().getId() + ": " + e.what());
 						return aResultGetter.getDataRejection(e);
 					}
 				}

@@ -119,7 +119,8 @@ namespace webserver {
 					{ "size", aSize },
 				});
 			}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 
@@ -130,7 +131,8 @@ namespace webserver {
 					{ "path", aPath },
 				});
 			}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 
@@ -143,7 +145,8 @@ namespace webserver {
 					{ "new_parent", aNewParent },
 				});
 			}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 
@@ -155,7 +158,8 @@ namespace webserver {
 					{ "new_parent", aNewParent },
 					});
 				}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 
