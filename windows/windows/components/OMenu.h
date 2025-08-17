@@ -149,6 +149,8 @@ private:
 	OMenu* parent;
 	bool defaultSet = false;
 	bool isShellmenu = false;
+
+	static void appendExtensionMenuItemGroup(OMenu& menu_, const webserver::ContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept;
 };
 
 #define MESSAGE_HANDLER_HWND(msg, func) \

@@ -117,17 +117,17 @@ void OMenu::appendSeparator() {
 		AppendMenu(MF_SEPARATOR);
 }
 
-
-void OMenu::appendExtensionMenuItems(OMenu& menu_, const webserver::GroupedContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept {
+void OMenu::appendExtensionMenuItemGroup(OMenu& menu_, const webserver::ContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept {
 	if (aItems.empty()) {
 		return;
 	}
 
-
-	for (const auto& group: aItems) {
-		auto& menu = group->getItems().size() > EXTENSION_GROUP_LIMIT ? *menu_.createSubMenu(Text::toT(group->getTitle())) : menu_;
-		for (const auto& extItem: group->getItems()) {
-			menu.appendItem(
+	for (const auto& extItem: aItems) {
+		if (!extItem->getChildren().empty()) {
+			auto subMenu = menu_.createSubMenu(Text::toT(extItem->getTitle()));
+			appendExtensionMenuItemGroup(*subMenu, extItem->getChildren(), aClickHandler);
+		} else {
+			menu_.appendItem(
 				Text::toT(extItem->getTitle()),
 				[=]() {
 					if (!extItem->getUrls().empty()) {
@@ -150,7 +150,18 @@ void OMenu::appendExtensionMenuItems(OMenu& menu_, const webserver::GroupedConte
 				},
 				OMenu::FLAG_THREADED
 			);
-		}
+		};
+	}
+}
+
+void OMenu::appendExtensionMenuItems(OMenu& menu_, const webserver::GroupedContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept {
+	if (aItems.empty()) {
+		return;
+	}
+
+	for (const auto& group: aItems) {
+		auto& groupMenu = group->getItems().size() > EXTENSION_GROUP_LIMIT ? *menu_.createSubMenu(Text::toT(group->getTitle())) : menu_;
+		appendExtensionMenuItemGroup(groupMenu, group->getItems(), aClickHandler);
 	}
 
 	menu_.appendSeparator();
