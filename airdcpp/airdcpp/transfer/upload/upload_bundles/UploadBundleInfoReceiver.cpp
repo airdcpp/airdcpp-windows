@@ -164,7 +164,7 @@ void UploadBundleInfoReceiver::createBundle(const AdcCommand& cmd) {
 		return;
 	}
 
-	if (!ConnectionManager::getInstance()->tokens.addToken(bundleToken, CONNECTION_TYPE_DOWNLOAD)) {
+	if (!ConnectionManager::getInstance()->tokens.addToken(bundleToken, CONNECTION_TYPE_DOWNLOAD, TokenManager::TokenSource::UNTRUSTED)) {
 		dbgMsg("create, duplicate bundle token " + bundleToken, LogMessage::SEV_WARNING);
 		dcassert(0);
 		return;

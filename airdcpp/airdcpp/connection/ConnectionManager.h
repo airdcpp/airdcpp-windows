@@ -38,14 +38,26 @@ class SocketException;
 
 class TokenManager {
 public:
+	enum class TokenSource {
+		TRUSTED,			// Token was created by us
+		UNTRUSTED,			// Token was received from an untrusted source
+
+		LAST,
+	};
+
 	~TokenManager();
 
 	string createToken(ConnectionType aConnType) noexcept;
-	bool addToken(const string& aToken, ConnectionType aConnType) noexcept;
+	bool addToken(const string& aToken, ConnectionType aConnType, TokenSource aSource) noexcept;
 	void removeToken(const string& aToken) noexcept;
-	bool hasToken(const string& aToken, ConnectionType aConnType = CONNECTION_TYPE_LAST) const noexcept;
+	bool hasToken(const string& aToken, ConnectionType aConnType = CONNECTION_TYPE_LAST, TokenSource aSource = TokenSource::LAST) const noexcept;
 private:
-	unordered_map<string, ConnectionType> tokens;
+	struct Token {
+		const ConnectionType type;
+		const TokenSource source;
+	};
+
+	unordered_map<string, Token> tokens;
 	static FastCriticalSection cs;
 };
 
@@ -296,6 +308,8 @@ private:
 	ConnectionQueueItem* findDownloadUnsafe(const UserConnection* aSource) noexcept;
 
 	StringList getAdcFeatures() const noexcept;
+
+	bool validateCCPMConnectionToken(UserConnection* aSource, const string& aToken) noexcept;
 };
 
 } // namespace dcpp

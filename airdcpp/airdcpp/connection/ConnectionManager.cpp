@@ -46,22 +46,30 @@ string TokenManager::createToken(ConnectionType aConnType) noexcept {
 		FastLock l(cs);
 		do { token = Util::toString(ValueGenerator::rand()); } while (tokens.contains(token));
 
-		tokens.try_emplace(token, aConnType);
+		tokens.try_emplace(token, Token({ aConnType, TokenSource::TRUSTED }));
 	}
 
 	return token;
 }
 
-bool TokenManager::addToken(const string& aToken, ConnectionType aConnType) noexcept{
+bool TokenManager::addToken(const string& aToken, ConnectionType aConnType, TokenSource aSource) noexcept{
 	FastLock l(cs);
-	const auto [_, added] = tokens.try_emplace(aToken, aConnType);
+	const auto [_, added] = tokens.try_emplace(aToken, Token({ aConnType, aSource }));
 	return added;
 }
 
-bool TokenManager::hasToken(const string& aToken, ConnectionType aConnType) const noexcept{
+bool TokenManager::hasToken(const string& aToken, ConnectionType aConnType, TokenSource aSource) const noexcept {
 	FastLock l(cs);
 	const auto res = tokens.find(aToken);
-	return res != tokens.end() && (aConnType == CONNECTION_TYPE_LAST || res->second == aConnType);
+	if (res == tokens.end()) {
+		return false;
+	}
+
+	if (aSource != TokenSource::LAST && res->second.source != aSource) {
+		return false;
+	}
+
+	return aConnType == CONNECTION_TYPE_LAST || res->second.type == aConnType;
 }
 
 void TokenManager::removeToken(const string& aToken) noexcept {
@@ -693,7 +701,7 @@ void ConnectionManager::adcConnect(const OnlineUser& aUser, const SocketConnectO
 		uc->setFlag(UserConnection::FLAG_OP);
 	}*/
 	
-	if (tokens.hasToken(aToken, CONNECTION_TYPE_PM)) {
+	if (tokens.hasToken(aToken, CONNECTION_TYPE_PM, TokenManager::TokenSource::TRUSTED)) {
 		uc->setFlag(UserConnection::FLAG_PM);
 	}
 
@@ -999,7 +1007,7 @@ void ConnectionManager::addUploadConnection(UserConnection* uc) noexcept {
 		}
 
 		if (allowAdd) {
-			allowAdd = tokens.addToken(uc->getConnectToken(), CONNECTION_TYPE_UPLOAD);
+			allowAdd = tokens.addToken(uc->getConnectToken(), CONNECTION_TYPE_UPLOAD, TokenManager::TokenSource::UNTRUSTED);
 			if (allowAdd) {
 				uc->setFlag(UserConnection::FLAG_ASSOCIATED);
 
@@ -1035,6 +1043,21 @@ void ConnectionManager::on(UserConnectionListener::Key, UserConnection* aSource,
 		aSource->setConnectToken(Util::toString(ValueGenerator::rand())); // set a random token instead of using the nick
 		addUploadConnection(aSource);
 	}
+}
+
+bool ConnectionManager::validateCCPMConnectionToken(UserConnection* aSource, const string& aToken) noexcept {
+	if (!aSource->isSet(UserConnection::FLAG_PM)) {
+		if (!tokens.addToken(aToken, CONNECTION_TYPE_PM, TokenManager::TokenSource::UNTRUSTED)) {
+			dcassert(0);
+			return false;
+		}
+
+		aSource->setFlag(UserConnection::FLAG_PM);
+	} else {
+		dcassert(tokens.hasToken(aToken, CONNECTION_TYPE_PM));
+	}
+
+	return true;
 }
 
 void ConnectionManager::on(AdcCommand::INF, UserConnection* aSource, const AdcCommand& cmd) noexcept {
@@ -1082,10 +1105,13 @@ void ConnectionManager::on(AdcCommand::INF, UserConnection* aSource, const AdcCo
 
 		// set the PM flag now in order to send a INF with PM1
 		if ((tokens.hasToken(token, CONNECTION_TYPE_PM) || cmd.hasFlag("PM", 0))) {
-			if (!aSource->isSet(UserConnection::FLAG_PM)) {
-				aSource->setFlag(UserConnection::FLAG_PM);
+			// Token
+			if (!validateCCPMConnectionToken(aSource, token)) {
+				fail(AdcCommand::ERROR_GENERIC, "Duplicate token");
+				return;	
 			}
 
+			// Encryption
 			if (!aSource->getUser()->isSet(User::TLS)) {
 				fail(AdcCommand::ERROR_GENERIC, "Unencrypted PM connections not allowed");
 				return;
@@ -1133,20 +1159,10 @@ void ConnectionManager::on(AdcCommand::INF, UserConnection* aSource, const AdcCo
 	if (aSource->isSet(UserConnection::FLAG_DOWNLOAD)) {
 		addDownloadConnection(aSource);
 	} else if (aSource->isSet(UserConnection::FLAG_PM) || cmd.hasFlag("PM", 0)) {
-		// Flag
-		if (!aSource->isSet(UserConnection::FLAG_PM)) {
-			aSource->setFlag(UserConnection::FLAG_PM);
-		}
-
 		// Token
-		if (cmd.hasFlag("PM", 0)) {
-			if (!tokens.addToken(token, CONNECTION_TYPE_PM)) {
-				dcassert(0);
-				fail(AdcCommand::ERROR_GENERIC, "Duplicate token");
-				return;
-			}
-		} else {
-			dcassert(tokens.hasToken(token));
+		if (!validateCCPMConnectionToken(aSource, token)) {
+			fail(AdcCommand::ERROR_GENERIC, "Duplicate token");
+			return;
 		}
 
 		addPMConnection(aSource);
