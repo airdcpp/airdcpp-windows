@@ -563,11 +563,15 @@ FilelistDirectory::FilelistDirectory(const string& aName, time_t aDate) : date(a
 unique_ptr<FilelistDirectory> FilelistDirectory::generateRoot(const ShareDirectory::List& aRootDirectory, const ShareDirectory::List& aChildren, bool aRecursive) {
 	auto listRoot = make_unique<FilelistDirectory>(Util::emptyString, 0);
 
+	listRoot->shareDirs = aRootDirectory;
+	for (const auto& dir: aRootDirectory) {
+		listRoot->date = max(listRoot->date, dir->getLastWrite());
+	}
+
 	for (const auto& child : aChildren) {
 		listRoot->toFileList(child, aRecursive);
 	}
 
-	listRoot->shareDirs = aRootDirectory;
 	return std::move(listRoot);
 }
 
