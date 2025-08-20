@@ -545,7 +545,7 @@ void AutoSearchFrame::addFromDialog(AutoSearchItemSettings& dlg) {
 		string str = search.substr(j, i-j);
 		j = i +2;
 		if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
-			AutoSearchPtr as = new AutoSearch;
+			auto as = std::make_shared<AutoSearch>();
 
 			dlg.setItemProperties(as, str);
 			AutoSearchManager::getInstance()->addAutoSearch(as, false);

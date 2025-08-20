@@ -35,16 +35,16 @@ bool ShareDirectory::RootIsParentOrExact::operator()(const ShareDirectory::Ptr& 
 	return PathUtil::isParentOrExactLower(aDirectory->getRoot()->getPathLower(), compareToLower, separator);
 }
 
-ShareDirectory::ShareDirectory(DualString&& aRealName, const ShareDirectory::Ptr& aParent, time_t aLastWrite, const ShareRoot::Ptr& aRoot) :
+ShareDirectory::ShareDirectory(DualString&& aRealName, ShareDirectory* aParent, time_t aLastWrite, const ShareRoot::Ptr& aRoot) :
 	lastWrite(aLastWrite),
-	parent(aParent.get()),
+	parent(aParent),
 	root(aRoot),
 	realName(std::move(aRealName))
 {
 }
 
 ShareDirectory::~ShareDirectory() {
-	ranges::for_each(files, DeleteFunction());
+	ranges::for_each(files, std::default_delete<File>());
 }
 
 ShareDirectory::File::File(DualString&& aName, ShareDirectory* aParent, const HashedFile& aFileInfo) :
@@ -58,8 +58,8 @@ ShareDirectory::File::~File() {
 
 
 
-ShareDirectory::Ptr ShareDirectory::createNormal(DualString&& aRealName, const Ptr& aParent, time_t aLastWrite, ShareTreeMaps& maps_) noexcept {
-	auto dir = Ptr(new ShareDirectory(std::move(aRealName), aParent, aLastWrite, nullptr));
+ShareDirectory::Ptr ShareDirectory::createNormal(DualString&& aRealName, ShareDirectory* aParent, time_t aLastWrite, ShareTreeMaps& maps_) noexcept {
+	auto dir = std::make_shared<ShareDirectory>(std::move(aRealName), aParent, aLastWrite, nullptr);
 
 	if (aParent) {
 		auto added = aParent->directories.insert_sorted(dir).second;
@@ -93,8 +93,8 @@ ShareDirectory::Ptr ShareDirectory::cloneRoot(const Ptr& aOldRoot, time_t aLastW
 	);
 }
 
-bool ShareDirectory::setParent(const ShareDirectory::Ptr& aDirectory, const ShareDirectory::Ptr& aParent) noexcept {
-	aDirectory->parent = aParent.get();
+bool ShareDirectory::setParent(const ShareDirectory::Ptr& aDirectory, ShareDirectory* aParent) noexcept {
+	aDirectory->parent = aParent;
 	if (aParent) {
 		if (auto inserted = aParent->directories.insert_sorted(aDirectory).second; !inserted) {
 			dcassert(0);

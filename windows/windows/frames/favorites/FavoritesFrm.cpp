@@ -140,7 +140,8 @@ ensureVisible(ensureVisible_)
 	// in grouped mode, the indexes of each item are completely random, so use entry pointers instead
 	int i = -1;
 	while( (i = hubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		selected.push_back((FavoriteHubEntry*)hubs.GetItemData(i));
+		auto ii = (ItemInfo*)hubs.GetItemData(i);
+		selected.push_back(ii->hub);
 	}
 
 	SCROLLINFO si = { 0 };
@@ -157,8 +158,8 @@ FavoriteHubsFrame::StateKeeper::~StateKeeper() {
 
 	for(auto i = selected.begin(), iend = selected.end(); i != iend; ++i) {
 		for(int j = 0; j < hubs.GetItemCount(); ++j) {
-			if((FavoriteHubEntry*)hubs.GetItemData(j) == *i)
-			{
+			auto ii = (ItemInfo*)hubs.GetItemData(j);
+			if (ii->hub == *i) {
 				hubs.SetItemState(j, LVIS_SELECTED, LVIS_SELECTED);
 				if(ensureVisible)
 					hubs.EnsureVisible(j, FALSE);
@@ -197,7 +198,11 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int 
 	l.push_back(Text::toT(entry->get(HubSettings::Description)));
 	l.push_back(Text::toT(entry->getShareProfileName()));
 	bool b = entry->getAutoConnect();
-	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry.get());
+
+	auto ii = std::make_unique<ItemInfo>(entry);
+	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)ii.get());
+	itemInfos.emplace(entry->getToken(), std::move(ii));
+
 	ctrlHubs.SetCheckState(i, b);
 
     LVITEM lvItem = { 0 };
@@ -208,37 +213,6 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int 
     lvItem.iGroupId = groupIndex;
     ctrlHubs.SetItem( &lvItem );
 }
-
-LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if(wParam == HUB_CONNECTED) {
-		unique_ptr<string> hub(reinterpret_cast<string*>(lParam));
-		onlineHubs.push_back(*hub);
-		
-		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
-			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if(e->getServer() == *hub) {
-				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
-				ctrlHubs.Update(i);
-				return 0;
-			}
-		}
-	} else if(wParam == HUB_DISCONNECTED) {
-		unique_ptr<string> hub(reinterpret_cast<string*>(lParam));
-		onlineHubs.erase(remove(onlineHubs.begin(), onlineHubs.end(), *hub), onlineHubs.end());
-
-		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
-			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if(e->getServer() == *hub) {
-				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
-				ctrlHubs.Update(i);
-				return 0;
-			}
-		}
-	}
-		
-	return 0;
-}
-
 
 LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if(reinterpret_cast<HWND>(wParam) == ctrlHubs) {
@@ -352,21 +326,21 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	int i = -1;
 	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
 	{
-		auto e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+		auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
+		auto hubEntry = ii->hub;
 
 		bool isActive = ConnectivityManager::getInstance()->isActive();
-		dcassert(e != NULL);
+		dcassert(hubEntry);
 		TabbedDialog dlg(STRING(FAVORITE_HUB_PROPERTIES));
-		dlg.addPage<FavHubGeneralPage>(shared_ptr<FavHubGeneralPage>(new FavHubGeneralPage(e, STRING(SETTINGS_GENERAL))));
-		dlg.addPage<FavHubOptionsPage>(shared_ptr<FavHubOptionsPage>(new FavHubOptionsPage(e, STRING(SETTINGS_OPTIONS))));
+		dlg.addPage<FavHubGeneralPage>(shared_ptr<FavHubGeneralPage>(new FavHubGeneralPage(hubEntry, STRING(SETTINGS_GENERAL))));
+		dlg.addPage<FavHubOptionsPage>(shared_ptr<FavHubOptionsPage>(new FavHubOptionsPage(hubEntry, STRING(SETTINGS_OPTIONS))));
 
-		if(dlg.DoModal(m_hWnd) == IDOK)
-		{
+		if(dlg.DoModal(m_hWnd) == IDOK) {
 			if (ConnectivityManager::getInstance()->isActive() != isActive) {
 				ConnectivityManager::getInstance()->setup(true, true);
 			}
 
-			FavoriteManager::getInstance()->onFavoriteHubUpdated(e);
+			FavoriteManager::getInstance()->onFavoriteHubUpdated(hubEntry);
 
 			StateKeeper keeper(ctrlHubs);
 			fillList();
@@ -377,10 +351,10 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	FavoriteHubEntryPtr e = new FavoriteHubEntry();
+	FavoriteHubEntryPtr e = std::make_shared<FavoriteHubEntry>();
 	TabbedDialog dlg(STRING(FAVORITE_HUB_PROPERTIES));
-	dlg.addPage<FavHubGeneralPage>(shared_ptr<FavHubGeneralPage>(new FavHubGeneralPage(e.get(), STRING(SETTINGS_GENERAL))));
-	dlg.addPage<FavHubOptionsPage>(shared_ptr<FavHubOptionsPage>(new FavHubOptionsPage(e.get(), STRING(SETTINGS_OPTIONS))));
+	dlg.addPage<FavHubGeneralPage>(shared_ptr<FavHubGeneralPage>(new FavHubGeneralPage(e, STRING(SETTINGS_GENERAL))));
+	dlg.addPage<FavHubOptionsPage>(shared_ptr<FavHubOptionsPage>(new FavHubOptionsPage(e, STRING(SETTINGS_OPTIONS))));
 
 
 	if(dlg.DoModal((HWND)*this) == IDOK) {
@@ -496,8 +470,8 @@ void FavoriteHubsFrame::fillList()
 		ctrlHubs.InsertGroup(i, &lg );
 	}
 
-	const FavoriteHubEntryList& fl = FavoriteManager::getInstance()->getFavoriteHubs();
-	for(const auto& fhe: fl) {
+	const auto& fl = FavoriteManager::getInstance()->getFavoriteHubs();
+	for (const auto& fhe: fl) {
 		const string& group = fhe->getGroup();
 
 		int index = 0;
@@ -662,4 +636,49 @@ LRESULT FavoriteHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BO
 	}
 	return 0;
 }
+
+
+void FavoriteHubsFrame::on(FavoriteManagerListener::FavoriteHubAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept {
+	StateKeeper keeper(ctrlHubs); fillList(); 
+}
+
+void FavoriteHubsFrame::on(FavoriteManagerListener::FavoriteHubRemoved, const FavoriteHubEntryPtr& e) noexcept {
+	ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e.get()));
+	itemInfos.erase(e->getToken());
+}
+
+void FavoriteHubsFrame::on(FavoriteManagerListener::FavoriteHubsUpdated) noexcept {
+	fillList(); 
+}
+
+void FavoriteHubsFrame::on(ClientManagerListener::ClientConnected, const ClientPtr& c) noexcept {
+	auto hubUrl = c->getHubUrl();
+	callAsync([=] {
+		onlineHubs.push_back(hubUrl);
+
+		for (int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
+			auto e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+			if (e->getServer() == hubUrl) {
+				ctrlHubs.SetItem(i, 0, LVIF_IMAGE, NULL, 0, 0, 0, NULL);
+				ctrlHubs.Update(i);
+			}
+		}
+	});
+}
+
+void FavoriteHubsFrame::on(ClientManagerListener::ClientDisconnected, const string& aHubUrl) noexcept {
+	callAsync([=] {
+		onlineHubs.erase(remove(onlineHubs.begin(), onlineHubs.end(), aHubUrl), onlineHubs.end());
+
+		for (int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
+			auto e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+			if (e->getServer() == aHubUrl) {
+				ctrlHubs.SetItem(i, 0, LVIF_IMAGE, NULL, 1, 0, 0, NULL);
+				ctrlHubs.Update(i);
+			}
+		}
+	});
+}
+
+
 }

@@ -16,12 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(FAVORITE_HUBS_FRM_H)
-#define FAVORITE_HUBS_FRM_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#ifndef DCPP_WINGUI_FAVORITE_HUBS_FRAME
+#define DCPP_WINGUI_FAVORITE_HUBS_FRAME
 
 #include <windows/frames/StaticFrame.h>
 #include <windows/components/ExListViewCtrl.h>
@@ -34,7 +31,7 @@
 
 namespace wingui {
 class FavoriteHubsFrame : public MDITabChildWindowImpl<FavoriteHubsFrame>, public StaticFrame<FavoriteHubsFrame, ResourceManager::FAVORITE_HUBS, IDC_FAVORITES>,
-	private FavoriteManagerListener, private SettingsManagerListener, private ClientManagerListener
+	private Async<FavoriteHubsFrame>, private FavoriteManagerListener, private SettingsManagerListener, private ClientManagerListener
 {
 public:
 	typedef MDITabChildWindowImpl<FavoriteHubsFrame> baseClass;
@@ -102,12 +99,20 @@ public:
 		ctrlHubs.SetFocus();
 		return 0;
 	}
-
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	
 	static string id;
 
 private:
+	class ItemInfo {
+	public:
+		explicit ItemInfo(const FavoriteHubEntryPtr& aHub) : hub(aHub) {}
+		~ItemInfo() = default;
+
+		FavoriteHubEntryPtr hub = nullptr;
+	};
+
+	using ItemInfoMap = unordered_map<FavoriteHubToken, unique_ptr<ItemInfo>>;
+	ItemInfoMap itemInfos;
 
 	enum {
 		COLUMN_FIRST,
@@ -119,11 +124,6 @@ private:
 		COLUMN_USERDESCRIPTION,
 		COLUMN_SHAREPROFILE,
 		COLUMN_LAST
-	};
-
-	enum {
-		HUB_CONNECTED,
-		HUB_DISCONNECTED
 	};
 	
 	struct StateKeeper {
@@ -167,17 +167,14 @@ private:
 	void fillList();
 	void openSelected();
 
-	void on(FavoriteHubAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept { StateKeeper keeper(ctrlHubs); fillList(); }
-	void on(FavoriteHubRemoved, const FavoriteHubEntryPtr& e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e.get())); }
-	void on(FavoriteHubsUpdated) noexcept { fillList(); }
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
-	void on(ClientConnected, const ClientPtr& c) noexcept {
-		PostMessage(WM_SPEAKER, (WPARAM)HUB_CONNECTED,  (LPARAM)new string(c->getHubUrl())); 
-	}
-	void on(ClientDisconnected, const string& aHubUrl) noexcept { 
-		PostMessage(WM_SPEAKER, (WPARAM)HUB_DISCONNECTED,  (LPARAM)new string(aHubUrl)); 
-	}
+	void on(FavoriteManagerListener::FavoriteHubAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept override;
+	void on(FavoriteManagerListener::FavoriteHubRemoved, const FavoriteHubEntryPtr& e) noexcept override;
+	void on(FavoriteManagerListener::FavoriteHubsUpdated) noexcept override;
 
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
+
+	void on(ClientManagerListener::ClientConnected, const ClientPtr& c) noexcept override;
+	void on(ClientManagerListener::ClientDisconnected, const string& aHubUrl) noexcept override;
 };
 }
 

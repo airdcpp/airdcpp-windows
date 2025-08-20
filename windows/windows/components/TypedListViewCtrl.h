@@ -23,7 +23,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/core/classes/Pointer.h>
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/util/text/StringTokenizer.h>
 #include <airdcpp/util/Util.h>
@@ -88,7 +87,7 @@ class TypedListViewCtrl : public CWindowImpl<TypedListViewCtrl<T, ctrlId, style>
 {
 public:
 	TypedListViewCtrl() { }
-	~TypedListViewCtrl() { for_each(columnList.begin(), columnList.end(), DeleteFunction()); }
+	~TypedListViewCtrl() { for_each(columnList.begin(), columnList.end(), std::default_delete<ColumnInfo>()); }
 
 	typedef TypedListViewCtrl<T, ctrlId, style> thisClass;
 	typedef CListViewCtrl baseClass;

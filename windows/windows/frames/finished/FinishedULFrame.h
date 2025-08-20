@@ -16,12 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(FINISHED_UL_FRAME_H)
-#define FINISHED_UL_FRAME_H
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#ifndef DCPP_WINGUI_FINISHED_UPLOAD_FRAME
+#define DCPP_WINGUI_FINISHED_UPLOAD_FRAME
 
 #include <windows/frames/finished/FinishedFrameBase.h>
 
@@ -29,6 +25,8 @@ namespace wingui {
 class FinishedULFrame : public FinishedFrameBase<FinishedULFrame, ResourceManager::FINISHED_UPLOADS, IDC_FINISHED_UL>
 {
 public:
+	typedef MDITabChildWindowImpl<FinishedULFrame> baseClass;
+
 	FinishedULFrame() {
 		upload = true;
 		boldFinished = SettingsManager::BOLD_FINISHED_UPLOADS;
@@ -45,8 +43,10 @@ public:
 
 private:
 
-	void on(AddedUl, FinishedItem* entry) noexcept {
-		PostMessage(WM_SPEAKER, SPEAK_ADD_LINE, (WPARAM)entry);
+	void on(FinishedManagerListener::AddedUl, const FinishedItemPtr& entry) noexcept {
+		callAsync([=] {
+			addLine(entry);
+		});
 	}
 };
 string FinishedULFrame::id = "FinishedUL";

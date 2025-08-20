@@ -32,6 +32,7 @@
 #include <airdcpp/transfer/download/DownloadManagerListener.h>
 #include <airdcpp/queue/QueueManagerListener.h>
 #include <airdcpp/queue/QueueItem.h>
+#include <airdcpp/core/classes/Pointer.h>
 #include <airdcpp/core/queue/TaskQueue.h>
 
 #define STATUS_MSG_MAP 19

@@ -22,6 +22,8 @@
 #include <airdcpp/core/classes/FastAlloc.h>
 #include <airdcpp/core/types/GetSet.h>
 
+#include <airdcpp/core/Singleton.h>
+
 #include <windows/components/ExCImage.h>
 
 #if _MSC_VER > 1000
@@ -53,7 +55,7 @@ private:
 /**
  * Emoticons Manager
  */
-class EmoticonsManager : public intrusive_ptr_base<EmoticonsManager> {
+class EmoticonsManager : public Singleton<EmoticonsManager> {
 public:
 	EmoticonsManager() { Load(); }
 	~EmoticonsManager() { Unload(); }
@@ -69,6 +71,7 @@ public:
 private:
 	Emoticon::List emoticons;
 };
+
 }
 
 #endif // EMOTICONSMANAGER_H

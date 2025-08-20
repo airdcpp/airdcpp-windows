@@ -28,50 +28,49 @@
 
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/transfer/upload/UploadManager.h>
+#include <airdcpp/transfer/upload/UploadQueueManager.h>
 
-namespace dcpp {
-int UploadQueueItem::getImageIndex() const noexcept {
-	return wingui::ResourceLoader::getIconIndex(Text::toT(file));
+namespace wingui {
+
+int UploadQueueFrame::ItemInfo::getImageIndex() const noexcept {
+	return wingui::ResourceLoader::getIconIndex(Text::toT(uqi->getFile()));
 }
 
-int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueItem* b, uint8_t col) {
+int UploadQueueFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) noexcept {
 	switch (col) {
-	case COLUMN_TRANSFERRED: return compare(a->pos, b->pos);
-	case COLUMN_SIZE: return compare(a->size, b->size);
+	case COLUMN_TRANSFERRED: return compare(a->uqi->getPos(), b->uqi->getPos());
+	case COLUMN_SIZE: return compare(a->uqi->getSize(), b->uqi->getSize());
 	case COLUMN_ADDED:
-	case COLUMN_WAITING: return compare(a->time, b->time);
+	case COLUMN_WAITING: return compare(a->uqi->getTime(), b->uqi->getTime());
 	default: return Util::stricmp(a->getText(col).c_str(), b->getText(col).c_str());
 	}
 }
 
-const tstring UploadQueueItem::getText(uint8_t col) const noexcept {
+const tstring UploadQueueFrame::ItemInfo::getText(uint8_t col) const noexcept {
 	switch (col) {
-	case COLUMN_FILE: return Text::toT(PathUtil::getFileName(file));
-	case COLUMN_PATH: return Text::toT(PathUtil::getFilePath(file));
-	case COLUMN_NICK: return wingui::FormatUtil::getNicks(user);
-	case COLUMN_HUB: return wingui::FormatUtil::getHubNames(user);
-	case COLUMN_SIZE: return Util::formatBytesW(size);
-	case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", time));
-	case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + (size > 0 ? wingui::WinUtil::toStringW((double)pos * 100.0 / (double)size) : _T("0")) + _T("%)");
-	case COLUMN_WAITING: return Util::formatSecondsW(GET_TIME() - time);
+	case COLUMN_FILE: return Text::toT(PathUtil::getFileName(uqi->getFile()));
+	case COLUMN_PATH: return Text::toT(PathUtil::getFilePath(uqi->getFile()));
+	case COLUMN_NICK: return wingui::FormatUtil::getNicks(uqi->getHintedUser());
+	case COLUMN_HUB: return wingui::FormatUtil::getHubNames(uqi->getHintedUser());
+	case COLUMN_SIZE: return Util::formatBytesW(uqi->getSize());
+	case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", uqi->getTime()));
+	case COLUMN_TRANSFERRED: return Util::formatBytesW(uqi->getPos()) + _T(" (") + (uqi->getSize() > 0 ? wingui::WinUtil::toStringW((double)uqi->getPos() * 100.0 / (double)uqi->getSize()) : _T("0")) + _T("%)");
+	case COLUMN_WAITING: return Util::formatSecondsW(GET_TIME() - uqi->getTime());
 	default: return Util::emptyStringT;
 	}
 }
-}
 
-
-namespace wingui {
 string UploadQueueFrame::id = "UploadQueue";
 
 int UploadQueueFrame::columnSizes[] = { 250, 100, 75, 75, 75, 75, 100, 100 };
-int UploadQueueFrame::columnIndexes[] = { UploadQueueItem::COLUMN_FILE, UploadQueueItem::COLUMN_PATH, UploadQueueItem::COLUMN_NICK,
-	UploadQueueItem::COLUMN_HUB, UploadQueueItem::COLUMN_TRANSFERRED, UploadQueueItem::COLUMN_SIZE, UploadQueueItem::COLUMN_ADDED,
-	UploadQueueItem::COLUMN_WAITING };
+int UploadQueueFrame::columnIndexes[] = { UploadQueueFrame::ItemInfo::COLUMN_FILE, UploadQueueFrame::ItemInfo::COLUMN_PATH, UploadQueueFrame::ItemInfo::COLUMN_NICK,
+	UploadQueueFrame::ItemInfo::COLUMN_HUB, UploadQueueFrame::ItemInfo::COLUMN_TRANSFERRED, UploadQueueFrame::ItemInfo::COLUMN_SIZE, UploadQueueFrame::ItemInfo::COLUMN_ADDED,
+	UploadQueueFrame::ItemInfo::COLUMN_WAITING };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, ResourceManager::PATH, ResourceManager::NICK, 
 	ResourceManager::HUB, ResourceManager::TRANSFERRED, ResourceManager::SIZE, ResourceManager::ADDED, ResourceManager::WAITING_TIME };
 
 
-UploadQueueFrame::UploadQueueFrame() : showTreeContainer(_T("BUTTON"), this, SHOWTREE_MESSAGE_MAP), manager(UploadManager::getInstance()->getQueue()) { }
+UploadQueueFrame::UploadQueueFrame() : showTreeContainer(_T("BUTTON"), this, SHOWTREE_MESSAGE_MAP) { }
 
 LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	showTree = SETTING(UPLOADQUEUEFRAME_SHOW_TREE);
@@ -100,17 +99,17 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	SetSplitterPosPct(25);
 
 	// Create listview columns
-	WinUtil::splitTokens(columnIndexes, SETTING(UPLOADQUEUEFRAME_ORDER), UploadQueueItem::COLUMN_LAST);
-	WinUtil::splitTokens(columnSizes, SETTING(UPLOADQUEUEFRAME_WIDTHS), UploadQueueItem::COLUMN_LAST);
+	WinUtil::splitTokens(columnIndexes, SETTING(UPLOADQUEUEFRAME_ORDER), UploadQueueFrame::ItemInfo::COLUMN_LAST);
+	WinUtil::splitTokens(columnSizes, SETTING(UPLOADQUEUEFRAME_WIDTHS), UploadQueueFrame::ItemInfo::COLUMN_LAST);
 
 	// column names, sizes
-	for (uint8_t j=0; j<UploadQueueItem::COLUMN_LAST; j++) {
-		int fmt = (j == UploadQueueItem::COLUMN_TRANSFERRED || j == UploadQueueItem::COLUMN_SIZE) ? LVCFMT_RIGHT : LVCFMT_LEFT;
+	for (uint8_t j = 0; j < UploadQueueFrame::ItemInfo::COLUMN_LAST; j++) {
+		int fmt = (j == UploadQueueFrame::ItemInfo::COLUMN_TRANSFERRED || j == UploadQueueFrame::ItemInfo::COLUMN_SIZE) ? LVCFMT_RIGHT : LVCFMT_LEFT;
 		ctrlList.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
 	}
 		
-	ctrlList.setColumnOrderArray(UploadQueueItem::COLUMN_LAST, columnIndexes);
-	ctrlList.setSortColumn(UploadQueueItem::COLUMN_NICK);
+	ctrlList.setColumnOrderArray(UploadQueueFrame::ItemInfo::COLUMN_LAST, columnIndexes);
+	ctrlList.setSortColumn(UploadQueueFrame::ItemInfo::COLUMN_NICK);
 	// colors
 	ctrlList.SetBkColor(WinUtil::bgColor);
 	ctrlList.SetTextBkColor(WinUtil::bgColor);
@@ -197,19 +196,20 @@ void UploadQueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 }
 
 LRESULT UploadQueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(usingUserMenu) {
-		UserPtr User = getSelectedUser();
+	auto& mgr = UploadManager::getInstance()->getQueue();
+	if (usingUserMenu) {
+		auto User = getSelectedUser();
 		if (User) {
-			manager.clearUserFiles(User);
+			mgr.clearUserFiles(User);
 		}
 	} else {
 		int i = -1;
 		UserList RemoveUsers;
 		while((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
+			RemoveUsers.push_back(((ItemInfo*)ctrlList.getItemData(i))->getUser());
 		}
-		for (UserList::const_iterator u = RemoveUsers.begin(); u != RemoveUsers.end(); ++u) {
-			manager.clearUserFiles(*u);
+		for (const auto& u: RemoveUsers) {
+			mgr.clearUserFiles(u);
 		}
 	}
 	updateStatus();
@@ -221,18 +221,20 @@ void UploadQueueFrame::removeSelected() {
 	UserList RemoveUsers;
 	while((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		// Ok let's cheat here, if you try to remove more users here is not working :(
-		RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
+		RemoveUsers.push_back(((ItemInfo*)ctrlList.getItemData(i))->getUser());
 	}
+
+	auto& mgr = UploadManager::getInstance()->getQueue();
 	for(auto u = RemoveUsers.begin(); u != RemoveUsers.end(); ++u) {
-		manager.clearUserFiles(*u);
+		mgr.clearUserFiles(*u);
 	}
 	updateStatus();
 }
 	
 void UploadQueueFrame::removeSelectedUser() {
-	UserPtr User = getSelectedUser();
-	if(User) {
-		manager.clearUserFiles(User);
+	auto User = getSelectedUser();
+	if (User) {
+		UploadManager::getInstance()->getQueue().clearUserFiles(User);
 	}
 	updateStatus();
 }
@@ -293,12 +295,10 @@ void UploadQueueFrame::LoadAll() {
 	ctrlQueued.SetRedraw(FALSE);	
 	
 	// Load queue
-	auto users = manager.getUploadQueue();
+	auto users = UploadManager::getInstance()->getQueue().getUploadQueue();
 	for (auto uit = users.begin(); uit != users.end(); ++uit) {
-		//ctrlQueued.InsertItem(TVIF_PARAM | TVIF_TEXT, (Text::toT(uit->first->getFirstNick()) + _T(" - ") + WinUtil::getHubNames(uit->first).first).c_str(), 
-		//	0, 0, 0, 0, (LPARAM)(new UserItem(uit->first)), rootItem, TVI_LAST);
-		for (auto i = uit->files.cbegin(); i != uit->files.cend(); ++i) {
-			AddFile(*i);
+		for (const auto& file: uit->files) {
+			AddFile(file);
 		}
 	}
 	ctrlList.resort();
@@ -316,7 +316,6 @@ void UploadQueueFrame::DeleteAll() {
 		userNode = ctrlQueued.GetChildItem(rootItem);
 	}
 	ctrlList.DeleteAllItems();
-	//ctrlQueued.DeleteAllItems();
 }
 
 void UploadQueueFrame::RemoveUser(const UserPtr& aUser) {
@@ -337,11 +336,12 @@ void UploadQueueFrame::RemoveUser(const UserPtr& aUser) {
 LRESULT UploadQueueFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
 	HTREEITEM userNode = ctrlQueued.GetSelectedItem();
 
+	auto& mgr = UploadManager::getInstance()->getQueue();
 	while(userNode) {
 		ctrlList.DeleteAllItems();
 		UserItem* ui = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
 		if(ui) {
-			auto users = manager.getUploadQueue();
+			auto users = mgr.getUploadQueue();
 			auto it = find_if(users.begin(), users.end(), [&](const UserPtr& u) { return u == ui->u.user; });
 			if(it != users.end()) {
 				ctrlList.SetRedraw(FALSE);
@@ -364,15 +364,15 @@ LRESULT UploadQueueFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL
 	return 0;
 }
 
-void UploadQueueFrame::AddFile(UploadQueueItem* aUQI) { 
+void UploadQueueFrame::AddFile(const UploadQueueItemPtr& aUQI) {
 	HTREEITEM userNode = ctrlQueued.GetChildItem(rootItem);
 	bool add = true;
 
 	HTREEITEM selNode = ctrlQueued.GetSelectedItem();
 
 	while(userNode) {
-		UserItem *u = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
-		if (aUQI->getUser() == u->u.user) {
+		auto u = reinterpret_cast<UserItem*>(ctrlQueued.GetItemData(userNode));
+		if (aUQI->getHintedUser() == u->u.user) {
 			add = false;
 			break;
 		}
@@ -394,7 +394,10 @@ void UploadQueueFrame::AddFile(UploadQueueItem* aUQI) {
 			return;
 		}
 	}
-	ctrlList.insertItem(ctrlList.GetItemCount(), aUQI, aUQI->getImageIndex());
+
+	auto ii = std::make_unique<ItemInfo>(aUQI);
+	auto insertInfo = itemInfos.emplace(aUQI->getToken(), std::move(ii));
+	ctrlList.insertItem(ctrlList.GetItemCount(), insertInfo.first->second.get(), insertInfo.first->second->getImageIndex());
 }
 
 void UploadQueueFrame::updateStatus() {
@@ -427,44 +430,58 @@ void UploadQueueFrame::updateStatus() {
 	}
 }
 
-LRESULT UploadQueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	ctrlList.SetRedraw(FALSE);
-	switch(wParam) {
-	case REMOVE_ITEM: 
-	{
-		UploadQueueItem* i = (UploadQueueItem*)lParam;
-		ctrlList.deleteItem(i);
-		updateStatus();
-		i->dec();
-		if(SETTING(BOLD_WAITING_USERS))
-			setDirty();
-		break;
-	}
-	case REMOVE:
-	{
-		std::unique_ptr<UserItem> item((UserItem*)lParam);
-		RemoveUser(item->getUser());
-		updateStatus();
-		if(SETTING(BOLD_WAITING_USERS))
-			setDirty();
-		break;
-	}
-	case ADD_ITEM:
-		AddFile((UploadQueueItem*)lParam);
+void UploadQueueFrame::on(UploadQueueManagerListener::QueueAdd, const UploadQueueItemPtr& aUQI) noexcept {
+	callAsync([=] {
+		ctrlList.SetRedraw(FALSE);
+		AddFile(aUQI);
 		updateStatus();
 		ctrlList.resort();
-		if(SETTING(BOLD_WAITING_USERS))
+
+		if (SETTING(BOLD_WAITING_USERS))
 			setDirty();
-		break;
-	case UPDATE_ITEMS:
-		for(int i = 0; i < ctrlList.GetItemCount(); i++) {
-			ctrlList.updateItem(i, UploadQueueItem::COLUMN_TRANSFERRED);
-			ctrlList.updateItem(i, UploadQueueItem::COLUMN_WAITING);
+
+		ctrlList.SetRedraw(TRUE);
+	});
+}
+
+void UploadQueueFrame::on(UploadQueueManagerListener::QueueUserRemove, const UserPtr& aUser) noexcept {
+	callAsync([=] {
+		RemoveUser(aUser);
+		updateStatus();
+
+		if (SETTING(BOLD_WAITING_USERS)) {
+			setDirty();
 		}
-		break;
-	}
-	ctrlList.SetRedraw(TRUE);
-	return 0;
+	});
+}
+
+void UploadQueueFrame::on(UploadQueueManagerListener::QueueItemRemove, const UploadQueueItemPtr& aUQI) noexcept {
+	callAsync([=] {
+		auto ii = itemInfos.find(aUQI->getToken());
+		if (ii == itemInfos.end()) {
+			return; // Item not found, nothing to do
+		}
+		
+		ctrlList.deleteItem(ii->second.get());
+		itemInfos.erase(aUQI->getToken());
+
+		updateStatus();
+		if (SETTING(BOLD_WAITING_USERS))
+			setDirty();
+	});
+}
+
+void UploadQueueFrame::on(UploadQueueManagerListener::QueueUpdate) noexcept {
+	callAsync([=] {
+		ctrlList.SetRedraw(FALSE);
+
+		for (int i = 0; i < ctrlList.GetItemCount(); i++) {
+			ctrlList.updateItem(i, ItemInfo::COLUMN_TRANSFERRED);
+			ctrlList.updateItem(i, ItemInfo::COLUMN_WAITING);
+		}
+
+		ctrlList.SetRedraw(TRUE);
+	});
 }
 
 void UploadQueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
@@ -507,10 +524,10 @@ LRESULT UploadQueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHand
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
 		// Let's draw a box if needed...
-		if(ctrlList.findColumn(cd->iSubItem) == UploadQueueItem::COLUMN_TRANSFERRED) {
+		if(ctrlList.findColumn(cd->iSubItem) == ItemInfo::COLUMN_TRANSFERRED) {
 			// draw something nice...
 				TCHAR buf[256];
-				UploadQueueItem *ii = (UploadQueueItem*)cd->nmcd.lItemlParam;
+				auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
 
 				ctrlList.GetItemText((int)cd->nmcd.dwItemSpec, cd->iSubItem, buf, 255);
 				buf[255] = 0;
@@ -532,8 +549,8 @@ LRESULT UploadQueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHand
 				HFONT oldFont = (HFONT)SelectObject(dc, WinUtil::font);
 				SetBkMode(dc, TRANSPARENT);
 
-				CBarShader statusBar(rc.Height(), rc.Width(), SETTING(UPLOAD_BAR_COLOR), ii->getSize());
-				statusBar.FillRange(0, ii->getPos(), SETTING(COLOR_DONE));
+				CBarShader statusBar(rc.Height(), rc.Width(), SETTING(UPLOAD_BAR_COLOR), ii->uqi->getSize());
+				statusBar.FillRange(0, ii->uqi->getPos(), SETTING(COLOR_DONE));
 				statusBar.Draw(cdc, 0, 0, SETTING(PROGRESS_3DDEPTH));
 
 				SetTextColor(dc, SETTING(PROGRESS_TEXT_COLOR_UP));

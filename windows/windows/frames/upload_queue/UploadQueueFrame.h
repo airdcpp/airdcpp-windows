@@ -18,23 +18,20 @@
  */
 
 
-#if !defined(UPLOAD_QUEUE_FRAME_H)
-#define UPLOAD_QUEUE_FRAME_H
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#ifndef DCPP_WINGUI_UPLOAD_QUEUE_FRAME
+#define DCPP_WINGUI_UPLOAD_QUEUE_FRAME
 
 #include <windows/frames/StaticFrame.h>
 #include <windows/components/TypedListViewCtrl.h>
 #include <windows/UserInfoBaseHandler.h>
 
-#include <airdcpp/transfer/upload/UploadQueueManager.h>
+#include <airdcpp/user/UserInfoBase.h>
+#include <airdcpp/transfer/upload/UploadQueueManagerListener.h>
 
 #define SHOWTREE_MESSAGE_MAP 12
 
 namespace wingui {
-class UploadQueueFrame : public MDITabChildWindowImpl<UploadQueueFrame>, public StaticFrame<UploadQueueFrame, ResourceManager::UPLOAD_QUEUE, IDC_UPLOAD_QUEUE>,
+class UploadQueueFrame : public MDITabChildWindowImpl<UploadQueueFrame>, private Async<UploadQueueFrame>, public StaticFrame<UploadQueueFrame, ResourceManager::UPLOAD_QUEUE, IDC_UPLOAD_QUEUE>,
 	private UploadQueueManagerListener, public CSplitterImpl<UploadQueueFrame>, private SettingsManagerListener, public UserInfoBaseHandler<UploadQueueFrame>
 {
 public:
@@ -43,13 +40,6 @@ public:
 	UploadQueueFrame();
 	
 	~UploadQueueFrame() { }
-
-	enum {
-		ADD_ITEM,
-		REMOVE,
-		REMOVE_ITEM,
-		UPDATE_ITEMS
-	};
 
 	typedef MDITabChildWindowImpl<UploadQueueFrame> baseClass;
 	typedef CSplitterImpl<UploadQueueFrame> splitBase;
@@ -65,7 +55,6 @@ public:
 		COMMAND_HANDLER(IDC_REMOVE, BN_CLICKED, onRemove)
 		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_COLUMNCLICK, ctrlList.onColumnClick)
-//		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_ITEMCHANGED, onItemChangedQueue)
 		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_SELCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
@@ -84,7 +73,6 @@ public:
 	LRESULT onItemChanged(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 
 	LRESULT onShowTree(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 		bHandled = FALSE;
@@ -102,14 +90,49 @@ public:
 	
 	// Update control layouts
 	void UpdateLayout(BOOL bResizeBars = TRUE);
+
+private:
+	class ItemInfo : public UserInfoBase {
+	public:
+		explicit ItemInfo(const UploadQueueItemPtr& aUQI) : uqi(aUQI) {}
+		~ItemInfo() = default;
+
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) noexcept;
+
+		enum {
+			COLUMN_FIRST,
+			COLUMN_FILE = COLUMN_FIRST,
+			COLUMN_PATH,
+			COLUMN_NICK,
+			COLUMN_HUB,
+			COLUMN_TRANSFERRED,
+			COLUMN_SIZE,
+			COLUMN_ADDED,
+			COLUMN_WAITING,
+			COLUMN_LAST
+		};
+
+		const tstring getText(uint8_t col) const noexcept;
+		int getImageIndex() const noexcept;
+
+		const UserPtr& getUser() const noexcept override { return uqi->getHintedUser().user; }
+		const string& getHubUrl() const noexcept override { return uqi->getHintedUser().hint; }
+
+		UploadQueueItemPtr uqi = nullptr;
+	};
+
+public:
+
 	
+	using ListType = TypedListViewCtrl<ItemInfo, IDC_UPLOAD_QUEUE>;
+
 	struct UserListHandler {
-		UserListHandler(TypedListViewCtrl<UploadQueueItem, IDC_UPLOAD_QUEUE>& a, CTreeViewCtrl& b, bool c) : ctrlList(a), ctrlQueued(b), usingUserMenu(c) { }
+		UserListHandler(ListType& a, CTreeViewCtrl& b, bool c) : ctrlList(a), ctrlQueued(b), usingUserMenu(c) { }
 		
 		void forEachSelected(void (UserInfoBase::*func)()) {
 			if(usingUserMenu) {
 				HTREEITEM selectedItem = ctrlQueued.GetSelectedItem();
-				UserItem* ui = reinterpret_cast<UserItem*>(ctrlQueued.GetItemData(selectedItem));
+				auto ui = reinterpret_cast<UserItem*>(ctrlQueued.GetItemData(selectedItem));
 				if(selectedItem && ui)
 					(ui->*func)();
 			} else {
@@ -121,7 +144,7 @@ public:
 		_Function forEachSelectedT(_Function pred) {
 			if(usingUserMenu) {
 				HTREEITEM selectedItem = ctrlQueued.GetSelectedItem();
-				UserItem* ui = reinterpret_cast<UserItem*>(ctrlQueued.GetItemData(selectedItem));
+				auto ui = reinterpret_cast<UserItem*>(ctrlQueued.GetItemData(selectedItem));
 				if(selectedItem && ui)
 					pred(ui);
 				return pred;
@@ -131,7 +154,7 @@ public:
 		}
 		
 	private:
-		TypedListViewCtrl<UploadQueueItem, IDC_UPLOAD_QUEUE>& ctrlList;
+		ListType& ctrlList;
 		bool usingUserMenu;
 		CTreeViewCtrl& ctrlQueued;		
 	};
@@ -140,10 +163,11 @@ public:
 
 	static string id;
 private:
-	UploadQueueManager& manager;
+	using ItemInfoMap = unordered_map<UploadQueueItemToken, unique_ptr<ItemInfo>>;
+	ItemInfoMap itemInfos;
 
-	static int columnSizes[UploadQueueItem::COLUMN_LAST];
-	static int columnIndexes[UploadQueueItem::COLUMN_LAST];
+	static int columnSizes[ItemInfo::COLUMN_LAST];
+	static int columnIndexes[ItemInfo::COLUMN_LAST];
 
 	struct UserItem : UserInfoBase {
 		HintedUser u;
@@ -192,26 +216,25 @@ private:
 	bool closed = false;
 	bool usingUserMenu = true;
 	
-	TypedListViewCtrl<UploadQueueItem, IDC_UPLOAD_QUEUE> ctrlList;
+	ListType ctrlList;
 	CTreeViewCtrl ctrlQueued;
 	
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[4];
 	
-	void AddFile(UploadQueueItem* aUQI);
+	void AddFile(const UploadQueueItemPtr& aUQI);
 	void RemoveUser(const UserPtr& aUser);
-	
-	void addAllFiles(Upload * /*aUser*/);
+
 	void updateStatus();
 
 	// UploadManagerListener
-	void on(UploadQueueManagerListener::QueueAdd, UploadQueueItem* aUQI) noexcept { PostMessage(WM_SPEAKER, ADD_ITEM, (LPARAM)aUQI); }
-	void on(UploadQueueManagerListener::QueueRemove, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, REMOVE, (LPARAM)new UserItem(HintedUser(aUser, Util::emptyString)));	}
-	void on(UploadQueueManagerListener::QueueItemRemove, UploadQueueItem* aUQI) noexcept { aUQI->inc(); PostMessage(WM_SPEAKER, REMOVE_ITEM, (LPARAM)aUQI); }
-	void on(UploadQueueManagerListener::QueueUpdate) noexcept { PostMessage(WM_SPEAKER, UPDATE_ITEMS, NULL); }
+	void on(UploadQueueManagerListener::QueueAdd, const UploadQueueItemPtr& aUQI) noexcept override;
+	void on(UploadQueueManagerListener::QueueUserRemove, const UserPtr& aUser) noexcept override;
+	void on(UploadQueueManagerListener::QueueItemRemove, const UploadQueueItemPtr& aUQI) noexcept override;
+	void on(UploadQueueManagerListener::QueueUpdate) noexcept override;
 
 	// SettingsManagerListener
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 };
 }
 

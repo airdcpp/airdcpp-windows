@@ -21,6 +21,7 @@
 #include <windows/WinClient.h>
 
 #include <windows/MainFrm.h>
+#include <windows/EmoticonsManager.h>
 #include <windows/PopupManager.h>
 #include <windows/Resource.h>
 #include <windows/ResourceLoader.h>
@@ -266,6 +267,7 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 		}
 
 		PopupManager::newInstance();
+		EmoticonsManager::newInstance();
 
 		WinUtil::splash->callAsync([=] {
 			if (SETTING(PASSWD_PROTECT) && !WinUtil::checkClientPassword()) {
@@ -326,6 +328,7 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 	dcassert(WinUtil::splash);
 	loader = std::async(std::launch::async, [=] {
 		PopupManager::deleteInstance();
+		EmoticonsManager::deleteInstance();
 
 		shutdown(
 			splashStrF,

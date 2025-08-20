@@ -29,7 +29,7 @@
 
 
 namespace wingui {
-FavHubOptionsPage::FavHubOptionsPage(FavoriteHubEntry *_entry, const string& aName) : entry(_entry), name(aName) { }
+FavHubOptionsPage::FavHubOptionsPage(const FavoriteHubEntryPtr& _entry, const string& aName) : entry(_entry), name(aName) { }
 
 LRESULT FavHubOptionsPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 {

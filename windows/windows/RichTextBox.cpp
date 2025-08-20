@@ -53,20 +53,14 @@
 
 
 namespace wingui {
-EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
 
 RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(const_cast<LPTSTR>(GetWndClassName()), this) {
-	if(emoticonsManager == NULL) {
-		emoticonsManager = new EmoticonsManager();
-	}
-
 	showHandCursor=false;
 	lastTick = GET_TICK();
-	emoticonsManager->inc();
 	t_height = WinUtil::getTextHeight(m_hWnd, WinUtil::font); //? right height?
 
 	arrowCursor = LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW));
@@ -77,13 +71,6 @@ RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(const_cast<LPT
 }
 
 RichTextBox::~RichTextBox() {
-	if(emoticonsManager->unique()) {
-		emoticonsManager->dec();
-		emoticonsManager = NULL;
-	} else {
-		emoticonsManager->dec();
-	}
-
 	delete[] findBuffer;
 }
 
@@ -447,8 +434,9 @@ void RichTextBox::parsePathHighlights(const string& aText, MessageHighlight::Sor
 
 void RichTextBox::FormatEmoticons(tstring& sMsg, LONG lSelBegin) {
 	// insert emoticons
-	if (emoticonsManager->getUseEmoticons()) {
-		const Emoticon::List& emoticonsList = emoticonsManager->getEmoticonsList();
+	auto em = EmoticonsManager::getInstance();
+	if (em->getUseEmoticons()) {
+		const auto& emoticonsList = em->getEmoticonsList();
 		tstring::size_type lastReplace = 0;
 		uint8_t smiles = 0;
 		LONG lSelEnd=0;

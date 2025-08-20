@@ -377,7 +377,6 @@ bool HubFrame::updateUser(const UserTask& u) {
 			ui = &i.first->second;
 
 			if (!ui->onlineUser->isHidden()) {
-				//u.onlineUser->inc();
 				ctrlUsers.insertItem(ui, ui->getImageIndex());
 			}
 
@@ -385,7 +384,6 @@ bool HubFrame::updateUser(const UserTask& u) {
 				updateUserList(ui);
 		}
 
-		//u.onlineUser->update(-1);
 		return true;
 	} else {
 		const int pos = ctrlUsers.findItem(ui);
@@ -753,9 +751,6 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 }
 
 void HubFrame::clearUserList() {
-	//for(auto& u: ctrlUsers)
-	//	u.dec();
-
 	ctrlUsers.DeleteAllItems();
 	userInfos.clear();
 }
@@ -1521,7 +1516,6 @@ void HubFrame::updateUserList(ItemInfo* ii) {
 
 		if (filter.empty() || filter.match(filterPrep)) {
 			if (ctrlUsers.findItem(ii) == -1) {
-				//aUser->inc();
 				ctrlUsers.insertItem(ii, ii->getImageIndex());
 			}
 		} else {

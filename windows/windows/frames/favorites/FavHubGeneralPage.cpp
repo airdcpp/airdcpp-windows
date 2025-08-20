@@ -33,7 +33,7 @@
 
 
 namespace wingui {
-FavHubGeneralPage::FavHubGeneralPage(FavoriteHubEntry *_entry, const string& aName) : entry(_entry), name(aName), loading(true) { }
+FavHubGeneralPage::FavHubGeneralPage(const FavoriteHubEntryPtr& _entry, const string& aName) : entry(_entry), name(aName) { }
 
 LRESULT FavHubGeneralPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 {

@@ -34,7 +34,7 @@ public:
 
 	enum { IDD = IDD_FAV_HUB_GENERAL};
 
-	FavHubGeneralPage(FavoriteHubEntry *_entry, const string& aName);
+	FavHubGeneralPage(const FavoriteHubEntryPtr& _entry, const string& aName);
 	~FavHubGeneralPage() { }
 
 	BEGIN_MSG_MAP_EX(FavHubGeneralPage)
@@ -75,16 +75,14 @@ public:
 	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
 
 private:
+	FavoriteHubEntryPtr entry;
 
-	FavoriteHubEntry *entry;
-
-	bool hideShare;
+	bool hideShare = false;
 	CComboBox ctrlProfile;
 	CComboBox ctrlEncoding;
-	bool loaded;
 
 	string name;
-	bool loading;
+	bool loading = true;
 };
 
 }

@@ -28,8 +28,6 @@
 namespace wingui {
 #define EMOTICONS_ICONMARGIN 8
 
-extern EmoticonsManager* emoticonsManager;
-
 WNDPROC EmoticonsDlg::m_MFCWndProc = 0;
 EmoticonsDlg* EmoticonsDlg::m_pDialog = NULL;
 vector<HBITMAP> EmoticonsDlg::bitmapList;
@@ -40,10 +38,11 @@ LRESULT EmoticonsDlg::onEmoticonClick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND h
 	result = buf;
 	// pro ucely testovani emoticon packu...
 	if ((GetKeyState(VK_SHIFT) & 0x8000) && (GetKeyState(VK_CONTROL) & 0x8000)) {
-		const Emoticon::List& Emoticons = emoticonsManager->getEmoticonsList();
+		auto mgr = EmoticonsManager::getInstance();
+		const auto& Emoticons = mgr->getEmoticonsList();
 		result = _T("");
 		string lastEmotionPath = "";
-		for(Emoticon::Iter pEmotion = Emoticons.begin(); pEmotion != Emoticons.end(); ++pEmotion) {
+		for (Emoticon::Iter pEmotion = Emoticons.begin(); pEmotion != Emoticons.end(); ++pEmotion) {
 			if (lastEmotionPath != (*pEmotion)->getEmoticonBmpPath()) result += (*pEmotion)->getEmoticonText() + _T(" ");
 			lastEmotionPath = (*pEmotion)->getEmoticonBmpPath();
 		}
@@ -59,9 +58,10 @@ LRESULT EmoticonsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	m_pDialog = this;
 	::EnableWindow(WinUtil::mainWnd, true);
 
-	if(emoticonsManager->getUseEmoticons() && SETTING(EMOTICONS_FILE)!="Disabled") {
+	auto mgr = EmoticonsManager::getInstance();
+	if(mgr->getUseEmoticons() && SETTING(EMOTICONS_FILE)!="Disabled") {
 
-		const Emoticon::List& Emoticons = emoticonsManager->getEmoticonsList();
+		const auto& Emoticons = mgr->getEmoticonsList();
 
 		if(Emoticons.empty()) {
 			PostMessage(WM_CLOSE);

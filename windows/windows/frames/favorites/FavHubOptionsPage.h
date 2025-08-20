@@ -33,7 +33,7 @@ public:
 
 	enum { IDD = IDD_FAV_OPTIONS_DLG };
 
-	FavHubOptionsPage(FavoriteHubEntry* entry, const string& aName);
+	FavHubOptionsPage(const FavoriteHubEntryPtr& entry, const string& aName);
 	~FavHubOptionsPage() { }
 
 	BEGIN_MSG_MAP_EX(FavHubOptionsPage)
@@ -71,7 +71,7 @@ private:
 	CComboBox modeCombo4;
 	CComboBox modeCombo6;
 
-	FavoriteHubEntry* entry;
+	FavoriteHubEntryPtr entry;
 };
 }
 

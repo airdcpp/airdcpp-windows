@@ -444,7 +444,7 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 
 void SearchFrame::reset() {
 	// delete all results which came in paused state
-	for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
+	for_each(pausedResults.begin(), pausedResults.end(), std::default_delete<SearchInfo>());
 	pausedResults.clear();
 
 	ctrlResults.list.SetRedraw(FALSE);
@@ -972,7 +972,7 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		ctrlResults.list.SetRedraw(TRUE);
 
 		// delete all results which came in paused state
-		for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
+		for_each(pausedResults.begin(), pausedResults.end(), std::default_delete<SearchInfo>());
 		lastDisabledHubs.clear();
 		ctrlHubs.DeleteAllItems();
 

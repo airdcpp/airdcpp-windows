@@ -50,7 +50,6 @@
 #include <airdcpp/core/version.h>
 
 namespace wingui {
-extern EmoticonsManager* emoticonsManager;
 
 ChatFrameBase::ChatFrameBase() {
 }
@@ -605,8 +604,8 @@ LRESULT ChatFrameBase::onEmoPackChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hW
 	emoMenu.GetMenuString(wID, buf, 256, MF_BYCOMMAND);
 	if (buf != Text::toT(SETTING(EMOTICONS_FILE))) {
 		SettingsManager::getInstance()->set(SettingsManager::EMOTICONS_FILE, Text::fromT(buf));
-		emoticonsManager->Unload();
-		emoticonsManager->Load();
+		EmoticonsManager::getInstance()->Unload();
+		EmoticonsManager::getInstance()->Load();
 	}
 	return 0;
 }

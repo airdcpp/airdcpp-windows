@@ -21,7 +21,6 @@
 #include <airdcpp/core/classes/Exception.h>
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/core/io/xml/SimpleXML.h>
-#include <airdcpp/core/classes/Pointer.h>
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/core/io/File.h>
 #include <airdcpp/events/LogManager.h>
@@ -182,7 +181,7 @@ void EmoticonsManager::Load() {
 }
 
 void EmoticonsManager::Unload() {
-	for_each(emoticons.begin(), emoticons.end(), DeleteFunction());
+	for_each(emoticons.begin(), emoticons.end(), std::default_delete<Emoticon>());
 	emoticons.clear();
 }
 }

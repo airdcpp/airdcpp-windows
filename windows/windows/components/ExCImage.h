@@ -25,7 +25,6 @@
 #define __ATLTYPES_H__
 #endif
 
-#include <airdcpp/core/classes/Pointer.h>
 #include <airdcpp/core/classes/FastAlloc.h>
 
 #define byte BYTE // 'byte': ambiguous symbol (C++17)
@@ -34,10 +33,10 @@
 
 
 namespace wingui {
-class ExCImage : public CImage, public FastAlloc<ExCImage>, public intrusive_ptr_base<ExCImage>, boost::noncopyable
+class ExCImage : public CImage, public FastAlloc<ExCImage>, boost::noncopyable
 {
 public:
-	typedef boost::intrusive_ptr<ExCImage> Ptr;
+	typedef std::shared_ptr<ExCImage> Ptr;
 
 	ExCImage() {
 		m_hBuffer = NULL;
