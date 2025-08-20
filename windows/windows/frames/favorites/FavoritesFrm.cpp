@@ -181,9 +181,9 @@ void FavoriteHubsFrame::openSelected() {
 	
 	int i = -1;
 	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+		auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
 
-		ClientManager::getInstance()->createClient(entry->getServer());
+		ClientManager::getInstance()->createClient(ii->hub->getServer());
 	}
 	return;
 }
@@ -239,7 +239,8 @@ LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 
 			int i = -1;
 			while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-				tokens.push_back(((FavoriteHubEntry*)ctrlHubs.GetItemData(i))->getToken());
+				auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
+				tokens.push_back(ii->hub->getToken());
 			}
 
 			EXT_CONTEXT_MENU(hubsMenu, FavoriteHub, tokens);
@@ -265,8 +266,8 @@ LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 
 		tstring x;
 		if (ctrlHubs.GetSelectedCount() == 1) {
-			auto f = (FavoriteHubEntry*)ctrlHubs.GetItemData(WinUtil::getFirstSelectedIndex(ctrlHubs));
-			x = Text::toT(f->getName());
+			auto ii = (ItemInfo*)ctrlHubs.GetItemData(WinUtil::getFirstSelectedIndex(ctrlHubs));
+			x = Text::toT(ii->hub->getName());
 		} else {
 			x = _T("");
 		}
@@ -316,7 +317,8 @@ LRESULT FavoriteHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	
 	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_REMOVAL, TSTRING(REALLY_REMOVE))) {
 		while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FavoriteManager::getInstance()->removeFavoriteHub(((FavoriteHubEntry*)ctrlHubs.GetItemData(i))->getToken());
+			auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
+			FavoriteManager::getInstance()->removeFavoriteHub(ii->hub->getToken());
 		}
 	}
 	return 0;
@@ -493,8 +495,8 @@ LRESULT FavoriteHubsFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 	::EnableWindow(GetDlgItem(IDC_REMOVE), ctrlHubs.GetItemState(l->iItem, LVIS_SELECTED));
 	::EnableWindow(GetDlgItem(IDC_EDIT), ctrlHubs.GetItemState(l->iItem, LVIS_SELECTED));
 	if(!nosave && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
-		FavoriteHubEntry* f = (FavoriteHubEntry*)ctrlHubs.GetItemData(l->iItem);
-		f->setAutoConnect(ctrlHubs.GetCheckState(l->iItem) != FALSE);
+		auto ii = (ItemInfo*)ctrlHubs.GetItemData(l->iItem);
+		ii->hub->setAutoConnect(ctrlHubs.GetCheckState(l->iItem) != FALSE);
 		FavoriteManager::getInstance()->setDirty();
 	}
 	return 0;
@@ -579,11 +581,11 @@ void FavoriteHubsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlHubs.GetSelectedCount() == 1) {
 		int i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED);
-		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+		auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
 		ParamMap params;
-		params["hubNI"] = entry->getName();
-		params["hubURL"] = entry->getServer();
-		params["myNI"] = entry->get(HubSettings::Nick); 
+		params["hubNI"] = ii->hub->getName();
+		params["hubURL"] = ii->hub->getServer();
+		params["myNI"] = ii->hub->get(HubSettings::Nick);
 		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
 		if(PathUtil::fileExists(file)){
 			ActionUtil::viewLog(file);
@@ -657,8 +659,8 @@ void FavoriteHubsFrame::on(ClientManagerListener::ClientConnected, const ClientP
 		onlineHubs.push_back(hubUrl);
 
 		for (int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
-			auto e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if (e->getServer() == hubUrl) {
+			auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
+			if (ii->hub->getServer() == hubUrl) {
 				ctrlHubs.SetItem(i, 0, LVIF_IMAGE, NULL, 0, 0, 0, NULL);
 				ctrlHubs.Update(i);
 			}
@@ -671,8 +673,8 @@ void FavoriteHubsFrame::on(ClientManagerListener::ClientDisconnected, const stri
 		onlineHubs.erase(remove(onlineHubs.begin(), onlineHubs.end(), aHubUrl), onlineHubs.end());
 
 		for (int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
-			auto e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if (e->getServer() == aHubUrl) {
+			auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
+			if (ii->hub->getServer() == aHubUrl) {
 				ctrlHubs.SetItem(i, 0, LVIF_IMAGE, NULL, 1, 0, 0, NULL);
 				ctrlHubs.Update(i);
 			}
