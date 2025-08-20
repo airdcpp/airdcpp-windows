@@ -2511,7 +2511,7 @@ Priority QueueLoader::validatePrio(const string& aPrio) const {
 }
 
 void QueueLoader::createFileBundle(QueueItemPtr& aQI, QueueToken aToken) {
-	if (ConnectionManager::getInstance()->tokens.addToken(Util::toString(aToken), CONNECTION_TYPE_DOWNLOAD, TokenManager::TokenSource::TRUSTED)) {
+	if (ConnectionManager::getInstance()->tokens.addToken(Util::toString(aToken), CONNECTION_TYPE_DOWNLOAD)) {
 		curBundle = make_shared<Bundle>(aQI, curFileBundleInfo.date, aToken, false);
 		curBundle->setTimeFinished(aQI->getTimeFinished());
 		curBundle->setAddedByAutoSearch(curFileBundleInfo.addedByAutosearch);
@@ -2545,7 +2545,7 @@ void QueueLoader::loadDirectoryBundle(StringPairList& attribs, bool) {
 	auto b_resumeTime = Util::toTimeT(getAttrib(attribs, sResumeTime, 5));
 	auto finished = Util::toTimeT(getAttrib(attribs, sTimeFinished, 5));
 
-	if (ConnectionManager::getInstance()->tokens.addToken(token, CONNECTION_TYPE_DOWNLOAD, TokenManager::TokenSource::TRUSTED)) {
+	if (ConnectionManager::getInstance()->tokens.addToken(token, CONNECTION_TYPE_DOWNLOAD)) {
 		auto priority = !prio.empty() ? validatePrio(prio) : Priority::DEFAULT;
 		curBundle = make_shared<Bundle>(bundleTarget, added, priority, dirDate, Util::toUInt32(token), false);
 		curBundle->setTimeFinished(finished);
