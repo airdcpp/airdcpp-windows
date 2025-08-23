@@ -61,7 +61,7 @@ public:
 	~EmoticonsManager() { Unload(); }
 
 	// Variables
-	GETSET(bool, useEmoticons, UseEmoticons);
+	IGETSET(bool, useEmoticons, UseEmoticons, false);
 
 	const Emoticon::List& getEmoticonsList() const { return emoticons; }
 

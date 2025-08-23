@@ -267,7 +267,6 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 		}
 
 		PopupManager::newInstance();
-		EmoticonsManager::newInstance();
 
 		WinUtil::splash->callAsync([=] {
 			if (SETTING(PASSWD_PROTECT) && !WinUtil::checkClientPassword()) {
@@ -304,6 +303,9 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 				//throw("Main window creation failed");
 				return;
 			}
+
+			// Must be initialized after the main frame
+			EmoticonsManager::newInstance();
 
 			if (SETTING(MINIMIZE_ON_STARTUP)) {
 				wndMain->ShowWindow(SW_SHOWMINIMIZED);
