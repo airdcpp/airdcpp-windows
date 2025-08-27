@@ -1,7 +1,7 @@
 
 
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2025 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -39,14 +39,6 @@ using namespace webserver;
 shared_ptr<ConfigUtil::ConfigItem> ConfigUtil::getConfigItem(ExtensionSettingItem& aSetting) {
 	auto aType = aSetting.type;
 
-	if (aType == ApiSettingItem::TYPE_STRING) {
-		if (!aSetting.getEnumOptions().empty()) {
-			return make_shared<ConfigUtil::EnumConfigItem>(aSetting);
-		}
-
-		return make_shared<ConfigUtil::StringConfigItem>(aSetting);
-	}
-
 	if (aType == ApiSettingItem::TYPE_BOOLEAN)
 		return make_shared<ConfigUtil::BoolConfigItem>(aSetting);
 
@@ -60,6 +52,17 @@ shared_ptr<ConfigUtil::ConfigItem> ConfigUtil::getConfigItem(ExtensionSettingIte
 
 	if (aType == ApiSettingItem::TYPE_FILE_PATH || aType == ApiSettingItem::TYPE_DIRECTORY_PATH || aType == ApiSettingItem::TYPE_EXISTING_FILE_PATH)
 		return make_shared<ConfigUtil::BrowseConfigItem>(aSetting);
+
+	if (aType == ApiSettingItem::TYPE_TEXT)
+		return make_shared<ConfigUtil::MultilineStringConfigItem>(aSetting);
+
+	if (ApiSettingItem::isString(aType)) {
+		if (!aSetting.getEnumOptions().empty()) {
+			return make_shared<ConfigUtil::EnumConfigItem>(aSetting);
+		}
+
+		return make_shared<ConfigUtil::StringConfigItem>(aSetting);
+	}
 
 	return make_shared<ConfigUtil::WebConfigItem>(aSetting);
 }
@@ -189,6 +192,22 @@ bool ConfigUtil::StringConfigItem::handleClick(HWND m_hWnd) {
 	}
 
 	return false;
+}
+
+void ConfigUtil::MultilineStringConfigItem::Create(HWND m_hWnd, RECT rcDefault) {
+	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
+	ctrlEdit.SetFont(WinUtil::systemFont);
+	ctrlEdit.SetWindowText(Text::toT(JsonUtil::parseValue<string>(setting.name, setting.getValue())).c_str());
+	ctrlEdit.SetWindowLongPtr(GWL_EXSTYLE, ctrlEdit.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
+}
+
+void ConfigUtil::MultilineStringConfigItem::updateLayout(HWND m_hWnd, CRect& rc) {
+	//CEdit
+	rc.top = rc.bottom + 2;
+	const int rows = 4;
+	rc.bottom = rc.top + (max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont), 17) * rows) + 5;
+	rc.right = rc.left + MAX_TEXT_WIDTH;
+	ctrlEdit.MoveWindow(rc);
 }
 
 

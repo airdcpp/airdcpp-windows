@@ -1,7 +1,5 @@
-
-
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2025 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -95,6 +93,14 @@ public:
 		bool handleClick(HWND m_hWnd) override;
 
 		CEdit ctrlEdit;
+	};
+
+	// Multiline version of StringConfigItem
+	struct MultilineStringConfigItem : public StringConfigItem {
+		explicit MultilineStringConfigItem(webserver::ExtensionSettingItem& aSetting) : StringConfigItem(aSetting) {}
+
+		void Create(HWND m_hWnd, RECT rcDefault) override;
+		void updateLayout(HWND m_hWnd, CRect& rect_) override;
 	};
 
 	//CheckBox type config
