@@ -37,10 +37,11 @@ namespace webserver {
 	using http_status = websocketpp::http::status_code::value;
 
 	// define types for two different server endpoints, one for each config we are
-	// using
-	using server_plain = websocketpp::server<websocketpp::config::asio>;
-	using server_tls = websocketpp::server<websocketpp::config::asio_tls>;
+	// using (legacy websocketpp types kept during phase 1)
 	using api_return = http_status;
+
+	// Connection handle abstraction. Internally still websocketpp, but avoid explicit namespace elsewhere
+	using ConnectionHdl = websocketpp::connection_hdl;
 
 	using HTTPFileCompletionF = std::function<void(api_return aStatus, const std::string& aOutput, const std::vector<std::pair<std::string, std::string>>& aHeaders)>;
 	using ApiCompletionF = std::function<void(api_return aStatus, const json& aResponseJsonData, const json& aResponseErrorJson)>;

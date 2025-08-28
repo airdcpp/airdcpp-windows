@@ -61,7 +61,7 @@ namespace webserver {
 
 		auto authType = AuthType::UNKNOWN;
 		if (token.starts_with("Basic ")) {
-			token = websocketpp::base64_decode(token.substr(6));
+			token = Util::base64_decode(token.substr(6));
 			authType = AuthType::BASIC;
 		} else if (token.starts_with("Bearer ")) {
 			token = token.substr(7);

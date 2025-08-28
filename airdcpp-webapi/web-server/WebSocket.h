@@ -22,30 +22,25 @@
 #include "stdinc.h"
 
 #include "forward.h"
+#include "IServerEndpoint.h"
 
 #include <airdcpp/core/types/GetSet.h>
 
 namespace webserver {
 	// WebSockets are owned by SocketManager and API modules
-	// WebSockets are owned by SocketManager and API modules
 	class WebServerManager;
 
 	class WebSocket {
 	public:
-		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_plain* aServer, WebServerManager* aWsm);
-		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_tls* aServer, WebServerManager* aWsm);
+		WebSocket(bool aIsSecure, ConnectionHdl aHdl, IServerEndpoint& aEndpoint, WebServerManager* aWsm);
 		~WebSocket();
 
-		void close(websocketpp::close::status::value aCode, const std::string& aMsg);
+		void close(uint16_t aCode, const std::string& aMsg);
 
 		IGETSET(SessionPtr, session, Session, nullptr);
 
 		// Send raw data
-		// Throws json::exception on JSON conversion errors  (possibly because of failing UTF-8 validation...)
-		//
-		// The goal is that the data is always fully validated, but especially the legacy
-		// NMDC code can't be trusted to parse the incoming messages without incorrectly 
-		// splitting multibyte character sequences in malformed received data...
+		// Throws json::exception on JSON conversion errors
 		void sendPlain(const json& aJson);
 		void sendApiResponse(const json& aJsonResponse, const json& aErrorJson, http_status aCode, int aCallbackId) noexcept;
 
@@ -60,7 +55,7 @@ namespace webserver {
 
 		void ping() noexcept;
 
-		void logError(const string& aMessage, websocketpp::log::level aErrorLevel) const noexcept;
+		void logError(const string& aMessage) const noexcept;
 		void debugMessage(const string& aMessage) const noexcept;
 
 		time_t getTimeCreated() const noexcept {
@@ -71,19 +66,11 @@ namespace webserver {
 			return url;
 		}
 
-		const websocketpp::http::parser::request& getRequest() noexcept;
-
 		// Throws json exception (from the json library) in case of invalid JSON, ArgumentException in case of invalid properties
 		static void parseRequest(const string& aRequest, int& callbackId_, string& method_, string& path_, json& data_);
-	protected:
-		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, WebServerManager* aWsm);
 	private:
-		const union {
-			server_plain* plainServer;
-			server_tls* tlsServer;
-		};
-
-		const websocketpp::connection_hdl hdl;
+		const ConnectionHdl hdl;
+		IServerEndpoint& endpoint;
 		WebServerManager* wsm;
 		const bool secure;
 		const time_t timeCreated;

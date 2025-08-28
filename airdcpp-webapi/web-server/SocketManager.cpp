@@ -71,7 +71,7 @@ namespace webserver {
 		}
 	}
 
-	WebSocketPtr SocketManager::getSocket(websocketpp::connection_hdl hdl) const noexcept {
+	WebSocketPtr SocketManager::getSocket(ConnectionHdl hdl) const noexcept {
 		RLock l(cs);
 		auto s = sockets.find(hdl);
 		if (s != sockets.end()) {
@@ -82,7 +82,7 @@ namespace webserver {
 	}
 
 	// For debugging only
-	void SocketManager::handlePongReceived(websocketpp::connection_hdl hdl, const string& /*aPayload*/) {
+	void SocketManager::handlePongReceived(ConnectionHdl hdl, const string& /*aPayload*/) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			return;
@@ -91,7 +91,7 @@ namespace webserver {
 		socket->debugMessage("PONG succeed");
 	}
 
-	void SocketManager::handlePongTimeout(websocketpp::connection_hdl hdl, const string&) {
+	void SocketManager::handlePongTimeout(ConnectionHdl hdl, const string&) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			return;
@@ -103,7 +103,7 @@ namespace webserver {
 
 		socket->debugMessage("PONG timed out");
 
-		socket->close(websocketpp::close::status::internal_endpoint_error, "PONG timed out");
+		socket->close(websocket_close_code::internal_endpoint_error, "PONG timed out");
 	}
 
 	void SocketManager::pingTimer() noexcept {
@@ -143,7 +143,7 @@ namespace webserver {
 		return i.base() == sockets.end() ? nullptr : *i;
 	}
 
-	void SocketManager::addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept {
+	void SocketManager::addSocket(ConnectionHdl hdl, const WebSocketPtr& aSocket) noexcept {
 		{
 			WLock l(cs);
 			sockets.try_emplace(hdl, aSocket);
@@ -152,7 +152,7 @@ namespace webserver {
 		fire(SocketManagerListener::SocketConnected(), aSocket);
 	}
 
-	void SocketManager::handleSocketDisconnected(websocketpp::connection_hdl hdl) {
+	void SocketManager::handleSocketDisconnected(ConnectionHdl hdl) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			dcassert(0);
@@ -211,5 +211,23 @@ namespace webserver {
 			aSocket->getSession()->onSocketDisconnected();
 			aSocket->setSession(nullptr);
 		}
+	}
+
+	void SocketManager::handleSocketConnected(IServerEndpoint& ep, bool aIsSecure, ConnectionHdl hdl) {
+		// Build our WebSocket using the adapter
+		auto socket = std::make_shared<WebSocket>(aIsSecure, hdl, ep, wsm);
+		addSocket(hdl, socket);
+	}
+
+	void SocketManager::handleSocketMessage(ConnectionHdl hdl, const std::string& payload) {
+		auto socket = getSocket(hdl);
+		if (!socket) {
+			dcassert(0);
+			return;
+		}
+
+		socket->onData(payload, [&socket, this](const SessionPtr& aSession) {
+			onAuthenticated(aSession, socket);
+		});
 	}
 }

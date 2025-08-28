@@ -72,7 +72,7 @@ namespace webserver {
 		return extension;
 	}
 
-	string FileServer::parseResourcePath(const string& aResource, const websocketpp::http::parser::request& aRequest, StringPairList& headers_) const {
+	string FileServer::parseResourcePath(const string& aResource, const HttpRequest& aRequest, StringPairList& headers_) const {
 		// Serve files only from the resource directory
 		if (aResource.empty() || aResource.find("..") != std::string::npos) {
 			throw RequestException(http_status::bad_request, "Invalid resource path");
@@ -85,7 +85,7 @@ namespace webserver {
 			dcassert(extension[0] != '.');
 
 			// We have compressed versions only for JS files
-			if (extension == "js" && aRequest.get_header("Accept-Encoding").find("gzip") != string::npos) {
+			if (extension == "js" && aRequest.getHeader("Accept-Encoding").find("gzip") != string::npos) {
 				request += ".gz";
 				headers_.emplace_back("Content-Encoding", "gzip");
 			}
@@ -98,8 +98,8 @@ namespace webserver {
 			// Forward all requests for non-static files to index
 			// (but try to report API requests or other downloads with an invalid path)
 
-			if (aRequest.get_header("Accept").find("text/html") == string::npos) {
-				if (aRequest.get_header("Content-Type") == "application/json") {
+			if (aRequest.getHeader("Accept").find("text/html") == string::npos) {
+				if (aRequest.getHeader("Content-Type") == "application/json") {
 					throw RequestException(http_status::not_acceptable, "File server won't serve JSON files. Did you mean \"/api" + aResource + "\" instead?");
 				}
 
@@ -164,10 +164,10 @@ namespace webserver {
 		return path;
 	}
 
-	http_status FileServer::handlePostRequest(const websocketpp::http::parser::request& aRequest,
+	http_status FileServer::handlePostRequest(const HttpRequest& aRequest,
 		std::string& output_, StringPairList& headers_, const SessionPtr& aSession) noexcept {
 
-		const auto& requestPath = aRequest.get_uri();
+		const auto& requestPath = aRequest.path;
 		if (requestPath == "/temp") {
 			if (!aSession || !aSession->getUser()->hasPermission(Access::FILESYSTEM_EDIT)) {
 				output_ = "Not authorized";
@@ -179,7 +179,7 @@ namespace webserver {
 
 			try {
 				File file(filePath, File::WRITE, File::TRUNCATE | File::CREATE, File::BUFFER_SEQUENTIAL);
-				file.write(aRequest.get_body());
+				file.write(aRequest.body);
 			} catch (const FileException& e) {
 				output_ = "Failed to write the file: " + e.getError();
 				return http_status::internal_server_error;
@@ -207,21 +207,20 @@ namespace webserver {
 	http_status FileServer::handleRequest(const HttpRequest& aRequest,
 		string& output_, StringPairList& headers_, const FileDeferredHandler& aDeferF) {
 
-		const auto& httpRequest = aRequest.httpRequest;
-		if (httpRequest.get_method() == "GET") {
-			return handleGetRequest(httpRequest, output_, headers_, aRequest.session, aDeferF);
-		} else if (httpRequest.get_method() == "POST") {
-			return handlePostRequest(httpRequest, output_, headers_, aRequest.session);
+		if (aRequest.method == "GET") {
+			return handleGetRequest(aRequest, output_, headers_, aRequest.session, aDeferF);
+		} else if (aRequest.method == "POST") {
+			return handlePostRequest(aRequest, output_, headers_, aRequest.session);
 		}
 
 		output_ = "Requested resource was not found";
 		return http_status::not_found;
 	}
 
-	http_status FileServer::handleGetRequest(const websocketpp::http::parser::request& aRequest,
+	http_status FileServer::handleGetRequest(const HttpRequest& aRequest,
 		string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF) {
 
-		const auto& requestUrl = aRequest.get_uri();
+		const auto& requestUrl = aRequest.path;
 		dcdebug("Requesting file %s\n", requestUrl.c_str());
 
 		// Proxy request?
@@ -257,7 +256,7 @@ namespace webserver {
 		auto fileSize = File::getSize(filePath);
 		int64_t startPos = 0, endPos = fileSize - 1;
 
-		auto partialContent = HttpUtil::parsePartialRange(aRequest.get_header("Range"), startPos, endPos);
+		auto partialContent = HttpUtil::parsePartialRange(aRequest.getHeader("Range"), startPos, endPos);
 
 		// Read file
 		try {

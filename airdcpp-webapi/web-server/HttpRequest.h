@@ -23,14 +23,17 @@
 
 #include <airdcpp/core/header/typedefs.h>
 
-
 namespace webserver {
 	struct HttpRequest {
 		const SessionPtr& session;
 		const string& ip;
 		const std::string& path;
-		const websocketpp::http::parser::request& httpRequest;
-		const bool secure;
+		// Adapter-agnostic snapshot of HTTP request fields
+		std::string method;
+		std::string body;
+		// Header accessor provided by the endpoint
+		std::function<std::string(const std::string&)> getHeader;
+		bool secure;
 	};
 }
 

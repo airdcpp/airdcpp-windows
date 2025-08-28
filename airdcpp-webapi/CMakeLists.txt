@@ -9,6 +9,8 @@ cmake_minimum_required(VERSION 3.16)
 
 find_package (websocketpp REQUIRED)
 find_package (nlohmann_json 3.0.0 REQUIRED)
+# Boost.Beast is header-only, but expose the imported target if available
+find_package(Boost 1.67.0 REQUIRED COMPONENTS beast)
 
 
 file (GLOB_RECURSE webapi_hdrs ${PROJECT_SOURCE_DIR}/*.h)
@@ -55,6 +57,7 @@ target_link_libraries (${PROJECT_NAME}
 	airdcpp 
 	websocketpp::websocketpp
 	nlohmann_json::nlohmann_json
+	Boost::beast
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${VERSION} OUTPUT_NAME "airdcpp-webapi")
 

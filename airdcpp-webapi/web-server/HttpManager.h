@@ -27,6 +27,7 @@
 #include "HttpUtil.h"
 #include "WebServerManager.h"
 #include "WebUserManager.h"
+#include "IServerEndpoint.h"
 
 #include <airdcpp/core/header/format.h>
 #include <airdcpp/util/AppUtil.h>
@@ -45,10 +46,8 @@ namespace webserver {
 		HttpManager(HttpManager&) = delete;
 		HttpManager& operator=(HttpManager&) = delete;
 
-		template<class T>
-		void setEndpointHandlers(T& aEndpoint, bool aIsSecure) {
-			aEndpoint.set_http_handler(
-			 	std::bind_front(&HttpManager::handleHttpRequest<T>, this, &aEndpoint, aIsSecure));
+		void setEndpointHandlers(IServerEndpoint& aEndpoint, bool aIsSecure) {
+			aEndpoint.set_http_handler(std::bind_front(&HttpManager::handleHttpRequest, this, std::ref(aEndpoint), aIsSecure));
 		}
 
 		void start(const string& aWebResourcePath) noexcept;
@@ -60,162 +59,14 @@ namespace webserver {
 			json& output_, json& error_, const ApiDeferredHandler& aDeferredHandler) noexcept;
 
 		// Returns false in case of invalid token format
-		template <typename ConnType>
-		bool getOptionalHttpSession(const ConnType& con, const string& aIp, SessionPtr& session_) {
-			auto authToken = HttpUtil::parseAuthToken(con->get_request());
-			if (authToken != websocketpp::http::empty_header) {
-				try {
-					session_ = wsm->getUserManager().parseHttpSession(authToken, aIp);
-				} catch (const std::exception& e) {
-					con->set_body(e.what());
-					con->set_status(http_status::unauthorized);
-					return false;
-				}
-			}
+		bool getOptionalHttpSession(IServerEndpoint& ep, ConnectionHdl hdl, const string& aIp, SessionPtr& session_);
 
-			return true;
-		}
+		bool setHttpResponse(IServerEndpoint& ep, ConnectionHdl hdl, http_status aStatus, const string& aOutput);
 
-		template <typename ConnType>
-		bool setHttpResponse(const ConnType& con, http_status aStatus, const string& aOutput) {
-			// The maximum HTTP response body is currently capped to 32 MB
-			// https://github.com/zaphoyd/websocketpp/issues/1009
-			if (aOutput.length() > MAX_HTTP_BODY_SIZE) {
-				con->set_status(http_status::internal_server_error);
-				con->set_body("The response size is larger than " + Util::toString(MAX_HTTP_BODY_SIZE) + " bytes");
-				return false;
-			}
+		void handleHttpApiRequest(const HttpRequest& aRequest, IServerEndpoint& ep, ConnectionHdl hdl);
+		void handleHttpFileRequest(const HttpRequest& aRequest, IServerEndpoint& ep, ConnectionHdl hdl);
 
-			con->set_status(aStatus /*, aOutput*/); //  https://github.com/zaphoyd/websocketpp/issues/1177
-			try {
-				con->set_body(aOutput);
-			} catch (const std::exception&) {
-				// Shouldn't really happen
-				con->set_status(http_status::internal_server_error);
-				con->set_body("Failed to set response body");
-				return false;
-			}
-
-			return true;
-		}
-
-		template <typename EndpointType, typename ConnType>
-		void handleHttpApiRequest(const HttpRequest& aRequest, EndpointType* s, const ConnType& con) {
-			wsm->onData(aRequest.path + ": " + aRequest.httpRequest.get_body(), TransportType::TYPE_HTTP_API, Direction::INCOMING, aRequest.ip);
-
-			// Don't capture aRequest in here (it can't be used for async actions)
-			auto responseF = [this, s, con, ip = aRequest.ip](http_status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
-				string data;
-				const auto& responseJson = !aResponseErrorJson.is_null() ? aResponseErrorJson : aResponseJsonData;
-				if (!responseJson.is_null()) {
-					try {
-						data = responseJson.dump();
-					} catch (const std::exception& e) {
-						WebServerManager::logDebugError(s, "Failed to convert data to JSON: " + string(e.what()), websocketpp::log::elevel::fatal);
-
-						con->set_body("Failed to convert data to JSON: " + string(e.what()));
-						con->set_status(http_status::internal_server_error);
-						return;
-					}
-				}
-
-				wsm->onData(con->get_resource() + " (" + Util::toString(aStatus) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
-
-				if (setHttpResponse(con, aStatus, data)) {
-					con->append_header("Content-Type", "application/json");
-				}
-			};
-
-
-			bool isDeferred = false;
-			const auto deferredF = [&isDeferred, &responseF, con]() {
-				con->defer_http_response();
-				isDeferred = true;
-
-				return [con, cb = std::move(responseF)](http_status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
-					cb(aStatus, aResponseJsonData, aResponseErrorJson);
-					con->send_http_response();
-				};
-			};
-
-			json output, apiError;
-			auto status = handleApiRequest(
-				aRequest,
-				output,
-				apiError,
-				deferredF
-			);
-
-			if (!isDeferred) {
-				responseF(status, output, apiError);
-			}
-		}
-
-		template <typename ConnType>
-		void handleHttpFileRequest(const HttpRequest& aRequest, const ConnType& con) {
-			wsm->onData(aRequest.httpRequest.get_method() + " " + aRequest.path, TransportType::TYPE_HTTP_FILE, Direction::INCOMING, aRequest.ip);
-
-			StringPairList headers;
-			std::string output;
-
-			// Don't capture aRequest in here (it can't be used for async actions)
-			auto responseF = [this, con, ip = aRequest.ip](http_status aStatus, const string& aOutput, const StringPairList& aHeaders = StringPairList()) {
-				wsm->onData(
-					con->get_request().get_method() + " " + con->get_resource() + ": " + Util::toString(aStatus) + " (" + Util::formatBytes(aOutput.length()) + ")",
-					TransportType::TYPE_HTTP_FILE,
-					Direction::OUTGOING,
-					ip
-				);
-
-				auto responseOk = setHttpResponse(con, aStatus, aOutput);
-				if (responseOk && HttpUtil::isStatusOk(aStatus)) {
-					// Don't set any incomplete/invalid headers in case of errors...
-					for (const auto& [name, value] : aHeaders) {
-						con->append_header(name, value);
-					}
-				}
-
-			};
-
-			bool isDeferred = false;
-			const auto deferredF = [&isDeferred, &responseF, con]() {
-				con->defer_http_response();
-				isDeferred = true;
-
-				return [cb = std::move(responseF), con](http_status aStatus, const string& aOutput, const StringPairList& aHeaders) {
-					cb(aStatus, aOutput, aHeaders);
-					con->send_http_response();
-				};
-			};
-
-			auto status = fileServer.handleRequest(aRequest, output, headers, deferredF);
-			if (!isDeferred) {
-				responseF(status, output, headers);
-			}
-		}
-
-		template <typename EndpointType>
-		void handleHttpRequest(EndpointType* s, bool aIsSecure, websocketpp::connection_hdl hdl) {
-			// Blocking HTTP Handler
-			auto con = s->get_con_from_hdl(hdl);
-			auto ip = con->get_raw_socket().remote_endpoint().address().to_string();
-
-			con->append_header("Connection", "close"); // Workaround for https://github.com/zaphoyd/websocketpp/issues/890
-
-			// We also have public resources (such as UI resources and auth endpoints) 
-			// so session isn't required at this point
-			SessionPtr session = nullptr;
-			if (!getOptionalHttpSession(con, ip, session)) {
-				return;
-			}
-
-			HttpRequest request{ session, ip, con->get_resource(), con->get_request(), aIsSecure };
-			if (request.path.length() >= 4 && request.path.compare(0, 4, "/api") == 0) {
-				handleHttpApiRequest(request, s, con);
-			} else {
-				handleHttpFileRequest(request, con);
-			}
-		}
+		void handleHttpRequest(IServerEndpoint& ep, bool aIsSecure, ConnectionHdl hdl);
 
 		WebServerManager* wsm;
 		FileServer fileServer;
