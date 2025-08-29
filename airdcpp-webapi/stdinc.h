@@ -19,33 +19,31 @@
 #ifndef DCPLUSPLUS_WEBSERVER_STDINC_H
 #define DCPLUSPLUS_WEBSERVER_STDINC_H
 
-#ifndef _WEBSOCKETPP_CPP11_STL_
-#define _WEBSOCKETPP_CPP11_STL_
-#endif
-
 #include <airdcpp/stdinc.h>
 
-#include <websocketpp/http/constants.hpp>
-#include <websocketpp/config/asio.hpp>
-#include <websocketpp/server.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/websocket.hpp>
 
 #include "json.h"
 
-
 namespace webserver {
 	using json = nlohmann::json;
-	using http_status = websocketpp::http::status_code::value;
 
-	// define types for two different server endpoints, one for each config we are
-	// using (legacy websocketpp types kept during phase 1)
-	using api_return = http_status;
+	namespace beast = boost::beast;
+	namespace http = beast::http;
+	namespace websocket = beast::websocket;
 
-	// Connection handle abstraction. Internally still websocketpp, but avoid explicit namespace elsewhere
-	using ConnectionHdl = websocketpp::connection_hdl;
+	// Generic connection handle used by adapters (points to underlying session object)
+	using ConnectionHdl = std::weak_ptr<void>;
+
+	// API aliases
+	using api_return = http::status;
 
 	using HTTPFileCompletionF = std::function<void(api_return aStatus, const std::string& aOutput, const std::vector<std::pair<std::string, std::string>>& aHeaders)>;
 	using ApiCompletionF = std::function<void(api_return aStatus, const json& aResponseJsonData, const json& aResponseErrorJson)>;
-	using FileDeferredHandler = std::function<HTTPFileCompletionF()> ;
+	using FileDeferredHandler = std::function<HTTPFileCompletionF()>;
 	using ApiDeferredHandler = std::function<ApiCompletionF()>;
 
 	using namespace dcpp;

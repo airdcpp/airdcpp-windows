@@ -37,7 +37,6 @@
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/core/timer/TimerManager.h>
 
-// #include "WppServerAdapter.h"
 #include "BeastServerAdapter.h"
 
 #define CONFIG_DIR AppUtil::PATH_USER_CONFIG

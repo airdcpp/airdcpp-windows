@@ -75,7 +75,7 @@ namespace webserver {
 	string FileServer::parseResourcePath(const string& aResource, const HttpRequest& aRequest, StringPairList& headers_) const {
 		// Serve files only from the resource directory
 		if (aResource.empty() || aResource.find("..") != std::string::npos) {
-			throw RequestException(http_status::bad_request, "Invalid resource path");
+			throw RequestException(http::status::bad_request, "Invalid resource path");
 		}
 
 		auto request = aResource;
@@ -100,10 +100,10 @@ namespace webserver {
 
 			if (aRequest.getHeader("Accept").find("text/html") == string::npos) {
 				if (aRequest.getHeader("Content-Type") == "application/json") {
-					throw RequestException(http_status::not_acceptable, "File server won't serve JSON files. Did you mean \"/api" + aResource + "\" instead?");
+					throw RequestException(http::status::not_acceptable, "File server won't serve JSON files. Did you mean \"/api" + aResource + "\" instead?");
 				}
 
-				throw RequestException(http_status::not_found, "Invalid file path (hint: use \"Accept: text/html\" if you want index.html)");
+				throw RequestException(http::status::not_found, "Invalid file path (hint: use \"Accept: text/html\" if you want index.html)");
 			}
 
 			request = "index.html";
@@ -137,7 +137,7 @@ namespace webserver {
 			}
 		}
 
-		throw RequestException(http_status::not_found, "No viewable file matching the TTH " + aTTH.toBase32() + " was found");
+		throw RequestException(http::status::not_found, "No viewable file matching the TTH " + aTTH.toBase32() + " was found");
 	}
 
 	string FileServer::parseViewFilePath(const string& aResource, StringPairList& headers_, const SessionPtr& aSession) const {
@@ -152,7 +152,7 @@ namespace webserver {
 			}
 
 			if (!session || !session->getUser()->hasPermission(Access::VIEW_FILES_VIEW)) {
-				throw RequestException(http_status::unauthorized, "Not authorized");
+				throw RequestException(http::status::unauthorized, "Not authorized");
 			}
 		}
 
@@ -164,14 +164,14 @@ namespace webserver {
 		return path;
 	}
 
-	http_status FileServer::handlePostRequest(const HttpRequest& aRequest,
+	http::status FileServer::handlePostRequest(const HttpRequest& aRequest,
 		std::string& output_, StringPairList& headers_, const SessionPtr& aSession) noexcept {
 
 		const auto& requestPath = aRequest.path;
 		if (requestPath == "/temp") {
 			if (!aSession || !aSession->getUser()->hasPermission(Access::FILESYSTEM_EDIT)) {
 				output_ = "Not authorized";
-				return http_status::unauthorized;
+				return http::status::unauthorized;
 			}
 
 			const auto fileName = Util::toString(ValueGenerator::rand());
@@ -182,7 +182,7 @@ namespace webserver {
 				file.write(aRequest.body);
 			} catch (const FileException& e) {
 				output_ = "Failed to write the file: " + e.getError();
-				return http_status::internal_server_error;
+				return http::status::internal_server_error;
 			}
 
 			{
@@ -191,11 +191,11 @@ namespace webserver {
 			}
 
 			headers_.emplace_back("Location", fileName);
-			return http_status::created;
+			return http::status::created;
 		}
 
 		output_ = "Requested resource was not found";
-		return http_status::not_found;
+		return http::status::not_found;
 	}
 
 	string FileServer::getTempFilePath(const string& fileId) const noexcept {
@@ -204,7 +204,7 @@ namespace webserver {
 		return i != tempFiles.end() ? i->second : Util::emptyString;
 	}
 
-	http_status FileServer::handleRequest(const HttpRequest& aRequest,
+	http::status FileServer::handleRequest(const HttpRequest& aRequest,
 		string& output_, StringPairList& headers_, const FileDeferredHandler& aDeferF) {
 
 		if (aRequest.method == "GET") {
@@ -214,10 +214,10 @@ namespace webserver {
 		}
 
 		output_ = "Requested resource was not found";
-		return http_status::not_found;
+		return http::status::not_found;
 	}
 
-	http_status FileServer::handleGetRequest(const HttpRequest& aRequest,
+	http::status FileServer::handleGetRequest(const HttpRequest& aRequest,
 		string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF) {
 
 		const auto& requestUrl = aRequest.path;
@@ -227,7 +227,7 @@ namespace webserver {
 		if (requestUrl.starts_with("/proxy")) {
 			if (!aSession) {
 				output_ = "Not authorized";
-				return http_status::unauthorized;
+				return http::status::unauthorized;
 			}
 
 			return handleProxyDownload(requestUrl, output_, aDeferF);
@@ -241,7 +241,7 @@ namespace webserver {
 				filePath = parseViewFilePath(requestUrl.substr(6), headers_, aSession);
 			} else if (requestUrl.length() >= 6 && requestUrl.compare(0, 6, "/proxy") == 0) {
 				if (!aSession) {
-					throw RequestException(http_status::unauthorized, "Not authorized");
+					throw RequestException(http::status::unauthorized, "Not authorized");
 				}
 
 				return handleProxyDownload(requestUrl, output_, aDeferF);
@@ -269,10 +269,10 @@ namespace webserver {
 			// Don't show the local file path for public resources
 			auto responsePath = isViewFile ? filePath : requestUrl;
 			output_ = e.getError() + " (" + responsePath + ")";
-			return http_status::not_found;
+			return http::status::not_found;
 		} catch (const std::bad_alloc&) {
 			output_ = "Not enough memory on the server to serve this request";
-			return http_status::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
 		{
@@ -302,13 +302,13 @@ namespace webserver {
 		if (partialContent) {
 			headers_.emplace_back("Content-Range", HttpUtil::formatPartialRange(startPos, endPos, fileSize));
 			headers_.emplace_back("Accept-Ranges", "bytes");
-			return http_status::partial_content;
+			return http::status::partial_content;
 		}
 
-		return http_status::ok;
+		return http::status::ok;
 	}
 
-	http_status FileServer::handleProxyDownload(const string& aRequestUrl, string& output_, const FileDeferredHandler& aDeferF) noexcept {
+	http::status FileServer::handleProxyDownload(const string& aRequestUrl, string& output_, const FileDeferredHandler& aDeferF) noexcept {
 		string protocol, host, port, path, query, fragment;
 		LinkUtil::decodeUrl(aRequestUrl, protocol, host, port, path, query, fragment);
 
@@ -316,14 +316,14 @@ namespace webserver {
 		auto proxyUrlEscaped = LinkUtil::decodeQuery(query)["url"];
 		if (proxyUrlEscaped.empty()) {
 			output_ = "Proxy URL missing";
-			return http_status::bad_request;
+			return http::status::bad_request;
 		}
 
 		// Decode URL
 		string proxyUrl;
 		if (!HttpUtil::unescapeUrl(proxyUrlEscaped, proxyUrl)) {
 			output_ = "Invalid URL " + proxyUrlEscaped;
-			return http_status::bad_request;
+			return http::status::bad_request;
 		}
 
 		auto downloadId = proxyDownloadCounter++;
@@ -339,7 +339,7 @@ namespace webserver {
 			proxyDownloads.try_emplace(downloadId, download);
 		}
 
-		return http_status::accepted;
+		return http::status::accepted;
 	}
 
 	static StringSet forwardedProxyHeaders = { "content-type", "content-encoding", "etag", "expires", "last-modified", "date", "vary" };
@@ -363,12 +363,12 @@ namespace webserver {
 		dcassert(d);
 		if (d) {
 			if (d->buf.empty()) {
-				int statusCode;
+				http::status statusCode;
 				string statusText;
 				if (HttpUtil::parseStatus(d->status, statusCode, statusText)) {
-					aCompletionF(static_cast<http_status>(statusCode), statusText, StringPairList());
+					aCompletionF(statusCode, statusText, StringPairList());
 				} else {
-					aCompletionF(http_status::not_acceptable, d->status, StringPairList());
+					aCompletionF(http::status::not_acceptable, d->status, StringPairList());
 				}
 			} else {
 				StringPairList headers;
@@ -379,7 +379,7 @@ namespace webserver {
 				}
 
 				HttpUtil::addCacheControlHeader(headers, 0);
-				aCompletionF(http_status::ok, d->buf, headers);
+				aCompletionF(http::status::ok, d->buf, headers);
 			}
 		}
 	}

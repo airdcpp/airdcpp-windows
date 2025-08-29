@@ -53,7 +53,7 @@ namespace webserver {
 		void start(const string& aWebResourcePath) noexcept;
 		void stop() noexcept;
 
-		static const int64_t MAX_HTTP_BODY_SIZE = websocketpp::http::max_body_size;
+		static constexpr int64_t MAX_HTTP_BODY_SIZE = 16LL * 1024 * 1024; // 16 MiB default
 	private:
 		static api_return handleApiRequest(const HttpRequest& aRequest,
 			json& output_, json& error_, const ApiDeferredHandler& aDeferredHandler) noexcept;
@@ -61,7 +61,7 @@ namespace webserver {
 		// Returns false in case of invalid token format
 		bool getOptionalHttpSession(IServerEndpoint& ep, ConnectionHdl hdl, const string& aIp, SessionPtr& session_);
 
-		bool setHttpResponse(IServerEndpoint& ep, ConnectionHdl hdl, http_status aStatus, const string& aOutput);
+		bool setHttpResponse(IServerEndpoint& ep, ConnectionHdl hdl, http::status aStatus, const string& aOutput);
 
 		void handleHttpApiRequest(const HttpRequest& aRequest, IServerEndpoint& ep, ConnectionHdl hdl);
 		void handleHttpFileRequest(const HttpRequest& aRequest, IServerEndpoint& ep, ConnectionHdl hdl);

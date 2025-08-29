@@ -102,12 +102,10 @@ namespace webserver {
 			return {};
 		}
 		std::string get_resource(ConnectionHdl hdl) override {
-			std::string t;
-			if (auto s = lockHttp(hdl)) t = std::string(s->req.target());
-			else if (auto ws = lockWs(hdl)) t = ws->target;
-			if (t.empty()) return t;
-			auto q = t.find('?');
-			return q == std::string::npos ? t : t.substr(0, q);
+			// std::string t;
+			if (auto s = lockHttp(hdl)) return std::string(s->req.target());
+			else if (auto ws = lockWs(hdl)) return ws->target;
+			return "";
 		}
 
 		void http_append_header(ConnectionHdl hdl, const std::string& name, const std::string& value) override {
@@ -116,14 +114,14 @@ namespace webserver {
 		void http_set_body(ConnectionHdl hdl, const std::string& body) override {
 			if (auto s = lockHttp(hdl)) s->respBody = body;
 		}
-		void http_set_status(ConnectionHdl hdl, http_status status) override {
+		void http_set_status(ConnectionHdl hdl, http::status status) override {
 			if (auto s = lockHttp(hdl)) s->respStatus = status;
 		}
 		void http_defer_response(ConnectionHdl hdl) override {
-			if (auto s = lockHttp(hdl)) s->deferred = true;
+			if (auto s = lockHttp(hdl)) s->mark_deferred();
 		}
 		void http_send_response(ConnectionHdl hdl) override {
-			if (auto s = lockHttp(hdl)) s->sendResponse();
+			if (auto s = lockHttp(hdl)) s->send_and_release();
 		}
 
 		void ws_send_text(ConnectionHdl hdl, const std::string& text) override {
@@ -186,6 +184,22 @@ namespace webserver {
 				}
 			}
 
+			// keep the session alive while deferred
+			void mark_deferred() {
+				if (!deferred) {
+					deferred = true;
+					selfKeep = shared_from_this();
+				}
+			}
+
+			void send_and_release() {
+				// capture self during async write
+				sendResponse();
+				deferred = false;
+				// release our manual keep-alive; async write holds its own ref
+				selfKeep.reset();
+			}
+
 			void sendResponse() {
 				// default status if not set
 				auto beastStatus = static_cast<http::status>(static_cast<unsigned>(respStatus));
@@ -220,12 +234,13 @@ namespace webserver {
 			http::request<http::string_body> req;
 
 			// response state
-			http_status respStatus = http_status::ok;
+			http::status respStatus = http::status::ok;
 			std::vector<std::pair<std::string,std::string>> respHeaders;
 			std::string respBody;
 			bool deferred = false;
 			ConnectionHdl hdl; // for callbacks
 			std::shared_ptr<http::response<http::string_body>> respPtr; // keep response alive during async_write
+			std::shared_ptr<HttpSession> selfKeep; // keep session alive while deferred
 		};
 
 		struct WsSession : public SessionBase, public std::enable_shared_from_this<WsSession> {

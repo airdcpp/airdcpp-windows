@@ -205,7 +205,7 @@ namespace webserver {
 		const auto descriptionId = JsonUtil::getOptionalFieldDefault<string>("tag", aJson, aDefaultDescriptionId);
 
 		if (end > aMessageText.size() || end <= start) {
-			throw RequestException(http_status::bad_request, "Invalid range");
+			throw RequestException(http::status::bad_request, "Invalid range");
 		}
 
 		return make_shared<MessageHighlight>(start, aMessageText.substr(start, end - start), type, descriptionId);

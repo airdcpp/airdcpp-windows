@@ -93,7 +93,7 @@ namespace webserver {
 			}
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubInfo::handleGetUsers(ApiRequest& aRequest) {
@@ -105,7 +105,7 @@ namespace webserver {
 
 		auto j = Serializer::serializeItemList(start, count, OnlineUserUtils::propertyHandler, users);
 		aRequest.setResponseBody(j);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleGetUserCid(ApiRequest& aRequest) {
@@ -114,55 +114,55 @@ namespace webserver {
 		auto ou = ClientManager::getInstance()->findOnlineUser(user->getCID(), client->getHubUrl(), false);
 		if (!ou) {
 			aRequest.setResponseErrorStr("User was not found");
-			return http_status::not_found;
+			return http::status::not_found;
 		}
 
 		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleGetUserId(ApiRequest& aRequest) {
 		auto ou = client->findUser(aRequest.getTokenParam());
 		if (!ou) {
 			aRequest.setResponseErrorStr("User " + Util::toString(aRequest.getTokenParam()) + " was not found");
-			return http_status::not_found;
+			return http::status::not_found;
 		}
 
 		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleGetCounts(ApiRequest& aRequest) {
 		aRequest.setResponseBody(serializeCounts(client));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleReconnect(ApiRequest&) {
 		client->reconnect();
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubInfo::handleFavorite(ApiRequest& aRequest) {
 		auto favHub = client->saveFavorite();
 		if (!favHub) {
 			aRequest.setResponseErrorStr(STRING(FAVORITE_HUB_ALREADY_EXISTS));
-			return http_status::bad_request;
+			return http::status::bad_request;
 		}
 
 		aRequest.setResponseBody(Serializer::serializeItem(favHub, FavoriteHubUtils::propertyHandler));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handlePassword(ApiRequest& aRequest) {
 		auto password = JsonUtil::getField<string>("password", aRequest.getRequestBody(), false);
 
 		client->password(password);
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubInfo::handleRedirect(ApiRequest&) {
 		client->doRedirect();
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	json HubInfo::serializeIdentity(const ClientPtr& aClient) noexcept {

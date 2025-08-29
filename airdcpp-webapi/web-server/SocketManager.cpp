@@ -103,7 +103,8 @@ namespace webserver {
 
 		socket->debugMessage("PONG timed out");
 
-		socket->close(websocket_close_code::internal_endpoint_error, "PONG timed out");
+		// 1011 internal error
+		socket->close(static_cast<uint16_t>(websocket::close_code::internal_error), "PONG timed out");
 	}
 
 	void SocketManager::pingTimer() noexcept {
@@ -123,14 +124,16 @@ namespace webserver {
 		}
 
 		for (const auto& s : inactiveSockets) {
-			s->close(websocketpp::close::status::policy_violation, "Authentication timeout");
+			// 1008 policy violation
+			s->close(static_cast<uint16_t>(websocket::close_code::policy_error), "Authentication timeout");
 		}
 	}
 
 	void SocketManager::disconnectSockets(const string& aMessage) noexcept {
 		RLock l(cs);
 		for (const auto& socket : sockets | views::values) {
-			socket->close(websocketpp::close::status::going_away, aMessage);
+			// 1001 going away
+			socket->close(static_cast<uint16_t>(websocket::close_code::going_away), aMessage);
 		}
 	}
 
@@ -184,7 +187,8 @@ namespace webserver {
 			dcdebug("Replace socket for session %s\n", aSession->getAuthToken().c_str());
 			resetSocketSession(oldSocket);
 
-			oldSocket->close(websocketpp::close::status::policy_violation, "Another socket was connected to this session");
+			// 1008 policy violation
+			oldSocket->close(static_cast<uint16_t>(websocket::close_code::policy_error), "Another socket was connected to this session");
 		}
 
 		aSession->onSocketConnected(aSocket);
@@ -201,7 +205,8 @@ namespace webserver {
 		resetSocketSession(socket);
 
 		if (static_cast<WebUserManager::SessionRemovalReason>(aReason) == WebUserManager::SessionRemovalReason::USER_CHANGED) {
-			socket->close(websocketpp::close::status::normal, "Re-authentication required");
+			// 1000 normal
+			socket->close(static_cast<uint16_t>(websocket::close_code::normal), "Re-authentication required");
 		}
 	}
 

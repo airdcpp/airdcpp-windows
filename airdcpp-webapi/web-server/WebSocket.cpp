@@ -51,7 +51,7 @@ namespace webserver {
 		dcdebug("Websocket was deleted\n");
 	}
 
-	void WebSocket::sendApiResponse(const json& aResponseJson, const json& aErrorJson, http_status aCode, int aCallbackId) noexcept {
+	void WebSocket::sendApiResponse(const json& aResponseJson, const json& aErrorJson, http::status aCode, int aCallbackId) noexcept {
 		json j;
 
 		if (aCallbackId > 0) {
@@ -69,7 +69,7 @@ namespace webserver {
 		} else if (!aResponseJson.is_null()) {
 			j["data"] = aResponseJson;
 		} else {
-			dcassert(aCode == http_status::no_content);
+			dcassert(aCode == http::status::no_content);
 		}
 
 		try {
@@ -80,7 +80,7 @@ namespace webserver {
 				{
 					{ "message", "Failed to convert data to JSON: " + string(e.what()) }
 				}, 
-				http_status::internal_server_error, 
+				http::status::internal_server_error, 
 				aCallbackId
 			);
 		}
@@ -152,15 +152,15 @@ namespace webserver {
 		try {
 			parseRequest(aMessage, callbackId, method, path, data);
 		} catch (const json::exception& e) {
-			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr("Failed to parse JSON: " + string(e.what())), http_status::bad_request, callbackId);
+			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr("Failed to parse JSON: " + string(e.what())), http::status::bad_request, callbackId);
 			return;
 		} catch (const std::invalid_argument& e) {
-			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http_status::bad_request, callbackId);
+			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http::status::bad_request, callbackId);
 			return;
 		}
 
 		// Prepare response handlers
-		const auto responseF = [callbackId, this](http_status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
+		const auto responseF = [callbackId, this](http::status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
 			sendApiResponse(aResponseJsonData, aResponseErrorJson, aStatus, callbackId);
 		};
 
@@ -168,21 +168,21 @@ namespace webserver {
 		const auto deferredF = [&isDeferred, &responseF]() {
 			isDeferred = true;
 
-			return [responseF](http_status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
+			return [responseF](http::status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
 				responseF(aStatus, aResponseJsonData, aResponseErrorJson);
 			};
 		};
 
 		// Route request
 
-		http_status code;
+		http::status code;
 		json responseJsonData, responseErrorJson;
 		try {
 			ApiRequest apiRequest(url + path, method, std::move(data), getSession(), deferredF, responseJsonData, responseErrorJson);
 			RouterRequest routerRequest{ apiRequest, secure, aAuthCallback, getIp() };
 			code = ApiRouter::handleRequest(routerRequest);
 		} catch (const std::invalid_argument& e) {
-			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http_status::bad_request, callbackId);
+			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http::status::bad_request, callbackId);
 			return;
 		}
 

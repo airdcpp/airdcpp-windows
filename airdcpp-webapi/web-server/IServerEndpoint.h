@@ -11,8 +11,6 @@
 #include <string>
 
 namespace webserver {
-	// Keep using websocketpp::connection_hdl in phase 1 to minimize churn
-	using ConnectionHdl = websocketpp::connection_hdl;
 	using context_ptr = std::shared_ptr<boost::asio::ssl::context>;
 
 	class IServerEndpoint {
@@ -60,7 +58,7 @@ namespace webserver {
 		// HTTP response helpers
 		virtual void http_append_header(ConnectionHdl hdl, const std::string& name, const std::string& value) = 0;
 		virtual void http_set_body(ConnectionHdl hdl, const std::string& body) = 0;
-		virtual void http_set_status(ConnectionHdl hdl, http_status status) = 0;
+		virtual void http_set_status(ConnectionHdl hdl, http::status status) = 0;
 		virtual void http_defer_response(ConnectionHdl hdl) = 0;
 		virtual void http_send_response(ConnectionHdl hdl) = 0;
 

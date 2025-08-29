@@ -29,7 +29,7 @@
 #define TTH_PARAM_ID "tth_param"
 #define CID_PARAM_ID "cid_param"
 
-#define CODE_DEFERRED http_status::see_other
+#define CODE_DEFERRED http::status::see_other
 
 namespace webserver {
 	enum RequestMethod {

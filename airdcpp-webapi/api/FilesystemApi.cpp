@@ -59,23 +59,23 @@ namespace webserver {
 			if (path.empty()) {
 #ifdef _WIN32
 				auto content = Filesystem::getDriveListing(false);
-				complete(http_status::ok, content, nullptr);
+				complete(http::status::ok, content, nullptr);
 				return;
 #endif
 			} else {
 				// Validate path
 				if (!File::isDirectory(path)) {
-					complete(http_status::bad_request, nullptr, ApiRequest::toResponseErrorStr("Directory " + path + " doesn't exist"));
+					complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr("Directory " + path + " doesn't exist"));
 					return;
 				}
 
 				// Return listing
 				try {
 					auto content = serializeDirectoryContent(path, dirsOnly);
-					complete(http_status::ok, content, nullptr);
+					complete(http::status::ok, content, nullptr);
 					return;
 				} catch (const FileException& e) {
-					complete(http_status::internal_server_error, nullptr, ApiRequest::toResponseErrorStr("Failed to get directory content: " + e.getError()));
+					complete(http::status::internal_server_error, nullptr, ApiRequest::toResponseErrorStr("Failed to get directory content: " + e.getError()));
 					return;
 				}
 			}
@@ -105,14 +105,14 @@ namespace webserver {
 		try {
 			if (!File::createDirectory(path)) {
 				aRequest.setResponseErrorStr("Directory exists");
-				return http_status::bad_request;
+				return http::status::bad_request;
 			}
 		} catch (const FileException& e) {
 			aRequest.setResponseErrorStr("Failed to create directory: " + e.getError());
-			return http_status::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return FilesystemApi::handleGetDiskInfo(ApiRequest& aRequest) {
@@ -133,6 +133,6 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(retJson);
-		return http_status::ok;
+		return http::status::ok;
 	}
 }

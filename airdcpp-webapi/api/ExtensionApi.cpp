@@ -82,10 +82,10 @@ namespace webserver {
 			aRequest.setResponseBody(ExtensionInfo::serializeExtension(ext));
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
-			return http_status::bad_request;
+			return http::status::bad_request;
 		}
 
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return ExtensionApi::handleDownloadExtension(ApiRequest& aRequest) {
@@ -101,10 +101,10 @@ namespace webserver {
 
 		if (!em.downloadExtension(installId, url, sha)) {
 			aRequest.setResponseErrorStr("Extension is being download already");
-			return http_status::conflict;
+			return http::status::conflict;
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionApi::handleDeleteSubmodule(ApiRequest& aRequest) {
@@ -117,10 +117,10 @@ namespace webserver {
 			}
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
-			return http_status::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionApi::handleGetEngineStatuses(ApiRequest& aRequest) {
@@ -135,7 +135,7 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(ret);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	void ExtensionApi::on(ExtensionManagerListener::ExtensionAdded, const ExtensionPtr& aExtension) noexcept {

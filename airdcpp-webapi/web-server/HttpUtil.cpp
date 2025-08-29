@@ -203,11 +203,12 @@ namespace webserver {
 		return true;
 	}
 
-	bool HttpUtil::isStatusOk(int aCode) noexcept {
-		return aCode >= 200 && aCode <= 299;
+	bool HttpUtil::isStatusOk(http::status aCode) noexcept {
+		// return aCode >= 200 && aCode <= 299;
+		return http::to_status_class(aCode) == http::status_class::successful;
 	}
 
-	bool HttpUtil::parseStatus(const string& aResponse, int& code_, string& text_) noexcept {
+	bool HttpUtil::parseStatus(const string& aResponse, http::status& code_, string& text_) noexcept {
 		if (aResponse.length() < 6 || aResponse.compare(0, 6, "HTTP/1") != 0) {
 			return false;
 		}
@@ -222,7 +223,7 @@ namespace webserver {
 			return false;
 		}
 
-		code_ = Util::toInt(aResponse.substr(start + 1, end));
+		code_ = http::int_to_status(Util::toInt(aResponse.substr(start + 1, end)));
 		text_ = aResponse.substr(end + 1);
 		return true;
 	}

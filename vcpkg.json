@@ -31,7 +31,6 @@
     "miniupnpc",
     "nlohmann-json",
     "openssl",
-    "websocketpp",
     "wtl",
     "zlib",
     "boost-beast"

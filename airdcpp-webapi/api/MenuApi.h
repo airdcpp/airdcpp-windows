@@ -105,7 +105,7 @@ namespace webserver {
 			const auto accessList = aRequest.getSession()->getUser()->getPermissions();
 			const auto clickData = deserializeClickData(aRequest.getRequestBody(), accessList);
 			aHandler(clickData);
-			return http_status::no_content;
+			return http::status::no_content;
 		}
 
 		static ContextMenuItemClickData deserializeClickData(const json& aJson, const AccessList& aPermissions);
@@ -125,7 +125,7 @@ namespace webserver {
 			] {
 				const auto items = aHandlerHooked(ContextMenuItemListData(supports, accessList, ownerPtr));
 				complete(
-					http_status::ok,
+					http::status::ok,
 					Serializer::serializeList(items, MenuApi::serializeGroupedMenuItem),
 					nullptr
 				);

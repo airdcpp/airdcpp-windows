@@ -42,7 +42,7 @@ namespace webserver {
 		// Send raw data
 		// Throws json::exception on JSON conversion errors
 		void sendPlain(const json& aJson);
-		void sendApiResponse(const json& aJsonResponse, const json& aErrorJson, http_status aCode, int aCallbackId) noexcept;
+		void sendApiResponse(const json& aJsonResponse, const json& aErrorJson, http::status aCode, int aCallbackId) noexcept;
 
 		void onData(const string& aPayload, const SessionCallback& aAuthCallback);
 
