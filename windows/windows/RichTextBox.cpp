@@ -1346,8 +1346,8 @@ void RichTextBox::openLink(const MessageHighlightPtr& aHighlight) {
 	} else {
 		// The url regex also detects web links without any protocol part
 		auto link = aHighlight->getText();
-		if (aHighlight->getType() == MessageHighlight::HighlightType::TYPE_LINK_URL && link.find(':') == string::npos)
-			link = "http://" + link;
+		if (aHighlight->getType() == MessageHighlight::HighlightType::TYPE_LINK_URL)
+			link = LinkUtil::parseLink(link);
 
 		ActionUtil::openLink(Text::toT(link));
 	}
