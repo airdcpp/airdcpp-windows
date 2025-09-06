@@ -19,6 +19,8 @@
 #include <windows/stdafx.h>
 
 #include <windows/settings/wizard/WizardAutoConnectivity.h>
+
+#include <airdcpp/connectivity/ConnectivityManager.h>
 #include <airdcpp/message/Message.h>
 
 namespace wingui {
@@ -136,7 +138,7 @@ void WizardAutoConnectivity::addLogLine(const tstring& aMessage, CHARFORMAT2W& c
 	log.AppendMessage(dcpp::Message::fromText(Text::fromT(aMessage), LogMessage::InitFlags::INIT_DISABLE_TIMESTAMP), cf, false);
 }
 
-void WizardAutoConnectivity::on(ConnectivityManagerListener::Message, const string& aMessage) noexcept {
+void WizardAutoConnectivity::on(ConnectivityManagerListener::Message, const string& aMessage, LogMessage::Severity /*aSeverity*/) noexcept {
 	wizard->callAsync([this, aMessage] {
 		auto msg = Text::toT(aMessage) /* + _T("\n")*/;
 		addLogLine(msg); 

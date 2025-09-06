@@ -484,7 +484,7 @@ void ConnectivityManager::log(const string& aMessage, LogMessage::Severity sev, 
 		}
 
 		LogManager::getInstance()->message(aMessage, sev, STRING(CONNECTIVITY) + " (" + proto + ")");
-		fire(ConnectivityManagerListener::Message(), proto + ": " + aMessage);
+		fire(ConnectivityManagerListener::Message(), proto + ": " + aMessage, sev);
 	}
 }
 

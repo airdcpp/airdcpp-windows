@@ -25,7 +25,7 @@
 #include <windows/settings/wizard/Wizard.h>
 #include <windows/RichTextBox.h>
 
-#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/connectivity/ConnectivityManagerListener.h>
 
 #include <atldlgs.h>
 
@@ -90,7 +90,7 @@ private:
 	void changeControlState(bool enable);
 
 	// ConnectivityManagerListener
-	void on(ConnectivityManagerListener::Message, const string& aMessage) noexcept override;
+	void on(ConnectivityManagerListener::Message, const string& aMessage, LogMessage::Severity aSeverity) noexcept override;
 	void on(ConnectivityManagerListener::Started, bool /*v6*/) noexcept override;
 	void on(ConnectivityManagerListener::Finished, bool /*v6*/, bool /*failed*/) noexcept override;
 	void on(ConnectivityManagerListener::SettingChanged) noexcept override;
