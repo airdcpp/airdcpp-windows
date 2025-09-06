@@ -90,7 +90,7 @@ private:
 	void changeControlState(bool enable);
 
 	// ConnectivityManagerListener
-	void on(ConnectivityManagerListener::Message, const string& aMessage, LogMessage::Severity aSeverity) noexcept override;
+	void on(ConnectivityManagerListener::Message, const LogMessagePtr&) noexcept override;
 	void on(ConnectivityManagerListener::Started, bool /*v6*/) noexcept override;
 	void on(ConnectivityManagerListener::Finished, bool /*v6*/, bool /*failed*/) noexcept override;
 	void on(ConnectivityManagerListener::SettingChanged) noexcept override;

@@ -89,14 +89,11 @@ namespace webserver {
 		return http_status::no_content;
 	}
 
-	void ConnectivityApi::on(ConnectivityManagerListener::Message, const string& aMessage, LogMessage::Severity aSeverity) noexcept {
+	void ConnectivityApi::on(ConnectivityManagerListener::Message, const LogMessagePtr& aMessage) noexcept {
 		if (!subscriptionActive("connectivity_detection_message"))
 			return;
 
-		send("connectivity_detection_message", {
-			{ "message", aMessage },
-			{ "severity", MessageUtils::getMessageSeverity(aSeverity) },
-		});
+		send("connectivity_detection_message", MessageUtils::serializeLogMessage(aMessage));
 	}
 
 	void ConnectivityApi::on(ConnectivityManagerListener::Started, bool v6) noexcept {

@@ -22,8 +22,6 @@
 
 #include <airdcpp/forward.h>
 
-#include <airdcpp/message/Message.h>
-
 #include <string>
 
 namespace dcpp {
@@ -40,7 +38,7 @@ public:
 	typedef X<2> Finished;
 	typedef X<3> SettingChanged; // auto-detection has been enabled / disabled
 
-	virtual void on(Message, const string&, LogMessage::Severity) noexcept {}
+	virtual void on(Message, const LogMessagePtr&) noexcept {}
 	virtual void on(Started, bool /*v6*/) noexcept {}
 	virtual void on(Finished, bool /*v6*/, bool /*failed*/) noexcept {}
 	virtual void on(SettingChanged) noexcept {}

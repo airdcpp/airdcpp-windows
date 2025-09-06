@@ -35,7 +35,7 @@ namespace webserver {
 		api_return handleDetect(ApiRequest& aRequest);
 		api_return handleGetStatus(ApiRequest& aRequest);
 
-		void on(ConnectivityManagerListener::Message, const string&, LogMessage::Severity) noexcept override;
+		void on(ConnectivityManagerListener::Message, const LogMessagePtr& aMessage) noexcept override;
 		void on(ConnectivityManagerListener::Started, bool /*v6*/) noexcept override;
 		void on(ConnectivityManagerListener::Finished, bool /*v6*/, bool /*failed*/) noexcept override;
 		//virtual void on(SettingChanged) noexcept { }
