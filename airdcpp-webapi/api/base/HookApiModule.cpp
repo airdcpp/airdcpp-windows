@@ -86,13 +86,13 @@ namespace webserver {
 	
 	HookApiModule::APIHook& HookApiModule::getAPIHook(ApiRequest& aRequest) {
 		if (!SubscribableApiModule::getSocket()) {
-			throw RequestException(http_status::precondition_required, "Socket required");
+			throw RequestException(http::status::precondition_required, "Socket required");
 		}
 
 		const auto& hook = aRequest.getStringParam(LISTENER_PARAM_ID);
 		auto i = hooks.find(hook);
 		if (i == hooks.end()) {
-			throw RequestException(http_status::not_found, "No such hook: " + hook);
+			throw RequestException(http::status::not_found, "No such hook: " + hook);
 		}
 
 		return i->second;
@@ -110,7 +110,7 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(ret);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	ActionHookSubscriber HookApiModule::deserializeActionHookSubscriber(CallerPtr aOwner, Session* aSession, const json& aJson) {
@@ -126,7 +126,7 @@ namespace webserver {
 		handleSubscribe(aRequest);
 		apiHook.enable(std::move(actionHookSubscriber));
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HookApiModule::handleUnsubscribeHook(ApiRequest& aRequest) {
@@ -135,7 +135,7 @@ namespace webserver {
 		apiHook.disable(session);
 		handleUnsubscribe(aRequest);
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	HookCompletionDataPtr HookApiModule::maybeFireHook(const string& aSubscription, int aTimeoutSeconds, const JsonCallback& aJsonCallback) {

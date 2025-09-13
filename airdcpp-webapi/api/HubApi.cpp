@@ -125,7 +125,7 @@ namespace webserver {
 			}
 
 			complete(
-				http_status::ok,
+				http::status::ok,
 				{
 					{ "sent", succeed },
 				},
@@ -162,13 +162,13 @@ namespace webserver {
 			{ "sent", succeed },
 		});
 
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HubApi::handleGetStats(ApiRequest& aRequest) {
 		auto optionalStats = ClientManager::getInstance()->getClientStats();
 		if (!optionalStats) {
-			return http_status::no_content;
+			return http::status::no_content;
 		}
 
 		auto stats = *optionalStats;
@@ -195,7 +195,7 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(j);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	json HubApi::serializeClient(const ClientPtr& aClient) noexcept {
@@ -249,22 +249,22 @@ namespace webserver {
 		auto client = ClientManager::getInstance()->createClient(address);
 		if (!client) {
 			aRequest.setResponseErrorStr("Hub with the same URL exists already");
-			return http_status::conflict;
+			return http::status::conflict;
 		}
 
 		aRequest.setResponseBody(serializeClient(client));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HubApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto hub = getSubModule(aRequest);
 		ClientManager::getInstance()->putClient(hub->getClient());
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubApi::handleFindByUrl(ApiRequest& aRequest) {
 		auto client = Deserializer::deserializeClient(aRequest.getRequestBody());
 		aRequest.setResponseBody(serializeClient(client));
-		return http_status::ok;
+		return http::status::ok;
 	}
 }

@@ -25,8 +25,6 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#define CODE_UNPROCESSABLE_ENTITY 422
-
 namespace webserver {
 	class ApiRequest;
 

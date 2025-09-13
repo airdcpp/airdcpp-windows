@@ -71,7 +71,7 @@ namespace webserver {
 		}
 	}
 
-	WebSocketPtr SocketManager::getSocket(websocketpp::connection_hdl hdl) const noexcept {
+	WebSocketPtr SocketManager::getSocket(ConnectionHdl hdl) const noexcept {
 		RLock l(cs);
 		auto s = sockets.find(hdl);
 		if (s != sockets.end()) {
@@ -82,7 +82,7 @@ namespace webserver {
 	}
 
 	// For debugging only
-	void SocketManager::handlePongReceived(websocketpp::connection_hdl hdl, const string& /*aPayload*/) {
+	void SocketManager::handlePongReceived(ConnectionHdl hdl, const string& /*aPayload*/) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			return;
@@ -91,7 +91,7 @@ namespace webserver {
 		socket->debugMessage("PONG succeed");
 	}
 
-	void SocketManager::handlePongTimeout(websocketpp::connection_hdl hdl, const string&) {
+	void SocketManager::handlePongTimeout(ConnectionHdl hdl, const string&) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			return;
@@ -103,7 +103,8 @@ namespace webserver {
 
 		socket->debugMessage("PONG timed out");
 
-		socket->close(websocketpp::close::status::internal_endpoint_error, "PONG timed out");
+		// 1011 internal error
+		socket->close(static_cast<uint16_t>(websocket::close_code::internal_error), "PONG timed out");
 	}
 
 	void SocketManager::pingTimer() noexcept {
@@ -123,14 +124,16 @@ namespace webserver {
 		}
 
 		for (const auto& s : inactiveSockets) {
-			s->close(websocketpp::close::status::policy_violation, "Authentication timeout");
+			// 1008 policy violation
+			s->close(static_cast<uint16_t>(websocket::close_code::policy_error), "Authentication timeout");
 		}
 	}
 
 	void SocketManager::disconnectSockets(const string& aMessage) noexcept {
 		RLock l(cs);
 		for (const auto& socket : sockets | views::values) {
-			socket->close(websocketpp::close::status::going_away, aMessage);
+			// 1001 going away
+			socket->close(static_cast<uint16_t>(websocket::close_code::going_away), aMessage);
 		}
 	}
 
@@ -143,7 +146,7 @@ namespace webserver {
 		return i.base() == sockets.end() ? nullptr : *i;
 	}
 
-	void SocketManager::addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept {
+	void SocketManager::addSocket(ConnectionHdl hdl, const WebSocketPtr& aSocket) noexcept {
 		{
 			WLock l(cs);
 			sockets.try_emplace(hdl, aSocket);
@@ -152,7 +155,7 @@ namespace webserver {
 		fire(SocketManagerListener::SocketConnected(), aSocket);
 	}
 
-	void SocketManager::handleSocketDisconnected(websocketpp::connection_hdl hdl) {
+	void SocketManager::handleSocketDisconnected(ConnectionHdl hdl) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			dcassert(0);
@@ -184,7 +187,8 @@ namespace webserver {
 			dcdebug("Replace socket for session %s\n", aSession->getAuthToken().c_str());
 			resetSocketSession(oldSocket);
 
-			oldSocket->close(websocketpp::close::status::policy_violation, "Another socket was connected to this session");
+			// 1008 policy violation
+			oldSocket->close(static_cast<uint16_t>(websocket::close_code::policy_error), "Another socket was connected to this session");
 		}
 
 		aSession->onSocketConnected(aSocket);
@@ -201,7 +205,8 @@ namespace webserver {
 		resetSocketSession(socket);
 
 		if (static_cast<WebUserManager::SessionRemovalReason>(aReason) == WebUserManager::SessionRemovalReason::USER_CHANGED) {
-			socket->close(websocketpp::close::status::normal, "Re-authentication required");
+			// 1000 normal
+			socket->close(static_cast<uint16_t>(websocket::close_code::normal), "Re-authentication required");
 		}
 	}
 
@@ -211,5 +216,23 @@ namespace webserver {
 			aSocket->getSession()->onSocketDisconnected();
 			aSocket->setSession(nullptr);
 		}
+	}
+
+	void SocketManager::handleSocketConnected(IServerEndpoint& ep, bool aIsSecure, ConnectionHdl hdl) {
+		// Build our WebSocket using the adapter
+		auto socket = std::make_shared<WebSocket>(aIsSecure, hdl, ep, wsm);
+		addSocket(hdl, socket);
+	}
+
+	void SocketManager::handleSocketMessage(ConnectionHdl hdl, const std::string& payload) {
+		auto socket = getSocket(hdl);
+		if (!socket) {
+			dcassert(0);
+			return;
+		}
+
+		socket->onData(payload, [&socket, this](const SessionPtr& aSession) {
+			onAuthenticated(aSession, socket);
+		});
 	}
 }

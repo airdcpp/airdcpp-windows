@@ -23,7 +23,6 @@
 
 namespace webserver {
 	using json = nlohmann::json;
-	using http_status = websocketpp::http::status_code::value;
 
 	class JsonException : public std::runtime_error
 	{
@@ -58,11 +57,11 @@ namespace webserver {
 	class RequestException : public std::runtime_error
 	{
 	public:
-		RequestException(http_status aCode, const std::string& aMessage) : code(aCode), std::runtime_error(aMessage.c_str()) { }
+		RequestException(boost::beast::http::status aCode, const std::string& aMessage) : code(aCode), std::runtime_error(aMessage.c_str()) { }
 
-		http_status getCode() const noexcept { return code; }
+		boost::beast::http::status getCode() const noexcept { return code; }
 	protected:
-		const http_status code;
+		const boost::beast::http::status code;
 	};
 }
 

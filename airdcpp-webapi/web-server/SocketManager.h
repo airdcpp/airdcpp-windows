@@ -25,6 +25,7 @@
 #include "SocketManagerListener.h"
 #include "WebSocket.h"
 #include "WebUserManagerListener.h"
+#include "IServerEndpoint.h"
 
 #include <airdcpp/core/Speaker.h>
 
@@ -47,59 +48,32 @@ namespace webserver {
 		SocketManager(SocketManager&) = delete;
 		SocketManager& operator=(SocketManager&) = delete;
 
-		template<class EndpointType>
-		void setEndpointHandlers(EndpointType& aEndpoint, bool aIsSecure) {
-			aEndpoint.set_message_handler(
-				std::bind_front(&SocketManager::handleSocketMessage<EndpointType>, this));
-
+		void setEndpointHandlers(IServerEndpoint& aEndpoint, bool aIsSecure) {
+			aEndpoint.set_message_handler(std::bind_front(&SocketManager::handleSocketMessage, this));
 			aEndpoint.set_close_handler(std::bind_front(&SocketManager::handleSocketDisconnected, this));
-			aEndpoint.set_open_handler(std::bind_front(&SocketManager::handleSocketConnected<EndpointType>, this, &aEndpoint, aIsSecure));
-
+			aEndpoint.set_open_handler(std::bind_front(&SocketManager::handleSocketConnected, this, std::ref(aEndpoint), aIsSecure));
 			aEndpoint.set_pong_timeout_handler(std::bind_front(&SocketManager::handlePongTimeout, this));
 		}
 	private:
 		void onAuthenticated(const SessionPtr& aSession, const WebSocketPtr& aSocket) noexcept;
 
-		// Websocketpp event handlers
-		template <typename EndpointType>
-		void handleSocketConnected(EndpointType* aServer, bool aIsSecure, websocketpp::connection_hdl hdl) {
-			auto con = aServer->get_con_from_hdl(hdl);
-			auto socket = make_shared<WebSocket>(aIsSecure, hdl, con->get_request(), aServer, wsm);
+		void handleSocketConnected(IServerEndpoint& ep, bool aIsSecure, ConnectionHdl hdl);
+		void handleSocketDisconnected(ConnectionHdl hdl);
 
-			addSocket(hdl, socket);
-		}
+		void handlePongReceived(ConnectionHdl hdl, const string& aPayload);
+		void handlePongTimeout(ConnectionHdl hdl, const string& aPayload);
 
-		void handleSocketDisconnected(websocketpp::connection_hdl hdl);
+		void handleSocketMessage(ConnectionHdl hdl, const std::string& payload);
 
-		void handlePongReceived(websocketpp::connection_hdl hdl, const string& aPayload);
-		void handlePongTimeout(websocketpp::connection_hdl hdl, const string& aPayload);
-
-		// The shared on_message handler takes a template parameter so the function can
-		// resolve any endpoint dependent types like message_ptr or connection_ptr
-		template <typename EndpointType>
-		void handleSocketMessage(websocketpp::connection_hdl hdl,
-			typename EndpointType::message_ptr msg) {
-
-			auto socket = getSocket(hdl);
-			if (!socket) {
-				dcassert(0);
-				return;
-			}
-
-			socket->onData(msg->get_payload(), [&socket, this](const SessionPtr& aSession) {
-				onAuthenticated(aSession, socket);
-			});
-		}
-
-		void addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept;
-		WebSocketPtr getSocket(websocketpp::connection_hdl hdl) const noexcept;
+		void addSocket(ConnectionHdl hdl, const WebSocketPtr& aSocket) noexcept;
+		WebSocketPtr getSocket(ConnectionHdl hdl) const noexcept;
 
 		void pingTimer() noexcept;
 
 		mutable SharedMutex cs;
 
 		using WebSocketList = vector<WebSocketPtr>;
-		std::map<websocketpp::connection_hdl, WebSocketPtr, std::owner_less<websocketpp::connection_hdl>> sockets;
+		std::map<ConnectionHdl, WebSocketPtr, std::owner_less<ConnectionHdl>> sockets;
 
 		TimerPtr socketPingTimer;
 		WebServerManager* wsm;

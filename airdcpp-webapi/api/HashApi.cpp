@@ -67,23 +67,23 @@ namespace webserver {
 
 	api_return HashApi::handleResume(ApiRequest&) {
 		HashManager::getInstance()->resumeHashing();
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handlePause(ApiRequest&) {
 		HashManager::getInstance()->pauseHashing();
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handleStop(ApiRequest&) {
 		HashManager::getInstance()->stop();
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handleGetStats(ApiRequest& aRequest) {
 		auto stats = HashManager::getInstance()->getStats();
 		aRequest.setResponseBody(serializeHashStatistics(stats));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	json HashApi::serializeHashStatistics(const HashManager::HashStats& aStats) noexcept {
@@ -185,18 +185,18 @@ namespace webserver {
 
 	api_return HashApi::handleGetDbStatus(ApiRequest& aRequest) {
 		aRequest.setResponseBody(formatDbStatus(HashManager::getInstance()->maintenanceRunning()));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return HashApi::handleOptimize(ApiRequest& aRequest) {
 		if (HashManager::getInstance()->maintenanceRunning()) {
 			aRequest.setResponseErrorStr("Database maintenance is running already");
-			return http_status::bad_request;
+			return http::status::bad_request;
 		}
 
 		auto verify = JsonUtil::getField<bool>("verify", aRequest.getRequestBody());
 		HashManager::getInstance()->startMaintenance(verify);
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handleRenamePath(ApiRequest& aRequest) {
@@ -208,9 +208,9 @@ namespace webserver {
 			HashManager::getInstance()->renameFileThrow(oldPath, newPath);
 		} catch (const HashException& e) {
 			aRequest.setResponseErrorStr(e.getError());
-			return http_status::bad_request;
+			return http::status::bad_request;
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 }
