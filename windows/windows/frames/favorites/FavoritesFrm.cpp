@@ -453,6 +453,7 @@ void FavoriteHubsFrame::fillList()
 	nosave = true;
 
 	ctrlHubs.DeleteAllItems(); 
+	itemInfos.clear();
 	
 	// sort groups
 	TStringList groups(getSortedGroups());

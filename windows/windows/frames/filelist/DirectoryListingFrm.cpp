@@ -168,7 +168,12 @@ bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
 		params["dir"] = f->second->getCurrentListPath();
 		params["file"] = dl->getFileName();
 		params["partial"] = Util::toString(dl->getPartialList());
-		params["profileToken"] = Util::toString(dl->getShareProfile() || 0);
+
+		auto profileToken = dl->getShareProfile();
+		if (profileToken) {
+			params["profileToken"] = Util::toString(*profileToken);
+		}
+
 		if (!dl->getPartialList())
 			QueueManager::getInstance()->noDeleteFileList(dl->getFileName());
 
@@ -197,7 +202,7 @@ bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 		string file = params["file"];
 		string url = params["url"];
 		if (u == ClientManager::getInstance()->getMe()) {
-			ProfileToken token = Util::toInt(params["profileToken"]);
+			auto token = Util::toInt(params["profileToken"]);
 			DirectoryListingManager::getInstance()->openOwnList(token, dir);
 		} else if (!file.empty() || partial) {
 					

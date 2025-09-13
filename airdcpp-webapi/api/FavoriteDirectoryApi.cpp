@@ -82,7 +82,7 @@ namespace webserver {
 
 		auto info = updatePath(path, reqJson);
 		aRequest.setResponseBody(serializeDirectory(info));
-		return http::status::no_content;
+		return http::status::ok;
 	}
 
 	api_return FavoriteDirectoryApi::handleGetDirectory(ApiRequest& aRequest) {
