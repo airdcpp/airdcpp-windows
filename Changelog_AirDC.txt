@@ -2,6 +2,7 @@
 
 API and Web UI changes: 
 
+- https://airdcpp.net/2025/09/07/version-2.14.0.html
 - https://airdcpp.net/2025/01/19/version-2.13.3.html
 - https://airdcpp.net/2024/12/07/version-2.13.2.html
 - https://airdcpp.net/2024/07/07/version-2.12.2.html
@@ -10,6 +11,7 @@ Changed:
 
 - Change the license to GPLv3
 - Allow the operating system to choose the default listening ports instead of assigning random ones
+- Improve chat link detection and parsing
 - Let the operating system choose the correct file explorer when using "Open folder" (https://github.com/airdcpp-web/airdcpp-webclient/issues/461)
 - Add timestamps in the CDM debug frame
 - Lower the default minimum search interval
@@ -20,10 +22,13 @@ Changed:
 - Parse HBRI validation addresses received from the hub with the correct IP protocol
 - Dupe detection is now more accurate
 - Internal: rewrite build system to use CMake, use vcpkg for third-party libraries, new scripts for localizations
+- Support all string field types for extension settings, add a multiline text field
+- Node.js updated to version 22.19.0
 
 Fixed:
 
 - Show a proper error message for unclean TLS connection closures
+- Fix an error when loading previously opened own filelist on startup
 - Fix possible issues with duplicate CIDs being generated for different clients
 - Ensure that the hub column stays up-to-date for transfer
 - Don't attempt to start filelist downloads via an incorrect hub when the user comes online
@@ -32,9 +37,12 @@ Fixed:
 - Add/remove port mappings when the auto detection mode is enabled/disabled
 - Fix the "engname" country format param (https://github.com/airdcpp/airdcpp-windows/issues/88)
 - Avoid unneeded list filter iterations (https://github.com/airdcpp/airdcpp-windows/issues/120)
+- Don't incorrectly announce bundles to be shared if nothing was added
+- Fix a possible incorrect "User offline" error for transfers
 - Prevent adding duplicate search extensions for search types, fix adding of extensions separated with ; (https://github.com/airdcpp/airdcpp-windows/issues/148)
 - Ensure that no duplicate search results are being sent
 - Detect all auto speed limits correctly from the limiter values
+- Fix a possible memory leak in the MiniUPnPc mapper (DC++)
 - Other misc stability fixes
 
 Removed:
