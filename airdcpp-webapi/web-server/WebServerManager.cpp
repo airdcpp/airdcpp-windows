@@ -114,10 +114,10 @@ namespace webserver {
 	}
 
 	static void setEndpointOptions(IServerEndpoint& aEndpoint) {
-		aEndpoint.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
-		aEndpoint.set_pong_timeout(WEBCFG(PING_TIMEOUT).num() * 1000);
+		aEndpoint.setOpenHandshakeTimeout(HANDSHAKE_TIMEOUT);
+		aEndpoint.setPongTimeout(WEBCFG(PING_TIMEOUT).num() * 1000);
 
-		aEndpoint.set_max_http_body_size(HttpManager::MAX_HTTP_BODY_SIZE);
+		aEndpoint.setMaxHttpBodySize(HttpManager::MAX_HTTP_BODY_SIZE);
 	}
 
 	bool WebServerManager::startup(const MessageCallback& errorF, const string& aWebResourcePath, const Callback& aShutdownF) {
@@ -158,8 +158,8 @@ namespace webserver {
 			endpoint_plain = std::make_unique<BeastServerAdapter>();
 			endpoint_tls = std::make_unique<BeastServerAdapter>();
 
-			endpoint_plain->init_asio(&ios);
-			endpoint_tls->init_asio(&ios);
+			endpoint_plain->initAsio(&ios);
+			endpoint_tls->initAsio(&ios);
 		} catch (const std::exception& e) {
 			if (errorF) {
 				errorF(e.what());
@@ -180,7 +180,7 @@ namespace webserver {
 		setEndpointOptions(*endpoint_tls);
 
 		// TLS endpoint has an extra handler for the tls init
-		endpoint_tls->set_tls_init_handler([this]() { return handleInitTls(); });
+		endpoint_tls->setTlsInitHandler([this]() { return handleInitTls(); });
 
 		// Logging
 		if (enableSocketLogging) {
@@ -200,11 +200,11 @@ namespace webserver {
 	}
 
 	bool WebServerManager::isListeningPlain() const noexcept {
-		return endpoint_plain && endpoint_plain->is_listening();
+		return endpoint_plain && endpoint_plain->isListening();
 	}
 
 	bool WebServerManager::isListeningTls() const noexcept {
-		return endpoint_tls && endpoint_tls->is_listening();
+		return endpoint_tls && endpoint_tls->isListening();
 	}
 
 	static bool listenEndpoint(IServerEndpoint& aEndpoint, const ServerConfig& aConfig, const string& aProtocol, const MessageCallback& errorF) noexcept {
@@ -214,7 +214,7 @@ namespace webserver {
 
 #ifndef _WIN32
 		// https://github.com/airdcpp-web/airdcpp-webclient/issues/39
-		aEndpoint.set_reuse_addr(true);
+		aEndpoint.setReuseAddr(true);
 #endif
 		try {
 			const auto bindAddress = aConfig.bindAddress.str();
@@ -225,7 +225,7 @@ namespace webserver {
 				aEndpoint.listen(WebServerManager::getDefaultListenProtocol(), static_cast<uint16_t>(aConfig.port.num()));
 			}
 
-			aEndpoint.start_accept();
+			aEndpoint.startAccept();
 			return true;
 		} catch (const std::exception& e) {
 			auto message = STRING_F(WEB_SERVER_SETUP_FAILED, aProtocol % aConfig.port.num() % string(e.what()));
@@ -323,10 +323,10 @@ namespace webserver {
 
 		fireReversed(WebServerManagerListener::Stopping());
 
-		if(endpoint_plain && endpoint_plain->is_listening())
-			endpoint_plain->stop_listening();
-		if(endpoint_tls && endpoint_tls->is_listening())
-			endpoint_tls->stop_listening();
+		if(endpoint_plain && endpoint_plain->isListening())
+			endpoint_plain->stopListening();
+		if(endpoint_tls && endpoint_tls->isListening())
+			endpoint_tls->stopListening();
 
 		httpManager->stop();
 		socketManager->stop();

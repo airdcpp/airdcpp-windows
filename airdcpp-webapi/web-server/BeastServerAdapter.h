@@ -19,6 +19,7 @@
 #include <optional>
 #include <unordered_map>
 #include <deque>
+#include <mutex>
 
 namespace webserver {
 	namespace beast = boost::beast;
@@ -29,17 +30,22 @@ namespace webserver {
 	class BeastServerAdapter : public IServerEndpoint, public std::enable_shared_from_this<BeastServerAdapter> {
 	public:
 		BeastServerAdapter() = default;
-		~BeastServerAdapter() override { stop_listening(); }
+		~BeastServerAdapter() override { stopListening(); }
 
 		// IServerEndpoint
-		void init_asio(boost::asio::io_context* ios) override { ios_ = ios; }
-		void set_open_handshake_timeout(int) override {}
-		void set_pong_timeout(int) override {}
-		void set_max_http_body_size(std::size_t) override {}
-		void set_tls_init_handler(std::function<context_ptr()>) override {}
-		void configureLogging(std::ostream*, std::ostream*, bool) override {}
+		void initAsio(boost::asio::io_context* ios) override { ios_ = ios; }
+		void setOpenHandshakeTimeout(int) override {}
+		void setPongTimeout(int) override {}
+		void setMaxHttpBodySize(std::size_t) override {}
+		void setTlsInitHandler(std::function<contextPtr()>) override {}
+		void configureLogging(std::ostream* access, std::ostream* error, bool enable) override {
+			std::lock_guard<std::mutex> lk(logMutex_);
+			accessLog_ = access;
+			errorLog_ = error;
+			loggingEnabled_ = enable && (access || error);
+		}
 
-		void set_reuse_addr(bool enable) override { reuseAddr_ = enable; }
+		void setReuseAddr(bool enable) override { reuseAddr_ = enable; }
 		void listen(const std::string& bindAddress, const std::string& port) override {
 			ensureAcceptor();
 			boost::system::error_code ec;
@@ -54,13 +60,13 @@ namespace webserver {
 			tcp::endpoint ep(protocol, port);
 			openAndBind(ep);
 		}
-		void start_accept() override {
+		void startAccept() override {
 			if (!acceptor_ || !acceptor_->is_open() || listening_) return;
 			listening_ = true;
-			do_accept();
+			doAccept();
 		}
-		bool is_listening() const noexcept override { return listening_; }
-		void stop_listening() override {
+		bool isListening() const noexcept override { return listening_; }
+		void stopListening() override {
 			listening_ = false;
 			if (acceptor_) {
 				boost::system::error_code _;
@@ -68,79 +74,90 @@ namespace webserver {
 			}
 		}
 
-		void set_message_handler(std::function<void(ConnectionHdl, const std::string&)> f) override { onMessage_ = std::move(f); }
-		void set_http_handler(std::function<void(ConnectionHdl)> f) override { onHttp_ = std::move(f); }
-		void set_close_handler(std::function<void(ConnectionHdl)> f) override { onClose_ = std::move(f); }
-		void set_open_handler(std::function<void(ConnectionHdl)> f) override { onOpen_ = std::move(f); }
-		void set_pong_timeout_handler(std::function<void(ConnectionHdl, const std::string&)> f) override { onPongTimeout_ = std::move(f); }
+		void setMessageHandler(std::function<void(ConnectionHdl, const std::string&)> f) override { onMessage_ = std::move(f); }
+		void setHttpHandler(std::function<void(ConnectionHdl)> f) override { onHttp_ = std::move(f); }
+		void setCloseHandler(std::function<void(ConnectionHdl)> f) override { onClose_ = std::move(f); }
+		void setOpenHandler(std::function<void(ConnectionHdl)> f) override { onOpen_ = std::move(f); }
+		void setPongTimeoutHandler(std::function<void(ConnectionHdl, const std::string&)> f) override { onPongTimeout_ = std::move(f); }
 
-		std::string get_remote_ip(ConnectionHdl hdl) override {
+		std::string getRemoteIp(ConnectionHdl hdl) override {
 			if (auto s = lockSession(hdl)) {
 				return s->remoteIp;
 			}
 			return {};
 		}
-		std::string get_header(ConnectionHdl hdl, const std::string& name) override {
+		std::string getHeader(ConnectionHdl hdl, const std::string& name) override {
 			if (auto s = lockHttp(hdl)) {
 				auto it = s->req.find(name);
 				return it == s->req.end() ? std::string() : std::string(it->value());
 			}
 			return {};
 		}
-		std::string get_body(ConnectionHdl hdl) override {
+		std::string getBody(ConnectionHdl hdl) override {
 			if (auto s = lockHttp(hdl)) return std::string(s->req.body());
 			return {};
 		}
-		std::string get_method(ConnectionHdl hdl) override {
+		std::string getMethod(ConnectionHdl hdl) override {
 			if (auto s = lockHttp(hdl)) return std::string(s->req.method_string());
 			if (auto ws = lockWs(hdl)) return ws->methodStr; // usually GET
 			return {};
 		}
-		std::string get_uri(ConnectionHdl hdl) override {
+		std::string getUri(ConnectionHdl hdl) override {
 			if (auto s = lockHttp(hdl)) return std::string(s->req.target());
 			if (auto ws = lockWs(hdl)) return ws->target; // captured during upgrade
 			return {};
 		}
-		std::string get_resource(ConnectionHdl hdl) override {
-			// std::string t;
+		std::string getResource(ConnectionHdl hdl) override {
 			if (auto s = lockHttp(hdl)) return std::string(s->req.target());
 			else if (auto ws = lockWs(hdl)) return ws->target;
 			return "";
 		}
 
-		void http_append_header(ConnectionHdl hdl, const std::string& name, const std::string& value) override {
+		void httpAppendHeader(ConnectionHdl hdl, const std::string& name, const std::string& value) override {
 			if (auto s = lockHttp(hdl)) s->respHeaders.emplace_back(name, value);
 		}
-		void http_set_body(ConnectionHdl hdl, const std::string& body) override {
+		void httpSetBody(ConnectionHdl hdl, const std::string& body) override {
 			if (auto s = lockHttp(hdl)) s->respBody = body;
 		}
-		void http_set_status(ConnectionHdl hdl, http::status status) override {
+		void httpSetStatus(ConnectionHdl hdl, http::status status) override {
 			if (auto s = lockHttp(hdl)) s->respStatus = status;
 		}
-		void http_defer_response(ConnectionHdl hdl) override {
-			if (auto s = lockHttp(hdl)) s->mark_deferred();
+		void httpDeferResponse(ConnectionHdl hdl) override {
+			if (auto s = lockHttp(hdl)) s->markDeferred();
 		}
-		void http_send_response(ConnectionHdl hdl) override {
-			if (auto s = lockHttp(hdl)) s->send_and_release();
+		void httpSendResponse(ConnectionHdl hdl) override {
+			if (auto s = lockHttp(hdl)) s->sendAndRelease();
 		}
 
-		void ws_send_text(ConnectionHdl hdl, const std::string& text) override {
+		void wsSendText(ConnectionHdl hdl, const std::string& text) override {
 			if (auto s = lockWs(hdl)) {
-				s->send_text(text);
+				s->sendText(text);
 			}
 		}
-		void ws_ping(ConnectionHdl hdl) override {
+		void wsPing(ConnectionHdl hdl) override {
 			if (auto s = lockWs(hdl)) {
-				s->send_ping();
+				s->sendPing();
 			}
 		}
-		void ws_close(ConnectionHdl hdl, uint16_t code, const std::string& reason) override {
+		void wsClose(ConnectionHdl hdl, uint16_t code, const std::string& reason) override {
 			if (auto s = lockWs(hdl)) {
-				s->send_close(code, reason);
+				s->sendClose(code, reason);
 			}
 		}
 
 	private:
+		// Logging helpers
+		void logAccess(const std::string& msg) const {
+			if (!loggingEnabled_) return;
+			std::lock_guard<std::mutex> lk(logMutex_);
+			if (accessLog_) (*accessLog_) << msg << std::endl;
+		}
+		void logError(const std::string& msg) const {
+			if (!loggingEnabled_) return;
+			std::lock_guard<std::mutex> lk(logMutex_);
+			if (errorLog_) (*errorLog_) << msg << std::endl;
+		}
+
 		struct SessionBase {
 			virtual ~SessionBase() = default;
 			std::string remoteIp;
@@ -156,23 +173,26 @@ namespace webserver {
 				auto self = shared_from_this();
 				http::async_read(stream, buffer, req,
 					[self](beast::error_code ec, std::size_t) {
-					static_cast<HttpSession*>(self.get())->on_read(ec);
+					static_cast<HttpSession*>(self.get())->onRead(ec);
 				});
 			}
 
-			void on_read(beast::error_code ec) {
-				if (ec) return; // connection closed or error
+			void onRead(beast::error_code ec) {
+				if (ec) {
+					adapter.logError("HTTP read error: " + ec.message());
+					return;
+				}
+
+				adapter.logAccess("HTTP request " + std::string(req.method_string()) + " " + std::string(req.target()));
 
 				if (websocket::is_upgrade(req)) {
 					// Upgrade to websocket
 					auto wsSession = std::make_shared<WsSession>(adapter, stream.release_socket(), remoteIp);
-					// create handle
 					auto h = makeHandle(std::static_pointer_cast<SessionBase>(wsSession));
-					wsSession->do_accept(std::move(req), h);
+					wsSession->doAccept(std::move(req), h);
 					return;
 				}
 
-				// Create handle for HTTP
 				hdl = makeHandle(std::static_pointer_cast<SessionBase>(this->shared_from_this()));
 
 				if (adapter.onHttp_) {
@@ -185,23 +205,21 @@ namespace webserver {
 			}
 
 			// keep the session alive while deferred
-			void mark_deferred() {
+			void markDeferred() {
 				if (!deferred) {
 					deferred = true;
 					selfKeep = shared_from_this();
+					adapter.logAccess("HTTP deferred response");
 				}
 			}
 
-			void send_and_release() {
-				// capture self during async write
+			void sendAndRelease() {
 				sendResponse();
 				deferred = false;
-				// release our manual keep-alive; async write holds its own ref
 				selfKeep.reset();
 			}
 
 			void sendResponse() {
-				// default status if not set
 				auto beastStatus = static_cast<http::status>(static_cast<unsigned>(respStatus));
 				respPtr = std::make_shared<http::response<http::string_body>>(beastStatus, req.version());
 				respPtr->set(http::field::server, "airdcpp-beast");
@@ -209,16 +227,20 @@ namespace webserver {
 				respPtr->body() = respBody;
 				respPtr->prepare_payload();
 
+				adapter.logAccess("HTTP response " + std::to_string(static_cast<unsigned>(respStatus)) + " bytes=" + std::to_string(respPtr->body().size()));
+
 				auto self = shared_from_this();
-				http::async_write(stream, *respPtr, [self](beast::error_code /*ec*/, std::size_t /*bytes*/){
-					// Close connection after response
+				http::async_write(stream, *respPtr, [self](beast::error_code ec, std::size_t /*bytes*/){
 					auto* p = static_cast<HttpSession*>(self.get());
+					if (ec) {
+						p->adapter.logError("HTTP write error: " + ec.message());
+					}
 					p->respPtr.reset();
-					p->do_close();
+					p->doClose();
 				});
 			}
 
-			void do_close() {
+			void doClose() {
 				beast::error_code ec;
 				stream.socket().shutdown(tcp::socket::shutdown_send, ec);
 			}
@@ -232,15 +254,13 @@ namespace webserver {
 			beast::tcp_stream stream;
 			beast::flat_buffer buffer;
 			http::request<http::string_body> req;
-
-			// response state
 			http::status respStatus = http::status::ok;
 			std::vector<std::pair<std::string,std::string>> respHeaders;
 			std::string respBody;
 			bool deferred = false;
-			ConnectionHdl hdl; // for callbacks
-			std::shared_ptr<http::response<http::string_body>> respPtr; // keep response alive during async_write
-			std::shared_ptr<HttpSession> selfKeep; // keep session alive while deferred
+			ConnectionHdl hdl;
+			std::shared_ptr<http::response<http::string_body>> respPtr;
+			std::shared_ptr<HttpSession> selfKeep;
 		};
 
 		struct WsSession : public SessionBase, public std::enable_shared_from_this<WsSession> {
@@ -249,7 +269,7 @@ namespace webserver {
 				remoteIp = ip;
 			}
 
-			void do_accept(http::request<http::string_body>&& req, ConnectionHdl handle) {
+			void doAccept(http::request<http::string_body>&& req, ConnectionHdl handle) {
 				// Persist the HTTP request for the async_accept lifetime
 				upgradeReq_ = std::move(req);
 				// Capture essential request info before upgrading
@@ -258,74 +278,82 @@ namespace webserver {
 				hdl = handle;
 				// Accept the websocket handshake
 				ws.set_option(websocket::stream_base::timeout::suggested(beast::role_type::server));
-				ws.async_accept(upgradeReq_, beast::bind_front_handler(&WsSession::on_accept, shared_from_this()));
+				ws.async_accept(upgradeReq_, beast::bind_front_handler(&WsSession::onAccept, shared_from_this()));
 			}
 
-			void on_accept(beast::error_code ec) {
+			void onAccept(beast::error_code ec) {
 				// release the stored request
 				upgradeReq_ = {};
-				if (ec) return;
-				if (adapter.onOpen_) adapter.onOpen_(hdl);
-				read_loop();
-			}
-
-			void read_loop() {
-				ws.async_read(buffer, beast::bind_front_handler(&WsSession::on_read, shared_from_this()));
-			}
-
-			void on_read(beast::error_code ec, std::size_t) {
 				if (ec) {
+					adapter.logError("WS accept error: " + ec.message());
+					return;
+				}
+				adapter.logAccess("WS open " + target);
+				if (adapter.onOpen_) adapter.onOpen_(hdl);
+				readLoop();
+			}
+
+			void readLoop() {
+				ws.async_read(buffer, beast::bind_front_handler(&WsSession::onRead, shared_from_this()));
+			}
+
+			void onRead(beast::error_code ec, std::size_t) {
+				if (ec) {
+					adapter.logAccess("WS close " + target + " reason=" + ec.message());
 					if (adapter.onClose_) adapter.onClose_(hdl);
 					return;
 				}
 				if (adapter.onMessage_) {
 					auto data = beast::buffers_to_string(buffer.cdata());
+					adapter.logAccess("WS message bytes=" + std::to_string(data.size()));
 					adapter.onMessage_(hdl, data);
 				}
 				buffer.consume(buffer.size());
-				read_loop();
+				readLoop();
 			}
 
 			// Thread-safe send helpers queued on the ws executor
-			void send_text(const std::string& text) {
+			void sendText(const std::string& text) {
 				auto self = shared_from_this();
 				boost::asio::post(ws.get_executor(), [self, text] {
 					self->outQueue.push_back(text);
 					if (!self->writing) {
-						self->start_write();
+						self->startWrite();
 					}
 				});
 			}
 
-			void send_ping() {
+			void sendPing() {
 				auto self = shared_from_this();
 				boost::asio::post(ws.get_executor(), [self] {
-					self->ws.async_ping(websocket::ping_data{}, [self](beast::error_code /*ec*/){ /* ignore */ });
+					self->ws.async_ping(websocket::ping_data{}, [self](beast::error_code ec){ if(ec) self->adapter.logError("WS ping error: "+ec.message()); });
 				});
 			}
 
-			void send_close(uint16_t code, const std::string& /*reason*/) {
+			void sendClose(uint16_t code, const std::string& /*reason*/) {
 				auto self = shared_from_this();
 				boost::asio::post(ws.get_executor(), [self, code] {
 					websocket::close_reason cr;
 					cr.code = static_cast<websocket::close_code>(code);
-					self->ws.async_close(cr, [self](beast::error_code /*ec*/){ /* ignore */ });
+					self->ws.async_close(cr, [self](beast::error_code ec){ if(ec) self->adapter.logError("WS close error: "+ec.message()); });
 				});
 			}
 
-			void start_write() {
+			void startWrite() {
 				if (outQueue.empty()) return;
 				writing = true;
 				ws.text(true);
 				auto self = shared_from_this();
-				ws.async_write(boost::asio::buffer(outQueue.front()), [self](beast::error_code ec, std::size_t) {
+				ws.async_write(boost::asio::buffer(outQueue.front()), [self](beast::error_code ec, std::size_t bytes) {
 					if (ec) {
+						self->adapter.logError("WS write error: " + ec.message());
 						if (self->adapter.onClose_) self->adapter.onClose_(self->hdl);
 						return;
 					}
+					self->adapter.logAccess("WS sent bytes=" + std::to_string(bytes));
 					self->outQueue.pop_front();
 					if (!self->outQueue.empty()) {
-						self->start_write();
+						self->startWrite();
 					} else {
 						self->writing = false;
 					}
@@ -369,21 +397,23 @@ namespace webserver {
 			if (reuseAddr_) acceptor_->set_option(boost::asio::socket_base::reuse_address(true), ec);
 			acceptor_->bind(ep, ec);
 			acceptor_->listen(boost::asio::socket_base::max_listen_connections, ec);
+			if (ec) logError("Listen error: " + ec.message());
 		}
 
-		void do_accept() {
+		void doAccept() {
 			acceptor_->async_accept(
 				boost::asio::make_strand(*ios_),
 				[this](beast::error_code ec, tcp::socket socket) {
 					if (!listening_) return;
 					if (!ec) {
 						auto ip = socket.remote_endpoint(ec).address().to_string();
-						// Start HTTP session
+						logAccess("ACCEPT " + ip);
 						auto httpSess = std::make_shared<HttpSession>(*this, std::move(socket), ip);
 						httpSess->run();
+					} else {
+						logError("Accept error: " + ec.message());
 					}
-					// accept next
-					if (listening_) do_accept();
+					if (listening_) doAccept();
 				}
 			);
 		}
@@ -399,6 +429,12 @@ namespace webserver {
 		std::function<void(ConnectionHdl)> onClose_;
 		std::function<void(ConnectionHdl)> onOpen_;
 		std::function<void(ConnectionHdl, const std::string&)> onPongTimeout_;
+
+		// logging state
+		mutable std::mutex logMutex_;
+		std::ostream* accessLog_ = nullptr;
+		std::ostream* errorLog_ = nullptr;
+		bool loggingEnabled_ = false;
 	};
 }
 

@@ -68,13 +68,13 @@ namespace webserver {
 	}
 
 	bool HttpManager::getOptionalHttpSession(IServerEndpoint& ep, ConnectionHdl hdl, const string& aIp, SessionPtr& session_) {
-		auto authToken = HttpUtil::parseAuthToken(ep.get_header(hdl, "Authorization"), ep.get_header(hdl, "X-Authorization"));
+		auto authToken = HttpUtil::parseAuthToken(ep.getHeader(hdl, "Authorization"), ep.getHeader(hdl, "X-Authorization"));
 		if (!authToken.empty()) {
 			try {
 				session_ = wsm->getUserManager().parseHttpSession(authToken, aIp);
 			} catch (const std::exception& e) {
-				ep.http_set_body(hdl, e.what());
-				ep.http_set_status(hdl, http::status::unauthorized);
+				ep.httpSetBody(hdl, e.what());
+				ep.httpSetStatus(hdl, http::status::unauthorized);
 				return false;
 			}
 		}
@@ -89,13 +89,13 @@ namespace webserver {
 			return false;
 		}*/
 
-		ep.http_set_status(hdl, aStatus);
+		ep.httpSetStatus(hdl, aStatus);
 		try {
-			ep.http_set_body(hdl, aOutput);
+			ep.httpSetBody(hdl, aOutput);
 		} catch (const std::exception&) {
 			// Shouldn't really happen
-			ep.http_set_status(hdl, http::status::internal_server_error);
-			ep.http_set_body(hdl, "Failed to set response body");
+			ep.httpSetStatus(hdl, http::status::internal_server_error);
+			ep.httpSetBody(hdl, "Failed to set response body");
 			return false;
 		}
 
@@ -114,27 +114,27 @@ namespace webserver {
 					data = responseJson.dump();
 				} catch (const std::exception& e) {
 					// keep legacy logging semantics via WebServerManager helper for now
-					ep.http_set_body(hdl, "Failed to convert data to JSON: " + string(e.what()));
-					ep.http_set_status(hdl, http::status::internal_server_error);
+					ep.httpSetBody(hdl, "Failed to convert data to JSON: " + string(e.what()));
+					ep.httpSetStatus(hdl, http::status::internal_server_error);
 					return;
 				}
 			}
 
-			wsm->onData(ep.get_resource(hdl) + " (" + std::string(http::obsolete_reason(aStatus)) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
+			wsm->onData(ep.getResource(hdl) + " (" + std::string(http::obsolete_reason(aStatus)) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
 
 			if (setHttpResponse(ep, hdl, aStatus, data)) {
-				ep.http_append_header(hdl, "Content-Type", "application/json");
+				ep.httpAppendHeader(hdl, "Content-Type", "application/json");
 			}
 		};
 
 		bool isDeferred = false;
 		const auto deferredF = [&isDeferred, &responseF, &ep, hdl]() {
-			ep.http_defer_response(hdl);
+			ep.httpDeferResponse(hdl);
 			isDeferred = true;
 
 			return [&ep, hdl, cb = std::move(responseF)](http::status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
 				cb(aStatus, aResponseJsonData, aResponseErrorJson);
-				ep.http_send_response(hdl);
+				ep.httpSendResponse(hdl);
 			};
 		};
 
@@ -160,7 +160,7 @@ namespace webserver {
 		// Don't capture aRequest in here (it can't be used for async actions)
 		auto responseF = [this, &ep, hdl, ip = aRequest.ip](http::status aStatus, const string& aOutput, const StringPairList& aHeaders = StringPairList()) {
 			wsm->onData(
-				"GET " + ep.get_resource(hdl) + ": " + std::string(http::obsolete_reason(aStatus)) + " (" + Util::formatBytes(aOutput.length()) + ")",
+				"GET " + ep.getResource(hdl) + ": " + std::string(http::obsolete_reason(aStatus)) + " (" + Util::formatBytes(aOutput.length()) + ")",
 				TransportType::TYPE_HTTP_FILE,
 				Direction::OUTGOING,
 				ip
@@ -170,7 +170,7 @@ namespace webserver {
 			if (responseOk && HttpUtil::isStatusOk(aStatus)) {
 				// Don't set any incomplete/invalid headers in case of errors...
 				for (const auto& [name, value] : aHeaders) {
-					ep.http_append_header(hdl, name, value);
+					ep.httpAppendHeader(hdl, name, value);
 				}
 			}
 
@@ -178,12 +178,12 @@ namespace webserver {
 
 		bool isDeferred = false;
 		const auto deferredF = [&isDeferred, &responseF, &ep, hdl]() {
-			ep.http_defer_response(hdl);
+			ep.httpDeferResponse(hdl);
 			isDeferred = true;
 
 			return [cb = std::move(responseF), &ep, hdl](http::status aStatus, const string& aOutput, const StringPairList& aHeaders) {
 				cb(aStatus, aOutput, aHeaders);
-				ep.http_send_response(hdl);
+				ep.httpSendResponse(hdl);
 			};
 		};
 
@@ -195,7 +195,7 @@ namespace webserver {
 
 	void HttpManager::handleHttpRequest(IServerEndpoint& ep, bool aIsSecure, ConnectionHdl hdl) {
 		// Blocking HTTP Handler
-		auto ip = ep.get_remote_ip(hdl);
+		auto ip = ep.getRemoteIp(hdl);
 
 		// Beast handles connection lifetimes itself; don't add legacy Connection: close header
 		// We also have public resources (such as UI resources and auth endpoints) 
@@ -205,8 +205,8 @@ namespace webserver {
 			return;
 		}
 
-		HttpRequest request{ session, ip, ep.get_resource(hdl), ep.get_method(hdl), ep.get_body(hdl),
-			[&ep, hdl](const std::string& name) { return ep.get_header(hdl, name); }, aIsSecure };
+		HttpRequest request{ session, ip, ep.getResource(hdl), ep.getMethod(hdl), ep.getBody(hdl),
+			[&ep, hdl](const std::string& name) { return ep.getHeader(hdl, name); }, aIsSecure };
 		if (request.path.length() >= 4 && request.path.compare(0, 4, "/api") == 0) {
 			handleHttpApiRequest(request, ep, hdl);
 		} else {

@@ -47,7 +47,7 @@ namespace webserver {
 		HttpManager& operator=(HttpManager&) = delete;
 
 		void setEndpointHandlers(IServerEndpoint& aEndpoint, bool aIsSecure) {
-			aEndpoint.set_http_handler(std::bind_front(&HttpManager::handleHttpRequest, this, std::ref(aEndpoint), aIsSecure));
+			aEndpoint.setHttpHandler(std::bind_front(&HttpManager::handleHttpRequest, this, std::ref(aEndpoint), aIsSecure));
 		}
 
 		void start(const string& aWebResourcePath) noexcept;

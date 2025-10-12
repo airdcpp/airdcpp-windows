@@ -49,10 +49,10 @@ namespace webserver {
 		SocketManager& operator=(SocketManager&) = delete;
 
 		void setEndpointHandlers(IServerEndpoint& aEndpoint, bool aIsSecure) {
-			aEndpoint.set_message_handler(std::bind_front(&SocketManager::handleSocketMessage, this));
-			aEndpoint.set_close_handler(std::bind_front(&SocketManager::handleSocketDisconnected, this));
-			aEndpoint.set_open_handler(std::bind_front(&SocketManager::handleSocketConnected, this, std::ref(aEndpoint), aIsSecure));
-			aEndpoint.set_pong_timeout_handler(std::bind_front(&SocketManager::handlePongTimeout, this));
+			aEndpoint.setMessageHandler(std::bind_front(&SocketManager::handleSocketMessage, this));
+			aEndpoint.setCloseHandler(std::bind_front(&SocketManager::handleSocketDisconnected, this));
+			aEndpoint.setOpenHandler(std::bind_front(&SocketManager::handleSocketConnected, this, std::ref(aEndpoint), aIsSecure));
+			aEndpoint.setPongTimeoutHandler(std::bind_front(&SocketManager::handlePongTimeout, this));
 		}
 	private:
 		void onAuthenticated(const SessionPtr& aSession, const WebSocketPtr& aSocket) noexcept;

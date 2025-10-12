@@ -38,10 +38,10 @@ namespace webserver {
 		debugMessage("Websocket created");
 
 		// Parse remote IP
-		ip = endpoint.get_remote_ip(hdl);
+		ip = endpoint.getRemoteIp(hdl);
 
 		// Parse URL
-		url = endpoint.get_uri(hdl);
+		url = endpoint.getUri(hdl);
 		if (!url.empty() && url.back() != '/') {
 			url += '/';
 		}
@@ -108,7 +108,7 @@ namespace webserver {
 		wsm->onData(str, TransportType::TYPE_SOCKET, Direction::OUTGOING, getIp());
 
 		try {
-			endpoint.ws_send_text(hdl, str);
+			endpoint.wsSendText(hdl, str);
 		} catch (const std::exception& e) {
 			logError("Failed to send data: " + string(e.what()));
 		}
@@ -116,7 +116,7 @@ namespace webserver {
 
 	void WebSocket::ping() noexcept {
 		try {
-			endpoint.ws_ping(hdl);
+			endpoint.wsPing(hdl);
 		} catch (const std::exception& e) {
 			debugMessage(string("WebSocket::ping failed: ") + e.what());
 		}
@@ -125,7 +125,7 @@ namespace webserver {
 	void WebSocket::close(uint16_t aCode, const string& aMsg) {
 		debugMessage("WebSocket::close");
 		try {
-			endpoint.ws_close(hdl, aCode, aMsg);
+			endpoint.wsClose(hdl, aCode, aMsg);
 		} catch (const std::exception& e) {
 			debugMessage(string("WebSocket::close failed: ") + e.what());
 		}

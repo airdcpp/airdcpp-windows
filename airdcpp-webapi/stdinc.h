@@ -31,9 +31,8 @@
 namespace webserver {
 	using json = nlohmann::json;
 
-	namespace beast = boost::beast;
-	namespace http = beast::http;
-	namespace websocket = beast::websocket;
+	namespace http = boost::beast::http;
+	namespace websocket = boost::beast::websocket;
 
 	// Generic connection handle used by adapters (points to underlying session object)
 	using ConnectionHdl = std::weak_ptr<void>;
