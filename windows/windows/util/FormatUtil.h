@@ -46,6 +46,22 @@ public:
 	};
 
 	static CountryFlagInfo toCountryInfo(const string& aIP) noexcept;
+
+
+	// Current datetime based on the DATE_FORMAT setting
+	// Default: %Y-%m-%d %H:%M
+	static string formatDateTime(time_t t) noexcept;
+	static tstring formatDateTimeW(time_t t) noexcept;
+
+
+	// SPEED FORMAT
+
+	static string formatConnectionSpeed(const string& aString) noexcept { return formatConnectionSpeed(Util::toInt64(aString)); }
+	static string formatConnectionSpeed(int64_t aBytes) noexcept;
+	static wstring formatConnectionSpeedW(int64_t aBytes) noexcept;
+
+	static string formatExactSize(int64_t aBytes) noexcept;
+	static wstring formatExactSizeW(int64_t aBytes) noexcept;
 };
 
 }

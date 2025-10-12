@@ -354,9 +354,8 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 				if (!fpl.empty()) {
 					pathMenu->InsertSeparatorLast(CTSTRING(FINISHED_BUNDLES));
-					for(auto j=fpl.begin(); j != fpl.end(); j++) {
-						string path = j->first;
-						pathMenu->appendItem(Text::toT(path) + (j->second > 0 ? _T(" (") + Text::toT(Util::formatTime("%Y-%m-%d %H:%M", j->second)) + _T(")") : Util::emptyStringT), [=] { ActionUtil::openFolder(Text::toT(path)); });
+					for (const auto& [path, timeFinished] : fpl) {
+						pathMenu->appendItem(Text::toT(path) + (timeFinished > 0 ? _T(" (") + FormatUtil::formatDateTimeW(timeFinished) + _T(")") : Util::emptyStringT), [=] { ActionUtil::openFolder(Text::toT(path)); });
 					}
 
 					pathMenu->appendSeparator();

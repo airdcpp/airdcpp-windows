@@ -1042,7 +1042,7 @@ void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize
 	}
 	ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
 
-	tmp = aUpdateDate > 0 ? TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", aUpdateDate))) : Util::emptyStringT;
+	tmp = aUpdateDate > 0 ? TSTRING_F(UPDATED_ON_X, FormatUtil::formatDateTimeW(aUpdateDate)) : Util::emptyStringT;
 	w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[STATUS_UPDATED] < w) {
 		statusSizes[STATUS_UPDATED] = w;
@@ -2104,7 +2104,7 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const noexce
 			} else {
 				return Text::toT(Util::formatDirectoryContent(dir->getContentInfoRecursive(true)));
 			}
-		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSizeW(dir->getTotalSize(true)) : Util::formatExactSizeW(file->getSize());
+		case COLUMN_EXACTSIZE: return type == DIRECTORY ? FormatUtil::formatExactSizeW(dir->getTotalSize(true)) : FormatUtil::formatExactSizeW(file->getSize());
 		case COLUMN_SIZE: return type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_DATE: return WinUtil::formatDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 		default: return Text::toT(getTextNormal(col));
@@ -2121,9 +2121,9 @@ const string DirectoryListingFrame::ItemInfo::getTextNormal(uint8_t col) const n
 			return Util::emptyString;
 		}
 	case COLUMN_TTH: return type == FILE ? file->getTTH().toBase32() : Util::emptyString;
-	case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
+	case COLUMN_EXACTSIZE: return type == DIRECTORY ? FormatUtil::formatExactSize(dir->getTotalSize(true)) : FormatUtil::formatExactSize(file->getSize());
 	case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytes(dir->getTotalSize(true)) : Util::formatBytes(file->getSize());
-	case COLUMN_DATE: return Util::formatDateTime(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
+	case COLUMN_DATE: return FormatUtil::formatDateTime(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 	default: return Util::emptyString;
 	}
 }

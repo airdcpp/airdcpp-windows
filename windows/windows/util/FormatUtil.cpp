@@ -23,6 +23,7 @@
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/core/geo/GeoManager.h>
 #include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/util/SystemUtil.h>
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/util/Util.h>
 
@@ -82,4 +83,124 @@ FormatUtil::CountryFlagInfo FormatUtil::toCountryInfo(const string& aIP) noexcep
 		flagIndex
 	};
 }
+
+
+string FormatUtil::formatDateTime(time_t t) noexcept {
+	if (t == 0)
+		return Util::emptyString;
+
+	char buf[64];
+	tm _tm;
+	auto err = localtime_s(&_tm, &t);
+	if (err > 0) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", t, SystemUtil::translateError(err).c_str());
+		return Util::emptyString;
+	}
+
+	strftime(buf, 64, SETTING(DATE_FORMAT).c_str(), &_tm);
+
+	return buf;
+}
+
+tstring FormatUtil::formatDateTimeW(time_t t) noexcept {
+	return Text::toT(formatDateTime(t));
+}
+
+string FormatUtil::formatConnectionSpeed(int64_t aBytes) noexcept {
+	aBytes *= 8;
+	char buf[64];
+	if (aBytes < 1000000) {
+		snprintf(buf, sizeof(buf), "%.02f %s", (double)aBytes / (1000.0), CSTRING(KBITS));
+	}
+	else if (aBytes < 1000000000) {
+		snprintf(buf, sizeof(buf), "%.02f %s", (double)aBytes / (1000000.0), CSTRING(MBITS));
+	}
+	else if (aBytes < (int64_t)1000000000000) {
+		snprintf(buf, sizeof(buf), "%.02f %s", (double)aBytes / (1000000000.0), CSTRING(GBITS));
+	}
+	else if (aBytes < (int64_t)1000000000000000) {
+		snprintf(buf, sizeof(buf), "%.02f %s", (double)aBytes / (1000000000000.0), CSTRING(TBITS));
+	}
+	else if (aBytes < (int64_t)1000000000000000000) {
+		snprintf(buf, sizeof(buf), "%.02f %s", (double)aBytes / (1000000000000000.0), CSTRING(PBITS));
+	}
+
+	return buf;
+}
+
+wstring FormatUtil::formatConnectionSpeedW(int64_t aBytes) noexcept {
+	wchar_t buf[64];
+	aBytes *= 8;
+	if (aBytes < 1000000) {
+		snwprintf(buf, sizeof(buf), L"%.02f %s", (double)aBytes / (1000.0), CWSTRING(KBITS));
+	}
+	else if (aBytes < 1000000000) {
+		snwprintf(buf, sizeof(buf), L"%.02f %s", (double)aBytes / (1000000.0), CWSTRING(MBITS));
+	}
+	else if (aBytes < (int64_t)1000000000000) {
+		snwprintf(buf, sizeof(buf), L"%.02f %s", (double)aBytes / (1000000000.0), CWSTRING(GBITS));
+	}
+	else if (aBytes < (int64_t)1000000000000000) {
+		snwprintf(buf, sizeof(buf), L"%.02f %s", (double)aBytes / (1000000000000.0), CWSTRING(TBITS));
+	}
+	else if (aBytes < (int64_t)1000000000000000000) {
+		snwprintf(buf, sizeof(buf), L"%.02f %s", (double)aBytes / (1000000000000000.0), CWSTRING(PBITS));
+	}
+
+	return buf;
+}
+
+wstring FormatUtil::formatExactSizeW(int64_t aBytes) noexcept {
+	wchar_t buf[64];
+	wchar_t number[64];
+	NUMBERFMT nf;
+	snwprintf(number, sizeof(number), _T("%I64d"), aBytes);
+	wchar_t Dummy[16];
+	TCHAR sep[2] = _T(",");
+
+	/*No need to read these values from the system because they are not
+	used to format the exact size*/
+	nf.NumDigits = 0;
+	nf.LeadingZero = 0;
+	nf.NegativeOrder = 0;
+	nf.lpDecimalSep = sep;
+
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SGROUPING, Dummy, 16);
+	nf.Grouping = _wtoi(Dummy);
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, Dummy, 16);
+	nf.lpThousandSep = Dummy;
+
+	GetNumberFormat(LOCALE_USER_DEFAULT, 0, number, &nf, buf, 64);
+
+	snwprintf(buf, sizeof(buf), _T("%s %s"), buf, CTSTRING(B));
+	return buf;
+}
+
+string FormatUtil::formatExactSize(int64_t aBytes) noexcept {
+	TCHAR tbuf[128];
+	TCHAR number[64];
+	NUMBERFMT nf;
+	_sntprintf(number, 64, _T("%I64d"), aBytes);
+	TCHAR Dummy[16];
+	TCHAR sep[2] = _T(",");
+
+	/*No need to read these values from the system because they are not
+	used to format the exact size*/
+	nf.NumDigits = 0;
+	nf.LeadingZero = 0;
+	nf.NegativeOrder = 0;
+	nf.lpDecimalSep = sep;
+
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SGROUPING, Dummy, 16);
+	nf.Grouping = Util::toInt(Text::fromT(Dummy));
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, Dummy, 16);
+	nf.lpThousandSep = Dummy;
+
+	GetNumberFormat(LOCALE_USER_DEFAULT, 0, number, &nf, tbuf, sizeof(tbuf) / sizeof(tbuf[0]));
+
+	char buf[128];
+	_snprintf(buf, sizeof(buf), "%s %s", Text::fromT(tbuf).c_str(), CSTRING(B));
+	return buf;
+}
+
 }

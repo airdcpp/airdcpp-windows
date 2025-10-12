@@ -729,10 +729,10 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 				return Text::toT(sr->getConnectionStr());
 			}
 
-			return Util::formatConnectionSpeedW(getConnectionNumeric());
+			return FormatUtil::formatConnectionSpeedW(getConnectionNumeric());
 		};
 		case COLUMN_HUB: return FormatUtil::getHubNames(getHintedUser());
-		case COLUMN_EXACT_SIZE: return getSize() > 0 ? Util::formatExactSizeW(getSize()) : Util::emptyStringT;
+		case COLUMN_EXACT_SIZE: return getSize() > 0 ? FormatUtil::formatExactSizeW(getSize()) : Util::emptyStringT;
 		case COLUMN_IP: return countryInfo.text;
 		case COLUMN_TTH: return !isDirectory() ? Text::toT(getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return WinUtil::formatDateTimeW(getDate());

@@ -22,6 +22,7 @@
 #include <windows/frames/recents/RecentsFrm.h>
 #include <windows/frames/hub/HubFrame.h>
 #include <windows/util/ActionUtil.h>
+#include <windows/util/FormatUtil.h>
 
 #include <airdcpp/recents/RecentManager.h>
 
@@ -305,7 +306,7 @@ const tstring RecentsFrame::ItemInfo::getText(int col) const {
 	case COLUMN_NAME: return Text::toT(item->getName());
 	case COLUMN_DESCRIPTION: return Text::toT(item->getDescription());
 	case COLUMN_SERVER: return Text::toT(item->getUrl());
-	case COLUMN_DATE: return item->getLastOpened() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", item->getLastOpened())) : TSTRING(UNKNOWN);
+	case COLUMN_DATE: return item->getLastOpened() > 0 ? FormatUtil::formatDateTimeW(item->getLastOpened()) : TSTRING(UNKNOWN);
 
 	default: return Util::emptyStringT;
 	}

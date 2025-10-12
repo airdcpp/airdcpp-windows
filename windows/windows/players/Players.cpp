@@ -99,7 +99,7 @@ string Players::getItunesSpam(HWND playerWnd /*= NULL*/) {
 
 				//Total song time
 				pTrack->get_Duration(&length);
-				if (length > 0) { params["length"] = Text::fromT(Util::formatSecondsW(length)); } // <--- once more with feeling
+				if (length > 0) { params["length"] = Util::formatSeconds(length); } // <--- once more with feeling
 
 				//Bitrate
 				long bitrate;
@@ -139,7 +139,7 @@ string Players::getItunesSpam(HWND playerWnd /*= NULL*/) {
 			//Player position (in seconds, you'll want to convert for your output)
 			iITunes->get_PlayerPosition(&elapsed);
 			if(elapsed > 0) {
-				params["elapsed"] = Text::fromT(Util::formatSecondsW(elapsed));
+				params["elapsed"] = Util::formatSeconds(elapsed);
 				int intPercent;
 				if (length > 0 ) {
 					intPercent = elapsed * 100 / length;
@@ -282,8 +282,8 @@ string Players::getMPCSpam() {
 			CComQIPtr<IMediaSeeking> pMS = (CComQIPtr<IMediaSeeking>)pFG;
 			REFERENCE_TIME pos, dur;
 			if((pMS->GetCurrentPosition(&pos) == S_OK) && (pMS->GetDuration(&dur) == S_OK)) {
-				params["elapsed"] =  Text::fromT(Util::formatSecondsW(pos/10000000));
-				params["length"] =  Text::fromT(Util::formatSecondsW(dur/10000000));
+				params["elapsed"] =  Util::formatSeconds(pos/10000000);
+				params["length"] =  Util::formatSeconds(dur/10000000);
 				int intPercent = 0;
 				if (dur != 0)
 					intPercent = (int) (pos * 100 / dur);

@@ -25,6 +25,7 @@
 #include <windows/MainFrm.h>
 #include <windows/settings/WebserverPage.h>
 #include <windows/settings/WebUserDlg.h>
+#include <windows/util/FormatUtil.h>
 
 #include <web-server/FileServer.h>
 #include <web-server/HttpManager.h>
@@ -371,7 +372,7 @@ void WebServerPage::write() {
 void WebServerPage::addListItem(const webserver::WebUserPtr& aUser) noexcept {
 	int p = ctrlWebUsers.insert(ctrlWebUsers.GetItemCount(), Text::toT(aUser->getUserName()), 0, reinterpret_cast<LPARAM>(aUser.get()));
 
-	auto login = aUser->getLastLogin() == 0 ? STRING(NEVER) : Util::formatTime("%c", aUser->getLastLogin());
+	auto login = aUser->getLastLogin() == 0 ? STRING(NEVER) : FormatUtil::formatDateTime(aUser->getLastLogin());
 	ctrlWebUsers.SetItemText(p, 1, Text::toT(login).c_str());
 }
 

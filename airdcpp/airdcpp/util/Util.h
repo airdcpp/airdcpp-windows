@@ -141,11 +141,8 @@ public:
 	// Localized current timestamp with second
 	static string formatCurrentTime() noexcept;
 
-	// Current datetime based on the DATE_FORMAT setting
-	// Default: %Y-%m-%d %H:%M
-	static string formatDateTime(time_t t) noexcept;
 
-	static string formatTime(const string& msg, const time_t t) noexcept;
+	static string formatTime(const string& msg, time_t t) noexcept;
 	static string formatDuration(uint64_t aSec, bool aTranslate, bool aPerMinute = false) noexcept;
 
 	// xx:xx:xx duration format
@@ -158,17 +155,8 @@ public:
 	static string formatBytes(int64_t aBytes) noexcept;
 	static wstring formatBytesW(int64_t aBytes) noexcept;
 
-	static string formatExactSize(int64_t aBytes) noexcept;
-	static wstring formatExactSizeW(int64_t aBytes) noexcept;
-
 	static string formatAbbreviated(int aNum) noexcept;
 	static wstring formatAbbreviatedW(int aNum) noexcept;
-
-	// SPEED FORMAT
-
-	static string formatConnectionSpeed(const string& aString) noexcept { return formatConnectionSpeed(toInt64(aString)); }
-	static string formatConnectionSpeed(int64_t aBytes) noexcept;
-	static wstring formatConnectionSpeedW(int64_t aBytes) noexcept;
 
 	static string formatPriority(Priority aPriority) noexcept;
 

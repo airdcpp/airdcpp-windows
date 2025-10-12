@@ -25,6 +25,7 @@
 #include <airdcpp/util/SystemUtil.h>
 
 #include <locale.h>
+#include <iomanip>
 
 namespace dcpp {
 
@@ -127,24 +128,6 @@ int64_t Util::convertSize(int64_t aValue, Util::SizeUnits valueType, Util::SizeU
 	return aValue;
 }
 
-string Util::formatConnectionSpeed(int64_t aBytes) noexcept {
-	aBytes *= 8;
-	char buf[64];
-	if (aBytes < 1000000) {
-		snprintf(buf, sizeof(buf), "%.02f %s", (double) aBytes / (1000.0), CSTRING(KBITS));
-	} else if (aBytes < 1000000000) {
-		snprintf(buf, sizeof(buf), "%.02f %s", (double) aBytes / (1000000.0), CSTRING(MBITS));
-	} else if (aBytes < (int64_t) 1000000000000) {
-		snprintf(buf, sizeof(buf), "%.02f %s", (double) aBytes / (1000000000.0), CSTRING(GBITS));
-	} else if (aBytes < (int64_t) 1000000000000000) {
-		snprintf(buf, sizeof(buf), "%.02f %s", (double) aBytes / (1000000000000.0), CSTRING(TBITS));
-	} else if (aBytes < (int64_t) 1000000000000000000) {
-		snprintf(buf, sizeof(buf), "%.02f %s", (double) aBytes / (1000000000000000.0), CSTRING(PBITS));
-	}
-
-	return buf;
-}
-
 string Util::formatPriority(Priority aPriority) noexcept {
 	switch (aPriority) {
 	case Priority::PAUSED_FORCE: return STRING(PAUSED_FORCED);
@@ -156,91 +139,6 @@ string Util::formatPriority(Priority aPriority) noexcept {
 	case Priority::HIGHEST: return STRING(HIGHEST);
 	default: return STRING(PAUSED);
 	}
-}
-
-#ifdef _WIN32
-wstring Util::formatConnectionSpeedW(int64_t aBytes) noexcept {
-	wchar_t buf[64];
-	aBytes *= 8;
-	if (aBytes < 1000000) {
-		snwprintf(buf, sizeof(buf), L"%.02f %s", (double) aBytes / (1000.0), CWSTRING(KBITS));
-	} else if (aBytes < 1000000000) {
-		snwprintf(buf, sizeof(buf), L"%.02f %s", (double) aBytes / (1000000.0), CWSTRING(MBITS));
-	} else if (aBytes < (int64_t) 1000000000000) {
-		snwprintf(buf, sizeof(buf), L"%.02f %s", (double) aBytes / (1000000000.0), CWSTRING(GBITS));
-	} else if (aBytes < (int64_t) 1000000000000000) {
-		snwprintf(buf, sizeof(buf), L"%.02f %s", (double) aBytes / (1000000000000.0), CWSTRING(TBITS));
-	} else if (aBytes < (int64_t) 1000000000000000000) {
-		snwprintf(buf, sizeof(buf), L"%.02f %s", (double) aBytes / (1000000000000000.0), CWSTRING(PBITS));
-	}
-
-	return buf;
-}
-
-wstring Util::formatExactSizeW(int64_t aBytes) noexcept {
-//#ifdef _WIN32	
-	wchar_t buf[64];
-	wchar_t number[64];
-	NUMBERFMT nf;
-	snwprintf(number, sizeof(number), _T("%I64d"), aBytes);
-	wchar_t Dummy[16];
-	TCHAR sep[2] = _T(",");
-    
-	/*No need to read these values from the system because they are not
-	used to format the exact size*/
-	nf.NumDigits = 0;
-	nf.LeadingZero = 0;
-	nf.NegativeOrder = 0;
-	nf.lpDecimalSep = sep;
-
-	GetLocaleInfo( LOCALE_USER_DEFAULT, LOCALE_SGROUPING, Dummy, 16 );
-	nf.Grouping = _wtoi(Dummy);
-	GetLocaleInfo( LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, Dummy, 16 );
-	nf.lpThousandSep = Dummy;
-
-	GetNumberFormat(LOCALE_USER_DEFAULT, 0, number, &nf, buf, 64);
-		
-	snwprintf(buf, sizeof(buf), _T("%s %s"), buf, CTSTRING(B));
-	return buf;
-/*#else
-		wchar_t buf[64];
-		snwprintf(buf, sizeof(buf), L"%'lld", (long long int)aBytes);
-		return tstring(buf) + TSTRING(B);
-#endif*/
-}
-#endif
-
-string Util::formatExactSize(int64_t aBytes) noexcept {
-#ifdef _WIN32	
-	TCHAR tbuf[128];
-	TCHAR number[64];
-	NUMBERFMT nf;
-	_sntprintf(number, 64, _T("%I64d"), aBytes);
-	TCHAR Dummy[16];
-	TCHAR sep[2] = _T(",");
-
-	/*No need to read these values from the system because they are not
-	used to format the exact size*/
-	nf.NumDigits = 0;
-	nf.LeadingZero = 0;
-	nf.NegativeOrder = 0;
-	nf.lpDecimalSep = sep;
-
-	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SGROUPING, Dummy, 16);
-	nf.Grouping = Util::toInt(Text::fromT(Dummy));
-	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, Dummy, 16);
-	nf.lpThousandSep = Dummy;
-
-	GetNumberFormat(LOCALE_USER_DEFAULT, 0, number, &nf, tbuf, sizeof(tbuf) / sizeof(tbuf[0]));
-
-	char buf[128];
-	_snprintf(buf, sizeof(buf), "%s %s", Text::fromT(tbuf).c_str(), CSTRING(B));
-	return buf;
-#else
-	char buf[128];
-	snprintf(buf, sizeof(buf), "%'lld %s", (long long int)aBytes, CSTRING(B));
-	return string(buf);
-#endif
 }
 
 typedef const uint8_t* ccp;
@@ -455,86 +353,41 @@ string Util::formatParams(const string& aMsg, const ParamMap& aParams, FilterF a
 	return result;
 }
 
-string Util::formatTime(const string &msg, const time_t t) noexcept {
-	if (!msg.empty()) {
-		string ret = msg;
-		tm* loc = localtime(&t);
-		if(!loc) {
-			return Util::emptyString;
-		}
+string Util::formatTime(const string &msg, time_t aTime) noexcept {
+	if (msg.empty()) {
+		return Util::emptyString;
+	}
+
+	std::tm tmv{};
 #ifdef _WIN32
-	#ifndef _WIN64
-		// Work it around :P
-		string::size_type i = 0;
-		while((i = ret.find("%", i)) != string::npos) {
-			if(string("aAbBcdHIjmMpSUwWxXyYzZ%").find(ret[i+1]) == string::npos) {
-				ret.replace(i, 1, "%%");
-			}
-			i += 2;
-		}
-	#endif
+	if (localtime_s(&tmv, &aTime) != 0) {
+		return Util::emptyString;
+	}
+#else
+	if (!localtime_r(&t, &tmv)) {
+		return Util::emptyString;
+	}
 #endif
-		size_t bufsize = ret.size() + 256;
-		string buf(bufsize, 0);
+	try {
+		std::ostringstream oss;
+		// Use user locale for names etc, matching strftime behavior
+		oss.imbue(std::locale(""));
+		oss << std::put_time(&tmv, msg.c_str());
+		auto out = oss.str();
 
-		errno = 0;
-
-		buf.resize(strftime(&buf[0], bufsize-1, ret.c_str(), loc));
-		
-		while(buf.empty()) {
-			if(errno == EINVAL)
-				return Util::emptyString;
-
-			bufsize+=64;
-			buf.resize(bufsize);
-			buf.resize(strftime(&buf[0], bufsize-1, ret.c_str(), loc));
-		}
-
+		// Convert possible non-UTF-8 data added by std::put_time on Windows (other operating systems should always use UTF-8)
 #ifdef _WIN32
-		if(!Text::validateUtf8(buf))
+		if (!Text::validateUtf8(out))
 #endif
 		{
-			buf = Text::toUtf8(buf);
+			out = Text::toUtf8(out);
 		}
-		return buf;
-	}
-	return Util::emptyString;
-}
-
-#ifdef _WIN32
-string Util::formatDateTime(time_t t) noexcept {
-	if (t == 0)
-		return Util::emptyString;
-
-	char buf[64];
-	tm _tm;
-	auto err = localtime_s(&_tm, &t);
-	if (err > 0) {
-		dcdebug("Failed to parse date " I64_FMT ": %s\n", t, SystemUtil::translateError(err).c_str());
+		return out;
+	} catch (...) {
+		// Keep noexcept contract
 		return Util::emptyString;
 	}
-
-	strftime(buf, 64, SETTING(DATE_FORMAT).c_str(), &_tm);
-
-	return buf;
 }
-#else
-string Util::formatDateTime(time_t t) noexcept {
-	if (t == 0)
-		return Util::emptyString;
-
-	char buf[64];
-	tm _tm;
-	if (!localtime_r(&t, &_tm)) {
-		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), SystemUtil::translateError(errno).c_str());
-		return Util::emptyString;
-	}
-
-	strftime(buf, 64, SETTING(DATE_FORMAT).c_str(), &_tm);
-
-	return buf;
-}
-#endif
 
 string Util::formatCurrentTime() noexcept {
 	char buf[64];
