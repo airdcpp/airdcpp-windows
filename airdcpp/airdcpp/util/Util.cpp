@@ -368,20 +368,28 @@ string Util::formatTime(const string &msg, time_t aTime) noexcept {
 		return Util::emptyString;
 	}
 #endif
+
+	// Build the locale safely: prefer user locale, fall back to "C"
+	std::locale loc = std::locale::classic();
+	try {
+		// This may throw on static musl (missing locale data, e.g. "C.UTF-8")
+		loc = std::locale("");
+	} catch (const std::exception&) {
+		// Keep classic locale
+	}
+
 	try {
 		std::ostringstream oss;
-		// Use user locale for names etc, matching strftime behavior
-		oss.imbue(std::locale(""));
+		oss.imbue(loc);
 		oss << std::put_time(&tmv, msg.c_str());
 		auto out = oss.str();
 
-		// Convert possible non-UTF-8 data added by std::put_time on Windows (other operating systems should always use UTF-8)
 #ifdef _WIN32
-		if (!Text::validateUtf8(out))
-#endif
-		{
+		// Convert possible non-UTF-8 data added by std::put_time on Windows
+		if (!Text::validateUtf8(out)) {
 			out = Text::toUtf8(out);
 		}
+#endif
 		return out;
 	} catch (...) {
 		// Keep noexcept contract
