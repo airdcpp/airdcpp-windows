@@ -18,6 +18,8 @@
 
 #include "stdinc.h"
 
+#include <airdcpp/core/thread/Thread.h>
+
 #include <web-server/JsonUtil.h>
 #include <web-server/Session.h>
 #include <web-server/WebUser.h>
@@ -105,7 +107,7 @@ namespace webserver {
 				}
 			}
 
-			std::this_thread::sleep_for(chrono::milliseconds(100));
+			Thread::sleep(100);
 		}
 	}
 

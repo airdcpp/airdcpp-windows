@@ -364,7 +364,7 @@ string Util::formatTime(const string &msg, time_t aTime) noexcept {
 		return Util::emptyString;
 	}
 #else
-	if (!localtime_r(&t, &tmv)) {
+	if (!localtime_r(&aTime, &tmv)) {
 		return Util::emptyString;
 	}
 #endif
