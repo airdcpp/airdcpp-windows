@@ -174,7 +174,12 @@ namespace webserver {
 				return http::status::unauthorized;
 			}
 
-			const auto fileName = Util::toString(ValueGenerator::rand());
+			const auto nameHeader = aRequest.getHeader("X-File-Name");
+			auto fileName = Util::toString(ValueGenerator::rand());
+			if (!nameHeader.empty()) {
+				fileName += "_" + PathUtil::validateFileName(nameHeader);
+			}
+
 			const auto filePath = AppUtil::getPath(AppUtil::PATH_TEMP) + fileName;
 
 			try {
