@@ -201,23 +201,25 @@ namespace dcpp {
 	}
 
 	bool ViewFileManager::removeFile(const TTHValue& aTTH) noexcept {
-		ViewFilePtr f;
+		ViewFilePtr file;
 
-		auto file = getFile(aTTH);
-		if (!file) {
-			return false;
+		// Fetch and erase first to make the removal terminal for any concurrent updates
+		{
+			WLock l(cs);
+			auto it = viewFiles.find(aTTH);
+			if (it == viewFiles.end()) {
+				return false;
+			}
+
+			file = it->second;
+			viewFiles.erase(it);
 		}
 
 		// In case it hasn't been removed yet
 		QueueManager::getInstance()->removeFile(file->getPath());
 
-		{
-			WLock l(cs);
-			viewFiles.erase(aTTH);
-		}
-
+		// Notify after the map no longer contains the file to avoid re-entrancy issues
 		fire(ViewFileManagerListener::FileClosed(), file);
-
 		return true;
 	}
 
