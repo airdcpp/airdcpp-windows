@@ -3,7 +3,7 @@
 :: NOTE: the 64 bit version must be installed first (it will get no postfix then)
 
 :: Config
-set NVM_VERSION=22.19.0
+set NVM_VERSION=22.20.0
 
 :: Architecture argument (Win32/x64)
 IF [%1]==[] goto :invalidParameters

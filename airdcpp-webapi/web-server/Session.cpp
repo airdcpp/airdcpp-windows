@@ -96,11 +96,11 @@ namespace webserver {
 		return h != apiHandlers.end() ? h->second.get() : nullptr;
 	}
 
-	http_status Session::handleRequest(ApiRequest& aRequest) {
+	http::status Session::handleRequest(ApiRequest& aRequest) {
 		auto m = getModule(aRequest.getApiModule());
 		if (!m) {
 			aRequest.setResponseErrorStr("Section not found");
-			return http_status::not_found;
+			return http::status::not_found;
 		}
 
 		return m->handleRequest(aRequest);

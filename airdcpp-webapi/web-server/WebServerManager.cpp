@@ -37,6 +37,8 @@
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/core/timer/TimerManager.h>
 
+#include "BeastServerAdapter.h"
+
 #define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
 #define HANDSHAKE_TIMEOUT 0 // disabled, affects HTTP downloads
@@ -103,31 +105,19 @@ namespace webserver {
 #define debugStreamTls std::cout
 #endif
 
-	template<class T>
-	void setEndpointLogSettings(T& aEndpoint, std::ostream& aStream) {
-		// Access
-		aEndpoint.set_access_channels(websocketpp::log::alevel::all);
-		aEndpoint.clear_access_channels(websocketpp::log::alevel::frame_payload | websocketpp::log::alevel::frame_header | websocketpp::log::alevel::control);
-		aEndpoint.get_alog().set_ostream(&aStream);
-
-		// Errors
-		aEndpoint.set_error_channels(websocketpp::log::elevel::all);
-		aEndpoint.get_elog().set_ostream(&aStream);
+	static void setEndpointLogSettings(IServerEndpoint& aEndpoint, std::ostream& access, std::ostream& error) {
+		aEndpoint.configureLogging(&access, &error, true);
 	}
 
-	template<class T>
-	void disableEndpointLogging(T& aEndpoint) {
-		aEndpoint.clear_access_channels(websocketpp::log::alevel::all);
-		aEndpoint.clear_error_channels(websocketpp::log::elevel::all);
+	static void disableEndpointLogging(IServerEndpoint& aEndpoint) {
+		aEndpoint.configureLogging(nullptr, nullptr, false);
 	}
 
+	static void setEndpointOptions(IServerEndpoint& aEndpoint) {
+		aEndpoint.setOpenHandshakeTimeout(HANDSHAKE_TIMEOUT);
+		aEndpoint.setPongTimeout(WEBCFG(PING_TIMEOUT).num() * 1000);
 
-	template<class T>
-	void setEndpointOptions(T& aEndpoint) {
-		aEndpoint.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
-		aEndpoint.set_pong_timeout(WEBCFG(PING_TIMEOUT).num() * 1000);
-
-		aEndpoint.set_max_http_body_size(HttpManager::MAX_HTTP_BODY_SIZE);
+		aEndpoint.setMaxHttpBodySize(HttpManager::MAX_HTTP_BODY_SIZE);
 	}
 
 	bool WebServerManager::startup(const MessageCallback& errorF, const string& aWebResourcePath, const Callback& aShutdownF) {
@@ -164,9 +154,13 @@ namespace webserver {
 
 		try {
 			// initialize asio with our external io_context rather than an internal one
-			endpoint_plain.init_asio(&ios);
-			endpoint_tls.init_asio(&ios);
-		} catch (const websocketpp::exception& e) {
+			// Phase 1: construct websocketpp adapters and init
+			endpoint_plain = std::make_unique<BeastServerAdapter>();
+			endpoint_tls = std::make_unique<BeastServerAdapter>();
+
+			endpoint_plain->initAsio(&ios);
+			endpoint_tls->initAsio(&ios);
+		} catch (const std::exception& e) {
 			if (errorF) {
 				errorF(e.what());
 			}
@@ -175,26 +169,26 @@ namespace webserver {
 		}
 
 		// Handlers
-		socketManager->setEndpointHandlers(endpoint_plain, false);
-		socketManager->setEndpointHandlers(endpoint_tls, true);
+		socketManager->setEndpointHandlers(*endpoint_plain, false);
+		socketManager->setEndpointHandlers(*endpoint_tls, true);
 
-		httpManager->setEndpointHandlers(endpoint_plain, false);
-		httpManager->setEndpointHandlers(endpoint_tls, true);
+		httpManager->setEndpointHandlers(*endpoint_plain, false);
+		httpManager->setEndpointHandlers(*endpoint_tls, true);
 
 		// Misc options
-		setEndpointOptions(endpoint_plain);
-		setEndpointOptions(endpoint_tls);
+		setEndpointOptions(*endpoint_plain);
+		setEndpointOptions(*endpoint_tls);
 
 		// TLS endpoint has an extra handler for the tls init
-		endpoint_tls.set_tls_init_handler(std::bind_front(&WebServerManager::handleInitTls, this));
+		endpoint_tls->setTlsInitHandler([this]() { return handleInitTls(); });
 
 		// Logging
 		if (enableSocketLogging) {
-			setEndpointLogSettings(endpoint_plain, debugStreamPlain);
-			setEndpointLogSettings(endpoint_tls, debugStreamTls);
+			setEndpointLogSettings(*endpoint_plain, debugStreamPlain, debugStreamPlain);
+			setEndpointLogSettings(*endpoint_tls, debugStreamTls, debugStreamTls);
 		} else {
-			disableEndpointLogging(endpoint_plain);
-			disableEndpointLogging(endpoint_tls);
+			disableEndpointLogging(*endpoint_plain);
+			disableEndpointLogging(*endpoint_tls);
 		}
 
 		return true;
@@ -206,23 +200,21 @@ namespace webserver {
 	}
 
 	bool WebServerManager::isListeningPlain() const noexcept {
-		return endpoint_plain.is_listening();
+		return endpoint_plain && endpoint_plain->isListening();
 	}
 
 	bool WebServerManager::isListeningTls() const noexcept {
-		return endpoint_tls.is_listening();
+		return endpoint_tls && endpoint_tls->isListening();
 	}
 
-	template <typename EndpointType>
-	bool listenEndpoint(EndpointType& aEndpoint, const ServerConfig& aConfig, const string& aProtocol, const MessageCallback& errorF) noexcept {
+	static bool listenEndpoint(IServerEndpoint& aEndpoint, const ServerConfig& aConfig, const string& aProtocol, const MessageCallback& errorF) noexcept {
 		if (!aConfig.hasValidConfig()) {
 			return false;
 		}
 
-		// Keep reuse disabled on Windows to avoid hiding errors when multiple instances are being run with the same ports
 #ifndef _WIN32
 		// https://github.com/airdcpp-web/airdcpp-webclient/issues/39
-		aEndpoint.set_reuse_addr(true);
+		aEndpoint.setReuseAddr(true);
 #endif
 		try {
 			const auto bindAddress = aConfig.bindAddress.str();
@@ -233,7 +225,7 @@ namespace webserver {
 				aEndpoint.listen(WebServerManager::getDefaultListenProtocol(), static_cast<uint16_t>(aConfig.port.num()));
 			}
 
-			aEndpoint.start_accept();
+			aEndpoint.startAccept();
 			return true;
 		} catch (const std::exception& e) {
 			auto message = STRING_F(WEB_SERVER_SETUP_FAILED, aProtocol % aConfig.port.num() % string(e.what()));
@@ -248,11 +240,11 @@ namespace webserver {
 	bool WebServerManager::listen(const MessageCallback& errorF) {
 		bool hasServer = false;
 
-		if (listenEndpoint(endpoint_plain, *plainServerConfig, "HTTP", errorF)) {
+		if (listenEndpoint(*endpoint_plain, *plainServerConfig, "HTTP", errorF)) {
 			hasServer = true;
 		}
 
-		if (listenEndpoint(endpoint_tls, *tlsServerConfig, "HTTPS", errorF)) {
+		if (listenEndpoint(*endpoint_tls, *tlsServerConfig, "HTTPS", errorF)) {
 			hasServer = true;
 		}
 
@@ -296,7 +288,7 @@ namespace webserver {
 		});
 	}
 
-	context_ptr WebServerManager::handleInitTls(websocketpp::connection_hdl hdl) {
+	context_ptr WebServerManager::handleInitTls() {
 		//std::cout << "on_tls_init called with hdl: " << hdl.lock().get() << std::endl;
 		auto ctx = make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tls);
 
@@ -331,10 +323,10 @@ namespace webserver {
 
 		fireReversed(WebServerManagerListener::Stopping());
 
-		if(endpoint_plain.is_listening())
-			endpoint_plain.stop_listening();
-		if(endpoint_tls.is_listening())
-			endpoint_tls.stop_listening();
+		if(endpoint_plain && endpoint_plain->isListening())
+			endpoint_plain->stopListening();
+		if(endpoint_tls && endpoint_tls->isListening())
+			endpoint_tls->stopListening();
 
 		httpManager->stop();
 		socketManager->stop();

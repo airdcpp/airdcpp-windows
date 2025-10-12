@@ -53,7 +53,7 @@ const tstring UploadQueueFrame::ItemInfo::getText(uint8_t col) const noexcept {
 	case COLUMN_NICK: return wingui::FormatUtil::getNicks(uqi->getHintedUser());
 	case COLUMN_HUB: return wingui::FormatUtil::getHubNames(uqi->getHintedUser());
 	case COLUMN_SIZE: return Util::formatBytesW(uqi->getSize());
-	case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", uqi->getTime()));
+	case COLUMN_ADDED: return FormatUtil::formatDateTimeW(uqi->getTime());
 	case COLUMN_TRANSFERRED: return Util::formatBytesW(uqi->getPos()) + _T(" (") + (uqi->getSize() > 0 ? wingui::WinUtil::toStringW((double)uqi->getPos() * 100.0 / (double)uqi->getSize()) : _T("0")) + _T("%)");
 	case COLUMN_WAITING: return Util::formatSecondsW(GET_TIME() - uqi->getTime());
 	default: return Util::emptyStringT;

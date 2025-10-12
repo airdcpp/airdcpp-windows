@@ -57,7 +57,7 @@ static tstring formatBytes(const string& val) {
 }
 
 static tstring formatSpeed(const string& val) {
-	return Util::formatConnectionSpeedW(Util::toInt64(val));
+	return FormatUtil::formatConnectionSpeedW(Util::toInt64(val));
 }
 
 static const FieldName fields[] =
@@ -840,7 +840,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 	if (fu) {
 		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.Nicks) : fu->getNick().empty() ? Text::toT(ui.Nicks) : Text::toT(fu->getNick());
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.Hubs) : Text::toT(fu->getUrl()); 
-		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : Text::toT(ui.lastSeen);
+		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? FormatUtil::formatDateTimeW(fu->getLastSeen()) : Text::toT(ui.lastSeen);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 		columns[COLUMN_LIMITER] = noLimiter ? TSTRING(YES) : TSTRING(NO);
 	} else {
@@ -936,7 +936,7 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 		if (ofu) {
 			nick = ofu->getNick();
 			hubs = ofu->getUrl();
-			seen = ofu->getLastSeen() ? Util::formatTime("%Y-%m-%d %H:%M", ofu->getLastSeen()) : STRING(UNKNOWN);
+			seen = ofu->getLastSeen() ? FormatUtil::formatDateTime(ofu->getLastSeen()) : STRING(UNKNOWN);
 			hint_ = ofu->getUrl();
 		} else {
 			nick = aUser->getCID().toBase32();

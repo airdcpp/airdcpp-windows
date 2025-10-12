@@ -81,7 +81,7 @@ public:
 			dcassert(col >= 0 && col < COLUMN_LAST);
 			switch (col) {
 			case COLUMN_FILE: return Text::toT(PathUtil::getFileName(finishedItem->getTarget()));
-			case COLUMN_DONE: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M:%S", finishedItem->getTime()));
+			case COLUMN_DONE: return FormatUtil::formatDateTimeW(finishedItem->getTime());
 			case COLUMN_PATH: return Text::toT(PathUtil::getFilePath(finishedItem->getTarget()));
 			case COLUMN_NICK: return Text::toT(ClientManager::getInstance()->getFormattedNicks(finishedItem->getUser()));
 			case COLUMN_HUB: {

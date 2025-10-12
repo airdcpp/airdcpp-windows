@@ -214,7 +214,7 @@ namespace webserver {
 			aRequest.setResponseBody({ 
 				{ "id", filter->getId() }
 			});
-			return http_status::ok;
+			return http::status::ok;
 		}
 
 		api_return handlePutFilter(ApiRequest& aRequest) {
@@ -226,23 +226,23 @@ namespace webserver {
 				auto i = findFilter(aRequest.getTokenParam());
 				if (i == filters.end()) {
 					aRequest.setResponseErrorStr("Filter not found");
-					return http_status::bad_request;
+					return http::status::bad_request;
 				}
 
 				filter = *i;
 			}
 
 			setFilterProperties(reqJson, *filter.get());
-			return http_status::no_content;
+			return http::status::no_content;
 		}
 
 		api_return handleDeleteFilter(ApiRequest& aRequest) {
 			if (!removeFilter(aRequest.getTokenParam())) {
 				aRequest.setResponseErrorStr("Filter " + Util::toString(aRequest.getTokenParam()) + " was not found");
-				return http_status::bad_request;
+				return http::status::bad_request;
 			}
 
-			return http_status::no_content;
+			return http::status::no_content;
 		}
 
 		void onFilterUpdated() {
@@ -276,17 +276,17 @@ namespace webserver {
 				timer->start(true);
 			}
 
-			return http_status::no_content;
+			return http::status::no_content;
 		}
 
 		api_return handleReset(ApiRequest& aRequest) {
 			if (!active) {
 				aRequest.setResponseErrorStr("The view isn't active");
-				return http_status::bad_request;
+				return http::status::bad_request;
 			}
 
 			stop();
-			return http_status::no_content;
+			return http::status::no_content;
 		}
 
 		void parseProperties(const json& j) {
@@ -445,7 +445,7 @@ namespace webserver {
 			});
 
 			aRequest.setResponseBody(j);
-			return http_status::ok;
+			return http::status::ok;
 		}
 
 		typename ItemList::iterator findItem(const T& aItem, ItemList& aItems) noexcept {

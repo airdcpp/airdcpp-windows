@@ -40,9 +40,9 @@ namespace webserver {
 
 		static void addCacheControlHeader(StringPairList& headers_, int aDaysValid) noexcept;
 
-		static bool isStatusOk(int aCode) noexcept;
-		static bool parseStatus(const string& aResponse, int& code_, string& text_) noexcept;
-		static string parseAuthToken(const websocketpp::http::parser::request& aRequest) noexcept;
+		static bool isStatusOk(http::status aCode) noexcept;
+		static bool parseStatus(const string& aResponse, http::status& code_, string& text_) noexcept;
+		static string parseAuthToken(const string& authorizationHeader, const string& xAuthorizationHeader) noexcept;
 	};
 }
 

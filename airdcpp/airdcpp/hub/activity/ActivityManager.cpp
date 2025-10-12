@@ -41,7 +41,7 @@ void ActivityManager::on(SettingsManagerListener::LoadCompleted, bool) noexcept 
 	}
 }
 
-void ActivityManager::updateActivity(time_t aLastActivity) noexcept {
+void ActivityManager::updateActivity(uint64_t aLastActivity) noexcept {
 	if (aLastActivity < lastActivity) {
 		return;
 	}

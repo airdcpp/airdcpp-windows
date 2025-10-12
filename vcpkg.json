@@ -31,9 +31,9 @@
     "miniupnpc",
     "nlohmann-json",
     "openssl",
-    "websocketpp",
     "wtl",
-    "zlib"
+    "zlib",
+    "boost-beast"
   ],
-  "builtin-baseline": "62efe42f53b1886a20cbeb22ee9a27736d20f149"
+  "builtin-baseline": "50c0cb48a0cf2f6fc5c7b2c0d2bafbe26d0a7ca2"
 }

@@ -2789,21 +2789,33 @@ void QueueManager::on(SearchManagerListener::SR, const SearchResultPtr& sr) noex
 			if (!q->getBundle())
 				continue;
 
-			// Size compare to avoid popular spoof
-			if ((SETTING(AUTO_ADD_SOURCE) || (q->getBundle()->getLastSearch() != 0 && static_cast<uint64_t>(q->getBundle()->getLastSearch() + 15*60*1000) > GET_TICK())) && q->getSize() == sr->getSize() && !q->isSource(sr->getUser())) {
-				if (q->getBundle()->isDownloaded()) {
-					continue;
-				}
-
-				if (q->isDownloaded() && q->getBundle()->isSource(sr->getUser())) {
-					continue;
-				}
-
-				if(static_cast<int>(q->getBundle()->countOnlineUsers() + matchLists.left.count(q->getBundle()->getToken())) < SETTING(MAX_AUTO_MATCH_SOURCES)) {
-					selQI = q;
-				} 
+			// Always match bundles that are being searched for manually (within the last 15 minutes)
+			auto shouldMatchBundle = SETTING(AUTO_ADD_SOURCE) || (static_cast<uint64_t>(q->getBundle()->getLastSearchTick() + 15 * 60 * 1000) > GET_TICK());
+			if (!shouldMatchBundle) {
+				continue;
 			}
-			break;
+
+			// Size compare to avoid popular spoof
+			if (q->getSize() != sr->getSize()) {
+				continue;
+			}
+
+			// Bundle downloaded or an existing file source? Don't match
+			if (q->getBundle()->isDownloaded() || q->isSource(sr->getUser())) {
+				continue;
+			}
+
+			// File downloaded but there are other bundle files pending? Should still be matched
+			if (q->isDownloaded() && q->getBundle()->isSource(sr->getUser())) {
+				continue;
+			}
+
+			// Too many sources already? Also include lists that are being matched for this bundle
+			auto sourceCount = q->getBundle()->countOnlineUsers() + matchLists.left.count(q->getBundle()->getToken());
+			if (static_cast<int>(sourceCount) < SETTING(MAX_AUTO_MATCH_SOURCES)) {
+				selQI = q;
+				break;
+			}
 		}
 	}
 
@@ -3823,7 +3835,7 @@ int QueueManager::searchBundleAlternates(const BundlePtr& aBundle, uint64_t aTic
 	}
 
 	if (queuedFileSearches > 0) {
-		aBundle->setLastSearch(aTick);
+		aBundle->setLastSearchTick(aTick);
 
 		uint64_t nextSearchTick = 0;
 		if (autoSearchEnabled()) {

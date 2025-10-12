@@ -121,7 +121,7 @@ namespace webserver {
 
 			auto sub = findSubModule(idConvertF(id));
 			if (!sub) {
-				throw RequestException(http_status::not_found, "Entity " + id + " was not found");
+				throw RequestException(http::status::not_found, "Entity " + id + " was not found");
 			}
 
 			return sub;
@@ -162,14 +162,14 @@ namespace webserver {
 			});
 
 			aRequest.setResponseBody(retJson);
-			return http_status::ok;
+			return http::status::ok;
 		}
 
 		api_return handleGetSubmodule(ApiRequest& aRequest) {
 			auto info = getSubModule(aRequest);
 
 			aRequest.setResponseBody(childSerializeF(*info.get()));
-			return http_status::ok;
+			return http::status::ok;
 		}
 
 		virtual api_return handleDeleteSubmodule(ApiRequest& aRequest) = 0;

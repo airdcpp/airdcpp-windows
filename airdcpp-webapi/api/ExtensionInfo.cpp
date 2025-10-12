@@ -79,7 +79,7 @@ namespace webserver {
 			extension->setDisabled(*disabled);
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionInfo::handleStartExtension(ApiRequest& aRequest) {
@@ -90,10 +90,10 @@ namespace webserver {
 			extension->startThrow(launchInfo.command, server, launchInfo.arguments);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.what());
-			return http_status::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionInfo::handleStopExtension(ApiRequest& aRequest) {
@@ -101,41 +101,41 @@ namespace webserver {
 			extension->stopThrow();
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.what());
-			return http_status::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionInfo::handleReady(ApiRequest& aRequest) {
 		extension->setReady(true);
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionInfo::handleGetSettings(ApiRequest& aRequest) {
 		aRequest.setResponseBody(extension->getSettingValues());
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return ExtensionInfo::handleGetSettingDefinitions(ApiRequest& aRequest) {
 		aRequest.setResponseBody(Serializer::serializeList(extension->getSettings(), SettingUtils::serializeDefinition));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return ExtensionInfo::handlePostSettingDefinitions(ApiRequest& aRequest) {
 		if (extension->hasSettings()) {
 			aRequest.setResponseErrorStr("Setting definitions exist for this extensions already");
-			return http_status::conflict;
+			return http::status::conflict;
 		}
 
 		if (extension->getSession() != aRequest.getSession()) {
 			aRequest.setResponseErrorStr("Setting definitions may only be posted by the owning session");
-			return http_status::conflict;
+			return http::status::conflict;
 		}
 
 		auto defs = SettingUtils::deserializeDefinitions(aRequest.getRequestBody());
 		extension->swapSettingDefinitions(defs);
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionInfo::handlePostSettings(ApiRequest& aRequest) {
@@ -154,7 +154,7 @@ namespace webserver {
 
 		// Update
 		extension->setValidatedSettingValues(settings, userReferences);
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	json ExtensionInfo::serializeExtension(const ExtensionPtr& aExtension) noexcept {

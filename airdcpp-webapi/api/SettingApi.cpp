@@ -54,7 +54,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return SettingApi::handleGetDefaultValues(ApiRequest& aRequest) {
@@ -66,7 +66,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return SettingApi::handleSetDefaultValues(ApiRequest& aRequest) {
@@ -79,7 +79,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		dcassert(hasSet);
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return SettingApi::handleGetValues(ApiRequest& aRequest) {
@@ -100,7 +100,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	void SettingApi::parseSettingKeys(const json& aJson, const KeyParserF& aHandler, WebServerManager* aWsm) {
@@ -135,7 +135,7 @@ namespace webserver {
 			settings.unset(aItem);
 		}, aRequest.getSession()->getServer());
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return SettingApi::handleSetValues(ApiRequest& aRequest) {
@@ -162,7 +162,7 @@ namespace webserver {
 			holder->apply();
 		});
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	ApiSettingItem* SettingApi::getSettingItem(const string& aKey, WebServerManager* aWsm) noexcept {

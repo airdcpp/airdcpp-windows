@@ -50,7 +50,7 @@ public:
 	
 	int getConnectionCount() const noexcept;
 
-	uint64_t getStart() const noexcept { return start; }
+	uint64_t getStart() const noexcept { return startTick; }
 
 	bool getSingleUser() const noexcept { return singleUser; }
 	void setSingleUser(bool aSingleUser, int64_t aUploadedSegments = 0) noexcept;
@@ -78,7 +78,7 @@ private:
 	int delayTime = 0;
 	uint64_t currentUploaded = 0;
 	bool singleUser = true;
-	time_t start = GET_TICK();
+	uint64_t startTick = GET_TICK();
 
 	BundleUploadList uploads;
 

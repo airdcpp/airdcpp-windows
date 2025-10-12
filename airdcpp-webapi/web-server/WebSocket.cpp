@@ -32,34 +32,16 @@
 
 
 namespace webserver {
-	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_plain* aServer, WebServerManager* aWsm) : WebSocket(aIsSecure, aHdl, aRequest, aWsm) {
-		plainServer = aServer;
-	}
-
-	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_tls* aServer, WebServerManager* aWsm) : WebSocket(aIsSecure, aHdl, aRequest, aWsm) {
-		tlsServer = aServer;
-	}
-
-	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, WebServerManager* aWsm) :
-		hdl(aHdl), wsm(aWsm), secure(aIsSecure), timeCreated(GET_TICK()) 
+	WebSocket::WebSocket(bool aIsSecure, ConnectionHdl aHdl, IServerEndpoint& aEndpoint, WebServerManager* aWsm) :
+		hdl(aHdl), endpoint(aEndpoint), wsm(aWsm), secure(aIsSecure), timeCreated(GET_TICK())
 	{
 		debugMessage("Websocket created");
 
 		// Parse remote IP
-		try {
-			if (secure) {
-				auto conn = tlsServer->get_con_from_hdl(hdl);
-				ip = conn->get_raw_socket().remote_endpoint().address().to_string();
-			} else {
-				auto conn = plainServer->get_con_from_hdl(hdl);
-				ip = conn->get_raw_socket().remote_endpoint().address().to_string();
-			}
-		} catch (const boost::system::system_error& e) {
-			dcdebug("WebSocket::getIp failed: %s\n", e.what());
-		}
+		ip = endpoint.getRemoteIp(hdl);
 
 		// Parse URL
-		url = aRequest.get_uri();
+		url = endpoint.getUri(hdl);
 		if (!url.empty() && url.back() != '/') {
 			url += '/';
 		}
@@ -69,7 +51,7 @@ namespace webserver {
 		dcdebug("Websocket was deleted\n");
 	}
 
-	void WebSocket::sendApiResponse(const json& aResponseJson, const json& aErrorJson, http_status aCode, int aCallbackId) noexcept {
+	void WebSocket::sendApiResponse(const json& aResponseJson, const json& aErrorJson, http::status aCode, int aCallbackId) noexcept {
 		json j;
 
 		if (aCallbackId > 0) {
@@ -87,7 +69,7 @@ namespace webserver {
 		} else if (!aResponseJson.is_null()) {
 			j["data"] = aResponseJson;
 		} else {
-			dcassert(aCode == http_status::no_content);
+			dcassert(aCode == http::status::no_content);
 		}
 
 		try {
@@ -98,19 +80,16 @@ namespace webserver {
 				{
 					{ "message", "Failed to convert data to JSON: " + string(e.what()) }
 				}, 
-				http_status::internal_server_error, 
+				http::status::internal_server_error, 
 				aCallbackId
 			);
 		}
 	}
 
-	void WebSocket::logError(const string& aMessage, websocketpp::log::level aErrorLevel) const noexcept {
+	void WebSocket::logError(const string& aMessage) const noexcept {
 		auto message = (dcpp_fmt("Websocket: " + aMessage + " (%s)") % (session ? session->getAuthToken().c_str() : "no session")).str();
-		if (secure) {
-			WebServerManager::logDebugError(tlsServer, message, aErrorLevel);
-		} else {
-			WebServerManager::logDebugError(plainServer, message, aErrorLevel);
-		}
+		// In phase 2 without websocketpp logging, just print to debug output
+		dcdebug("%s\n", message.c_str());
 	}
 
 	void WebSocket::debugMessage(const string& aMessage) const noexcept {
@@ -122,54 +101,33 @@ namespace webserver {
 		try {
 			str = aJson.dump();
 		} catch (const json::exception& e) {
-			logError("Failed to convert data to JSON: " + string(e.what()), websocketpp::log::elevel::fatal);
+			logError("Failed to convert data to JSON: " + string(e.what()));
 			throw;
 		}
 
 		wsm->onData(str, TransportType::TYPE_SOCKET, Direction::OUTGOING, getIp());
 
 		try {
-			if (secure) {
-				tlsServer->send(hdl, str, websocketpp::frame::opcode::text);
-			} else {
-				plainServer->send(hdl, str, websocketpp::frame::opcode::text);
-			}
-		} catch (const websocketpp::exception& e) {
-			logError("Failed to send data: " + string(e.what()), websocketpp::log::elevel::fatal);
+			endpoint.wsSendText(hdl, str);
+		} catch (const std::exception& e) {
+			logError("Failed to send data: " + string(e.what()));
 		}
 	}
 
 	void WebSocket::ping() noexcept {
 		try {
-			if (secure) {
-				tlsServer->ping(hdl, Util::emptyString);
-			} else {
-				plainServer->ping(hdl, Util::emptyString);
-			}
-
-		} catch (const websocketpp::exception& e) {
-			debugMessage("WebSocket::ping failed: " + string(e.what()));
+			endpoint.wsPing(hdl);
+		} catch (const std::exception& e) {
+			debugMessage(string("WebSocket::ping failed: ") + e.what());
 		}
 	}
 
-	void WebSocket::close(websocketpp::close::status::value aCode, const string& aMsg) {
+	void WebSocket::close(uint16_t aCode, const string& aMsg) {
 		debugMessage("WebSocket::close");
 		try {
-			if (secure) {
-				tlsServer->close(hdl, aCode, aMsg);
-			} else {
-				plainServer->close(hdl, aCode, aMsg);
-			}
-		} catch (const websocketpp::exception& e) {
-			debugMessage("WebSocket::close failed: " + string(e.what()));
-		}
-	}
-
-	const websocketpp::http::parser::request& WebSocket::getRequest() noexcept {
-		if (secure) {
-			return tlsServer->get_con_from_hdl(hdl)->get_request();
-		} else {
-			return plainServer->get_con_from_hdl(hdl)->get_request();
+			endpoint.wsClose(hdl, aCode, aMsg);
+		} catch (const std::exception& e) {
+			debugMessage(string("WebSocket::close failed: ") + e.what());
 		}
 	}
 
@@ -194,15 +152,15 @@ namespace webserver {
 		try {
 			parseRequest(aMessage, callbackId, method, path, data);
 		} catch (const json::exception& e) {
-			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr("Failed to parse JSON: " + string(e.what())), http_status::bad_request, callbackId);
+			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr("Failed to parse JSON: " + string(e.what())), http::status::bad_request, callbackId);
 			return;
 		} catch (const std::invalid_argument& e) {
-			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http_status::bad_request, callbackId);
+			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http::status::bad_request, callbackId);
 			return;
 		}
 
 		// Prepare response handlers
-		const auto responseF = [callbackId, this](http_status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
+		const auto responseF = [callbackId, this](http::status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
 			sendApiResponse(aResponseJsonData, aResponseErrorJson, aStatus, callbackId);
 		};
 
@@ -210,21 +168,21 @@ namespace webserver {
 		const auto deferredF = [&isDeferred, &responseF]() {
 			isDeferred = true;
 
-			return [responseF](http_status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
+			return [responseF](http::status aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
 				responseF(aStatus, aResponseJsonData, aResponseErrorJson);
 			};
 		};
 
 		// Route request
 
-		http_status code;
+		http::status code;
 		json responseJsonData, responseErrorJson;
 		try {
 			ApiRequest apiRequest(url + path, method, std::move(data), getSession(), deferredF, responseJsonData, responseErrorJson);
 			RouterRequest routerRequest{ apiRequest, secure, aAuthCallback, getIp() };
 			code = ApiRouter::handleRequest(routerRequest);
 		} catch (const std::invalid_argument& e) {
-			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http_status::bad_request, callbackId);
+			sendApiResponse(nullptr, ApiRequest::toResponseErrorStr(e.what()), http::status::bad_request, callbackId);
 			return;
 		}
 

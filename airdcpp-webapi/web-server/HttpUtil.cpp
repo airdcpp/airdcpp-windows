@@ -203,11 +203,12 @@ namespace webserver {
 		return true;
 	}
 
-	bool HttpUtil::isStatusOk(int aCode) noexcept {
-		return aCode >= 200 && aCode <= 299;
+	bool HttpUtil::isStatusOk(http::status aCode) noexcept {
+		// return aCode >= 200 && aCode <= 299;
+		return http::to_status_class(aCode) == http::status_class::successful;
 	}
 
-	bool HttpUtil::parseStatus(const string& aResponse, int& code_, string& text_) noexcept {
+	bool HttpUtil::parseStatus(const string& aResponse, http::status& code_, string& text_) noexcept {
 		if (aResponse.length() < 6 || aResponse.compare(0, 6, "HTTP/1") != 0) {
 			return false;
 		}
@@ -222,19 +223,18 @@ namespace webserver {
 			return false;
 		}
 
-		code_ = Util::toInt(aResponse.substr(start + 1, end));
+		code_ = http::int_to_status(Util::toInt(aResponse.substr(start + 1, end)));
 		text_ = aResponse.substr(end + 1);
 		return true;
 	}
 
-	string HttpUtil::parseAuthToken(const websocketpp::http::parser::request& aRequest) noexcept {
+	string HttpUtil::parseAuthToken(const string& authorization, const string& xAuthorization) noexcept {
 		// Support custom header name as reverse proxy with basic auth would replace the regular Authorization header
 		// https://github.com/airdcpp-web/airdcpp-webclient/issues/330
-		auto ret = aRequest.get_header("X-Authorization");
-		if (!ret.empty()) {
-			return ret;
+		if (!xAuthorization.empty()) {
+			return xAuthorization;
 		}
 
-		return aRequest.get_header("Authorization");
+		return authorization;
 	}
 }

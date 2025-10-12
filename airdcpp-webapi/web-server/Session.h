@@ -63,7 +63,7 @@ namespace webserver {
 
 		ApiModule* getModule(const std::string& aApiID);
 
-		http_status handleRequest(ApiRequest& aRequest);
+		http::status handleRequest(ApiRequest& aRequest);
 
 		Session(Session&) = delete;
 		Session& operator=(Session&) = delete;

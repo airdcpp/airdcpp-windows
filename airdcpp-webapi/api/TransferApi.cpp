@@ -79,14 +79,14 @@ namespace webserver {
 	api_return TransferApi::handleGetTransfers(ApiRequest& aRequest) {
 		auto j = Serializer::serializeItemList(TransferUtils::propertyHandler, getTransfers());
 		aRequest.setResponseBody(j);
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return TransferApi::handleGetTransfer(ApiRequest& aRequest) {
 		auto item = getTransfer(aRequest);
 
 		aRequest.setResponseBody(Serializer::serializeItem(item, TransferUtils::propertyHandler));
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return TransferApi::handleGetTransferredBytes(ApiRequest& aRequest) {
@@ -97,7 +97,7 @@ namespace webserver {
 			{ "start_total_uploaded", SETTING(TOTAL_UPLOAD) - Socket::getTotalUp() },
 		});
 
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	api_return TransferApi::handleForce(ApiRequest& aRequest) {
@@ -106,14 +106,14 @@ namespace webserver {
 			ConnectionManager::getInstance()->force(item->getStringToken());
 		}
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	api_return TransferApi::handleDisconnect(ApiRequest& aRequest) {
 		auto item = getTransfer(aRequest);
 		ConnectionManager::getInstance()->disconnect(item->getStringToken());
 
-		return http_status::no_content;
+		return http::status::no_content;
 	}
 
 	TransferInfoPtr TransferApi::getTransfer(ApiRequest& aRequest) const {
@@ -121,7 +121,7 @@ namespace webserver {
 
 		auto t = TransferInfoManager::getInstance()->findTransfer(transferId);
 		if (!t) {
-			throw RequestException(http_status::not_found, "Transfer " + Util::toString(transferId) + " was not found");
+			throw RequestException(http::status::not_found, "Transfer " + Util::toString(transferId) + " was not found");
 		}
 
 		return t;
@@ -129,7 +129,7 @@ namespace webserver {
 
 	api_return TransferApi::handleGetTransferStats(ApiRequest& aRequest) {
 		aRequest.setResponseBody(serializeTransferStats());
-		return http_status::ok;
+		return http::status::ok;
 	}
 
 	json TransferApi::serializeTransferStats() const noexcept {

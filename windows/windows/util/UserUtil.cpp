@@ -21,6 +21,7 @@
 #include <windows/util/UserUtil.h>
 
 #include <windows/ResourceLoader.h>
+#include <windows/util/FormatUtil.h>
 
 #include <airdcpp/user/OnlineUser.h>
 #include <airdcpp/settings/SettingsManager.h>
@@ -111,11 +112,11 @@ tstring UserUtil::getUserText(const OnlineUserPtr& aUser, uint8_t col, bool copy
 	switch (col) {
 	case COLUMN_NICK: return Text::toT(identity.getNick());
 	case COLUMN_SHARED: return Util::formatBytesW(identity.getBytesShared());
-	case COLUMN_EXACT_SHARED: return Util::formatExactSizeW(identity.getBytesShared());
+	case COLUMN_EXACT_SHARED: return FormatUtil::formatExactSizeW(identity.getBytesShared());
 	case COLUMN_DESCRIPTION: return Text::toT(identity.getDescription());
 	case COLUMN_TAG: return Text::toT(identity.getTag());
-	case COLUMN_ULSPEED: return identity.get("US").empty() ? Text::toT(identity.getNmdcConnection()) : (Util::formatConnectionSpeedW(identity.getAdcConnectionSpeed(false)));
-	case COLUMN_DLSPEED: return identity.get("DS").empty() ? Util::emptyStringT : (Util::formatConnectionSpeedW(identity.getAdcConnectionSpeed(true)));
+	case COLUMN_ULSPEED: return identity.get("US").empty() ? Text::toT(identity.getNmdcConnection()) : (FormatUtil::formatConnectionSpeedW(identity.getAdcConnectionSpeed(false)));
+	case COLUMN_DLSPEED: return identity.get("DS").empty() ? Util::emptyStringT : (FormatUtil::formatConnectionSpeedW(identity.getAdcConnectionSpeed(true)));
 	case COLUMN_IP4: {
 		string ip = identity.getIp4();
 		if (!copy) {

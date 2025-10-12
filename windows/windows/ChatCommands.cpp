@@ -42,6 +42,8 @@
 #include <airdcpp/core/version.h>
 #include <airdcpp/connection/socket/Socket.h>
 
+#include <windows/util/FormatUtil.h>
+
 #include "boost/format.hpp"
 
 
@@ -305,7 +307,7 @@ return result;
 
 string ChatCommands::ClientVersionInfo() {
 	//TODO: add something cleaner / better?
-	return shortVersionString + " / Build: " + BUILD_NUMBER_STR + " / Version Date: " + Util::formatDateTime(getVersionDate());
+	return shortVersionString + " / Build: " + BUILD_NUMBER_STR + " / Version Date: " + FormatUtil::formatDateTime(getVersionDate());
 }
 
 string ChatCommands::getSysUptime(){
@@ -478,8 +480,8 @@ Average NMDC connection speed: %s")
 % stats.hiddenUsers % Util::countPercentage(stats.hiddenUsers, stats.uniqueUsers)
 % stats.adcUsers % stats.nmdcUsers
 % Util::formatBytes(stats.totalShare) % Util::formatBytes(Util::countAverageInt64(stats.totalShare, stats.uniqueUsers))
-% Util::formatConnectionSpeed(stats.downPerAdcUser) % Util::formatConnectionSpeed(stats.upPerAdcUser)
-% Util::formatConnectionSpeed(stats.nmdcSpeedPerUser)
+% FormatUtil::formatConnectionSpeed(stats.downPerAdcUser) % FormatUtil::formatConnectionSpeed(stats.upPerAdcUser)
+% FormatUtil::formatConnectionSpeed(stats.nmdcSpeedPerUser)
 
 );
 

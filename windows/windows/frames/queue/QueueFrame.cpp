@@ -1635,7 +1635,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
 
 			if (getPriority() == Priority::PAUSED_FORCE && bundle && bundle->getResumeTime() > 0)
-				return TSTRING_F(PAUSED_UNTIL_X, Text::toT(Util::formatTime("[%H:%M]", bundle->getResumeTime()))); //Show time left instead? needs bundle updates to be implemented for these...
+				return TSTRING_F(PAUSED_UNTIL_X, Text::toT(Util::getTimeStamp(bundle->getResumeTime()))); //Show time left instead? needs bundle updates to be implemented for these...
 
 			return Text::toT(Util::formatPriority(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
@@ -1650,8 +1650,8 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		}
 		case COLUMN_SOURCES: return /*!isFinished() && */!isDirectory ? getSourceString() : Util::emptyStringT;
 		case COLUMN_DOWNLOADED: return Util::formatBytesW(getDownloadedBytes());
-		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
-		case COLUMN_TIME_FINISHED: return isFinished() && getTimeFinished() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
+		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? FormatUtil::formatDateTimeW(getTimeAdded()) : Util::emptyStringT;
+		case COLUMN_TIME_FINISHED: return isFinished() && getTimeFinished() > 0 ? FormatUtil::formatDateTimeW(getTimeFinished()) : Util::emptyStringT;
 		case COLUMN_PATH: return Text::toT(getTarget());
 		default: return Util::emptyStringT;
 	}
