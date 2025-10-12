@@ -322,7 +322,7 @@ namespace webserver {
 
 	api_return QueueApi::handleSearchBundleAlternates(ApiRequest& aRequest) {
 		auto b = getBundle(aRequest);
-		auto searches = QueueManager::getInstance()->searchBundleAlternates(b, false);
+		auto searches = QueueManager::getInstance()->searchBundleAlternates(b);
 
 		if (searches == 0) {
 			aRequest.setResponseErrorStr("No files to search for");
