@@ -52,7 +52,7 @@ namespace dcpp {
 		ActivityManager();
 		~ActivityManager();
 
-		void updateActivity(time_t aLastActivity = GET_TICK()) noexcept;
+		void updateActivity(uint64_t aLastActivity = GET_TICK()) noexcept;
 
 		bool isAway() const noexcept;
 		AwayMode getAwayMode() const noexcept { return awayMode; }
@@ -64,7 +64,7 @@ namespace dcpp {
 		void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
 
 		AwayMode awayMode = AWAY_OFF;
-		time_t lastActivity = GET_TICK();
+		uint64_t lastActivity = GET_TICK();
 	};
 
 } // namespace dcpp

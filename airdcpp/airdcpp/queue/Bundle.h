@@ -116,7 +116,7 @@ public:
 	IGETSET(Status, status, Status, STATUS_NEW);
 	IGETSET(time_t, bundleDate, BundleDate, 0);				// the file/directory modify date picked from the remote filelist when the bundle has been queued
 	IGETSET(uint64_t, start, Start, 0);						// time that is being reset every time when a waiting the bundle gets running downloads
-	IGETSET(time_t, lastSearch, LastSearch, 0);				// last time when the bundle was searched for
+	IGETSET(uint64_t, lastSearchTick, LastSearchTick, 0);	// last tick when the bundle was searched for
 	IGETSET(bool, seqOrder, SeqOrder, false);				// using an alphabetical downloading order for files (not enabled by default for fresh bundles)
 
 	IGETSET(int64_t, actual, Actual, 0); 
