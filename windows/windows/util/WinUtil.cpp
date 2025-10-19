@@ -1365,14 +1365,30 @@ tstring WinUtil::getEditText(CEdit& edit) {
 }
 
 tstring WinUtil::getComboText(CComboBox& aCombo, WORD wNotifyCode) {
-	tstring tmp;
+tstring tmp;
 	if (wNotifyCode == CBN_SELENDOK) {
-		tmp.resize(aCombo.GetLBTextLen(aCombo.GetCurSel()));
-		tmp.resize(aCombo.GetLBText(aCombo.GetCurSel(), &tmp[0]));
+		const int selectedIndex = aCombo.GetCurSel();
+		if (selectedIndex != CB_ERR) {
+			int textLen = aCombo.GetLBTextLen(selectedIndex);
+			if (textLen > 0) {
+				std::vector<TCHAR> buf(static_cast<size_t>(textLen) + 1, _T('\0'));
+				int copied = aCombo.GetLBText(selectedIndex, buf.data());
+				if (copied > 0) {
+					tmp.assign(buf.data(), static_cast<size_t>(copied));
+				}
+			}
+		}
 	} else {
-		tmp.resize(aCombo.GetWindowTextLength());
-		tmp.resize(aCombo.GetWindowText(&tmp[0], tmp.size() + 1));
+		int textLen = aCombo.GetWindowTextLength();
+		if (textLen > 0) {
+			std::vector<TCHAR> buf(static_cast<size_t>(textLen) + 1, _T('\0'));
+			int copied = aCombo.GetWindowText(buf.data(), static_cast<int>(buf.size()));
+			if (copied > 0) {
+				tmp.assign(buf.data(), static_cast<size_t>(copied));
+			}
+		}
 	}
+
 	return tmp;
 }
 
