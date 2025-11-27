@@ -313,14 +313,22 @@ LRESULT FavoriteHubsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandle
 }
 
 LRESULT FavoriteHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_REMOVAL, TSTRING(REALLY_REMOVE)))
+		return 0;
+
+	vector<FavoriteHubToken> tokensToRemove;
 	int i = -1;
-	
-	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_REMOVAL, TSTRING(REALLY_REMOVE))) {
-		while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
-			FavoriteManager::getInstance()->removeFavoriteHub(ii->hub->getToken());
-		}
+
+	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		auto ii = (ItemInfo*)ctrlHubs.GetItemData(i);
+		tokensToRemove.push_back(ii->hub->getToken());
 	}
+
+	for (const auto& token : tokensToRemove) {
+		FavoriteManager::getInstance()->removeFavoriteHub(token);
+	}
+	fillList();
+	
 	return 0;
 }
 
