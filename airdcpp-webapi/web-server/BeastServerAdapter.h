@@ -410,10 +410,10 @@ namespace webserver {
 						logAccess("ACCEPT " + ip);
 						auto httpSess = std::make_shared<HttpSession>(*this, std::move(socket), ip);
 						httpSess->run();
+						doAccept();
 					} else {
 						logError("Accept error: " + ec.message());
 					}
-					if (listening_) doAccept();
 				}
 			);
 		}
