@@ -342,8 +342,11 @@ namespace webserver {
 
 		{
 			RLock l(QueueManager::getInstance()->getCS());
-			files = b->getQueueItems();
+			copy(b->getQueueItems().begin(), b->getQueueItems().end(), back_inserter(files));
+			copy(b->getFinishedFiles().begin(), b->getFinishedFiles().end(), back_inserter(files));
 		}
+
+		sort(files.begin(), files.end(), QueueItem::AlphaSortOrder());
 
 		int start = aRequest.getRangeParam(START_POS);
 		int count = aRequest.getRangeParam(MAX_COUNT);

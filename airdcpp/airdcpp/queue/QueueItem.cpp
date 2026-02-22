@@ -109,7 +109,7 @@ bool QueueItem::AlphaSortOrder::operator()(const QueueItemPtr& left, const Queue
 		}
 	}
 
-	return compare(left->getTarget(), right->getTarget()) < 0;
+	return PathUtil::pathSort(left->getTarget(), right->getTarget()) < 0;
 }
 
 /* This has a few extra checks because the size is unknown for filelists */
