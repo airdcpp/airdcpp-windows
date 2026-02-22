@@ -702,7 +702,10 @@ namespace webserver {
 
 		if (subscriptionActive("queue_file_updated")) {
 			// Serialize updated properties only
-			send("queue_file_updated", Serializer::serializePartialItem(aQI, QueueFileUtils::propertyHandler, aUpdatedProperties));
+			// (but always include the bundle ID as well)
+			auto propertiesWithBundle = aUpdatedProperties;
+			propertiesWithBundle.insert(QueueFileUtils::PROP_BUNDLE);
+			send("queue_file_updated", Serializer::serializePartialItem(aQI, QueueFileUtils::propertyHandler, propertiesWithBundle));
 		}
 	}
 
