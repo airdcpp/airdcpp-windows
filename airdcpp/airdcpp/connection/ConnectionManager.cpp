@@ -939,6 +939,7 @@ void ConnectionManager::addPMConnection(UserConnection* uc) noexcept {
 		if (i == container.end()) {
 			dcassert(!uc->getConnectToken().empty());
 			uc->setFlag(UserConnection::FLAG_ASSOCIATED);
+			uc->setState(UserConnection::STATE_CMD);
 
 			auto cqi = getCQIUnsafe(uc->getHintedUser(), CONNECTION_TYPE_PM, uc->getConnectToken());
 			cqi->setState(ConnectionQueueItem::State::ACTIVE);

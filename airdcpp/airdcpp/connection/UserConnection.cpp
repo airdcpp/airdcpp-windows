@@ -255,12 +255,12 @@ void UserConnection::accept(const Socket& aServer, bool aSecure, const BufferedS
 	socket->accept(aServer, aSecure, true, aFloodCheckF);
 }
 
-void UserConnection::inf(bool withToken, int mcnSlots) { 
+void UserConnection::inf(bool aWithToken, int aMcnSlots) { 
 	AdcCommand c(AdcCommand::CMD_INF);
 	c.addParam("ID", ClientManager::getInstance()->getMyCID().toBase32());
-	if(mcnSlots > 0)
-		c.addParam("CO", Util::toString(mcnSlots));
-	if(withToken) {
+	if (aMcnSlots > 0)
+		c.addParam("CO", Util::toString(aMcnSlots));
+	if (aWithToken) {
 		c.addParam("TO", getConnectToken());
 	}
 	if (isSet(FLAG_PM)) {
@@ -341,12 +341,24 @@ bool UserConnection::sendPrivateMessageHooked(const OutgoingChatMessage& aMessag
 }
 
 void UserConnection::handle(AdcCommand::MSG t, const AdcCommand& c) {
+	if (state != UserConnection::STATE_CMD) {
+		dcdebug("UserConnection::handle::MSG %p invalid connections state\n", (void*)this);
+		disconnect(true);
+		return;
+	}
+
 	handlePM(c, false);
 
 	fire(t, this, c);
 }
 
 void UserConnection::handle(AdcCommand::PMI t, const AdcCommand& c) {
+	if (state != UserConnection::STATE_CMD) {
+		dcdebug("UserConnection::handle::MSG %p invalid connections state\n", (void*)this);
+		disconnect(true);
+		return;
+	}
+
 	fire(t, this, c);
 }
 

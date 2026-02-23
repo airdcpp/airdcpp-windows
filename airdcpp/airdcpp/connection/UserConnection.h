@@ -95,12 +95,14 @@ public:
 		STATE_SEND,			// Waiting for $Send
 
 		// DownloadManager
-		STATE_SND,	// Waiting for SND
-		STATE_IDLE, // No more downloads for the moment
+		STATE_SND,			// Waiting for SND
+		STATE_IDLE,			// No more downloads for the moment
 
 		// Up & down
 		STATE_RUNNING,		// Transmitting data
 
+		// Raw ADC commands
+		STATE_CMD,
 	};
 
 	short getNumber() const { return (short)((((size_t)this)>>2) & 0x7fff); }
