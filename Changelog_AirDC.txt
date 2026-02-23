@@ -1,4 +1,25 @@
-4.22
+4.31
+
+Changed:
+
+Added:
+
+- Add high DPI support (@clin1234)
+
+Changed:
+
+- Node.js updated to version 24.13.1
+
+Fixed:
+
+- Reject direct private messages that are received before the connection has been fully negotiated
+- Fix a freeze when deleting favorite hubs (https://github.com/airdcpp/airdcpp-windows/issues/202)
+- Fix a possible crash when changing connection speed (https://github.com/airdcpp/airdcpp-windows/issues/184)
+- Fix a possible freeze when formatting date params with certain locales (https://github.com/airdcpp/airdcpp-windows/issues/193)
+- Fix possible errors with viewed files where a file disappears from the UI but remains open (https://github.com/airdcpp/airdcpp-windows/issues/169)
+
+
+4.30
 
 API and Web UI changes: 
 
