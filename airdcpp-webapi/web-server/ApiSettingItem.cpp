@@ -314,9 +314,9 @@ namespace webserver {
 
 	json CoreSettingItem::getAutoValue() const noexcept {
 		switch (si.key) {
-			case SettingsManager::TCP_PORT: return ConnectionManager::getInstance()->getPort();
-			case SettingsManager::UDP_PORT: return SearchManager::getInstance()->getPort();
-			case SettingsManager::TLS_PORT: return ConnectionManager::getInstance()->getSecurePort();
+			case SettingsManager::TCP_PORT: return Util::toInt(ConnectionManager::getInstance()->getPort());
+			case SettingsManager::UDP_PORT: return Util::toInt(SearchManager::getInstance()->getPort());
+			case SettingsManager::TLS_PORT: return Util::toInt(ConnectionManager::getInstance()->getSecurePort());
 			case SettingsManager::MAPPER: 
 
 			case SettingsManager::BIND_ADDRESS: 

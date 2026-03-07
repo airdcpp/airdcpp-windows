@@ -76,9 +76,9 @@ namespace webserver {
 		aRequest.setResponseBody({
 			{ "status_v4", formatStatus(false) },
 			{ "status_v6", formatStatus(true) },
-			{ "tcp_port", ConnectionManager::getInstance()->getPort() },
-			{ "tls_port", ConnectionManager::getInstance()->getSecurePort() },
-			{ "udp_port", SearchManager::getInstance()->getPort() },
+			{ "tcp_port", Util::toInt(ConnectionManager::getInstance()->getPort()) },
+			{ "tls_port", Util::toInt(ConnectionManager::getInstance()->getSecurePort()) },
+			{ "udp_port", Util::toInt(SearchManager::getInstance()->getPort()) },
 		});
 
 		return http::status::ok;
