@@ -84,7 +84,7 @@ namespace webserver {
 	std::string WebUserUtils::getStringInfo(const WebUserPtr& aItem, int aPropertyName) noexcept {
 		switch (aPropertyName) {
 		case PROP_NAME: return aItem->getUserName();
-		default: dcassert(0); return 0;
+		default: dcassert(0); return Util::emptyString;
 		}
 	}
 	double WebUserUtils::getNumericInfo(const WebUserPtr& aItem, int aPropertyName) noexcept {

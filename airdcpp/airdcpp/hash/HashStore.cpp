@@ -265,7 +265,7 @@ bool HashStore::loadFileInfo(const void* src, size_t len, HashedFile& aFile) {
 	p += sizeof(uint64_t);
 
 	TTHValue root;
-	memcpy(&root, p, sizeof(TTHValue));
+	memcpy(&root.data, p, sizeof(TTHValue));
 	p += sizeof(TTHValue);
 
 	int64_t fileSize;
@@ -288,7 +288,7 @@ void HashStore::saveFileInfo(void* dest, const HashedFile& aFile) {
 	p += sizeof(uint64_t);
 
 	TTHValue root = aFile.getRoot();
-	memcpy(p, &root, sizeof(TTHValue));
+	memcpy(p, &root.data, sizeof(TTHValue));
 	p += sizeof(TTHValue);
 
 	int64_t fileSize = aFile.getSize();
