@@ -40,7 +40,7 @@ struct HubSettings
 		Nick = HubStrFirst,
 		Description,
 		Email,
-		UserIp,
+		UserIp4,
 		UserIp6,
 		AwayMsg,
 		NmdcEncoding,

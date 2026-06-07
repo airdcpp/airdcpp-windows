@@ -224,9 +224,6 @@ protected:
 
 	/** Reload details from favmanager or settings */
 	void reloadSettings(bool updateNick) noexcept;
-	/// Get the external IP the user has defined for this hub, if any.
-	const string& getUserIp4() const noexcept;
-	const string& getUserIp6() const noexcept;
 
 	string getDescription() const noexcept;
 

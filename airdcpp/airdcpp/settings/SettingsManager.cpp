@@ -1377,19 +1377,30 @@ void SettingsManager::save() noexcept {
 
 HubSettings SettingsManager::getHubSettings() const noexcept {
 	HubSettings ret;
+
+	// Profile
 	ret.get(HubSettings::Nick) = get(NICK);
 	ret.get(HubSettings::Description) = get(DESCRIPTION);
 	ret.get(HubSettings::Email) = get(EMAIL);
+	ret.get(HubSettings::AwayMsg) = get(DEFAULT_AWAY_MESSAGE);
+
+	// Chat
 	ret.get(HubSettings::ShowJoins) = get(SHOW_JOINS);
 	ret.get(HubSettings::FavShowJoins) = get(FAV_SHOW_JOINS);
 	ret.get(HubSettings::LogMainChat) = get(LOG_MAIN_CHAT);
-	ret.get(HubSettings::SearchInterval) = get(MINIMUM_SEARCH_INTERVAL);
+	ret.get(HubSettings::ChatNotify) = get(SHOW_CHAT_NOTIFY);
+
+	// Connection
 	ret.get(HubSettings::Connection) = CONNSETTING(INCOMING_CONNECTIONS);
 	ret.get(HubSettings::Connection6) = CONNSETTING(INCOMING_CONNECTIONS6);
-	ret.get(HubSettings::ChatNotify) = get(SHOW_CHAT_NOTIFY);
-	ret.get(HubSettings::AwayMsg) = get(DEFAULT_AWAY_MESSAGE);
+	ret.get(HubSettings::UserIp4) = CONNSETTING(EXTERNAL_IP);
+	ret.get(HubSettings::UserIp6) = CONNSETTING(EXTERNAL_IP6);
+
+	// Misc
+	ret.get(HubSettings::SearchInterval) = get(MINIMUM_SEARCH_INTERVAL);
 	ret.get(HubSettings::NmdcEncoding) = get(NMDC_ENCODING);
 	ret.get(HubSettings::ShareProfile) = get(DEFAULT_SP);
+
 	return ret;
 }
 

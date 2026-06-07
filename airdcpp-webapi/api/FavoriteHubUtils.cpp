@@ -126,7 +126,7 @@ namespace webserver {
 			case PROP_USER_DESCRIPTION: return Serializer::serializeHubSetting(aEntry->get(HubSettings::Description));
 			case PROP_SHARE_PROFILE: return HubSettings::defined(aEntry->get(HubSettings::ShareProfile)) ? aEntry->getShareProfileName() : Util::emptyString;
 			case PROP_NMDC_ENCODING: return Serializer::serializeHubSetting(aEntry->get(HubSettings::NmdcEncoding));
-			case PROP_IP4: return Serializer::serializeHubSetting(aEntry->get(HubSettings::UserIp));
+			case PROP_IP4: return Serializer::serializeHubSetting(aEntry->get(HubSettings::UserIp4));
 			case PROP_IP6: return Serializer::serializeHubSetting(aEntry->get(HubSettings::UserIp6));
 			case PROP_AWAY_MESSAGE: return Serializer::serializeHubSetting(aEntry->get(HubSettings::AwayMsg));
 			default: dcassert(0); return Util::emptyString;

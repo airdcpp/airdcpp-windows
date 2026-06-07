@@ -187,20 +187,6 @@ void Client::updated(OnlineUserList& users) noexcept {
 	fire(ClientListener::UsersUpdated(), this, users);
 }
 
-const string& Client::getUserIp4() const noexcept {
-	if (!get(UserIp).empty()) {
-		return get(UserIp);
-	}
-	return CONNSETTING(EXTERNAL_IP);
-}
-
-const string& Client::getUserIp6() const noexcept {
-	if (!get(UserIp6).empty()) {
-		return get(UserIp6);
-	}
-	return CONNSETTING(EXTERNAL_IP6);
-}
-
 bool Client::isActive() const noexcept {
 	return isActiveV4() || isActiveV6();
 }

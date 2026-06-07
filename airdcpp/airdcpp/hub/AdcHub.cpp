@@ -1323,8 +1323,8 @@ static void addParam(StringMap& lastInfoMap, AdcCommand& c, const string& var, c
 
 void AdcHub::appendConnectivity(StringMap& aLastInfoMap, AdcCommand& c, bool v4, bool v6) const noexcept {
 	if (v4) {
-		if(CONNSETTING(NO_IP_OVERRIDE) && !getUserIp4().empty()) {
-			addParam(aLastInfoMap, c, "I4", Socket::resolve(getUserIp4(), AF_INET));
+		if(CONNSETTING(NO_IP_OVERRIDE) && !get(HubSettings::UserIp4).empty()) {
+			addParam(aLastInfoMap, c, "I4", Socket::resolve(get(HubSettings::UserIp4), AF_INET));
 		} else {
 			addParam(aLastInfoMap, c, "I4", "0.0.0.0");
 		}
@@ -1340,8 +1340,8 @@ void AdcHub::appendConnectivity(StringMap& aLastInfoMap, AdcCommand& c, bool v4,
 	}
 
 	if (v6) {
-		if (CONNSETTING(NO_IP_OVERRIDE6) && !getUserIp6().empty()) {
-			addParam(aLastInfoMap, c, "I6", Socket::resolve(getUserIp6(), AF_INET6));
+		if (CONNSETTING(NO_IP_OVERRIDE6) && !get(HubSettings::UserIp6).empty()) {
+			addParam(aLastInfoMap, c, "I6", Socket::resolve(get(HubSettings::UserIp6), AF_INET6));
 		} else {
 			addParam(aLastInfoMap, c, "I6", "::");
 		}
@@ -1414,15 +1414,15 @@ void AdcHub::infoImpl() noexcept {
 
 	addParam(lastInfoMap, c, "ID", ClientManager::getInstance()->getMyCID().toBase32());
 	addParam(lastInfoMap, c, "PD", ClientManager::getInstance()->getMyPID().toBase32());
-	addParam(lastInfoMap, c, "NI", get(Nick));
-	addParam(lastInfoMap, c, "DE", get(Description));
+	addParam(lastInfoMap, c, "NI", get(HubSettings::Nick));
+	addParam(lastInfoMap, c, "DE", get(HubSettings::Description));
 	addParam(lastInfoMap, c, "SL", Util::toString(UploadManager::getInstance()->getSlots()));
 	addParam(lastInfoMap, c, "FS", Util::toString(UploadManager::getInstance()->getFreeSlots()));
 
 	addParam(lastInfoMap, c, "SS", Util::toString(ShareManager::getInstance()->getTotalShareSize(get(HubSettings::ShareProfile))));
 	addParam(lastInfoMap, c, "SF", Util::toString(ShareManager::getInstance()->getBloomFileCount(get(HubSettings::ShareProfile))));
 
-	addParam(lastInfoMap, c, "EM", get(Email));
+	addParam(lastInfoMap, c, "EM", get(HubSettings::Email));
 	addParam(lastInfoMap, c, "HN", Util::toString(getDisplayCount(COUNT_NORMAL)));
 	addParam(lastInfoMap, c, "HR", Util::toString(getDisplayCount(COUNT_REGISTERED)));
 	addParam(lastInfoMap, c, "HO", Util::toString(getDisplayCount(COUNT_OP)));

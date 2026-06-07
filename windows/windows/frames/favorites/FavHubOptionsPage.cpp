@@ -83,7 +83,7 @@ LRESULT FavHubOptionsPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	appendCombo(modeCombo6, entry->get(HubSettings::Connection6));
 
 	//external ips
-	SetDlgItemText(IDC_SERVER4, Text::toT(entry->get(HubSettings::UserIp)).c_str());
+	SetDlgItemText(IDC_SERVER4, Text::toT(entry->get(HubSettings::UserIp4)).c_str());
 	SetDlgItemText(IDC_SERVER6, Text::toT(entry->get(HubSettings::UserIp6)).c_str());
 	
 	fixControls();
@@ -145,7 +145,7 @@ bool FavHubOptionsPage::write() {
 
 	//external ip addresses
 	GetDlgItemText(IDC_SERVER4, buf, 512);
-	entry->get(HubSettings::UserIp) = Text::fromT(buf);
+	entry->get(HubSettings::UserIp4) = Text::fromT(buf);
 
 	GetDlgItemText(IDC_SERVER6, buf, 512);
 	entry->get(HubSettings::UserIp6) = Text::fromT(buf);

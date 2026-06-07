@@ -100,14 +100,14 @@ int NmdcHub::connect(const OnlineUser& aUser, const string&, string& /*lastError
 }
 
 void NmdcHub::refreshLocalIp() noexcept {
-	if((!CONNSETTING(NO_IP_OVERRIDE) || getUserIp4().empty()) && !getMyIdentity().getIp4().empty()) {
+	if((!CONNSETTING(NO_IP_OVERRIDE) || get(HubSettings::UserIp4).empty()) && !getMyIdentity().getIp4().empty()) {
 		// Best case - the server detected it
 		localIp = getMyIdentity().getIp4();
 	} else {
 		localIp.clear();
 	}
 	if(localIp.empty()) {
-		localIp = getUserIp4();
+		localIp = get(HubSettings::UserIp4);
 		if(!localIp.empty()) {
 			localIp = Socket::resolve(localIp, AF_INET);
 		}
@@ -146,7 +146,7 @@ OnlineUserPtr NmdcHub::getUser(const string& aNick) noexcept {
 	}
 
 	UserPtr p;
-	if(aNick == get(Nick)) {
+	if(aNick == get(HubSettings::Nick)) {
 		p = ClientManager::getInstance()->getMe();
 	} else {
 		p = ClientManager::getInstance()->getNmdcUser(aNick, getHubUrl());
@@ -737,7 +737,7 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 			}
 
 			key(CryptoManager::getInstance()->makeKey(lock));
-			auto& ou = *getUser(get(Nick));
+			auto& ou = *getUser(get(HubSettings::Nick));
 			validateNick(ou.getIdentity().getNick());
 		}
 	} else if(cmd == "Hello") {
@@ -1004,9 +1004,9 @@ void NmdcHub::myInfo(bool alwaysSend) {
 
 	char myInfo[256];
 	snprintf(myInfo, sizeof(myInfo), "$MyINFO $ALL %s %s<%s V:%s,M:%c,H:%ld/%ld/%ld,S:%d>$ $%s%c$%s$", fromUtf8(getMyNick()).c_str(),
-		fromUtf8(escape(get(Description))).c_str(), APPNAME, VERSIONSTRING.c_str(), modeChar,
+		fromUtf8(escape(get(HubSettings::Description))).c_str(), APPNAME, VERSIONSTRING.c_str(), modeChar,
 		getDisplayCount(COUNT_NORMAL), getDisplayCount(COUNT_REGISTERED), getDisplayCount(COUNT_OP),
-		UploadManager::getInstance()->getSlots(), fromUtf8(uploadSpeed).c_str(), status, fromUtf8(escape(get(Email))).c_str());
+		UploadManager::getInstance()->getSlots(), fromUtf8(uploadSpeed).c_str(), status, fromUtf8(escape(get(HubSettings::Email))).c_str());
 
 	int64_t newBytesShared = ShareManager::getInstance()->getTotalShareSize(get(HubSettings::ShareProfile));
 	if (strcmp(myInfo, lastMyInfo.c_str()) != 0 || alwaysSend || (newBytesShared != lastBytesShared && lastUpdate + 15*60*1000 < GET_TICK())) {
