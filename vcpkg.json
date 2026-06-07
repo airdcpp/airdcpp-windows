@@ -35,5 +35,5 @@
     "zlib",
     "boost-beast"
   ],
-  "builtin-baseline": "c27eeddba73f608f10605d80bc0144c1166f8fb7"
+  "builtin-baseline": "10ceb139a610ebf3c6aa49cdc4a4b7f3db5d3f2b"
 }
