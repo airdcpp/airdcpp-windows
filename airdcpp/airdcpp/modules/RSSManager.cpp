@@ -259,7 +259,7 @@ bool RSSManager::addAutoSearchItem(const RSSFilter& aFilter, const RSSDataPtr& a
 	time_t expireTime = aFilter.getExpireDays() > 0 ? GET_TIME() + aFilter.getExpireDays() * 24 * 60 * 60 : 0;
 
 	AutoSearchPtr as = std::make_shared<AutoSearch>(aFilter.getFilterAction() == RSSFilter::DOWNLOAD, aData->getTitle(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, aFilter.getDownloadTarget(),
-		StringMatch::EXACT, Util::emptyString, Util::emptyString, expireTime, true, true, false, Util::emptyString, AutoSearch::RSS_DOWNLOAD, false);
+		aFilter.getAsExactMatch() ? StringMatch::EXACT : StringMatch::PARTIAL, Util::emptyString, Util::emptyString, expireTime, true, true, false, Util::emptyString, AutoSearch::RSS_DOWNLOAD, false);
 
 	//format time params, befora adding to autosearch, so we can use RSS date for folder
 	if(aFilter.getFormatTimeParams())
@@ -464,7 +464,8 @@ void RSSManager::loadFilters(SimpleXML& xml, vector<RSSFilter>& aList) {
 				xml.getBoolChildAttrib("SkipDupes"),
 				Util::toInt(xml.getChildAttrib("FilterAction", "0")),
 				Util::toInt(xml.getChildAttrib("ExpireDays", "3")),
-				xml.getBoolChildAttrib("FormatTimeParams"));
+				xml.getBoolChildAttrib("FormatTimeParams"),
+				Util::toInt(xml.getChildAttrib("AsExactMatch", "1")) > 0); // SoporEDIT
 		}
 		xml.stepOut();
 	}
@@ -511,6 +512,7 @@ void RSSManager::saveFilters(SimpleXML& aXml, const vector<RSSFilter>& aList) {
 			aXml.addChildAttrib("FilterAction", f.getFilterAction());
 			aXml.addChildAttrib("ExpireDays", f.getExpireDays());
 			aXml.addChildAttrib("FormatTimeParams", f.getFormatTimeParams());
+			aXml.addChildAttrib("AsExactMatch", f.getAsExactMatch()); // SoporEDIT
 		}
 		aXml.stepOut();
 	}

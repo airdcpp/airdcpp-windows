@@ -1163,6 +1163,7 @@ enum Strings { // @DontAdd
 	RSS_MATCH_PATTERN, // "Match pattern"
 	RSS_FEEDS, // "RSS feeds"
 	RSS_FORMAT_TIME_PARAMS, // "Format time params (ex. %m %d) for location before adding to auto search"
+	RSS_AS_EXACT_MATCH, // "Require exact match for auto search"
 	RUNNING_HOOKS, // "Running external hooks"
 	RUNNING_PCT, // "Running (%.01f%%)"
 	SAMPLE_TEXT, // "Sample text"

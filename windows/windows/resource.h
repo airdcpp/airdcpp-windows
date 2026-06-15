@@ -1425,6 +1425,7 @@
 #define IDC_IGNORE_PM                   1742
 #define IDC_AS_USERMATCHER_EXCLUDE      1742
 #define IDC_FORMAT_TIME                 1742
+#define IDC_RSS_AS_EXACT                1743
 #define IDC_USER_LIST_COLOR_DESC        1744
 #define IDC_TB_PROGRESS_STYLE           1745
 #define IDC_COLOR_LIST                  1751

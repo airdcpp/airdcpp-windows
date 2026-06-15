@@ -134,8 +134,9 @@ void wcToUtf8(wchar_t c, string& str) {
 		// REPLACEMENT CHARACTER: http://www.fileformat.info/info/unicode/char/0fffd/index.htm
 		wcToUtf8(0xfffd, str);
 	} else if (c >= 0x10000) {
-		str += (char)(0x80 | 0x40 | 0x20 | 0x10 | (c >> 18));
-		str += (char)(0x80 | ((c >> 12) & 0x3f));
+		auto c32 = static_cast<uint32_t>(c);
+		str += (char)(0x80 | 0x40 | 0x20 | 0x10 | (c32 >> 18));
+		str += (char)(0x80 | ((c32 >> 12) & 0x3f));
 		str += (char)(0x80 | ((c >> 6) & 0x3f));
 		str += (char)(0x80 | (c & 0x3f));
 	} else if (c >= 0x0800) {

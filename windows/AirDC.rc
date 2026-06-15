@@ -2326,6 +2326,9 @@ BEGIN
     CONTROL         "",IDC_EXPIRE_INT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,142,204,11,14
     CONTROL         "Format time params for location before adding to auto search",IDC_FORMAT_TIME,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,174,257,10
+    CONTROL         "Require exact match for auto search",IDC_RSS_AS_EXACT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,180,206,150,10
+
 END
 
 IDD_FAV_HUB_GENERAL DIALOGEX 0, 0, 410, 216

@@ -52,7 +52,7 @@ public:
 
 	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod, const string& aGroup, bool aSkipDupes, int aAction, int aExpireDays, bool aFormatTime) noexcept :
 		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget), autosearchGroup(aGroup), skipDupes(aSkipDupes), filterAction(aAction), expireDays(aExpireDays),
-		formatTimeParams(aFormatTime)
+		formatTimeParams(aFormatTime), asExactMatch(aAsExactMatch)
 	{
 		pattern = aFilterPattern;
 		setMethod((StringMatch::Method)aMethod);
@@ -66,6 +66,8 @@ public:
 	IGETSET(int, filterAction, FilterAction, DOWNLOAD);
 	IGETSET(int, expireDays, ExpireDays, 3);
 	IGETSET(bool, formatTimeParams, FormatTimeParams, false);
+	// Auto-search match type for spawned auto searches: true = exact (default), false = partial
+	IGETSET(bool, asExactMatch, AsExactMatch, true);
 
 	bool skipDupes = true;
 
