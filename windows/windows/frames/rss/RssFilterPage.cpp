@@ -109,9 +109,13 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	loading = false;
 	fillList();
 
-	ctrlRssFilterList.SelectItem(0);
-	CheckDlgButton(IDC_SKIP_DUPES, TRUE);
-	CheckDlgButton(IDC_RSS_AS_EXACT, TRUE);
+	if (!filterList.empty()) {
+		ctrlRssFilterList.SelectItem(0);
+	} else {
+		CheckDlgButton(IDC_SKIP_DUPES, TRUE);
+		CheckDlgButton(IDC_RSS_AS_EXACT, TRUE);
+	}
+
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(RSS_CONFIG));
 
