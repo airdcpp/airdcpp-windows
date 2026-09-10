@@ -401,7 +401,7 @@ void HashStore::optimize(bool doVerify) noexcept {
 		TTHValue curRoot;
 		try {
 			hashDb->remove_if([&](void* aKey, size_t key_len, void* aValue, size_t valueLen) {
-				memcpy(&curRoot, aKey, key_len);
+				memcpy(&curRoot.data, aKey, key_len);
 				auto i = usedRoots.find(curRoot);
 				if (i == usedRoots.end() && !QueueManager::getInstance()->isFileQueued(curRoot)) {
 					//not needed
