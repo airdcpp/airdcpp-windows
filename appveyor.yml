@@ -9,11 +9,9 @@ install:
 - .\bootstrap-vcpkg.bat
 - cd %APPVEYOR_BUILD_FOLDER%
 before_build:
-  - cmake "-DCMAKE_VS_GLOBALS=UseMultiToolTask=true;EnforceProcessCountAcrossBuilds=true" -B msvc -G "Visual Studio 18 2026" . --preset %PLATFORM%-debug
-build:
-  project: $(APPVEYOR_BUILD_FOLDER)\msvc\$(APPVEYOR_PROJECT_NAME).sln
-  parallel: true
-  verbosity: normal
+  - cmake -B msvc -G Ninja . --preset %PLATFORM%-debug
+build_script:
+  - cmake --build msvc --parallel
 cache:
 - C:\Tools\vcpkg\packages\
 init:
