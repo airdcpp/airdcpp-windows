@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <windows/stdafx.h>
 #include <windows/Resource.h>
 
 #include <windows/dialog/AboutDlg.h>
@@ -24,9 +23,7 @@
 #include <windows/HttpLinks.h>
 #include <windows/util/WinUtil.h>
 
-#include <airdcpp/core/header/format.h>
 #include <airdcpp/core/classes/Exception.h>
-#include <airdcpp/connection/http/HttpDownload.h>
 #include <airdcpp/core/io/xml/SimpleXML.h>
 #include <airdcpp/core/version.h>
 #include <airdcpp/core/update/UpdateDownloader.h>
@@ -44,7 +41,7 @@ _T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, 
 
 LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
-	SetDlgItemText(IDC_VERSION, Text::toT(fullVersionString + "\r\n(c) Copyright 2007-2024 Night and maksis\n").c_str());
+	SetDlgItemText(IDC_VERSION, Text::toT(fullVersionString + "\r\n(c) Copyright 2007-2026 Night and maksis\n").c_str());
 
 	CEdit ctrlThanks(GetDlgItem(IDC_AIRTHANKS));
 	ctrlThanks.FmtLines(TRUE);
