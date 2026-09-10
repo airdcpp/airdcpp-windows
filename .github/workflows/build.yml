@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-2025
+    env:
+      VCPKG_ROOT: C:\vcpkg
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Configure MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Restore vcpkg cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\vcpkg\archives
+            C:\vcpkg\packages
+          key: vcpkg-${{ runner.os }}-x64-windows-static-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-x64-windows-static-
+
+      - name: Verify build tools
+        shell: pwsh
+        run: |
+          cl.exe 2>&1 | Select-Object -First 1
+          cmake --version
+          ninja --version
+          vcpkg version
+
+      - name: Configure
+        run: cmake --preset x64-debug -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+
+      - name: Build
+        run: cmake --build --preset x64-debug --parallel

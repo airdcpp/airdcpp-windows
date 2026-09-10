@@ -9,7 +9,12 @@ install:
 - .\bootstrap-vcpkg.bat
 - cd %APPVEYOR_BUILD_FOLDER%
 before_build:
-  - cmake -B msvc -G Ninja . --preset %PLATFORM%-debug
+  - cmd: >-
+      for /f "usebackq tokens=*" %%i in (`%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`)
+      do call "%%i\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+      && set CC=
+      && set CXX=
+      && cmake -B msvc -G Ninja . --preset %PLATFORM%-debug -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
 build_script:
   - cmake --build msvc --parallel
 cache:
