@@ -23,16 +23,12 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 # global debug postfix for libraries (executables still need to set it)
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Filename postfix for libraries under DEBUG configuration")
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-#set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
-
-add_compile_options("$<$<NOT:$<CONFIG:Debug>>:/Zi>")
-add_link_options("$<$<NOT:$<CONFIG:Debug>>:/DEBUG>")
+add_compile_options("$<$<CONFIG:Debug,RelWithDebInfo>:/Zi>")
+add_link_options("$<$<CONFIG:Debug,RelWithDebInfo>:/DEBUG>")
 add_link_options("$<$<NOT:$<CONFIG:Debug>>:/OPT:REF>")
 add_link_options("$<$<NOT:$<CONFIG:Debug>>:/OPT:ICF>")
 
-
-
+add_compile_options("/EHsc")
 add_compile_options("/permissive-")
 
 add_subdirectory(airdcpp)

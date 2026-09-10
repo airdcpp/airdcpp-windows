@@ -25,7 +25,7 @@ New maintainers and contributions are welcome for the Windows GUI
 
 ### Required tools
 
-- [Visual Studio 2022](https://visualstudio.microsoft.com/)
+- [Visual Studio 2026](https://visualstudio.microsoft.com/)
 - [Python](https://www.python.org/)
 - [vcpkg](https://vcpkg.io/en/) with `VCPKG_ROOT` env variable pointing to the vcpkg installation directory
 - [CMake](https://cmake.org/)
@@ -42,8 +42,4 @@ Replace `<preset-name>` with one of the presets listed under `cmake --list-prese
 
 ## Opening in Visual Studio
 
-You can simply use the `Open a local folder` option in Visual Studio. 
-
-Alternatively you may also generate the Visual Studio project files with the following command:
-
-`cmake "-DCMAKE_VS_GLOBALS=UseMultiToolTask=true;EnforceProcessCountAcrossBuilds=true" -B msvc -G "Visual Studio 17 2022" --preset=<preset-name>_`
+You can simply use the `Open a local folder` option in Visual Studio.
