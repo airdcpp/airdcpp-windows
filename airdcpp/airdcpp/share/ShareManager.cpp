@@ -641,8 +641,7 @@ bool ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const bool& aStop
 		return false;
 	}
 
-	auto msg = errors.getMessage();
-	if (!msg.empty()) {
+	if (auto msg = errors.getMessage(); !msg.empty()) {
 		log(STRING_F(SHARE_FILES_BLOCKED, path % msg), LogMessage::SEV_INFO);
 	}
 
@@ -732,8 +731,7 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 
 
 				// Validations
-				auto newParent = !aOldParent;
-				if (!validateFileItem(*i, curPath, isNew, newParent, aErrorCollector)) {
+				if (const auto newParent = !aOldParent; !validateFileItem(*i, curPath, isNew, newParent, aErrorCollector)) {
 					stats.skippedFileCount++;
 					continue;
 				}
