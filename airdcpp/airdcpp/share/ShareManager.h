@@ -267,7 +267,7 @@ private:
 			// Recursive function for building a new share tree from a path
 			bool buildTree(const bool& aStopping) noexcept;
 		private:
-			void buildTree(const string& aPath, const string& aPathLower, const ShareDirectory::Ptr& aCurrentDirectory, const ShareDirectory::Ptr& aOldDirectory, const bool& aStopping);
+			void buildTree(const string& aPath, const string& aPathLower, const ShareDirectory::Ptr& aCurrentDirectory, const ShareDirectory::Ptr& aOldDirectory, const bool& aStopping, ErrorCollector& aErrorCollector);
 
 			bool validateFileItem(const FileItemInfoBase& aFileItem, const string& aPath, bool aIsNew, bool aNewParent, ErrorCollector& aErrorCollector) noexcept;
 
