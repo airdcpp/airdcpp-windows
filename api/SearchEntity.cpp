@@ -23,11 +23,10 @@
 #include <api/common/Deserializer.h>
 #include <api/common/FileSearchParser.h>
 
-#include <airdcpp/QueueAddInfo.h>
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchInstance.h>
-#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/queue/QueueAddInfo.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchInstance.h>
 
 
 namespace webserver {
@@ -40,8 +39,10 @@ namespace webserver {
 	};
 
 	SearchEntity::SearchEntity(ParentType* aParentModule, const SearchInstancePtr& aSearch) :
-		SubApiModule(aParentModule, aSearch->getToken(), subscriptionList), search(aSearch),
+		SubApiModule(aParentModule, aSearch->getToken()), search(aSearch),
 		searchView("search_view", this, SearchUtils::propertyHandler, std::bind(&SearchEntity::getResultList, this)) {
+
+		createSubscriptions(subscriptionList);
 
 		METHOD_HANDLER(Access::SEARCH,		METHOD_POST,	(EXACT_PARAM("hub_search")),									SearchEntity::handlePostHubSearch);
 		METHOD_HANDLER(Access::SEARCH,		METHOD_POST,	(EXACT_PARAM("user_search")),									SearchEntity::handlePostUserSearch);
@@ -73,14 +74,14 @@ namespace webserver {
 		auto j = Serializer::serializeItemList(aRequest.getRangeParam(START_POS), aRequest.getRangeParam(MAX_COUNT), SearchUtils::propertyHandler, search->getResultSet());
 
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return SearchEntity::handleGetChildren(ApiRequest& aRequest) {
 		auto result = parseResultParam(aRequest);
 
 		aRequest.setResponseBody(Serializer::serializeList(result->getChildren(), serializeSearchResult));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return SearchEntity::handleGetResult(ApiRequest& aRequest) {
@@ -88,7 +89,7 @@ namespace webserver {
 
 		auto j = Serializer::serializeItem(result, SearchUtils::propertyHandler);
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	json SearchEntity::serializeSearchQuery(const SearchPtr& aQuery) noexcept {
@@ -98,8 +99,8 @@ namespace webserver {
 
 		return {
 			{ "pattern", aQuery->query },
-			{ "min_size", (aQuery->sizeType == Search::SIZE_ATLEAST && aQuery->size != 0) || aQuery->sizeType == Search::SIZE_EXACT ? json(aQuery->size) : json() },
-			{ "max_size", aQuery->sizeType == Search::SIZE_ATMOST || aQuery->sizeType == Search::SIZE_EXACT ? json(aQuery->size) : json() },
+			{ "min_size", aQuery->minSize ? json(*aQuery->minSize) : json() },
+			{ "max_size", aQuery->maxSize ? json(*aQuery->maxSize) : json() },
 			{ "file_type", FileSearchParser::serializeSearchType(Util::toString(aQuery->fileType)) }, // TODO: custom types
 			{ "extensions", aQuery->exts },
 			{ "excluded", aQuery->excluded },
@@ -128,7 +129,7 @@ namespace webserver {
 		auto resultId = aRequest.getTTHParam();
 		auto result = search->getResult(resultId);
 		if (!result) {
-			throw RequestException(websocketpp::http::status_code::not_found, "Result " + resultId.toBase32() + " was not found");
+			throw RequestException(http::status::not_found, "Result " + resultId.toBase32() + " was not found");
 		}
 
 		return result;
@@ -162,10 +163,10 @@ namespace webserver {
 					};
 				}
 
-				complete(websocketpp::http::status_code::ok, responseData, nullptr);
+				complete(http::status::ok, responseData, nullptr);
 				return;
 			} catch (const Exception& e) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;
 			}
 		});
@@ -177,22 +178,22 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		// Parse request
-		auto s = FileSearchParser::parseSearch(reqJson, false, Util::toString(ValueGenerator::rand()));
+		auto s = FileSearchParser::parseSearch(reqJson, false);
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		if (s->priority <= Priority::NORMAL && ClientManager::getInstance()->hasSearchQueueOverflow()) {
 			aRequest.setResponseErrorStr("Search queue overflow");
-			return websocketpp::http::status_code::service_unavailable;
+			return http::status::service_unavailable;
 		}
 
 		auto queueResult = search->hubSearch(hubs, s);
 		if (queueResult.queuedHubUrls.empty() && !queueResult.error.empty()) {
 			aRequest.setResponseErrorStr(queueResult.error);
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
 		aRequest.setResponseBody(serializeSearchQueueInfo(queueResult.queueTime, queueResult.queuedHubUrls.size()));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	json SearchEntity::serializeSearchQueueInfo(uint64_t aQueueItem, size_t aQueueCount) noexcept {
@@ -209,7 +210,7 @@ namespace webserver {
 
 		// Parse user and query
 		auto user = Deserializer::deserializeHintedUser(reqJson);
-		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(ValueGenerator::rand()));
+		auto s = FileSearchParser::parseSearch(reqJson, true);
 
 		addAsyncTask([
 			this,
@@ -220,9 +221,9 @@ namespace webserver {
 		] {
 			string error;
 			if (!search->userSearchHooked(user, s, error)) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(error));
+				complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr(error));
 			} else {
-				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+				complete(http::status::no_content, nullptr, nullptr);
 			}
 		});
 

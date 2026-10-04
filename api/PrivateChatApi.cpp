@@ -26,11 +26,15 @@
 
 #include <web-server/WebServerSettings.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/PrivateChatManager.h>
-#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/private_chat/PrivateChatManager.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
 
 namespace webserver {
+
+#define HOOK_INCOMING_MESSAGE "private_chat_incoming_message_hook"
+#define HOOK_OUTGOING_MESSAGE "private_chat_outgoing_message_hook"
+
 	StringList PrivateChatApi::subscriptionList = {
 		"private_chat_created",
 		"private_chat_removed"
@@ -38,17 +42,18 @@ namespace webserver {
 
 	ActionHookResult<MessageHighlightList> PrivateChatApi::incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) {
 		return HookCompletionData::toResult<MessageHighlightList>(
-			fireHook("private_chat_incoming_message_hook", WEBCFG(INCOMING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_INCOMING_MESSAGE, WEBCFG(INCOMING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
 				return MessageUtils::serializeChatMessage(aMessage);
 			}),
 			aResultGetter,
+			this,
 			MessageUtils::getMessageHookHighlightDeserializer(aMessage->getText())
 		);
 	}
 
 	ActionHookResult<> PrivateChatApi::outgoingMessageHook(const OutgoingChatMessage& aMessage, const HintedUser& aUser, bool aEcho, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
-			fireHook("private_chat_outgoing_message_hook", WEBCFG(OUTGOING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_OUTGOING_MESSAGE, WEBCFG(OUTGOING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "text", aMessage.text },
 					{ "third_person", aMessage.thirdPerson },
@@ -56,39 +61,31 @@ namespace webserver {
 					{ "user", Serializer::serializeHintedUser(aUser) },
 				});
 			}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 
 	PrivateChatApi::PrivateChatApi(Session* aSession) : 
-		ParentApiModule(CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList,
+		ParentApiModule(CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession,
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const PrivateChatInfo& aInfo) { return serializeChat(aInfo.getChat()); },
 			Access::PRIVATE_CHAT_EDIT
-		) {
+	) {
+		createSubscriptions(subscriptionList, PrivateChatInfo::subscriptionList);
 
-		PrivateChatManager::getInstance()->addListener(this);
+		// Hooks
+		HOOK_HANDLER(HOOK_INCOMING_MESSAGE, ClientManager::getInstance()->incomingPrivateMessageHook, PrivateChatApi::incomingMessageHook);
+		HOOK_HANDLER(HOOK_OUTGOING_MESSAGE, ClientManager::getInstance()->outgoingPrivateMessageHook, PrivateChatApi::outgoingMessageHook);
 
-		HookApiModule::createHook("private_chat_incoming_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(PrivateChatApi::incomingMessageHook));
-		}, [this](const string& aId) {
-			ClientManager::getInstance()->incomingPrivateMessageHook.removeSubscriber(aId);
-		}, [this] {
-			return ClientManager::getInstance()->incomingPrivateMessageHook.getSubscribers();
-		});
-
-		HookApiModule::createHook("private_chat_outgoing_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->outgoingPrivateMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(PrivateChatApi::outgoingMessageHook));
-		}, [this](const string& aId) {
-			ClientManager::getInstance()->outgoingPrivateMessageHook.removeSubscriber(aId);
-		}, [this] {
-			return ClientManager::getInstance()->outgoingPrivateMessageHook.getSubscribers();
-		});
-
+		// Methods
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(),								PrivateChatApi::handlePostChat);
-
 		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),	PrivateChatApi::handlePostMessage);
 
+		// Listeners
+		PrivateChatManager::getInstance()->addListener(this);
+
+		// Init
 		auto rawChats = PrivateChatManager::getInstance()->getChats();
 		for (const auto& c : rawChats | views::values) {
 			addChat(c);
@@ -104,18 +101,18 @@ namespace webserver {
 		auto res = PrivateChatManager::getInstance()->addChat(user, false);
 		if (!res.second) {
 			aRequest.setResponseErrorStr("Chat session exists");
-			return websocketpp::http::status_code::conflict;
+			return http::status::conflict;
 		}
 
 		aRequest.setResponseBody(serializeChat(res.first));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return PrivateChatApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto chat = getSubModule(aRequest);
 
 		PrivateChatManager::getInstance()->removeChat(chat->getChat()->getUser());
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return PrivateChatApi::handlePostMessage(ApiRequest& aRequest) {
@@ -129,9 +126,9 @@ namespace webserver {
 		] {
 			string error_;
 			if (!ClientManager::getInstance()->privateMessageHooked(user, OutgoingChatMessage(message.message, callerPtr, Util::emptyString, message.thirdPerson), error_, echo)) {
-				complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error_));
+				complete(http::status::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error_));
 			} else {
-				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+				complete(http::status::no_content, nullptr, nullptr);
 			}
 		});
 

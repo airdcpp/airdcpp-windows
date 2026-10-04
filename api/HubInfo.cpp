@@ -25,7 +25,7 @@
 
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/ClientManager.h>
+#include <airdcpp/hub/ClientManager.h>
 
 
 namespace webserver {
@@ -42,11 +42,13 @@ namespace webserver {
 	};
 
 	HubInfo::HubInfo(ParentType* aParentModule, const ClientPtr& aClient) :
-		SubApiModule(aParentModule, aClient->getToken(), subscriptionList), client(aClient),
+		SubApiModule(aParentModule, aClient->getToken()), client(aClient),
 		chatHandler(this, aClient.get(), "hub", Access::HUBS_VIEW, Access::HUBS_EDIT, Access::HUBS_SEND),
 		view("hub_user_view", this, OnlineUserUtils::propertyHandler, std::bind(&HubInfo::getUsers, this), 500), 
 		timer(getTimer([this] { onTimer(); }, 1000)) 
 	{
+		createSubscriptions(subscriptionList);
+
 		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_PATCH, (),							HubInfo::handleUpdateHub);
 
 		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("reconnect")),	HubInfo::handleReconnect);
@@ -91,7 +93,7 @@ namespace webserver {
 			}
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubInfo::handleGetUsers(ApiRequest& aRequest) {
@@ -103,7 +105,7 @@ namespace webserver {
 
 		auto j = Serializer::serializeItemList(start, count, OnlineUserUtils::propertyHandler, users);
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleGetUserCid(ApiRequest& aRequest) {
@@ -112,55 +114,55 @@ namespace webserver {
 		auto ou = ClientManager::getInstance()->findOnlineUser(user->getCID(), client->getHubUrl(), false);
 		if (!ou) {
 			aRequest.setResponseErrorStr("User was not found");
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		}
 
 		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleGetUserId(ApiRequest& aRequest) {
 		auto ou = client->findUser(aRequest.getTokenParam());
 		if (!ou) {
 			aRequest.setResponseErrorStr("User " + Util::toString(aRequest.getTokenParam()) + " was not found");
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		}
 
 		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleGetCounts(ApiRequest& aRequest) {
 		aRequest.setResponseBody(serializeCounts(client));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handleReconnect(ApiRequest&) {
 		client->reconnect();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubInfo::handleFavorite(ApiRequest& aRequest) {
 		auto favHub = client->saveFavorite();
 		if (!favHub) {
 			aRequest.setResponseErrorStr(STRING(FAVORITE_HUB_ALREADY_EXISTS));
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
 		aRequest.setResponseBody(Serializer::serializeItem(favHub, FavoriteHubUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HubInfo::handlePassword(ApiRequest& aRequest) {
 		auto password = JsonUtil::getField<string>("password", aRequest.getRequestBody(), false);
 
 		client->password(password);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubInfo::handleRedirect(ApiRequest&) {
 		client->doRedirect();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	json HubInfo::serializeIdentity(const ClientPtr& aClient) noexcept {
@@ -252,7 +254,11 @@ namespace webserver {
 		chatHandler.setChat(client.get());
 		aNewClient->addListener(this);
 
-		sendConnectState();
+		onHubUpdated({
+			{ "identity", serializeIdentity(client) },
+			{ "encryption", Serializer::serializeEncryption(client->getEncryptionInfo(), client->isTrusted()) },
+			{ "connect_state", serializeConnectState(client) },
+		});
 	}
 
 	void HubInfo::on(ClientListener::Disconnected, const string&, const string&) noexcept {

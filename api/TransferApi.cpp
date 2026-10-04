@@ -22,43 +22,43 @@
 
 #include <api/TransferApi.h>
 
-#include <airdcpp/Download.h>
-#include <airdcpp/Upload.h>
+#include <airdcpp/transfer/download/Download.h>
+#include <airdcpp/transfer/upload/Upload.h>
 
-#include <airdcpp/DownloadManager.h>
-#include <airdcpp/ConnectionManager.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/ThrottleManager.h>
-#include <airdcpp/TransferInfoManager.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/transfer/download/DownloadManager.h>
+#include <airdcpp/connection/ConnectionManager.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/connection/ThrottleManager.h>
+#include <airdcpp/transfer/TransferInfoManager.h>
+#include <airdcpp/transfer/upload/UploadManager.h>
 
 
 namespace webserver {
 	TransferApi::TransferApi(Session* aSession) : 
-		SubscribableApiModule(
-			aSession, Access::TRANSFERS, 
-			{ 
-				"transfer_statistics", 
-				"transfer_added", 
-				"transfer_updated", 
-				"transfer_removed",
-
-				// These are included in transfer_updated events as well
-				"transfer_starting",
-				"transfer_completed",
-				"transfer_failed",
-			}
-		),
+		SubscribableApiModule(aSession, Access::TRANSFERS),
 		timer(getTimer([this] { onTimer(); }, 1000)),
 		view("transfer_view", this, TransferUtils::propertyHandler, std::bind(&TransferApi::getTransfers, this))
 	{
+		createSubscriptions({
+			"transfer_statistics",
+			"transfer_added",
+			"transfer_updated",
+			"transfer_removed",
+
+			// These are included in transfer_updated events as well
+			"transfer_starting",
+			"transfer_completed",
+			"transfer_failed",
+		});
+
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(),											TransferApi::handleGetTransfers);
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(TOKEN_PARAM),								TransferApi::handleGetTransfer);
 
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(TOKEN_PARAM, EXACT_PARAM("force")),		TransferApi::handleForce);
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(TOKEN_PARAM, EXACT_PARAM("disconnect")),	TransferApi::handleDisconnect);
 
-		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("tranferred_bytes")),			TransferApi::handleGetTransferredBytes);
+		METHOD_HANDLER(Access::TRANSFERS, METHOD_GET,		(EXACT_PARAM("tranferred_bytes")),			TransferApi::handleGetTransferredBytes); // DEPRECATED (typo)
+		METHOD_HANDLER(Access::TRANSFERS, METHOD_GET,		(EXACT_PARAM("transferred_bytes")),			TransferApi::handleGetTransferredBytes);
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("stats")),						TransferApi::handleGetTransferStats);
 
 		timer->start(false);
@@ -79,14 +79,14 @@ namespace webserver {
 	api_return TransferApi::handleGetTransfers(ApiRequest& aRequest) {
 		auto j = Serializer::serializeItemList(TransferUtils::propertyHandler, getTransfers());
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return TransferApi::handleGetTransfer(ApiRequest& aRequest) {
 		auto item = getTransfer(aRequest);
 
 		aRequest.setResponseBody(Serializer::serializeItem(item, TransferUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return TransferApi::handleGetTransferredBytes(ApiRequest& aRequest) {
@@ -97,7 +97,7 @@ namespace webserver {
 			{ "start_total_uploaded", SETTING(TOTAL_UPLOAD) - Socket::getTotalUp() },
 		});
 
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return TransferApi::handleForce(ApiRequest& aRequest) {
@@ -106,14 +106,14 @@ namespace webserver {
 			ConnectionManager::getInstance()->force(item->getStringToken());
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return TransferApi::handleDisconnect(ApiRequest& aRequest) {
 		auto item = getTransfer(aRequest);
 		ConnectionManager::getInstance()->disconnect(item->getStringToken());
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	TransferInfoPtr TransferApi::getTransfer(ApiRequest& aRequest) const {
@@ -121,7 +121,7 @@ namespace webserver {
 
 		auto t = TransferInfoManager::getInstance()->findTransfer(transferId);
 		if (!t) {
-			throw RequestException(websocketpp::http::status_code::not_found, "Transfer " + Util::toString(transferId) + " was not found");
+			throw RequestException(http::status::not_found, "Transfer " + Util::toString(transferId) + " was not found");
 		}
 
 		return t;
@@ -129,7 +129,7 @@ namespace webserver {
 
 	api_return TransferApi::handleGetTransferStats(ApiRequest& aRequest) {
 		aRequest.setResponseBody(serializeTransferStats());
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	json TransferApi::serializeTransferStats() const noexcept {
@@ -186,37 +186,52 @@ namespace webserver {
 
 	PropertyIdSet TransferApi::updateFlagsToPropertyIds(int aUpdatedProperties) noexcept {
 		PropertyIdSet updatedProps;
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::TARGET)
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::TARGET) {
 			updatedProps.insert(TransferUtils::PROP_TARGET);
 			updatedProps.insert(TransferUtils::PROP_NAME);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::TYPE)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::TYPE) {
 			updatedProps.insert(TransferUtils::PROP_TYPE);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::SIZE)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::SIZE) {
 			updatedProps.insert(TransferUtils::PROP_SIZE);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::STATUS)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::STATUS) {
 			updatedProps.insert(TransferUtils::PROP_STATUS);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::BYTES_TRANSFERRED)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::BYTES_TRANSFERRED) {
 			updatedProps.insert(TransferUtils::PROP_BYTES_TRANSFERRED);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::USER)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::USER) {
 			updatedProps.insert(TransferUtils::PROP_USER);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::TIME_STARTED)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::TIME_STARTED) {
 			updatedProps.insert(TransferUtils::PROP_TIME_STARTED);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::SPEED)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::SPEED) {
 			updatedProps.insert(TransferUtils::PROP_SPEED);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::SECONDS_LEFT)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::SECONDS_LEFT) {
 			updatedProps.insert(TransferUtils::PROP_SECONDS_LEFT);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::IP)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::IP) {
 			updatedProps.insert(TransferUtils::PROP_IP);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::FLAGS)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::FLAGS) {
 			updatedProps.insert(TransferUtils::PROP_FLAGS);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::SUPPORTS)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::SUPPORTS) {
 			updatedProps.insert(TransferUtils::PROP_SUPPORTS);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::ENCRYPTION)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::ENCRYPTION) {
 			updatedProps.insert(TransferUtils::PROP_ENCRYPTION);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::QUEUE_ID)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::QUEUE_ID) {
 			updatedProps.insert(TransferUtils::PROP_QUEUE_ID);
-		if (aUpdatedProperties & TransferInfo::UpdateFlags::STATE)
+		}
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::STATE) {
 			updatedProps.insert(TransferUtils::PROP_STATUS);
+		}
 
 		return updatedProps;
 	}

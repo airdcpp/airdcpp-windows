@@ -26,24 +26,21 @@
 #include <api/common/Serializer.h>
 #include <api/common/Deserializer.h>
 
-#include <airdcpp/File.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/ViewFileManager.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/viewed_files/ViewFileManager.h>
 
 namespace webserver {
-	ViewFileApi::ViewFileApi(Session* aSession) : 
-		SubscribableApiModule(
-			aSession, 
-			Access::VIEW_FILES_VIEW, 
-			{ 
-				"view_file_added", 
-				"view_file_removed", 
-				"view_file_updated", 
-				"view_file_finished" 
-			}
-		) 
-	{
+	ViewFileApi::ViewFileApi(Session* aSession) : SubscribableApiModule(aSession, Access::VIEW_FILES_VIEW) {
+		createSubscriptions({
+			"view_file_created",
+			"view_file_added",
+			"view_file_removed",
+			"view_file_updated",
+			"view_file_finished"
+		});
+
 		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(),									ViewFileApi::handleGetFiles);
 		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(),									ViewFileApi::handleAddFile);
 		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(TTH_PARAM),						ViewFileApi::handleGetFile);
@@ -86,7 +83,7 @@ namespace webserver {
 	api_return ViewFileApi::handleGetFiles(ApiRequest& aRequest) {
 		auto files = ViewFileManager::getInstance()->getFiles();
 		aRequest.setResponseBody(Serializer::serializeList(files, serializeFile));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return ViewFileApi::handleAddFile(ApiRequest& aRequest) {
@@ -105,17 +102,17 @@ namespace webserver {
 				auto fileData = ViewedFileAddData(name, tth, size, caller, user, isText);
 				file = ViewFileManager::getInstance()->addUserFileHookedThrow(fileData);
 			} catch (const Exception& e) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;
 			}
 
 			if (!file) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("File with the same TTH is open already"));
+				complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr("File with the same TTH is open already"));
 				return;
 			}
 
 
-			complete(websocketpp::http::status_code::ok, serializeFile(file), nullptr);
+			complete(http::status::ok, serializeFile(file), nullptr);
 			return;
 		});
 
@@ -131,23 +128,23 @@ namespace webserver {
 			file = ViewFileManager::getInstance()->addLocalFileThrow(tth, isText);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
 		if (!file) {
 			aRequest.setResponseErrorStr("File with the same TTH is open already");
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
 		aRequest.setResponseBody(serializeFile(file));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	ViewFilePtr ViewFileApi::parseViewFileParam(ApiRequest& aRequest) {
 		auto fileId = aRequest.getTTHParam();
 		auto file = ViewFileManager::getInstance()->getFile(fileId);
 		if (!file) {
-			throw RequestException(websocketpp::http::status_code::not_found, "File " + fileId.toBase32() + " was not found");
+			throw RequestException(http::status::not_found, "File " + fileId.toBase32() + " was not found");
 		}
 
 		return file;
@@ -156,23 +153,24 @@ namespace webserver {
 	api_return ViewFileApi::handleGetFile(ApiRequest& aRequest) {
 		auto file = parseViewFileParam(aRequest);
 		aRequest.setResponseBody(serializeFile(file));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return ViewFileApi::handleRemoveFile(ApiRequest& aRequest) {
 		auto file = parseViewFileParam(aRequest);
 		ViewFileManager::getInstance()->removeFile(file->getTTH());
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ViewFileApi::handleSetRead(ApiRequest& aRequest) {
 		auto file = parseViewFileParam(aRequest);
 		ViewFileManager::getInstance()->setRead(file->getTTH());
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileAdded, const ViewFilePtr& aFile) noexcept {
 		maybeSend("view_file_added", [&] { return serializeFile(aFile); });
+		maybeSend("view_file_created", [&] { return serializeFile(aFile); });
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept {

@@ -21,8 +21,8 @@
 
 #include "forward.h"
 
-#include <airdcpp/typedefs.h>
-#include <airdcpp/CriticalSection.h>
+#include <airdcpp/core/header/typedefs.h>
+#include <airdcpp/core/thread/CriticalSection.h>
 
 
 namespace webserver {
@@ -37,7 +37,7 @@ namespace webserver {
 		// Get location of the file server root directory (Web UI files)
 		const string& getResourcePath() const noexcept;
 
-		websocketpp::http::status_code::value handleRequest(const HttpRequest& aRequest, 
+		http::status handleRequest(const HttpRequest& aRequest, 
 			std::string& output_, StringPairList& headers_, const FileDeferredHandler& aDeferF);
 
 		string getTempFilePath(const string& fileId) const noexcept;
@@ -46,19 +46,20 @@ namespace webserver {
 		FileServer(FileServer&) = delete;
 		FileServer& operator=(FileServer&) = delete;
 	private:
-		websocketpp::http::status_code::value handleGetRequest(const websocketpp::http::parser::request& aRequest,
+		http::status handleGetRequest(const HttpRequest& aRequest,
 			std::string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF);
 
-		websocketpp::http::status_code::value handleProxyDownload(const string& aUrl, string& output_, const FileDeferredHandler& aDeferF) noexcept;
+		http::status handleProxyDownload(const string& aUrl, string& output_, const FileDeferredHandler& aDeferF) noexcept;
 		void onProxyDownloadCompleted(int64_t aDownloadId, const HTTPFileCompletionF& aCompletionF) noexcept;
 
-		websocketpp::http::status_code::value handlePostRequest(const websocketpp::http::parser::request& aRequest,
+		http::status handlePostRequest(const HttpRequest& aRequest,
 			std::string& output_, StringPairList& headers_, const SessionPtr& aSession) noexcept;
 
 		string resourcePath;
 
-		string parseResourcePath(const string& aResource, const websocketpp::http::parser::request& aRequest, StringPairList& headers_) const;
+		string parseResourcePath(const string& aResource, const HttpRequest& aRequest, StringPairList& headers_) const;
 		string parseViewFilePath(const string& aResource, StringPairList& headers_, const SessionPtr& aSession) const;
+		string getPath(const TTHValue& aTTH) const;
 
 		static string getExtension(const string& aResource) noexcept;
 

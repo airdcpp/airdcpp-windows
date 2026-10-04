@@ -25,9 +25,9 @@
 #include <web-server/Timer.h>
 #include <web-server/WebServerManager.h>
 
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/core/timer/TimerManager.h>
 
-#include <api/base/ApiModule.h>
+#include <api/base/SubscribableApiModule.h>
 #include <api/common/PropertyFilter.h>
 #include <api/common/Serializer.h>
 #include <api/common/ViewTasks.h>
@@ -214,7 +214,7 @@ namespace webserver {
 			aRequest.setResponseBody({ 
 				{ "id", filter->getId() }
 			});
-			return websocketpp::http::status_code::ok;
+			return http::status::ok;
 		}
 
 		api_return handlePutFilter(ApiRequest& aRequest) {
@@ -226,23 +226,23 @@ namespace webserver {
 				auto i = findFilter(aRequest.getTokenParam());
 				if (i == filters.end()) {
 					aRequest.setResponseErrorStr("Filter not found");
-					return websocketpp::http::status_code::bad_request;
+					return http::status::bad_request;
 				}
 
 				filter = *i;
 			}
 
 			setFilterProperties(reqJson, *filter.get());
-			return websocketpp::http::status_code::no_content;
+			return http::status::no_content;
 		}
 
 		api_return handleDeleteFilter(ApiRequest& aRequest) {
 			if (!removeFilter(aRequest.getTokenParam())) {
 				aRequest.setResponseErrorStr("Filter " + Util::toString(aRequest.getTokenParam()) + " was not found");
-				return websocketpp::http::status_code::bad_request;
+				return http::status::bad_request;
 			}
 
-			return websocketpp::http::status_code::no_content;
+			return http::status::no_content;
 		}
 
 		void onFilterUpdated() {
@@ -276,17 +276,17 @@ namespace webserver {
 				timer->start(true);
 			}
 
-			return websocketpp::http::status_code::no_content;
+			return http::status::no_content;
 		}
 
 		api_return handleReset(ApiRequest& aRequest) {
 			if (!active) {
 				aRequest.setResponseErrorStr("The view isn't active");
-				return websocketpp::http::status_code::bad_request;
+				return http::status::bad_request;
 			}
 
 			stop();
-			return websocketpp::http::status_code::no_content;
+			return http::status::no_content;
 		}
 
 		void parseProperties(const json& j) {
@@ -311,7 +311,7 @@ namespace webserver {
 				if (propName) {
 					auto propId = findPropertyByName(*propName, itemHandler.properties);
 					if (propId == -1) {
-						JsonUtil::throwError("sort_property", JsonUtil::ERROR_INVALID, "Invalid sort property");
+						JsonUtil::throwError("sort_property", JsonException::ERROR_INVALID, "Invalid sort property");
 					}
 
 					updatedValues[IntCollector::TYPE_SORT_PROPERTY] = propId;
@@ -445,7 +445,7 @@ namespace webserver {
 			});
 
 			aRequest.setResponseBody(j);
-			return websocketpp::http::status_code::ok;
+			return http::status::ok;
 		}
 
 		typename ItemList::iterator findItem(const T& aItem, ItemList& aItems) noexcept {

@@ -32,18 +32,53 @@
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
 
-#include <airdcpp/Bundle.h>
+#include <airdcpp/queue/Bundle.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/DirectoryListing.h>
-#include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/PrivateChatManager.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchInstance.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/filelist/DirectoryListing.h>
+#include <airdcpp/filelist/DirectoryListingManager.h>
+#include <airdcpp/private_chat/PrivateChatManager.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchInstance.h>
+
+#define MAX_MENU_NESTING 6
 
 #define MYMACRO(...) __VA_ARGS__
 
-#define CONTEXT_MENU_HANDLER(menuId, hook, hook2, idType, idDeserializerFunc, idSerializerFunc, access) \
+#define CONTEXT_MENU_HANDLER(menuId, hook, hook2, access) \
+	createSubscription(menuId + "_menuitem_selected"s); \
+	createHook( \
+		toHookId(menuId), \
+		[this](ActionHookSubscriber&& aSubscriber) { \
+			return cmm.hook##MenuHook.addSubscriber( \
+				std::move(aSubscriber), \
+				[this](const ContextMenuItemListData& aListData, const MenuApi::MenuActionHookResultGetter& aResultGetter) { \
+					return MenuApi::menuListHookHandler(aListData, aResultGetter, menuId); \
+				} \
+			); \
+		}, [this](const string& aId) { \
+			cmm.hook##MenuHook.removeSubscriber(aId); \
+		}, [this] { \
+			return cmm.hook##MenuHook.getSubscribers(); \
+		} \
+	); \
+	INLINE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), [this](ApiRequest& aRequest) { \
+		return handleClickItem( \
+			aRequest, \
+			menuId, \
+			std::bind_front(&ContextMenuManager::onClick##hook2##Item, &cmm) \
+		); \
+	}); \
+	INLINE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list_grouped")), [this](ApiRequest& aRequest) { \
+		return handleListItemsGrouped( \
+			aRequest, \
+			std::bind_front(&ContextMenuManager::get##hook2##Menu, &cmm) \
+		); \
+	})
+
+
+#define ID_CONTEXT_MENU_HANDLER(menuId, hook, hook2, idType, idDeserializerFunc, idSerializerFunc, access) \
+	createSubscription(menuId + "_menuitem_selected"s); \
 	createHook( \
 		toHookId(menuId), \
 		[this](ActionHookSubscriber&& aSubscriber) { \
@@ -59,7 +94,7 @@
 			return cmm.hook##MenuHook.getSubscribers(); \
 		} \
 	); \
-	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), [this](ApiRequest& aRequest) { \
+	INLINE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), [this](ApiRequest& aRequest) { \
 		return handleClickItem<idType>( \
 			aRequest, \
 			menuId, \
@@ -67,14 +102,7 @@
 			idDeserializerFunc \
 		); \
 	}); \
-	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list")), [this](ApiRequest& aRequest) { \
-		return handleListItems<idType>( \
-			aRequest, \
-			std::bind_front(&ContextMenuManager::get##hook2##Menu, &cmm), \
-			idDeserializerFunc \
-		); \
-	}); \
-	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list_grouped")), [this](ApiRequest& aRequest) { \
+	INLINE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list_grouped")), [this](ApiRequest& aRequest) { \
 		return handleListItemsGrouped<idType>( \
 			aRequest, \
 			std::bind_front(&ContextMenuManager::get##hook2##Menu, &cmm), \
@@ -83,6 +111,7 @@
 	})
 
 #define ENTITY_CONTEXT_MENU_HANDLER(menuId, hook, hook2, idType, idDeserializerFunc, idSerializerFunc, entityType, entityDeserializerFunc, access) \
+	createSubscription(menuId "_menuitem_selected"s); \
 	createHook(toHookId(menuId), [this](ActionHookSubscriber&& aSubscriber) { \
 		return cmm.hook##MenuHook.addSubscriber( \
 			std::move(aSubscriber), \
@@ -95,7 +124,7 @@
 	}, [this] { \
 		return cmm.hook##MenuHook.getSubscribers(); \
 	}); \
-	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), [MYMACRO(=, this)](ApiRequest& aRequest) { \
+	INLINE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), [MYMACRO(=, this)](ApiRequest& aRequest) { \
 		const auto entityId = JsonUtil::getRawField("entity_id", aRequest.getRequestBody()); \
 		auto entity = entityDeserializerFunc(entityId, "entity_id"); \
 		return handleClickItem<idType>( \
@@ -107,18 +136,7 @@
 			idDeserializerFunc \
 		); \
 	}); \
-	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list")), [MYMACRO(=, this)](ApiRequest& aRequest) { \
-		const auto entityId = JsonUtil::getRawField("entity_id", aRequest.getRequestBody()); \
-		auto entity = entityDeserializerFunc(entityId, "entity_id"); \
-		return handleListItems<idType>( \
-			aRequest, \
-			[MYMACRO(=, this)](const vector<idType>& aSelectedIds, const ContextMenuItemListData& aListData) { \
-				return cmm.get##hook2##Menu(aSelectedIds, aListData, entity); \
-			}, \
-			idDeserializerFunc \
-		); \
-	}); \
-	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list_grouped")), [MYMACRO(=, this)](ApiRequest& aRequest) { \
+	INLINE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list_grouped")), [MYMACRO(=, this)](ApiRequest& aRequest) { \
 		const auto entityId = JsonUtil::getRawField("entity_id", aRequest.getRequestBody()); \
 		auto entity = entityDeserializerFunc(entityId, "entity_id"); \
 		return handleListItemsGrouped<idType>( \
@@ -132,41 +150,33 @@
 
 namespace webserver {
 	MenuApi::MenuApi(Session* aSession) : 
-		HookApiModule(
-			aSession,
-			Access::ANY,
-			{
-				"queue_bundle_menuitem_selected",
-				"queue_file_menuitem_selected",
-				"transfer_menuitem_selected",
-				"favorite_hub_menuitem_selected",
-				"share_root_menuitem_selected",
-				"user_menuitem_selected",
-				"hinted_user_menuitem_selected",
-				"extension_menuitem_selected",
-
-				"hub_user_menuitem_selected",
-				"grouped_search_result_menuitem_selected",
-				"filelist_item_menuitem_selected",
-				"hub_message_highlight_menuitem_selected",
-				"private_chat_message_highlight_menuitem_selected",
-			},
-			Access::ANY
-		),
+		HookApiModule(aSession, Access::ANY, Access::ANY),
 		cmm(aSession->getServer()->getContextMenuManager()) 
 	{
-
 		cmm.addListener(this);
 
-		CONTEXT_MENU_HANDLER("queue_bundle", queueBundle, QueueBundle, QueueToken, Deserializer::defaultArrayValueParser<QueueToken>, Serializer::defaultArrayValueSerializer<QueueToken>, Access::ANY);
-		CONTEXT_MENU_HANDLER("queue_file", queueFile, QueueFile, QueueToken, Deserializer::defaultArrayValueParser<QueueToken>, Serializer::defaultArrayValueSerializer<QueueToken>, Access::ANY);
-		CONTEXT_MENU_HANDLER("transfer", transfer, Transfer, TransferToken, Deserializer::defaultArrayValueParser<TransferToken>, Serializer::defaultArrayValueSerializer<TransferToken>, Access::ANY);
-		CONTEXT_MENU_HANDLER("favorite_hub", favoriteHub, FavoriteHub, FavoriteHubToken, Deserializer::defaultArrayValueParser<FavoriteHubToken>, Serializer::defaultArrayValueSerializer<FavoriteHubToken>, Access::ANY);
+		CONTEXT_MENU_HANDLER("transfers", transfers, Transfers, Access::ANY);
+		CONTEXT_MENU_HANDLER("queue", queue, Queue, Access::ANY);
+		CONTEXT_MENU_HANDLER("share_roots", shareRoots, ShareRoots, Access::ANY);
+		CONTEXT_MENU_HANDLER("events", events, Events, Access::ANY);
+		CONTEXT_MENU_HANDLER("favorite_hubs", favoriteHubs, FavoriteHubs, Access::ANY);
 
-		CONTEXT_MENU_HANDLER("share_root", shareRoot, ShareRoot, TTHValue, Deserializer::tthArrayValueParser, Serializer::defaultArrayValueSerializer<TTHValue>, Access::ANY);
-		CONTEXT_MENU_HANDLER("user", user, User, CID, Deserializer::cidArrayValueParser, Serializer::defaultArrayValueSerializer<CID>, Access::ANY);
-		CONTEXT_MENU_HANDLER("hinted_user", hintedUser, HintedUser, HintedUser, Deserializer::hintedUserArrayValueParser, Serializer::serializeHintedUser, Access::ANY);
-		CONTEXT_MENU_HANDLER("extension", extension, Extension, string, Deserializer::defaultArrayValueParser<string>, Serializer::defaultArrayValueSerializer<string>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("queue_bundle", queueBundle, QueueBundle, QueueToken, Deserializer::defaultArrayValueParser<QueueToken>, Serializer::defaultArrayValueSerializer<QueueToken>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("queue_file", queueFile, QueueFile, QueueToken, Deserializer::defaultArrayValueParser<QueueToken>, Serializer::defaultArrayValueSerializer<QueueToken>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("transfer", transfer, Transfer, TransferToken, Deserializer::defaultArrayValueParser<TransferToken>, Serializer::defaultArrayValueSerializer<TransferToken>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("favorite_hub", favoriteHub, FavoriteHub, FavoriteHubToken, Deserializer::defaultArrayValueParser<FavoriteHubToken>, Serializer::defaultArrayValueSerializer<FavoriteHubToken>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("extension", extension, Extension, string, Deserializer::defaultArrayValueParser<string>, Serializer::defaultArrayValueSerializer<string>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("share_root", shareRoot, ShareRoot, TTHValue, Deserializer::tthArrayValueParser, Serializer::defaultArrayValueSerializer<TTHValue>, Access::ANY);
+
+		ID_CONTEXT_MENU_HANDLER("user", user, User, CID, Deserializer::cidArrayValueParser, Serializer::defaultArrayValueSerializer<CID>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("hinted_user", hintedUser, HintedUser, HintedUser, Deserializer::hintedUserArrayValueParser, Serializer::serializeHintedUser, Access::ANY);
+
+		// Sessions
+		ID_CONTEXT_MENU_HANDLER("hub", hub, Hub, ClientToken, Deserializer::defaultArrayValueParser<ClientToken>, Serializer::defaultArrayValueSerializer<ClientToken>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("search_instance", searchInstance, SearchInstance, SearchInstanceToken, Deserializer::defaultArrayValueParser<SearchInstanceToken>, Serializer::defaultArrayValueSerializer<SearchInstanceToken>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("private_chat", privateChat, PrivateChat, CID, Deserializer::cidArrayValueParser, Serializer::defaultArrayValueSerializer<CID>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("filelist", filelist, Filelist, CID, Deserializer::cidArrayValueParser, Serializer::defaultArrayValueSerializer<CID>, Access::ANY);
+		ID_CONTEXT_MENU_HANDLER("view_file", viewedFile, ViewedFile, TTHValue, Deserializer::tthArrayValueParser, Serializer::defaultArrayValueSerializer<TTHValue>, Access::ANY);
 
 		const auto parseFilelist = [](const json& aJson, const string& aFieldName) {
 			auto cidStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
@@ -174,7 +184,7 @@ namespace webserver {
 
 			auto filelist = DirectoryListingManager::getInstance()->findList(user);
 			if (!filelist) {
-				JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid session ID");
+				JsonUtil::throwError(aFieldName, JsonException::ERROR_INVALID, "Invalid session ID");
 			}
 
 			return filelist;
@@ -184,7 +194,7 @@ namespace webserver {
 			auto instanceId = JsonUtil::parseValue<uint32_t>(aFieldName, aJson, false);
 			auto instance = SearchManager::getInstance()->getSearchInstance(instanceId);
 			if (!instance) {
-				JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid session ID");
+				JsonUtil::throwError(aFieldName, JsonException::ERROR_INVALID, "Invalid session ID");
 			}
 
 			return instance;
@@ -194,7 +204,7 @@ namespace webserver {
 			auto sessionId = JsonUtil::parseValue<uint32_t>(aFieldName, aJson, false);
 			auto instance = ClientManager::getInstance()->findClient(sessionId);
 			if (!instance) {
-				JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid session ID");
+				JsonUtil::throwError(aFieldName, JsonException::ERROR_INVALID, "Invalid session ID");
 			}
 
 			return instance;
@@ -204,7 +214,7 @@ namespace webserver {
 			auto cid = JsonUtil::parseValue<string>(aFieldName, aJson, false);
 			auto instance = PrivateChatManager::getInstance()->getChat(Deserializer::getUser(cid, false));
 			if (!instance) {
-				JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid session ID");
+				JsonUtil::throwError(aFieldName, JsonException::ERROR_INVALID, "Invalid session ID");
 			}
 
 			return instance;
@@ -236,7 +246,7 @@ namespace webserver {
 			for (const auto& elem: valuesJson.items()) {
 				auto setting = ApiSettingItem::findSettingItem<ExtensionSettingItem>(formFieldDefinitions, elem.key());
 				if (!setting) {
-					JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Definition for the value was not found");
+					JsonUtil::throwError(elem.key(), JsonException::ERROR_INVALID, "Definition for the value was not found");
 				}
 
 				formValues[elem.key()] = SettingUtils::validateValue(elem.value(), *setting, nullptr);
@@ -246,8 +256,8 @@ namespace webserver {
 		return ContextMenuItemClickData(hookId, menuItemId, supports, aPermissions, formValues);
 	}
 
-	HookApiModule::HookCompletionDataPtr MenuApi::fireMenuHook(const string& aMenuId, const json& aSelectedIds, const ContextMenuItemListData& aListData, const json& aEntityId) {
-		return fireHook(toHookId(aMenuId), WEBCFG(LIST_MENUITEMS_HOOK_TIMEOUT).num(), [&]() {
+	HookCompletionDataPtr MenuApi::fireMenuHook(const string& aMenuId, const json& aSelectedIds, const ContextMenuItemListData& aListData, const json& aEntityId) {
+		return maybeFireHook(toHookId(aMenuId), WEBCFG(LIST_MENUITEMS_HOOK_TIMEOUT).num(), [&]() {
 			return json({
 				{ "selected_ids", aSelectedIds },
 				{ "permissions", Serializer::serializePermissions(aListData.access) },
@@ -265,6 +275,7 @@ namespace webserver {
 			{ "hook_id", aMenuItem->getHook().getId() },
 			{ "urls", aMenuItem->getUrls() },
 			{ "form_definitions", aMenuItem->getFormFieldDefinitions().empty() ? json() : Serializer::serializeList(aMenuItem->getFormFieldDefinitions(), SettingUtils::serializeDefinition) },
+			{ "children", aMenuItem->getChildren().empty() ? json() : Serializer::serializeList(aMenuItem->getChildren(), serializeMenuItem) }
 		};
 	}
 
@@ -295,7 +306,7 @@ namespace webserver {
 		StringMap iconInfo;
 		if (!aJson.is_null()) {
 			if (!aJson.is_object()) {
-				JsonUtil::throwError("icon", JsonUtil::ERROR_INVALID, "Field must be an object");
+				JsonUtil::throwError("icon", JsonException::ERROR_INVALID, "Field must be an object");
 			}
 
 			for (const auto& entry : aJson.items()) {
@@ -306,13 +317,25 @@ namespace webserver {
 		return iconInfo;
 	}
 
-	ContextMenuItemPtr MenuApi::toMenuItem(const json& aData, const MenuActionHookResultGetter& aResultGetter) {
+	ContextMenuItemPtr MenuApi::toMenuItem(const json& aData, const MenuActionHookResultGetter& aResultGetter, int aLevel) {
 		const auto id = JsonUtil::getField<string>("id", aData, false);
 		const auto title = JsonUtil::getField<string>("title", aData, false);
 		const auto iconInfo = deserializeIconInfo(JsonUtil::getOptionalRawField("icon", aData, false));
 		const auto urls = JsonUtil::getOptionalFieldDefault<StringList>("urls", aData, StringList());
 
-		return make_shared<ContextMenuItem>(id, title, iconInfo, aResultGetter.getSubscriber(), urls, deserializeFormFieldDefinitions(aData));
+		ContextMenuItem::List children;
+		const auto childrenJson = JsonUtil::getOptionalArrayField("children", aData);
+		if (!childrenJson.is_null() && !childrenJson.empty()) {
+			if (aLevel == MAX_MENU_NESTING) {
+				JsonUtil::throwError("children", JsonException::ERROR_INVALID, "Maximum menu level nesting of " + Util::toString(MAX_MENU_NESTING) + " exceeded");
+			}
+
+			for (const auto& menuItem : childrenJson) {
+				children.push_back(toMenuItem(menuItem, aResultGetter, aLevel + 1));
+			}
+		}
+
+		return make_shared<ContextMenuItem>(id, title, iconInfo, aResultGetter.getSubscriber(), urls, deserializeFormFieldDefinitions(aData), children);
 	}
 
 
@@ -392,5 +415,45 @@ namespace webserver {
 
 	void MenuApi::on(PrivateChatMessageHighlightMenuSelected, const vector<MessageHighlightToken>& aSelectedIds, const PrivateChatPtr& aChat, const ContextMenuItemClickData& aClickData) noexcept {
 		onMenuItemSelected("private_chat_message_highlight", aSelectedIds, aClickData, aChat->getToken());
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::HubMenuSelected, const vector<ClientToken>& aSelectedIds, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("hub", aSelectedIds, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::PrivateChatMenuSelected, const vector<CID>& aSelectedIds, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("private_chat", aSelectedIds, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::FilelistMenuSelected, const vector<CID>& aSelectedIds, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("filelist", aSelectedIds, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::ViewedFileMenuSelected, const vector<TTHValue>& aSelectedIds, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("view_file", aSelectedIds, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::SearchInstanceMenuSelected, const vector<SearchInstanceToken>& aSelectedIds, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("search_instance", aSelectedIds, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::QueueMenuSelected, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("queue", nullptr, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::EventsMenuSelected, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("events", nullptr, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::TransfersMenuSelected, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("transfers", nullptr, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::ShareRootsMenuSelected, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("share_roots", nullptr, aClickData);
+	}
+
+	void MenuApi::on(ContextMenuManagerListener::FavoriteHubsMenuSelected, const ContextMenuItemClickData& aClickData) noexcept {
+		onMenuItemSelected("favorite_hubs", nullptr, aClickData);
 	}
 }

@@ -24,25 +24,23 @@
 #include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/IgnoreManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/user/ignore/IgnoreManager.h>
 
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/favorites/ReservedSlotManager.h>
 
 namespace webserver {
-	UserApi::UserApi(Session* aSession) : 
-		SubscribableApiModule(
-			aSession, 
-			Access::ANY, 
-			{ 
-				"user_connected", 
-				"user_updated", 
-				"user_disconnected", 
-				
-				"ignored_user_added", 
-				"ignored_user_removed" 
-			}
-		) 
-	{
+	UserApi::UserApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
+		createSubscriptions({
+			"user_connected",
+			"user_updated",
+			"user_disconnected",
+
+			"ignored_user_added",
+			"ignored_user_removed"
+		});
+
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("user"), CID_PARAM),		UserApi::handleGetUser); // DEPRECATED
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(CID_PARAM),							UserApi::handleGetUser);
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("search_nicks")),			UserApi::handleSearchNicks);
@@ -51,6 +49,8 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("ignores")),				UserApi::handleGetIgnores);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("ignores"), CID_PARAM),	UserApi::handleIgnore);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("ignores"), CID_PARAM),	UserApi::handleUnignore);
+
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("slots"), CID_PARAM),		UserApi::handleGrantSlot);
 
 		ClientManager::getInstance()->addListener(this);
 		IgnoreManager::getInstance()->addListener(this);
@@ -68,7 +68,7 @@ namespace webserver {
 	api_return UserApi::handleGetUser(ApiRequest& aRequest) {
 		auto user = getUser(aRequest);
 		aRequest.setResponseBody(Serializer::serializeUser(user));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return UserApi::handleSearchNicks(ApiRequest& aRequest) {
@@ -81,25 +81,52 @@ namespace webserver {
 
 		auto users = ClientManager::getInstance()->searchNicks(pattern, maxResults, ignorePrefixes, hubs);
 		aRequest.setResponseBody(Serializer::serializeList(users, Serializer::serializeOnlineUser));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return UserApi::handleSearchHintedUser(ApiRequest& aRequest) {
 		const auto user = Deserializer::deserializeHintedUser(aRequest.getRequestBody(), true);
 		aRequest.setResponseBody(Serializer::serializeHintedUser(user));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
+	}
+
+	json UserApi::serializeConnectResult(const optional<UserConnectResult> aResult) noexcept {
+		if (!aResult) {
+			return nullptr;
+		}
+
+		return {
+			{ "success", aResult->getIsSuccess() },
+			{ "error", aResult->getError() },
+		};
+	}
+
+	api_return UserApi::handleGrantSlot(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+		auto user = getUser(aRequest);
+
+		auto hubUrl = JsonUtil::getOptionalFieldDefault<string>("hub_url", reqJson, Util::emptyString);
+		auto duration = JsonUtil::getOptionalFieldDefault<time_t>("duration", reqJson, 0);
+
+		auto result = FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(user, hubUrl), duration);
+
+		aRequest.setResponseBody({
+			{ "connect_result", serializeConnectResult(result) }
+		});
+
+		return http::status::ok;
 	}
 
 	api_return UserApi::handleIgnore(ApiRequest& aRequest) {
 		auto u = getUser(aRequest);
 		IgnoreManager::getInstance()->storeIgnore(u);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return UserApi::handleUnignore(ApiRequest& aRequest) {
 		auto u = getUser(aRequest);
 		IgnoreManager::getInstance()->removeIgnore(u);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return UserApi::handleGetIgnores(ApiRequest& aRequest) {
@@ -114,7 +141,7 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	void UserApi::on(IgnoreManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept {

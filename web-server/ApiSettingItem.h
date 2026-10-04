@@ -22,11 +22,17 @@
 #include "forward.h"
 #include "stdinc.h"
 
-#include <airdcpp/GetSet.h>
-#include <airdcpp/SettingItem.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/core/types/GetSet.h>
+#include <airdcpp/settings/SettingItem.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 namespace webserver {
+
+
+// Keep possible smart pointers referred by the setting item alive
+using SettingReference = std::shared_ptr<void>;
+using SettingReferenceList = std::vector<SettingReference>;
+
 #define MAX_INT_VALUE std::numeric_limits<int>::max()
 	class ApiSettingItem {
 	public:
@@ -38,11 +44,17 @@ namespace webserver {
 		enum Type {
 			TYPE_NUMBER,
 			TYPE_BOOLEAN,
+
 			TYPE_STRING,
+			TYPE_TEXT,
+			TYPE_PASSWORD,
+			TYPE_EMAIL,
+			TYPE_URL,
+
 			TYPE_EXISTING_FILE_PATH,
 			TYPE_FILE_PATH,
 			TYPE_DIRECTORY_PATH,
-			TYPE_TEXT,
+
 			TYPE_LIST,
 			TYPE_STRUCT,
 			TYPE_HINTER_USER,

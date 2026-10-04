@@ -22,14 +22,18 @@
 #include <api/ConnectivityApi.h>
 
 #include <api/common/Serializer.h>
+#include <api/common/MessageUtils.h>
 
-#include <airdcpp/ConnectionManager.h>
-#include <airdcpp/SearchManager.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/connection/ConnectionManager.h>
+#include <airdcpp/search/SearchManager.h>
 
 namespace webserver {
 	ConnectivityApi::ConnectivityApi(Session* aSession) : 
-		SubscribableApiModule(aSession, Access::SETTINGS_VIEW, { "connectivity_detection_message", "connectivity_detection_started", "connectivity_detection_finished" }) 
+		SubscribableApiModule(aSession, Access::SETTINGS_VIEW) 
 	{
+		createSubscriptions({ "connectivity_detection_message", "connectivity_detection_started", "connectivity_detection_finished" });
+
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,	(EXACT_PARAM("status")), ConnectivityApi::handleGetStatus);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("detect")), ConnectivityApi::handleDetect);
 
@@ -72,24 +76,24 @@ namespace webserver {
 		aRequest.setResponseBody({
 			{ "status_v4", formatStatus(false) },
 			{ "status_v6", formatStatus(true) },
-			{ "tcp_port", ConnectionManager::getInstance()->getPort() },
-			{ "tls_port", ConnectionManager::getInstance()->getSecurePort() },
-			{ "udp_port", SearchManager::getInstance()->getPort() },
+			{ "tcp_port", Util::toInt(ConnectionManager::getInstance()->getPort()) },
+			{ "tls_port", Util::toInt(ConnectionManager::getInstance()->getSecurePort()) },
+			{ "udp_port", Util::toInt(SearchManager::getInstance()->getPort()) },
 		});
 
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return ConnectivityApi::handleDetect(ApiRequest&) {
 		ConnectivityManager::getInstance()->detectConnection();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
-	void ConnectivityApi::on(ConnectivityManagerListener::Message, const string& aMessage) noexcept {
+	void ConnectivityApi::on(ConnectivityManagerListener::Message, const LogMessagePtr& aMessage) noexcept {
 		if (!subscriptionActive("connectivity_detection_message"))
 			return;
 
-		send("connectivity_detection_message", aMessage);
+		send("connectivity_detection_message", MessageUtils::serializeLogMessage(aMessage));
 	}
 
 	void ConnectivityApi::on(ConnectivityManagerListener::Started, bool v6) noexcept {

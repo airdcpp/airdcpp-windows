@@ -23,10 +23,11 @@
 
 #include "Timer.h"
 #include "WebServerManagerListener.h"
+#include "IServerEndpoint.h"
 
-#include <airdcpp/Message.h>
-#include <airdcpp/Singleton.h>
-#include <airdcpp/Speaker.h>
+#include <airdcpp/message/Message.h>
+#include <airdcpp/core/Singleton.h>
+#include <airdcpp/core/Speaker.h>
 
 #include <iostream>
 #include <boost/thread/thread.hpp>
@@ -52,11 +53,6 @@ namespace webserver {
 
 		bool hasValidConfig() const noexcept;
 	};
-
-	// alias some of the bind related functions as they are a bit long
-	using websocketpp::lib::placeholders::_1;
-	using websocketpp::lib::placeholders::_2;
-	using websocketpp::lib::bind;
 
 	// type of the ssl context pointer is long so alias it
 	using context_ptr = std::shared_ptr<boost::asio::ssl::context>;
@@ -144,17 +140,12 @@ namespace webserver {
 		// For command debugging
 		void onData(const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept;
 
-		template <typename EndpointType>
-		static void logDebugError(EndpointType* s, const string& aMessage, websocketpp::log::level aErrorLevel) noexcept {
-			s->get_elog().write(aErrorLevel, aMessage);
-		}
-
 		WebServerManager(WebServerManager&) = delete;
 		WebServerManager& operator=(WebServerManager&) = delete;
 
 		IGETSET(bool, enableSocketLogging, EnableSocketLogging, false);
 	private:
-		context_ptr handleInitTls(websocketpp::connection_hdl hdl);
+		context_ptr handleInitTls();
 
 		bool listen(const MessageCallback& errorF);
 
@@ -165,12 +156,13 @@ namespace webserver {
 
 		mutable SharedMutex cs;
 
-		// set up an external io_service to run both endpoints on. This is not
+		// set up an external io_context to run both endpoints on. This is not
 		// strictly necessary, but simplifies thread management a bit.
-		boost::asio::io_service ios;
-		boost::asio::io_service tasks;
-		boost::asio::io_service::work work;
-		bool has_io_service = false;
+		boost::asio::io_context ios;
+		bool hasIOContext = false;
+
+		boost::asio::io_context tasks;
+		boost::asio::executor_work_guard<decltype(tasks.get_executor())> wordGuardTasks;
 
 		unique_ptr<WebUserManager> userManager;
 		unique_ptr<ExtensionManager> extManager;
@@ -181,8 +173,9 @@ namespace webserver {
 
 		TimerPtr minuteTimer;
 
-		server_plain endpoint_plain;
-		server_tls endpoint_tls;
+		// Phase 1: use adapters around websocketpp servers
+		std::unique_ptr<IServerEndpoint> endpoint_plain;
+		std::unique_ptr<IServerEndpoint> endpoint_tls;
 
 		// Web server threads
 		unique_ptr<boost::thread_group> ios_threads;

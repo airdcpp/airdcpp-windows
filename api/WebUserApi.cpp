@@ -31,10 +31,11 @@
 #define USERNAME_PARAM "username"
 namespace webserver {
 	WebUserApi::WebUserApi(Session* aSession) : 
-		SubscribableApiModule(aSession, Access::ADMIN, { "web_user_added", "web_user_updated", "web_user_removed" }),
+		SubscribableApiModule(aSession, Access::ADMIN),
 		view("web_user_view", this, WebUserUtils::propertyHandler, std::bind(&WebUserApi::getUsers, this)),
 		um(aSession->getServer()->getUserManager()) 
 	{
+		createSubscriptions({ "web_user_added", "web_user_updated", "web_user_removed" });
 
 		METHOD_HANDLER(Access::ADMIN, METHOD_GET,		(),								WebUserApi::handleGetUsers);
 
@@ -57,14 +58,14 @@ namespace webserver {
 	api_return WebUserApi::handleGetUsers(ApiRequest& aRequest) {
 		auto j = Serializer::serializeItemList(WebUserUtils::propertyHandler, getUsers());
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	WebUserPtr WebUserApi::parseUserNameParam(ApiRequest& aRequest) {
 		const auto& userName = aRequest.getStringParam(USERNAME_PARAM);
 		auto user = um.getUser(userName);
 		if (!user) {
-			throw RequestException(websocketpp::http::status_code::not_found, "User " + userName + " was not found");
+			throw RequestException(http::status::not_found, "User " + userName + " was not found");
 		}
 
 		return user;
@@ -74,7 +75,7 @@ namespace webserver {
 		const auto& user = parseUserNameParam(aRequest);
 
 		aRequest.setResponseBody(Serializer::serializeItem(user, WebUserUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	bool WebUserApi::updateUserProperties(WebUserPtr& aUser, const json& j, bool aIsNew) {
@@ -104,7 +105,7 @@ namespace webserver {
 
 		auto userName = JsonUtil::getField<string>("username", reqJson, false);
 		if (!WebUser::validateUsername(userName)) {
-			JsonUtil::throwError("username", JsonUtil::ERROR_INVALID, "The username should only contain alphanumeric characters");
+			JsonUtil::throwError("username", JsonException::ERROR_INVALID, "The username should only contain alphanumeric characters");
 		}
 
 		auto user = std::make_shared<WebUser>(userName, Util::emptyString);
@@ -112,11 +113,11 @@ namespace webserver {
 		updateUserProperties(user, reqJson, true);
 
 		if (!um.addUser(user)) {
-			JsonUtil::throwError("username", JsonUtil::ERROR_EXISTS, "User with the same name exists already");
+			JsonUtil::throwError("username", JsonException::ERROR_EXISTS, "User with the same name exists already");
 		}
 
 		aRequest.setResponseBody(Serializer::serializeItem(user, WebUserUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return WebUserApi::handleUpdateUser(ApiRequest& aRequest) {
@@ -129,17 +130,17 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(Serializer::serializeItem(user, WebUserUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return WebUserApi::handleRemoveUser(ApiRequest& aRequest) {
 		const auto& userName = aRequest.getStringParam(USERNAME_PARAM);
 		if (!um.removeUser(userName)) {
 			aRequest.setResponseErrorStr("User " + userName + " was not found");
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	void WebUserApi::on(WebUserManagerListener::UserAdded, const WebUserPtr& aUser) noexcept {

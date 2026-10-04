@@ -21,18 +21,18 @@
 #include <web-server/ApiSettingItem.h>
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/AutoLimitUtil.h>
-#include <airdcpp/ConnectionManager.h>
-#include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/NetworkUtil.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SettingHolder.h>
-#include <airdcpp/SettingItem.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/SystemUtil.h>
+#include <airdcpp/util/AutoLimitUtil.h>
+#include <airdcpp/connection/ConnectionManager.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/util/NetworkUtil.h>
+#include <airdcpp/core/localization/ResourceManager.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/settings/SettingHolder.h>
+#include <airdcpp/settings/SettingItem.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/SystemUtil.h>
 
 namespace webserver {
 	string ApiSettingItem::formatTitle(const string& aDesc, ResourceManager::Strings aUnit) noexcept {
@@ -53,7 +53,11 @@ namespace webserver {
 
 
 	bool ApiSettingItem::isString(Type aType) noexcept {
-		return aType == TYPE_STRING || aType == TYPE_TEXT || aType == TYPE_FILE_PATH || aType == TYPE_EXISTING_FILE_PATH || aType == TYPE_DIRECTORY_PATH || aType == TYPE_HUB_URL;
+		return 
+			aType == TYPE_STRING || aType == TYPE_TEXT || 
+			aType == TYPE_URL || aType == TYPE_EMAIL || aType == TYPE_PASSWORD ||
+			aType == TYPE_FILE_PATH || aType == TYPE_EXISTING_FILE_PATH || aType == TYPE_DIRECTORY_PATH || 
+			aType == TYPE_HUB_URL;
 	}
 
 	bool ApiSettingItem::enumOptionsAllowed(Type aType, Type aItemType) noexcept {
@@ -310,9 +314,9 @@ namespace webserver {
 
 	json CoreSettingItem::getAutoValue() const noexcept {
 		switch (si.key) {
-			case SettingsManager::TCP_PORT: return ConnectionManager::getInstance()->getPort();
-			case SettingsManager::UDP_PORT: return SearchManager::getInstance()->getPort();
-			case SettingsManager::TLS_PORT: return ConnectionManager::getInstance()->getSecurePort();
+			case SettingsManager::TCP_PORT: return Util::toInt(ConnectionManager::getInstance()->getPort());
+			case SettingsManager::UDP_PORT: return Util::toInt(SearchManager::getInstance()->getPort());
+			case SettingsManager::TLS_PORT: return Util::toInt(ConnectionManager::getInstance()->getSecurePort());
 			case SettingsManager::MAPPER: 
 
 			case SettingsManager::BIND_ADDRESS: 
@@ -330,15 +334,15 @@ namespace webserver {
 			case SettingsManager::IP_UPDATE6: 
 			case SettingsManager::NO_IP_OVERRIDE6: return ConnectivityManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(si.key));
 
-			case SettingsManager::DOWNLOAD_SLOTS: return AutoLimitUtil::getSlots(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
-			case SettingsManager::MAX_DOWNLOAD_SPEED: return AutoLimitUtil::getSpeedLimitKbps(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
+			case SettingsManager::DOWNLOAD_SLOTS: return AutoLimitUtil::getSlots(true);
+			case SettingsManager::MAX_DOWNLOAD_SPEED: return AutoLimitUtil::getSpeedLimitKbps(true);
 
-			case SettingsManager::UPLOAD_SLOTS: return AutoLimitUtil::getSlots(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
-			case SettingsManager::MIN_UPLOAD_SPEED: return AutoLimitUtil::getSpeedLimitKbps(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
-			case SettingsManager::AUTO_SLOTS: return AutoLimitUtil::getMaxAutoOpened(Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::UPLOAD_SLOTS: return AutoLimitUtil::getSlots(false);
+			case SettingsManager::MIN_UPLOAD_SPEED: return AutoLimitUtil::getSpeedLimitKbps(false);
+			case SettingsManager::AUTO_SLOTS: return AutoLimitUtil::getMaxAutoOpened();
 
-			case SettingsManager::MAX_MCN_DOWNLOADS: return AutoLimitUtil::getSlotsPerUser(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
-			case SettingsManager::MAX_MCN_UPLOADS: return AutoLimitUtil::getSlotsPerUser(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::MAX_MCN_DOWNLOADS: return AutoLimitUtil::getSlotsPerUser(true);
+			case SettingsManager::MAX_MCN_UPLOADS: return AutoLimitUtil::getSlotsPerUser(false);
 		}
 
 		return ApiSettingItem::getAutoValue();

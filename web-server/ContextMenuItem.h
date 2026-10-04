@@ -25,9 +25,9 @@
 
 #include <web-server/ApiSettingItem.h>
 
-#include <airdcpp/typedefs.h>
-#include <airdcpp/ActionHook.h>
-#include <airdcpp/GetSet.h>
+#include <airdcpp/core/header/typedefs.h>
+#include <airdcpp/core/ActionHook.h>
+#include <airdcpp/core/types/GetSet.h>
 
 
 namespace webserver {
@@ -56,8 +56,13 @@ struct ContextMenuItemClickData {
 
 class ContextMenuItem {
 public:
-	ContextMenuItem(const string& aId, const string& aTitle, const StringMap& aIconInfo, const ActionHookSubscriber& aHook, const StringList& aUrls, const ExtensionSettingItem::List& aFormFieldDefinitions) :
-		id(aId), title(aTitle), iconInfo(aIconInfo), hook(aHook), urls(aUrls), formFieldDefinitions(aFormFieldDefinitions) {
+	typedef vector<std::shared_ptr<ContextMenuItem>> List;
+
+	ContextMenuItem(
+		const string& aId, const string& aTitle, const StringMap& aIconInfo, const ActionHookSubscriber& aHook, 
+		const StringList& aUrls, const ExtensionSettingItem::List& aFormFieldDefinitions, const ContextMenuItem::List& aChildren
+	) :
+		id(aId), title(aTitle), iconInfo(aIconInfo), hook(aHook), urls(aUrls), formFieldDefinitions(aFormFieldDefinitions), children(aChildren) {
 
 	}
 
@@ -67,6 +72,8 @@ public:
 	GETSET(ActionHookSubscriber, hook, Hook);
 	GETSET(StringList, urls, Urls);
 	GETSET(ExtensionSettingItem::List, formFieldDefinitions, FormFieldDefinitions);
+
+	GETSET(List, children, Children);
 };
 
 class GroupedContextMenuItem {

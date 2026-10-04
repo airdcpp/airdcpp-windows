@@ -30,7 +30,7 @@
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
 
-#include <airdcpp/SettingHolder.h>
+#include <airdcpp/settings/SettingHolder.h>
 
 namespace webserver {
 	SettingApi::SettingApi(Session* aSession) : ApiModule(aSession) {
@@ -54,7 +54,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return SettingApi::handleGetDefaultValues(ApiRequest& aRequest) {
@@ -66,7 +66,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return SettingApi::handleSetDefaultValues(ApiRequest& aRequest) {
@@ -79,7 +79,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		dcassert(hasSet);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return SettingApi::handleGetValues(ApiRequest& aRequest) {
@@ -100,7 +100,7 @@ namespace webserver {
 		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	void SettingApi::parseSettingKeys(const json& aJson, const KeyParserF& aHandler, WebServerManager* aWsm) {
@@ -108,7 +108,7 @@ namespace webserver {
 		for (const auto& key : keys) {
 			auto setting = getSettingItem(key, aWsm);
 			if (!setting) {
-				JsonUtil::throwError(key, JsonUtil::ERROR_INVALID, "Setting not found");
+				JsonUtil::throwError(key, JsonException::ERROR_INVALID, "Setting not found");
 			}
 
 			aHandler(*setting);
@@ -119,7 +119,7 @@ namespace webserver {
 		for (const auto& elem: aJson.items()) {
 			auto setting = getSettingItem(elem.key(), aWsm);
 			if (!setting) {
-				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
+				JsonUtil::throwError(elem.key(), JsonException::ERROR_INVALID, "Setting not found");
 			}
 
 			auto value = SettingUtils::validateValue(elem.value(), *setting, nullptr);
@@ -135,7 +135,7 @@ namespace webserver {
 			settings.unset(aItem);
 		}, aRequest.getSession()->getServer());
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return SettingApi::handleSetValues(ApiRequest& aRequest) {
@@ -162,7 +162,7 @@ namespace webserver {
 			holder->apply();
 		});
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	ApiSettingItem* SettingApi::getSettingItem(const string& aKey, WebServerManager* aWsm) noexcept {

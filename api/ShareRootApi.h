@@ -19,14 +19,14 @@
 #ifndef DCPLUSPLUS_DCPP_SHAREROOT_API_H
 #define DCPLUSPLUS_DCPP_SHAREROOT_API_H
 
-#include <api/base/ApiModule.h>
+#include <api/base/SubscribableApiModule.h>
 #include <api/ShareUtils.h>
 #include <api/common/ListViewController.h>
 
-#include <airdcpp/typedefs.h>
-#include <airdcpp/HashManagerListener.h>
-#include <airdcpp/ShareDirectoryInfo.h>
-#include <airdcpp/ShareManagerListener.h>
+#include <airdcpp/core/header/typedefs.h>
+#include <airdcpp/hash/HashManagerListener.h>
+#include <airdcpp/share/ShareDirectoryInfo.h>
+#include <airdcpp/share/ShareManagerListener.h>
 
 namespace webserver {
 	class ShareRootApi : public SubscribableApiModule, private ShareManagerListener, private HashManagerListener {

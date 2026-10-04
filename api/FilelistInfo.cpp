@@ -24,9 +24,9 @@
 #include <api/common/Validation.h>
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/Client.h>
-#include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/PathUtil.h>
+#include <airdcpp/hub/Client.h>
+#include <airdcpp/filelist/DirectoryListingManager.h>
+#include <airdcpp/util/PathUtil.h>
 
 
 namespace webserver {
@@ -35,10 +35,12 @@ namespace webserver {
 	};
 
 	FilelistInfo::FilelistInfo(ParentType* aParentModule, const DirectoryListingPtr& aFilelist) : 
-		SubApiModule(aParentModule, aFilelist->getUser()->getCID().toBase32(), subscriptionList), 
+		SubApiModule(aParentModule, aFilelist->getUser()->getCID().toBase32()), 
 		dl(aFilelist),
 		directoryView("filelist_view", this, FilelistUtils::propertyHandler, std::bind(&FilelistInfo::getCurrentViewItems, this))
 	{
+		createSubscriptions(subscriptionList);
+
 		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_PATCH,	(),															FilelistInfo::handleUpdateList);
 
 		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_POST,	(EXACT_PARAM("directory")),									FilelistInfo::handleChangeDirectory);
@@ -86,7 +88,7 @@ namespace webserver {
 			}
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return FilelistInfo::handleGetItems(ApiRequest& aRequest) {
@@ -101,17 +103,17 @@ namespace webserver {
 			});
 		}
 
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	DirectoryListing::DirectoryPtr FilelistInfo::ensureCurrentDirectoryLoaded() const {
 		auto curDir = dl->getCurrentLocationInfo().directory;
 		if (!curDir) {
-			throw RequestException(websocketpp::http::status_code::service_unavailable, "Filelist has not finished loading yet");
+			throw RequestException(http::status::service_unavailable, "Filelist has not finished loading yet");
 		}
 
 		if (!curDir->isComplete()) {
-			throw RequestException(websocketpp::http::status_code::service_unavailable, "Content of directory " + curDir->getAdcPathUnsafe() + " is not yet available");
+			throw RequestException(http::status::service_unavailable, "Content of directory " + curDir->getAdcPathUnsafe() + " is not yet available");
 		}
 
 		if (!currentViewItemsInitialized) {
@@ -127,7 +129,7 @@ namespace webserver {
 			}
 
 			if (!currentViewItemsInitialized) {
-				throw RequestException(websocketpp::http::status_code::service_unavailable, "Content of directory " + curDir->getAdcPathUnsafe() + " has not finished loading yet");
+				throw RequestException(http::status::service_unavailable, "Content of directory " + curDir->getAdcPathUnsafe() + " has not finished loading yet");
 			}
 		}
 
@@ -135,42 +137,39 @@ namespace webserver {
 	}
 
 	api_return FilelistInfo::handleGetItem(ApiRequest& aRequest) {
-		FilelistItemInfoPtr item = nullptr;
 		auto itemId = aRequest.getTokenParam();
 
-		auto curDir = dl->getCurrentLocationInfo().directory;
-		if (!curDir) {
-			throw RequestException(websocketpp::http::status_code::service_unavailable, "Filelist has not finished loading yet");
-		}
+		// Ensure directory and view items are ready (wait if needed)
+		auto curDir = ensureCurrentDirectoryLoaded();
 
-		// TODO: refactor filelists and do something better than this
+		FilelistItemInfoPtr item = nullptr;
 		{
 			RLock l(cs);
 
-			// Check view items
-			auto i = ranges::find_if(currentViewItems, [itemId](const FilelistItemInfoPtr& aInfo) {
+			auto it = ranges::find_if(currentViewItems, [itemId](const FilelistItemInfoPtr& aInfo) {
 				return aInfo->getToken() == itemId;
 			});
 
-			if (i == currentViewItems.end()) {
-				// Check current location
-				auto dirInfo = std::make_shared<FilelistItemInfo>(curDir, dl->getShareProfile());
-				if (dirInfo->getToken() == itemId) {
-					item = dirInfo;
-				}
-			} else {
-				item = *i;
+			if (it != currentViewItems.end()) {
+				item = *it;
+			}
+		}
+
+		// Also allow querying the current directory item itself
+		if (!item) {
+			auto dirInfo = std::make_shared<FilelistItemInfo>(curDir, dl->getShareProfile());
+			if (dirInfo->getToken() == itemId) {
+				item = dirInfo;
 			}
 		}
 
 		if (!item) {
 			aRequest.setResponseErrorStr("Item " + Util::toString(itemId) + " was not found");
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		}
 
-		auto j = Serializer::serializeItem(item, FilelistUtils::propertyHandler);
-		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		aRequest.setResponseBody(Serializer::serializeItem(item, FilelistUtils::propertyHandler));
+		return http::status::ok;
 	}
 
 	api_return FilelistInfo::handleChangeDirectory(ApiRequest& aRequest) {
@@ -180,12 +179,12 @@ namespace webserver {
 		auto reload = JsonUtil::getOptionalFieldDefault<bool>("reload", j, false);
 
 		dl->addDirectoryChangeTask(listPath, reload ? DirectoryListing::DirectoryLoadType::CHANGE_RELOAD : DirectoryListing::DirectoryLoadType::CHANGE_NORMAL);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return FilelistInfo::handleSetRead(ApiRequest&) {
 		dl->setRead();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	FilelistItemInfo::List FilelistInfo::getCurrentViewItems() {
@@ -228,37 +227,28 @@ namespace webserver {
 
 	// This should be called only from the filelist thread
 	void FilelistInfo::updateItems(const string& aPath) noexcept {
-		{
-			WLock l(cs);
-			currentViewItemsInitialized = false;
-			currentViewItems.clear();
-		}
+		// Build off-lock
+		FilelistItemInfo::List newItems;
 
-		auto currentPath = dl->getCurrentLocationInfo().directory->getAdcPathUnsafe();
 		auto curDir = dl->findDirectoryUnsafe(aPath);
 		if (!curDir) {
 			return;
 		}
 
+		for (const auto& d : curDir->directories | views::values)
+			newItems.emplace_back(std::make_shared<FilelistItemInfo>(d, dl->getShareProfile()));
+		for (const auto& f : curDir->files)
+			newItems.emplace_back(std::make_shared<FilelistItemInfo>(f, dl->getShareProfile()));
+
 		{
 			WLock l(cs);
-			for (const auto& d : curDir->directories | views::values) {
-				currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(d, dl->getShareProfile()));
-			}
-
-			for (const auto& f : curDir->files) {
-				currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(f, dl->getShareProfile()));
-			}
-
+			currentViewItemsInitialized = false;
+			currentViewItems.swap(newItems);
 			currentViewItemsInitialized = true;
 		}
 
 		directoryView.resetItems();
-
-		onSessionUpdated({
-			{ "location", serializeLocation(dl) },
-			{ "read", dl->isRead() },
-		});
+		onSessionUpdated({ { "location", serializeLocation(dl) }, { "read", dl->isRead() } });
 	}
 
 	void FilelistInfo::on(DirectoryListingListener::LoadingFailed, const string&) noexcept {

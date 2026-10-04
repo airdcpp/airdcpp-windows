@@ -46,8 +46,8 @@
 #include <api/WebUserApi.h>
 #include <api/ViewFileApi.h>
 
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/core/timer/TimerManager.h>
+#include <airdcpp/util/ValueGenerator.h>
 
 
 namespace webserver {
@@ -96,11 +96,11 @@ namespace webserver {
 		return h != apiHandlers.end() ? h->second.get() : nullptr;
 	}
 
-	websocketpp::http::status_code::value Session::handleRequest(ApiRequest& aRequest) {
+	http::status Session::handleRequest(ApiRequest& aRequest) {
 		auto m = getModule(aRequest.getApiModule());
 		if (!m) {
 			aRequest.setResponseErrorStr("Section not found");
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		}
 
 		return m->handleRequest(aRequest);

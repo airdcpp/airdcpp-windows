@@ -24,8 +24,8 @@
 
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/Client.h>
-#include <airdcpp/PrivateChat.h>
+#include <airdcpp/hub/Client.h>
+#include <airdcpp/private_chat/PrivateChat.h>
 
 namespace webserver {
 	StringList PrivateChatInfo::subscriptionList = {
@@ -36,8 +36,10 @@ namespace webserver {
 	};
 
 	PrivateChatInfo::PrivateChatInfo(ParentType* aParentModule, const PrivateChatPtr& aChat) :
-		SubApiModule(aParentModule, aChat->getUser()->getCID().toBase32(), subscriptionList), chat(aChat),
+		SubApiModule(aParentModule, aChat->getUser()->getCID().toBase32()), chat(aChat),
 		chatHandler(this, aChat.get(), "private_chat", Access::PRIVATE_CHAT_VIEW, Access::PRIVATE_CHAT_EDIT, Access::PRIVATE_CHAT_SEND) {
+
+		createSubscriptions(subscriptionList);
 
 		METHOD_HANDLER(Access::PRIVATE_CHAT_VIEW, METHOD_PATCH,		(),							PrivateChatInfo::handleUpdateSession);
 
@@ -68,27 +70,27 @@ namespace webserver {
 			chat->setHubUrl(client->getHubUrl());
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return PrivateChatInfo::handleStartTyping(ApiRequest&) {
-		chat->sendPMInfo(PrivateChat::TYPING_ON);
-		return websocketpp::http::status_code::no_content;
+		chat->setTypingState(true);
+		return http::status::no_content;
 	}
 
 	api_return PrivateChatInfo::handleEndTyping(ApiRequest&) {
-		chat->sendPMInfo(PrivateChat::TYPING_OFF);
-		return websocketpp::http::status_code::no_content;
+		chat->setTypingState(false);
+		return http::status::no_content;
 	}
 
 	api_return PrivateChatInfo::handleDisconnectCCPM(ApiRequest&) {
 		chat->closeCC(false, true);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return PrivateChatInfo::handleConnectCCPM(ApiRequest&) {
 		chat->startCC();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	string PrivateChatInfo::formatCCPMState(PrivateChat::CCPMState aState) noexcept {

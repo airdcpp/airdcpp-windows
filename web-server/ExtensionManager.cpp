@@ -28,26 +28,27 @@
 #include <web-server/WebServerSettings.h>
 #include <web-server/WebSocket.h>
 
-#include <airdcpp/CryptoUtil.h>
-#include <airdcpp/Encoder.h>
-#include <airdcpp/Exception.h>
-#include <airdcpp/File.h>
-#include <airdcpp/HttpDownload.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/SimpleXML.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/SystemUtil.h>
-#include <airdcpp/Thread.h>
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/UpdateManager.h>
-#include <airdcpp/ZUtils.h>
+#include <airdcpp/util/CryptoUtil.h>
+#include <airdcpp/hash/value/Encoder.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/connection/http/HttpDownload.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/SystemUtil.h>
+#include <airdcpp/core/thread/Thread.h>
+#include <airdcpp/core/timer/TimerManager.h>
+#include <airdcpp/core/update/UpdateManager.h>
+#include <airdcpp/core/io/compress/ZUtils.h>
 
 
 namespace webserver {
 	ExtensionManager::ExtensionManager(WebServerManager* aWsm) : wsm(aWsm) {
 		wsm->addListener(this);
+		wsm->getSocketManager().addListener(this);
 
 		npmRepository = make_unique<NpmRepository>(
 			std::bind_front(&ExtensionManager::downloadExtension, this),
@@ -56,6 +57,7 @@ namespace webserver {
 	}
 
 	ExtensionManager::~ExtensionManager() {
+		wsm->getSocketManager().removeListener(this);
 		wsm->removeListener(this);
 	}
 
@@ -84,9 +86,11 @@ namespace webserver {
 				ext->removeListeners();
 
 				if (!ext->isManaged()) {
+					// Handle unmanaged extensions in WebServerManagerListener::Stopped (they could still connect at this point as the server is running)
 					continue;
 				}
-
+				
+				// Managed extensions can't be started again after this
 				try {
 					ext->stopThrow();
 				} catch (const Exception& e) {
@@ -111,6 +115,16 @@ namespace webserver {
 			}
 
 			Thread::sleep(50);
+		}
+
+		ExtensionList unmanagedExtensions;
+		{
+			RLock l(cs);
+			ranges::copy_if(extensions, back_inserter(unmanagedExtensions), [](const ExtensionPtr& e) { return !e->isManaged(); });
+		}
+
+		for (const auto& e: unmanagedExtensions) {
+			unregisterRemoteExtension(e);
 		}
 
 		WLock l(cs);
@@ -217,7 +231,7 @@ namespace webserver {
 		int started = 0;
 		for (const auto& path : directories) {
 			auto ext = loadLocalExtension(path);
-			if (ext && startExtensionImpl(ext, engines)) {
+			if (ext && !ext->isDisabled() && startExtensionImpl(ext, engines)) {
 				started++;
 			}
 		}
@@ -481,7 +495,9 @@ namespace webserver {
 
 		// Updating an existing extension?
 		auto extension = getExtension(extensionName);
+		auto wasStopped = false;
 		if (extension) {
+			wasStopped = !extension->isRunning();
 			if (!extension->isManaged()) {
 				failInstallation(aInstallId, STRING(WEB_EXTENSION_EXISTS), "Unmanaged extensions can't be upgraded");
 				return;
@@ -536,7 +552,10 @@ namespace webserver {
 			log(STRING_F(WEB_EXTENSION_INSTALLED, extension->getName()), LogMessage::SEV_INFO);
 		}
 
-		startExtensionImpl(extension, getEngines());
+		if (!wasStopped) {
+			startExtensionImpl(extension, getEngines());
+		}
+
 		fire(ExtensionManagerListener::InstallationSucceeded(), aInstallId, extension, updated);
 	}
 

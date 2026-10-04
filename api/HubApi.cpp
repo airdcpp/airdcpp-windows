@@ -26,8 +26,8 @@
 #include <web-server/JsonUtil.h>
 #include <web-server/WebServerSettings.h>
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/HubEntry.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/favorites/HubEntry.h>
 
 namespace webserver {
 
@@ -41,17 +41,18 @@ namespace webserver {
 
 	ActionHookResult<MessageHighlightList> HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) {
 		return HookCompletionData::toResult<MessageHighlightList>(
-			fireHook(HOOK_INCOMING_MESSAGE, WEBCFG(INCOMING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_INCOMING_MESSAGE, WEBCFG(INCOMING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
 				return MessageUtils::serializeChatMessage(aMessage);
 			}),
 			aResultGetter,
+			this,
 			MessageUtils::getMessageHookHighlightDeserializer(aMessage->getText())
 		);
 	};
 
 	ActionHookResult<> HubApi::outgoingMessageHook(const OutgoingChatMessage& aMessage, const Client& aClient, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_OUTGOING_MESSAGE, WEBCFG(OUTGOING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_OUTGOING_MESSAGE, WEBCFG(OUTGOING_CHAT_MESSAGE_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "text", aMessage.text },
 					{ "third_person", aMessage.thirdPerson },
@@ -59,36 +60,25 @@ namespace webserver {
 					{ "session_id", aClient.getToken() },
 				});
 			}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 
 	HubApi::HubApi(Session* aSession) : 
-		ParentApiModule(TOKEN_PARAM, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList,
+		ParentApiModule(TOKEN_PARAM, Access::HUBS_VIEW, aSession,
 			[](const string& aId) { return Util::toUInt32(aId); },
 			[](const HubInfo& aInfo) { return serializeClient(aInfo.getClient()); },
 			Access::HUBS_EDIT
 		) 
 	{
+		createSubscriptions(subscriptionList, HubInfo::subscriptionList);
 
-		ClientManager::getInstance()->addListener(this);
+		// Hooks
+		HOOK_HANDLER(HOOK_INCOMING_MESSAGE, ClientManager::getInstance()->incomingHubMessageHook, HubApi::incomingMessageHook);
+		HOOK_HANDLER(HOOK_OUTGOING_MESSAGE, ClientManager::getInstance()->outgoingHubMessageHook, HubApi::outgoingMessageHook);
 
-		HookApiModule::createHook(HOOK_INCOMING_MESSAGE, [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::incomingMessageHook));
-		}, [this](const string& aId) {
-			ClientManager::getInstance()->incomingHubMessageHook.removeSubscriber(aId);
-		}, [this] {
-			return ClientManager::getInstance()->incomingHubMessageHook.getSubscribers();
-		});
-
-		HookApiModule::createHook(HOOK_OUTGOING_MESSAGE, [this](ActionHookSubscriber&& aSubscriber) {
-			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::outgoingMessageHook));
-		}, [this](const string& aId) {
-			ClientManager::getInstance()->outgoingHubMessageHook.removeSubscriber(aId);
-		}, [this] {
-			return ClientManager::getInstance()->outgoingHubMessageHook.getSubscribers();
-		});
-
+		// Methods
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(),										HubApi::handleConnect);
 
 		METHOD_HANDLER(Access::HUBS_VIEW,	METHOD_GET,		(EXACT_PARAM("stats")),					HubApi::handleGetStats);
@@ -97,6 +87,10 @@ namespace webserver {
 		METHOD_HANDLER(Access::HUBS_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			HubApi::handlePostMessage);
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("status_message")),		HubApi::handlePostStatus);
 
+		// Listeners
+		ClientManager::getInstance()->addListener(this);
+
+		// Init
 		{
 			auto cm = ClientManager::getInstance();
 
@@ -131,7 +125,7 @@ namespace webserver {
 			}
 
 			complete(
-				websocketpp::http::status_code::ok,
+				http::status::ok,
 				{
 					{ "sent", succeed },
 				},
@@ -168,13 +162,13 @@ namespace webserver {
 			{ "sent", succeed },
 		});
 
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HubApi::handleGetStats(ApiRequest& aRequest) {
 		auto optionalStats = ClientManager::getInstance()->getClientStats();
 		if (!optionalStats) {
-			return websocketpp::http::status_code::no_content;
+			return http::status::no_content;
 		}
 
 		auto stats = *optionalStats;
@@ -201,7 +195,7 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	json HubApi::serializeClient(const ClientPtr& aClient) noexcept {
@@ -255,22 +249,22 @@ namespace webserver {
 		auto client = ClientManager::getInstance()->createClient(address);
 		if (!client) {
 			aRequest.setResponseErrorStr("Hub with the same URL exists already");
-			return websocketpp::http::status_code::conflict;
+			return http::status::conflict;
 		}
 
 		aRequest.setResponseBody(serializeClient(client));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HubApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto hub = getSubModule(aRequest);
 		ClientManager::getInstance()->putClient(hub->getClient());
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HubApi::handleFindByUrl(ApiRequest& aRequest) {
 		auto client = Deserializer::deserializeClient(aRequest.getRequestBody());
 		aRequest.setResponseBody(serializeClient(client));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 }

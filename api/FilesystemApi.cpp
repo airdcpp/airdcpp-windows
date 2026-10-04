@@ -19,13 +19,14 @@
 #include "stdinc.h"
 
 #include <api/FilesystemApi.h>
+#include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
 
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/Exception.h>
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
 
 #ifdef _WIN32
 #include <api/platform/windows/Filesystem.h>
@@ -58,23 +59,23 @@ namespace webserver {
 			if (path.empty()) {
 #ifdef _WIN32
 				auto content = Filesystem::getDriveListing(false);
-				complete(websocketpp::http::status_code::ok, content, nullptr);
+				complete(http::status::ok, content, nullptr);
 				return;
 #endif
 			} else {
 				// Validate path
 				if (!File::isDirectory(path)) {
-					complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("Directory " + path + " doesn't exist"));
+					complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr("Directory " + path + " doesn't exist"));
 					return;
 				}
 
 				// Return listing
 				try {
 					auto content = serializeDirectoryContent(path, dirsOnly);
-					complete(websocketpp::http::status_code::ok, content, nullptr);
+					complete(http::status::ok, content, nullptr);
 					return;
 				} catch (const FileException& e) {
-					complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr("Failed to get directory content: " + e.getError()));
+					complete(http::status::internal_server_error, nullptr, ApiRequest::toResponseErrorStr("Failed to get directory content: " + e.getError()));
 					return;
 				}
 			}
@@ -100,23 +101,23 @@ namespace webserver {
 	api_return FilesystemApi::handlePostDirectory(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto path = PathUtil::validatePath(JsonUtil::getField<string>("path", reqJson, false), true);
+		auto path = PathUtil::validateDirectoryPath(JsonUtil::getField<string>("path", reqJson, false));
 		try {
 			if (!File::createDirectory(path)) {
 				aRequest.setResponseErrorStr("Directory exists");
-				return websocketpp::http::status_code::bad_request;
+				return http::status::bad_request;
 			}
 		} catch (const FileException& e) {
 			aRequest.setResponseErrorStr("Failed to create directory: " + e.getError());
-			return websocketpp::http::status_code::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return FilesystemApi::handleGetDiskInfo(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
-		auto paths = JsonUtil::getField<StringList>("paths", reqJson, false);
+		auto paths = Deserializer::deserializeList<string>("paths", reqJson, Deserializer::directoryPathArrayValueParser, false);
 
 		auto volumes = File::getVolumes();
 
@@ -132,6 +133,6 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 }

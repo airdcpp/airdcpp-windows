@@ -22,11 +22,8 @@
 #include <stdint.h>
 #include <functional>
 #include <memory>
-#include <boost/detail/container_fwd.hpp>
 
 #include <nlohmann/json_fwd.hpp>
-
-#define CODE_UNPROCESSABLE_ENTITY 422
 
 namespace webserver {
 	class ApiRequest;
@@ -64,8 +61,6 @@ namespace webserver {
 	class WebUser;
 	using WebUserPtr = std::shared_ptr<WebUser>;
 	using WebUserList = std::vector<WebUserPtr>;
-
-	using json = nlohmann::json;
 }
 
 #endif // !defined(DCPLUSPLUS_WEBSERVER_FORWARD_H)

@@ -34,10 +34,10 @@ namespace webserver {
 		auto& apiRequest = aRequest.apiRequest;
 		if (apiRequest.getApiVersion() != API_VERSION) {
 			apiRequest.setResponseErrorStr("Unsupported API version");
-			return websocketpp::http::status_code::precondition_failed;
+			return http::status::precondition_failed;
 		}
 
-		int code;
+		http::status code;
 		try {
 			// Special case because we may not have the session yet
 			if (apiRequest.getApiModule() == "sessions" && !apiRequest.getSession()) {
@@ -47,27 +47,27 @@ namespace webserver {
 			// Require auth for all other modules
 			if (!apiRequest.getSession()) {
 				apiRequest.setResponseErrorStr("Not authorized");
-				return websocketpp::http::status_code::unauthorized;
+				return http::status::unauthorized;
 			}
 
 			// Require using the same protocol that was used for logging in
 			if (apiRequest.getSession()->getSessionType() != Session::TYPE_BASIC_AUTH && (apiRequest.getSession()->getSessionType() == Session::TYPE_SECURE) != aRequest.isSecure) {
 				apiRequest.setResponseErrorStr("Protocol mismatch");
-				return websocketpp::http::status_code::not_acceptable;
+				return http::status::not_acceptable;
 			}
 
 			apiRequest.getSession()->updateActivity();
 
 			code = apiRequest.getSession()->handleRequest(apiRequest);
 		} catch (const ArgumentException& e) {
-			apiRequest.setResponseErrorJson(e.getErrorJson());
-			code = CODE_UNPROCESSABLE_ENTITY;
+			apiRequest.setResponseErrorJson(e.toJSON());
+			code = http::status::unprocessable_entity;
 		} catch (const RequestException& e) {
 			apiRequest.setResponseErrorStr(e.what());
 			code = e.getCode();
 		} catch (const std::exception& e) {
 			apiRequest.setResponseErrorStr(e.what());
-			code = websocketpp::http::status_code::bad_request;
+			code = http::status::bad_request;
 		}
 
 		dcassert(HttpUtil::isStatusOk(code) || code == CODE_DEFERRED || apiRequest.hasErrorMessage());
@@ -83,6 +83,6 @@ namespace webserver {
 		}
 
 		apiRequest.setResponseErrorStr("Invalid command/method (not authenticated)");
-		return websocketpp::http::status_code::bad_request;
+		return http::status::bad_request;
 	}
 }

@@ -26,12 +26,14 @@
 #include <web-server/Session.h>
 #include <web-server/WebServerManager.h>
 
-#include <airdcpp/LogManager.h>
+#include <airdcpp/events/LogManager.h>
 
 namespace webserver {
 	EventApi::EventApi(Session* aSession) : 
-		SubscribableApiModule(aSession, Access::EVENTS_VIEW, { "event_message", "event_counts" }) 
+		SubscribableApiModule(aSession, Access::EVENTS_VIEW) 
 	{
+		createSubscriptions({ "event_message", "event_counts" });
+
 		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_POST,	(EXACT_PARAM("read")),		EventApi::handleRead);
 		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(EXACT_PARAM("counts")),	EventApi::handleGetInfo);
 
@@ -49,17 +51,17 @@ namespace webserver {
 	api_return EventApi::handlePostMessage(ApiRequest& aRequest) {
 		auto messageInput = Deserializer::deserializeStatusMessage(aRequest.getRequestBody());
 		LogManager::getInstance()->message(messageInput.message, messageInput.severity, MessageUtils::parseStatusMessageLabel(aRequest.getSession()));
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return EventApi::handleRead(ApiRequest&) {
 		LogManager::getInstance()->setRead();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return EventApi::handleClearMessages(ApiRequest&) {
 		LogManager::getInstance()->clearCache();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return EventApi::handleGetMessages(ApiRequest& aRequest) {
@@ -70,12 +72,12 @@ namespace webserver {
 		);
 
 		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return EventApi::handleGetInfo(ApiRequest& aRequest) {
 		aRequest.setResponseBody(MessageUtils::serializeCacheInfo(LogManager::getInstance()->getCache(), MessageUtils::serializeUnreadLog));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	void EventApi::on(LogManagerListener::Message, const LogMessagePtr& aMessageData) noexcept {

@@ -19,10 +19,10 @@
 #ifndef DCPLUSPLUS_DCPP_HASHAPI_H
 #define DCPLUSPLUS_DCPP_HASHAPI_H
 
-#include <api/base/ApiModule.h>
+#include <api/base/SubscribableApiModule.h>
 
-#include <airdcpp/typedefs.h>
-#include <airdcpp/HashManager.h>
+#include <airdcpp/core/header/typedefs.h>
+#include <airdcpp/hash/HashManager.h>
 
 namespace webserver {
 	class HashApi : public SubscribableApiModule, private HashManagerListener {

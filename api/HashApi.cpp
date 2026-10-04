@@ -18,9 +18,9 @@
 
 #include "stdinc.h"
 
-#include <airdcpp/Exception.h>
-#include <airdcpp/HashedFile.h>
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/hash/HashedFile.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 #include <web-server/JsonUtil.h>
 #include <web-server/Timer.h>
@@ -31,32 +31,30 @@
 
 namespace webserver {
 	HashApi::HashApi(Session* aSession) : 
-		SubscribableApiModule(
-			aSession, 
-			Access::SETTINGS_VIEW, 
-			{ 
-				"hash_database_status",
-				"hash_statistics",
-				"hasher_file_hashed",
-				"hasher_file_failed",
-				"hasher_directory_finished",
-				"hasher_finished",
-			}
-		),
+		SubscribableApiModule(aSession, Access::SHARE_VIEW),
 		timer(getTimer([this] { onTimer(); }, 1000)) 
 	{
+		createSubscriptions({
+			"hash_database_status",
+			"hash_statistics",
+			"hasher_file_hashed",
+			"hasher_file_failed",
+			"hasher_directory_finished",
+			"hasher_finished",
+		});
+
 		HashManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,	(EXACT_PARAM("database_status")),	HashApi::handleGetDbStatus);
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("optimize_database")),	HashApi::handleOptimize);
+		METHOD_HANDLER(Access::SHARE_VIEW, METHOD_GET,	(EXACT_PARAM("database_status")),	HashApi::handleGetDbStatus);
+		METHOD_HANDLER(Access::SHARE_EDIT, METHOD_POST,	(EXACT_PARAM("optimize_database")),	HashApi::handleOptimize);
 
-		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,	(EXACT_PARAM("stats")),				HashApi::handleGetStats);
+		METHOD_HANDLER(Access::SHARE_VIEW, METHOD_GET,	(EXACT_PARAM("stats")),				HashApi::handleGetStats);
 
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("pause")),				HashApi::handlePause);
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("resume")),			HashApi::handleResume);
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("stop")),				HashApi::handleStop);
+		METHOD_HANDLER(Access::SHARE_EDIT, METHOD_POST,	(EXACT_PARAM("pause")),				HashApi::handlePause);
+		METHOD_HANDLER(Access::SHARE_EDIT, METHOD_POST,	(EXACT_PARAM("resume")),			HashApi::handleResume);
+		METHOD_HANDLER(Access::SHARE_EDIT, METHOD_POST,	(EXACT_PARAM("stop")),				HashApi::handleStop);
 
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("rename_path")),		HashApi::handleRenamePath);
+		METHOD_HANDLER(Access::SHARE_EDIT, METHOD_POST,	(EXACT_PARAM("rename_path")),		HashApi::handleRenamePath);
 
 		timer->start(false);
 	}
@@ -69,23 +67,23 @@ namespace webserver {
 
 	api_return HashApi::handleResume(ApiRequest&) {
 		HashManager::getInstance()->resumeHashing();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handlePause(ApiRequest&) {
 		HashManager::getInstance()->pauseHashing();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handleStop(ApiRequest&) {
 		HashManager::getInstance()->stop();
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handleGetStats(ApiRequest& aRequest) {
 		auto stats = HashManager::getInstance()->getStats();
 		aRequest.setResponseBody(serializeHashStatistics(stats));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	json HashApi::serializeHashStatistics(const HashManager::HashStats& aStats) noexcept {
@@ -187,18 +185,18 @@ namespace webserver {
 
 	api_return HashApi::handleGetDbStatus(ApiRequest& aRequest) {
 		aRequest.setResponseBody(formatDbStatus(HashManager::getInstance()->maintenanceRunning()));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return HashApi::handleOptimize(ApiRequest& aRequest) {
 		if (HashManager::getInstance()->maintenanceRunning()) {
 			aRequest.setResponseErrorStr("Database maintenance is running already");
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
 		auto verify = JsonUtil::getField<bool>("verify", aRequest.getRequestBody());
 		HashManager::getInstance()->startMaintenance(verify);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return HashApi::handleRenamePath(ApiRequest& aRequest) {
@@ -210,9 +208,9 @@ namespace webserver {
 			HashManager::getInstance()->renameFileThrow(oldPath, newPath);
 		} catch (const HashException& e) {
 			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 }

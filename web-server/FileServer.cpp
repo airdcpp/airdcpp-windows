@@ -26,18 +26,18 @@
 
 #include <api/common/Deserializer.h>
 
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/Exception.h>
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/Thread.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/core/thread/Thread.h>
+#include <airdcpp/util/Util.h>
 
-#include <airdcpp/LinkUtil.h>
-#include <airdcpp/HttpDownload.h>
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/ValueGenerator.h>
-#include <airdcpp/ViewFileManager.h>
+#include <airdcpp/util/LinkUtil.h>
+#include <airdcpp/connection/http/HttpDownload.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
+#include <airdcpp/util/ValueGenerator.h>
+#include <airdcpp/viewed_files/ViewFileManager.h>
 
 #include <sstream>
 
@@ -59,7 +59,7 @@ namespace webserver {
 	}
 
 	void FileServer::setResourcePath(const string& aPath) noexcept {
-		resourcePath = PathUtil::validatePath(aPath, true);
+		resourcePath = PathUtil::validateDirectoryPath(aPath);
 	}
 
 	string FileServer::getExtension(const string& aResource) noexcept {
@@ -72,10 +72,10 @@ namespace webserver {
 		return extension;
 	}
 
-	string FileServer::parseResourcePath(const string& aResource, const websocketpp::http::parser::request& aRequest, StringPairList& headers_) const {
+	string FileServer::parseResourcePath(const string& aResource, const HttpRequest& aRequest, StringPairList& headers_) const {
 		// Serve files only from the resource directory
 		if (aResource.empty() || aResource.find("..") != std::string::npos) {
-			throw RequestException(websocketpp::http::status_code::bad_request, "Invalid resource path");
+			throw RequestException(http::status::bad_request, "Invalid resource path");
 		}
 
 		auto request = aResource;
@@ -85,7 +85,7 @@ namespace webserver {
 			dcassert(extension[0] != '.');
 
 			// We have compressed versions only for JS files
-			if (extension == "js" && aRequest.get_header("Accept-Encoding").find("gzip") != string::npos) {
+			if (extension == "js" && aRequest.getHeader("Accept-Encoding").find("gzip") != string::npos) {
 				request += ".gz";
 				headers_.emplace_back("Content-Encoding", "gzip");
 			}
@@ -98,12 +98,12 @@ namespace webserver {
 			// Forward all requests for non-static files to index
 			// (but try to report API requests or other downloads with an invalid path)
 
-			if (aRequest.get_header("Accept").find("text/html") == string::npos) {
-				if (aRequest.get_header("Content-Type") == "application/json") {
-					throw RequestException(websocketpp::http::status_code::not_acceptable, "File server won't serve JSON files. Did you mean \"/api" + aResource + "\" instead?");
+			if (aRequest.getHeader("Accept").find("text/html") == string::npos) {
+				if (aRequest.getHeader("Content-Type") == "application/json") {
+					throw RequestException(http::status::not_acceptable, "File server won't serve JSON files. Did you mean \"/api" + aResource + "\" instead?");
 				}
 
-				throw RequestException(websocketpp::http::status_code::not_found, "Invalid file path (hint: use \"Accept: text/html\" if you want index.html)");
+				throw RequestException(http::status::not_found, "Invalid file path (hint: use \"Accept: text/html\" if you want index.html)");
 			}
 
 			request = "index.html";
@@ -123,9 +123,26 @@ namespace webserver {
 		return resourcePath + request;
 	}
 
+	string FileServer::getPath(const TTHValue& aTTH) const {
+		auto file = ViewFileManager::getInstance()->getFile(aTTH);
+		if (file) {
+			return file->getPath();
+		}
+		
+		auto dupe = DupeUtil::checkFileDupe(aTTH);
+		if (DupeUtil::allowOpenFileDupe(dupe)) {
+			auto paths = DupeUtil::getFileDupePaths(dupe, aTTH);
+			if (!paths.empty()) {
+				return paths.front();
+			}
+		}
+
+		throw RequestException(http::status::not_found, "No viewable file matching the TTH " + aTTH.toBase32() + " was found");
+	}
+
 	string FileServer::parseViewFilePath(const string& aResource, StringPairList& headers_, const SessionPtr& aSession) const {
-		string protocol, tthStr, port, path, query, fragment;
-		LinkUtil::decodeUrl(aResource, protocol, tthStr, port, path, query, fragment);
+		string protocolTmp, tthStr, portTmp, pathTmp, query, fragmentTmp;
+		LinkUtil::decodeUrl(aResource, protocolTmp, tthStr, portTmp, pathTmp, query, fragmentTmp);
 
 		auto session = aSession;
 		if (!session) {
@@ -135,45 +152,42 @@ namespace webserver {
 			}
 
 			if (!session || !session->getUser()->hasPermission(Access::VIEW_FILES_VIEW)) {
-				throw RequestException(websocketpp::http::status_code::unauthorized, "Not authorized");
+				throw RequestException(http::status::unauthorized, "Not authorized");
 			}
 		}
 
 		auto tth = Deserializer::parseTTH(tthStr);
-		auto paths = DupeUtil::getFileDupePaths(DupeUtil::checkFileDupe(tth), tth);
-		if (paths.empty()) {
-			auto file = ViewFileManager::getInstance()->getFile(tth);
-			if (!file) {
-				throw RequestException(websocketpp::http::status_code::not_found, "No viewed file matching the TTH " + tthStr + " was found");
-			}
-
-			paths.push_back(file->getPath());
-		}
+		auto path = getPath(tth);
 
 		HttpUtil::addCacheControlHeader(headers_, 1); // One day (files are identified by their TTH so the content won't change)
 
-		return paths.front();
+		return path;
 	}
 
-	websocketpp::http::status_code::value FileServer::handlePostRequest(const websocketpp::http::parser::request& aRequest,
+	http::status FileServer::handlePostRequest(const HttpRequest& aRequest,
 		std::string& output_, StringPairList& headers_, const SessionPtr& aSession) noexcept {
 
-		const auto& requestPath = aRequest.get_uri();
+		const auto& requestPath = aRequest.path;
 		if (requestPath == "/temp") {
 			if (!aSession || !aSession->getUser()->hasPermission(Access::FILESYSTEM_EDIT)) {
 				output_ = "Not authorized";
-				return websocketpp::http::status_code::unauthorized;
+				return http::status::unauthorized;
 			}
 
-			const auto fileName = Util::toString(ValueGenerator::rand());
+			const auto nameHeader = aRequest.getHeader("X-File-Name");
+			auto fileName = Util::toString(ValueGenerator::rand());
+			if (!nameHeader.empty()) {
+				fileName += "_" + PathUtil::validateFileName(nameHeader);
+			}
+
 			const auto filePath = AppUtil::getPath(AppUtil::PATH_TEMP) + fileName;
 
 			try {
 				File file(filePath, File::WRITE, File::TRUNCATE | File::CREATE, File::BUFFER_SEQUENTIAL);
-				file.write(aRequest.get_body());
+				file.write(aRequest.body);
 			} catch (const FileException& e) {
 				output_ = "Failed to write the file: " + e.getError();
-				return websocketpp::http::status_code::internal_server_error;
+				return http::status::internal_server_error;
 			}
 
 			{
@@ -182,11 +196,11 @@ namespace webserver {
 			}
 
 			headers_.emplace_back("Location", fileName);
-			return websocketpp::http::status_code::created;
+			return http::status::created;
 		}
 
 		output_ = "Requested resource was not found";
-		return websocketpp::http::status_code::not_found;
+		return http::status::not_found;
 	}
 
 	string FileServer::getTempFilePath(const string& fileId) const noexcept {
@@ -195,31 +209,30 @@ namespace webserver {
 		return i != tempFiles.end() ? i->second : Util::emptyString;
 	}
 
-	websocketpp::http::status_code::value FileServer::handleRequest(const HttpRequest& aRequest,
+	http::status FileServer::handleRequest(const HttpRequest& aRequest,
 		string& output_, StringPairList& headers_, const FileDeferredHandler& aDeferF) {
 
-		const auto& httpRequest = aRequest.httpRequest;
-		if (httpRequest.get_method() == "GET") {
-			return handleGetRequest(httpRequest, output_, headers_, aRequest.session, aDeferF);
-		} else if (httpRequest.get_method() == "POST") {
-			return handlePostRequest(httpRequest, output_, headers_, aRequest.session);
+		if (aRequest.method == "GET") {
+			return handleGetRequest(aRequest, output_, headers_, aRequest.session, aDeferF);
+		} else if (aRequest.method == "POST") {
+			return handlePostRequest(aRequest, output_, headers_, aRequest.session);
 		}
 
 		output_ = "Requested resource was not found";
-		return websocketpp::http::status_code::not_found;
+		return http::status::not_found;
 	}
 
-	websocketpp::http::status_code::value FileServer::handleGetRequest(const websocketpp::http::parser::request& aRequest,
+	http::status FileServer::handleGetRequest(const HttpRequest& aRequest,
 		string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF) {
 
-		const auto& requestUrl = aRequest.get_uri();
+		const auto& requestUrl = aRequest.path;
 		dcdebug("Requesting file %s\n", requestUrl.c_str());
 
 		// Proxy request?
 		if (requestUrl.starts_with("/proxy")) {
 			if (!aSession) {
 				output_ = "Not authorized";
-				return websocketpp::http::status_code::unauthorized;
+				return http::status::unauthorized;
 			}
 
 			return handleProxyDownload(requestUrl, output_, aDeferF);
@@ -233,7 +246,7 @@ namespace webserver {
 				filePath = parseViewFilePath(requestUrl.substr(6), headers_, aSession);
 			} else if (requestUrl.length() >= 6 && requestUrl.compare(0, 6, "/proxy") == 0) {
 				if (!aSession) {
-					throw RequestException(websocketpp::http::status_code::unauthorized, "Not authorized");
+					throw RequestException(http::status::unauthorized, "Not authorized");
 				}
 
 				return handleProxyDownload(requestUrl, output_, aDeferF);
@@ -248,7 +261,7 @@ namespace webserver {
 		auto fileSize = File::getSize(filePath);
 		int64_t startPos = 0, endPos = fileSize - 1;
 
-		auto partialContent = HttpUtil::parsePartialRange(aRequest.get_header("Range"), startPos, endPos);
+		auto partialContent = HttpUtil::parsePartialRange(aRequest.getHeader("Range"), startPos, endPos);
 
 		// Read file
 		try {
@@ -261,10 +274,10 @@ namespace webserver {
 			// Don't show the local file path for public resources
 			auto responsePath = isViewFile ? filePath : requestUrl;
 			output_ = e.getError() + " (" + responsePath + ")";
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		} catch (const std::bad_alloc&) {
 			output_ = "Not enough memory on the server to serve this request";
-			return websocketpp::http::status_code::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
 		{
@@ -284,7 +297,7 @@ namespace webserver {
 
 		{
 			// Get the mime type (but get it from the original request with gzipped content)
-			auto usingEncoding = ranges::find(headers_ | views::values, "Content-Encoding").base() != headers_.end();
+			auto usingEncoding = ranges::find(headers_ | views::keys, "Content-Encoding").base() != headers_.end();
 			auto type = HttpUtil::getMimeType(usingEncoding ? requestUrl : filePath);
 			if (type) {
 				headers_.emplace_back("Content-Type", type);
@@ -294,13 +307,13 @@ namespace webserver {
 		if (partialContent) {
 			headers_.emplace_back("Content-Range", HttpUtil::formatPartialRange(startPos, endPos, fileSize));
 			headers_.emplace_back("Accept-Ranges", "bytes");
-			return websocketpp::http::status_code::partial_content;
+			return http::status::partial_content;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
-	websocketpp::http::status_code::value FileServer::handleProxyDownload(const string& aRequestUrl, string& output_, const FileDeferredHandler& aDeferF) noexcept {
+	http::status FileServer::handleProxyDownload(const string& aRequestUrl, string& output_, const FileDeferredHandler& aDeferF) noexcept {
 		string protocol, host, port, path, query, fragment;
 		LinkUtil::decodeUrl(aRequestUrl, protocol, host, port, path, query, fragment);
 
@@ -308,14 +321,14 @@ namespace webserver {
 		auto proxyUrlEscaped = LinkUtil::decodeQuery(query)["url"];
 		if (proxyUrlEscaped.empty()) {
 			output_ = "Proxy URL missing";
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
 		// Decode URL
 		string proxyUrl;
 		if (!HttpUtil::unescapeUrl(proxyUrlEscaped, proxyUrl)) {
 			output_ = "Invalid URL " + proxyUrlEscaped;
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
 		auto downloadId = proxyDownloadCounter++;
@@ -331,8 +344,10 @@ namespace webserver {
 			proxyDownloads.try_emplace(downloadId, download);
 		}
 
-		return websocketpp::http::status_code::accepted;
+		return http::status::accepted;
 	}
+
+	static StringSet forwardedProxyHeaders = { "content-type", "content-encoding", "etag", "expires", "last-modified", "date", "vary" };
 
 	void FileServer::onProxyDownloadCompleted(int64_t aDownloadId, const HTTPFileCompletionF& aCompletionF) noexcept {
 		ScopedFunctor([&] {
@@ -353,17 +368,23 @@ namespace webserver {
 		dcassert(d);
 		if (d) {
 			if (d->buf.empty()) {
-				int statusCode;
+				http::status statusCode;
 				string statusText;
 				if (HttpUtil::parseStatus(d->status, statusCode, statusText)) {
-					aCompletionF(static_cast<websocketpp::http::status_code::value>(statusCode), statusText, StringPairList());
+					aCompletionF(statusCode, statusText, StringPairList());
 				} else {
-					aCompletionF(websocketpp::http::status_code::not_acceptable, d->status, StringPairList());
+					aCompletionF(http::status::not_acceptable, d->status, StringPairList());
 				}
 			} else {
 				StringPairList headers;
+				for (const auto& [name, value] : d->headers) {
+					if (forwardedProxyHeaders.contains(Text::toLower(name))) {
+						headers.push_back({ name, value });
+					}
+				}
+
 				HttpUtil::addCacheControlHeader(headers, 0);
-				aCompletionF(websocketpp::http::status_code::ok, d->buf, headers);
+				aCompletionF(http::status::ok, d->buf, headers);
 			}
 		}
 	}

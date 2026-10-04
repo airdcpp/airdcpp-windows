@@ -24,7 +24,7 @@
 #include <web-server/ApiSettingItem.h>
 #include <web-server/WebServerManagerListener.h>
 
-#include <airdcpp/SettingsManager.h>
+#include <airdcpp/settings/SettingsManager.h>
 
 namespace webserver {
 	class WebServerSettings : private WebServerManagerListener {
@@ -76,6 +76,7 @@ namespace webserver {
 
 			OUTGOING_HUB_COMMAND_HOOK_TIMEOUT,
 			OUTGOING_UDP_COMMAND_HOOK_TIMEOUT,
+			OUTGOING_TCP_COMMAND_HOOK_TIMEOUT,
 
 			SEARCH_INCOMING_USER_RESULT_HOOK_TIMEOUT,
 

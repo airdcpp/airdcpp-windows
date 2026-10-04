@@ -25,11 +25,11 @@
 #include <web-server/Session.h>
 #include <web-server/WebUser.h>
 
-#include <airdcpp/ActionHook.h>
-#include <airdcpp/Magnet.h>
-#include <airdcpp/MessageCache.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/OnlineUser.h>
+#include <airdcpp/core/ActionHook.h>
+#include <airdcpp/core/classes/Magnet.h>
+#include <airdcpp/message/MessageCache.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/user/OnlineUser.h>
 
 
 
@@ -205,7 +205,7 @@ namespace webserver {
 		const auto descriptionId = JsonUtil::getOptionalFieldDefault<string>("tag", aJson, aDefaultDescriptionId);
 
 		if (end > aMessageText.size() || end <= start) {
-			throw RequestException(websocketpp::http::status_code::bad_request, "Invalid range");
+			throw RequestException(http::status::bad_request, "Invalid range");
 		}
 
 		return make_shared<MessageHighlight>(start, aMessageText.substr(start, end - start), type, descriptionId);

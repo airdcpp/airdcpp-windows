@@ -26,14 +26,14 @@
 #include <web-server/JsonUtil.h>
 #include <web-server/WebServerSettings.h>
 
-#include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/QueueManager.h>
+#include <airdcpp/filelist/DirectoryListingManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/queue/QueueManager.h>
 
 namespace webserver {
 
-#define HOOK_LOAD_DIRECTORY "filelist_load_directory"
-#define HOOK_LOAD_FILE "filelist_load_file"
+#define HOOK_LOAD_DIRECTORY "filelist_load_directory_hook"
+#define HOOK_LOAD_FILE "filelist_load_file_hook"
 
 	StringList FilelistApi::subscriptionList = {
 		"filelist_created",
@@ -45,32 +45,19 @@ namespace webserver {
 	};
 
 	FilelistApi::FilelistApi(Session* aSession) : 
-		ParentApiModule(CID_PARAM, Access::FILELISTS_VIEW, aSession, subscriptionList, FilelistInfo::subscriptionList, 
+		ParentApiModule(CID_PARAM, Access::FILELISTS_VIEW, aSession, 
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); },
 			Access::FILELISTS_EDIT
 		) 
 	{
+		createSubscriptions(subscriptionList, FilelistInfo::subscriptionList);
 
-		HookApiModule::createHook(HOOK_LOAD_DIRECTORY, [this](ActionHookSubscriber&& aSubscriber) {
-			return DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(FilelistApi::directoryLoadHook));
-		}, [](const string& aId) {
-			DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.removeSubscriber(aId);
-		}, [] {
-			return DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook.getSubscribers();
-		});
+		// Hooks
+		HOOK_HANDLER(HOOK_LOAD_DIRECTORY,	DirectoryListingManager::getInstance()->loadHooks.directoryLoadHook,	FilelistApi::directoryLoadHook);
+		HOOK_HANDLER(HOOK_LOAD_FILE,		DirectoryListingManager::getInstance()->loadHooks.fileLoadHook,			FilelistApi::fileLoadHook);
 
-		HookApiModule::createHook(HOOK_LOAD_FILE, [this](ActionHookSubscriber&& aSubscriber) {
-			return DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(FilelistApi::fileLoadHook));
-		}, [](const string& aId) {
-			DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.removeSubscriber(aId);
-		}, [] {
-			return DirectoryListingManager::getInstance()->loadHooks.fileLoadHook.getSubscribers();
-		});
-
-
-		DirectoryListingManager::getInstance()->addListener(this);;
-
+		// Methods
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(),													FilelistApi::handlePostList);
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("self")),								FilelistApi::handleOwnList);
 
@@ -81,6 +68,10 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,		METHOD_POST,	(EXACT_PARAM("match_queue")),						FilelistApi::handleMatchQueue);
 
+		// Listeners
+		DirectoryListingManager::getInstance()->addListener(this);;
+
+		// Init
 		auto rawLists = DirectoryListingManager::getInstance()->getLists();
 		for (const auto& list : rawLists | views::values) {
 			addList(list);
@@ -93,7 +84,7 @@ namespace webserver {
 
 	ActionHookResult<> FilelistApi::directoryLoadHook(const DirectoryListing::Directory::Ptr& aDirectory, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_LOAD_DIRECTORY, WEBCFG(FILELIST_LOAD_DIRECTORY_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_LOAD_DIRECTORY, WEBCFG(FILELIST_LOAD_DIRECTORY_HOOK_TIMEOUT).num(), [&]() {
 				auto info = std::make_shared<FilelistItemInfo>(aDirectory, aList.getShareProfile());
 
 				return json({
@@ -101,19 +92,21 @@ namespace webserver {
 					{ "filelist_id", aList.getToken().toBase32() },
 				});
 			}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 	ActionHookResult<> FilelistApi::fileLoadHook(const DirectoryListing::File::Ptr& aFile, const DirectoryListing& aList, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook(HOOK_LOAD_FILE, WEBCFG(FILELIST_LOAD_FILE_HOOK_TIMEOUT).num(), [&]() {
+			maybeFireHook(HOOK_LOAD_FILE, WEBCFG(FILELIST_LOAD_FILE_HOOK_TIMEOUT).num(), [&]() {
 				auto info = std::make_shared<FilelistItemInfo>(aFile, aList.getShareProfile());
 				return json({
 					{ "file", Serializer::serializeItem(info, FilelistUtils::propertyHandler) },
 					{ "filelist_id", aList.getToken().toBase32() },
 				});
 			}),
-			aResultGetter
+			aResultGetter,
+			this
 		);
 	}
 
@@ -134,16 +127,16 @@ namespace webserver {
 				auto listData = FilelistAddData(hintedUser, caller, directory);
 				dl = DirectoryListingManager::getInstance()->openRemoteFileListHookedThrow(listData, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW);
 			} catch (const Exception& e) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;
 			}
 
 			if (!dl) {
-				complete(websocketpp::http::status_code::conflict, nullptr, ApiRequest::toResponseErrorStr("Filelist from this user is open already"));
+				complete(http::status::conflict, nullptr, ApiRequest::toResponseErrorStr("Filelist from this user is open already"));
 				return;
 			}
 
-			complete(websocketpp::http::status_code::ok, serializeList(dl), nullptr);
+			complete(http::status::ok, serializeList(dl), nullptr);
 			return;
 		});
 
@@ -168,11 +161,11 @@ namespace webserver {
 				auto listData = FilelistAddData(hintedUser, caller, directory);
 				QueueManager::getInstance()->addListHooked(listData, flags.getFlags());
 			} catch (const Exception& e) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;
 			}
 
-			complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+			complete(http::status::no_content, nullptr, nullptr);
 		});
 
 		return CODE_DEFERRED;
@@ -183,18 +176,18 @@ namespace webserver {
 		auto dl = DirectoryListingManager::getInstance()->openOwnList(profile);
 		if (!dl) {
 			aRequest.setResponseErrorStr("Own filelist is open already");
-			return websocketpp::http::status_code::conflict;
+			return http::status::conflict;
 		}
 
 		aRequest.setResponseBody(serializeList(dl));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return FilelistApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto list = getSubModule(aRequest);
 
 		DirectoryListingManager::getInstance()->removeList(list->getList()->getUser());
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	void FilelistApi::on(DirectoryListingManagerListener::ListingCreated, const DirectoryListingPtr& aList) noexcept {
@@ -285,7 +278,7 @@ namespace webserver {
 	api_return FilelistApi::handleGetDirectoryDownloads(ApiRequest& aRequest) {
 		auto downloads = DirectoryListingManager::getInstance()->getDirectoryDownloads();
 		aRequest.setResponseBody(Serializer::serializeList(downloads, Serializer::serializeDirectoryDownload));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 
@@ -294,11 +287,11 @@ namespace webserver {
 		auto download = DirectoryListingManager::getInstance()->getDirectoryDownload(downloadId);
 		if (!download) {
 			aRequest.setResponseErrorStr("Directory download " + Util::toString(downloadId) + " was not found");
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		}
 
 		aRequest.setResponseBody(Serializer::serializeDirectoryDownload(download));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return FilelistApi::handlePostDirectoryDownload(ApiRequest& aRequest) {
@@ -323,10 +316,10 @@ namespace webserver {
 				auto listData = FilelistAddData(hintedUser, caller, listPath);
 				auto errorMethod = logBundleErrors ? DirectoryDownload::ErrorMethod::LOG : DirectoryDownload::ErrorMethod::NONE;
 				auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownloadHookedThrow(listData, targetBundleName, targetDirectory, prio, errorMethod);
-				complete(websocketpp::http::status_code::ok, Serializer::serializeDirectoryDownload(directoryDownload), nullptr);
+				complete(http::status::ok, Serializer::serializeDirectoryDownload(directoryDownload), nullptr);
 				return;
 			} catch (const Exception& e) {
-				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				complete(http::status::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;
 			}
 		});
@@ -339,9 +332,9 @@ namespace webserver {
 		auto removed = DirectoryListingManager::getInstance()->cancelDirectoryDownload(downloadId);
 		if (!removed) {
 			aRequest.setResponseErrorStr("Directory download " + Util::toString(downloadId) + " was not found");
-			return websocketpp::http::status_code::not_found;
+			return http::status::not_found;
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 }

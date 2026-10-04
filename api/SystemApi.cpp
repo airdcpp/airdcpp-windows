@@ -29,14 +29,16 @@
 #include <api/SystemApi.h>
 #include <api/common/Serializer.h>
 
-#include <airdcpp/ActivityManager.h>
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/Thread.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/hub/activity/ActivityManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/core/thread/Thread.h>
+#include <airdcpp/core/timer/TimerManager.h>
 
 namespace webserver {
-	SystemApi::SystemApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY, { "away_state" }) {
+	SystemApi::SystemApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
+
+		createSubscriptions({ "away_state" });
 
 		METHOD_HANDLER(Access::ANY, METHOD_GET,		(EXACT_PARAM("stats")),			SystemApi::handleGetStats);
 
@@ -83,12 +85,12 @@ namespace webserver {
 
 	api_return SystemApi::handleRestartWeb(ApiRequest&) {
 		systemActionThread = make_shared<SystemActionThread>(systemActionThread, false);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return SystemApi::handleShutdown(ApiRequest&) {
 		systemActionThread = make_shared<SystemActionThread>(systemActionThread, true);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	void SystemApi::on(ActivityManagerListener::AwayModeChanged, AwayMode /*aNewMode*/) noexcept {
@@ -116,7 +118,7 @@ namespace webserver {
 
 	api_return SystemApi::handleGetAwayState(ApiRequest& aRequest) {
 		aRequest.setResponseBody(serializeAwayState());
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return SystemApi::handleSetAway(ApiRequest& aRequest) {
@@ -124,7 +126,7 @@ namespace webserver {
 		ActivityManager::getInstance()->setAway(away ? AWAY_MANUAL : AWAY_OFF);
 
 		aRequest.setResponseBody(serializeAwayState());
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return SystemApi::handleGetStats(ApiRequest& aRequest) {
@@ -134,7 +136,7 @@ namespace webserver {
 			{ "server_threads", WEBCFG(SERVER_THREADS).num() },
 			{ "active_sessions", server->getUserManager().getUserSessionCount() },
 		});
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	json SystemApi::getSystemInfo() noexcept {
@@ -154,6 +156,6 @@ namespace webserver {
 
 	api_return SystemApi::handleGetSystemInfo(ApiRequest& aRequest) {
 		aRequest.setResponseBody(getSystemInfo());
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 }

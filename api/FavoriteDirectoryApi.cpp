@@ -24,14 +24,16 @@
 
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/ValueGenerator.h>
 
 namespace webserver {
 	FavoriteDirectoryApi::FavoriteDirectoryApi(Session* aSession) : 
-		SubscribableApiModule(aSession, Access::ANY, { "favorite_directories_updated" }) 
+		SubscribableApiModule(aSession, Access::ANY) 
 	{
+		createSubscriptions({ "favorite_directories_updated" });
+
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("grouped_paths")),			FavoriteDirectoryApi::handleGetGroupedDirectories);
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(),										FavoriteDirectoryApi::handleGetDirectories);
 
@@ -50,12 +52,12 @@ namespace webserver {
 	api_return FavoriteDirectoryApi::handleGetGroupedDirectories(ApiRequest& aRequest) {
 		auto directories = FavoriteManager::getInstance()->getGroupedFavoriteDirs();
 		aRequest.setResponseBody(Serializer::serializeList(directories, Serializer::serializeGroupedPaths));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return FavoriteDirectoryApi::handleGetDirectories(ApiRequest& aRequest) {
 		aRequest.setResponseBody(serializeDirectories());
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	json FavoriteDirectoryApi::serializeDirectories() noexcept {
@@ -73,14 +75,14 @@ namespace webserver {
 	api_return FavoriteDirectoryApi::handleAddDirectory(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto path = PathUtil::validatePath(JsonUtil::getField<string>("path", reqJson, false), true);
+		auto path = PathUtil::validateDirectoryPath(JsonUtil::getField<string>("path", reqJson, false));
 		if (FavoriteManager::getInstance()->hasFavoriteDir(path)) {
-			JsonUtil::throwError("path", JsonUtil::ERROR_EXISTS, "Path exists already");
+			JsonUtil::throwError("path", JsonException::ERROR_EXISTS, "Path exists already");
 		}
 
 		auto info = updatePath(path, reqJson);
 		aRequest.setResponseBody(serializeDirectory(info));
-		return websocketpp::http::status_code::no_content;
+		return http::status::ok;
 	}
 
 	api_return FavoriteDirectoryApi::handleGetDirectory(ApiRequest& aRequest) {
@@ -88,7 +90,7 @@ namespace webserver {
 
 		auto info = FavoriteManager::getInstance()->getFavoriteDirectory(path);
 		aRequest.setResponseBody(serializeDirectory(info));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return FavoriteDirectoryApi::handleUpdateDirectory(ApiRequest& aRequest) {
@@ -96,13 +98,13 @@ namespace webserver {
 
 		auto info = updatePath(path, aRequest.getRequestBody());
 		aRequest.setResponseBody(serializeDirectory(info));
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return FavoriteDirectoryApi::handleRemoveDirectory(ApiRequest& aRequest) {
 		auto path = getPath(aRequest);
 		FavoriteManager::getInstance()->removeFavoriteDir(path);
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	string FavoriteDirectoryApi::getPath(const ApiRequest& aRequest) {
@@ -113,7 +115,7 @@ namespace webserver {
 		});
 
 		if (p.base() == dirs.end()) {
-			throw RequestException(websocketpp::http::status_code::not_found, "Favorite directory " + tth.toBase32() + " was not found");
+			throw RequestException(http::status::not_found, "Favorite directory " + tth.toBase32() + " was not found");
 		}
 
 		return *p;

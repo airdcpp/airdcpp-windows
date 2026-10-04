@@ -26,10 +26,10 @@
 #include <web-server/WebServerSettings.h>
 #include <web-server/version.h>
 
-#include <airdcpp/Exception.h>
-#include <airdcpp/File.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/SystemUtil.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/SystemUtil.h>
 
 
 namespace webserver {
@@ -184,6 +184,24 @@ namespace webserver {
 		return ApiSettingItem::findSettingItem<ExtensionSettingItem>(settings, aKey);
 	}
 
+	bool Extension::isDisabled() const noexcept {
+		return PathUtil::fileExists(getDisabledFlag());
+	}
+
+	void Extension::setDisabled(bool aDisabled) noexcept {
+		if (aDisabled) {
+			File::createFile(getDisabledFlag());
+		} else {
+			File::deleteFile(getDisabledFlag());
+		}
+
+		fire(ExtensionListener::StateUpdated(), this);
+	}
+
+	string Extension::getDisabledFlag() const noexcept {
+		return PathUtil::joinDirectory(getRootPath(), EXT_CONFIG_DIR) + "DISABLED";
+	}
+
 	bool Extension::hasSettings() const noexcept {
 		RLock l(cs);
 		return !settings.empty(); 
@@ -207,13 +225,13 @@ namespace webserver {
 		{
 			WLock l(cs);
 			settings.clear();
-			userReferences.clear();
+			references.clear();
 		}
 
 		fire(ExtensionListener::SettingDefinitionsUpdated(), this);
 	}
 
-	void Extension::setValidatedSettingValues(const SettingValueMap& aValues, const UserList& aUserReferences) noexcept {
+	void Extension::setValidatedSettingValues(const SettingValueMap& aValues, const SettingReferenceList& aReferences) noexcept {
 		{
 			WLock l(cs);
 			for (const auto& [key, value] : aValues) {
@@ -226,7 +244,7 @@ namespace webserver {
 				setting->setValue(value);
 			}
 
-			userReferences.insert(aUserReferences.begin(), aUserReferences.end());
+			references.insert(aReferences.begin(), aReferences.end());
 		}
 
 		fire(ExtensionListener::SettingValuesUpdated(), this, aValues);
@@ -495,7 +513,7 @@ namespace webserver {
 		}
 
 		// Start the process
-		tstring commandT = Text::toT(command);
+		auto commandT = Text::toT(command);
 		dcdebug("Starting extension %s, command %s\n", name.c_str(), command.c_str());
 
 #ifdef _DEBUG

@@ -27,8 +27,8 @@
 #include <web-server/Session.h>
 #include <web-server/WebServerManager.h>
 
-#include <airdcpp/Exception.h>
-#include <airdcpp/File.h>
+#include <airdcpp/core/classes/Exception.h>
+#include <airdcpp/core/io/File.h>
 
 
 #define EXTENSION_PARAM_ID "extension"
@@ -43,14 +43,15 @@ namespace webserver {
 	};
 
 	ExtensionApi::ExtensionApi(Session* aSession) : 
-		ParentApiModule(EXTENSION_PARAM, Access::SETTINGS_VIEW, aSession, ExtensionApi::subscriptionList,
-			ExtensionInfo::subscriptionList,
+		ParentApiModule(EXTENSION_PARAM, Access::SETTINGS_VIEW, aSession,
 			[](const string& aId) { return aId; },
 			[](const ExtensionInfo& aInfo) { return ExtensionInfo::serializeExtension(aInfo.getExtension()); }
 		),
 		em(aSession->getServer()->getExtensionManager())
 	{
 		em.addListener(this);
+
+		createSubscriptions(subscriptionList, ExtensionInfo::subscriptionList);
 
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (), ExtensionApi::handlePostExtension);
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("download")), ExtensionApi::handleDownloadExtension);
@@ -81,10 +82,10 @@ namespace webserver {
 			aRequest.setResponseBody(ExtensionInfo::serializeExtension(ext));
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::bad_request;
+			return http::status::bad_request;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	api_return ExtensionApi::handleDownloadExtension(ApiRequest& aRequest) {
@@ -95,15 +96,15 @@ namespace webserver {
 		auto sha = JsonUtil::getOptionalFieldDefault<string>("shasum", reqJson, Util::emptyString);
 
 		if (Util::findSubString(url, "http://") != 0 && Util::findSubString(url, "https://") != 0) {
-			JsonUtil::throwError("url", JsonUtil::ERROR_INVALID, "Invalid URL");
+			JsonUtil::throwError("url", JsonException::ERROR_INVALID, "Invalid URL");
 		}
 
 		if (!em.downloadExtension(installId, url, sha)) {
 			aRequest.setResponseErrorStr("Extension is being download already");
-			return websocketpp::http::status_code::conflict;
+			return http::status::conflict;
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionApi::handleDeleteSubmodule(ApiRequest& aRequest) {
@@ -116,10 +117,10 @@ namespace webserver {
 			}
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::internal_server_error;
+			return http::status::internal_server_error;
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return http::status::no_content;
 	}
 
 	api_return ExtensionApi::handleGetEngineStatuses(ApiRequest& aRequest) {
@@ -134,7 +135,7 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody(ret);
-		return websocketpp::http::status_code::ok;
+		return http::status::ok;
 	}
 
 	void ExtensionApi::on(ExtensionManagerListener::ExtensionAdded, const ExtensionPtr& aExtension) noexcept {
