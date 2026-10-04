@@ -25,20 +25,19 @@
 
 #include <airdcpp/forward.h>
 
-#include <airdcpp/GetSet.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/CriticalSection.h>
-#include <airdcpp/Singleton.h>
-#include <airdcpp/Speaker.h>
-#include <airdcpp/Pointer.h>
+#include <airdcpp/core/types/GetSet.h>
+#include <airdcpp/util/Util.h>
+#include <airdcpp/core/thread/CriticalSection.h>
+#include <airdcpp/core/Singleton.h>
+#include <airdcpp/core/Speaker.h>
 
-#include <airdcpp/DispatcherQueue.h>
-#include <airdcpp/HttpDownload.h>
-#include <airdcpp/Message.h>
-#include <airdcpp/StringMatch.h>
-#include <airdcpp/ValueGenerator.h>
+#include <airdcpp/core/queue/DispatcherQueue.h>
+#include <airdcpp/connection/http/HttpDownload.h>
+#include <airdcpp/message/Message.h>
+#include <airdcpp/util/text/StringMatch.h>
+#include <airdcpp/util/ValueGenerator.h>
 
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/core/timer/TimerManager.h>
 
 namespace dcpp {
 
@@ -51,9 +50,9 @@ typedef std::shared_ptr<RSSData> RSSDataPtr;
 class RSSFilter : public StringMatch {
 public:
 
-	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod, const string& aGroup, bool aSkipDupes, int aAction, int aExpireDays, bool aFormatTime) noexcept :
+	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod, const string& aGroup, bool aSkipDupes, int aAction, int aExpireDays, bool aFormatTime, bool aAsExactMatch = true) noexcept :
 		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget), autosearchGroup(aGroup), skipDupes(aSkipDupes), filterAction(aAction), expireDays(aExpireDays),
-		formatTimeParams(aFormatTime)
+		formatTimeParams(aFormatTime), asExactMatch(aAsExactMatch)
 	{
 		pattern = aFilterPattern;
 		setMethod((StringMatch::Method)aMethod);
@@ -67,6 +66,8 @@ public:
 	IGETSET(int, filterAction, FilterAction, DOWNLOAD);
 	IGETSET(int, expireDays, ExpireDays, 3);
 	IGETSET(bool, formatTimeParams, FormatTimeParams, false);
+	// Auto-search match type for spawned auto searches: true = exact (default), false = partial
+	IGETSET(bool, asExactMatch, AsExactMatch, true);
 
 	bool skipDupes = true;
 
@@ -78,8 +79,10 @@ public:
 
 };
 
-class RSS : private boost::noncopyable {
+class RSS {
 public:
+	RSS(const RSS&) = delete;
+	RSS& operator=(const RSS&) = delete;
 
 	RSS(const string& aUrl, const string& aName, bool aEnable, time_t aLastUpdate, int aUpdateInterval = 60, int aToken = 0) noexcept :
 		url(aUrl), feedName(aName), lastUpdate(aLastUpdate), updateInterval(aUpdateInterval), token(aToken), enable(aEnable)
@@ -131,8 +134,10 @@ private:
 
 };
 
-class RSSData: private boost::noncopyable {
+class RSSData {
 public:
+	RSSData(const RSSData&) = delete;
+	RSSData& operator=(const RSSData&) = delete;
 	RSSData(const string& aTitle, const string& aLink, const string& aPubDate, const RSSPtr& aFeed, time_t aDateAdded = GET_TIME()) noexcept :
 		title(aTitle), link(aLink), pubDate(aPubDate), feed(aFeed), dateAdded(aDateAdded)  {
 	}

@@ -22,8 +22,8 @@
 
 #include "DirectSearch.h"
 
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/SearchQuery.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/search/SearchQuery.h>
 
 
 namespace dcpp {
@@ -54,7 +54,7 @@ void DirectoryListingSearch::addSearchTask(const SearchPtr& aSearch) noexcept {
 void DirectoryListingSearch::searchImpl(const SearchPtr& aSearch) noexcept {
 	searchResults.clear();
 
-	curSearch.reset(SearchQuery::getSearch(aSearch));
+	curSearch.reset(SearchQuery::fromSearch(aSearch));
 	if (list->getIsOwnList() && list->getPartialList()) {
 		SearchResultList results;
 

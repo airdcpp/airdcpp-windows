@@ -20,19 +20,19 @@
 
 #include "AutoSearchManager.h"
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/DupeUtil.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchQuery.h>
-#include <airdcpp/SearchResult.h>
-#include <airdcpp/SearchTypes.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/SimpleXML.h>
-#include <airdcpp/User.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/util/DupeUtil.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/search/SearchQuery.h>
+#include <airdcpp/search/SearchResult.h>
+#include <airdcpp/search/SearchTypes.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
+#include <airdcpp/user/User.h>
 
-#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/filelist/DirectoryListingManager.h>
 
 namespace dcpp {
 
@@ -73,7 +73,7 @@ AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& a
 
 	time_t expireTime = aExpriredays > 0 ? GET_TIME() + aExpriredays * 24 * 60 * 60 : 0;
 	
-	AutoSearchPtr as = new AutoSearch(true, ss, isDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_FILE, AutoSearch::ACTION_DOWNLOAD, aRemove, aTarget, 
+	AutoSearchPtr as = std::make_shared<AutoSearch>(true, ss, isDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_FILE, AutoSearch::ACTION_DOWNLOAD, aRemove, aTarget, 
 		StringMatch::PARTIAL, Util::emptyString, Util::emptyString, expireTime, false, false, false, Util::emptyString, asType, false);
 
 	addAutoSearch(as, aSearch);
@@ -402,7 +402,7 @@ bool AutoSearchManager::addFailedBundle(const BundlePtr& aBundle) noexcept {
 
 
 	//7 days expiry
-	auto as = new AutoSearch(true, aBundle->getName(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, PathUtil::getParentDir(aBundle->getTarget()), 
+	auto as = std::make_shared<AutoSearch>(true, aBundle->getName(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, PathUtil::getParentDir(aBundle->getTarget()), 
 		StringMatch::EXACT, Util::emptyString, Util::emptyString, GET_TIME() + 7*24*60*60, false, false, false, Util::emptyString, AutoSearch::FAILED_BUNDLE, false);
 
 	as->setGroup(SETTING(AS_FAILED_DEFAULT_GROUP));
@@ -999,7 +999,7 @@ void AutoSearchManager::loadAutoSearch(SimpleXML& aXml) {
 }
 
 AutoSearchPtr AutoSearchManager::loadItemFromXml(SimpleXML& aXml) {
-	auto as = new AutoSearch(aXml.getBoolChildAttrib("Enabled"),
+	auto as = std::make_shared<AutoSearch>(aXml.getBoolChildAttrib("Enabled"),
 		aXml.getChildAttrib("SearchString"),
 		aXml.getChildAttrib("FileType"),
 		(AutoSearch::ActionType)aXml.getIntChildAttrib("Action"),

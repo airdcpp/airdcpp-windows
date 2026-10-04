@@ -22,18 +22,18 @@
 #include "AutoSearchManager.h"
 #include "RSSManager.h"
 
-#include <airdcpp/HttpConnection.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/SearchTypes.h>
-#include <airdcpp/ClientManager.h>
+#include <airdcpp/connection/http/HttpConnection.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/search/SearchTypes.h>
+#include <airdcpp/hub/ClientManager.h>
 
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/SimpleXML.h>
-#include <airdcpp/SimpleXMLReader.h>
-#include <airdcpp/Streams.h>
+#include <airdcpp/core/classes/ScopedFunctor.h>
+#include <airdcpp/core/io/xml/SimpleXML.h>
+#include <airdcpp/core/io/xml/SimpleXMLReader.h>
+#include <airdcpp/core/io/stream/Streams.h>
 
 #include <boost/algorithm/string/trim.hpp>
 
@@ -258,8 +258,8 @@ bool RSSManager::addAutoSearchItem(const RSSFilter& aFilter, const RSSDataPtr& a
 
 	time_t expireTime = aFilter.getExpireDays() > 0 ? GET_TIME() + aFilter.getExpireDays() * 24 * 60 * 60 : 0;
 
-	AutoSearchPtr as = new AutoSearch(aFilter.getFilterAction() == RSSFilter::DOWNLOAD, aData->getTitle(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, aFilter.getDownloadTarget(),
-		StringMatch::EXACT, Util::emptyString, Util::emptyString, expireTime, true, true, false, Util::emptyString, AutoSearch::RSS_DOWNLOAD, false);
+	AutoSearchPtr as = std::make_shared<AutoSearch>(aFilter.getFilterAction() == RSSFilter::DOWNLOAD, aData->getTitle(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, aFilter.getDownloadTarget(),
+		aFilter.getAsExactMatch() ? StringMatch::EXACT : StringMatch::PARTIAL, Util::emptyString, Util::emptyString, expireTime, true, true, false, Util::emptyString, AutoSearch::RSS_DOWNLOAD, false);
 
 	//format time params, befora adding to autosearch, so we can use RSS date for folder
 	if(aFilter.getFormatTimeParams())
@@ -464,7 +464,8 @@ void RSSManager::loadFilters(SimpleXML& xml, vector<RSSFilter>& aList) {
 				xml.getBoolChildAttrib("SkipDupes"),
 				Util::toInt(xml.getChildAttrib("FilterAction", "0")),
 				Util::toInt(xml.getChildAttrib("ExpireDays", "3")),
-				xml.getBoolChildAttrib("FormatTimeParams"));
+				xml.getBoolChildAttrib("FormatTimeParams"),
+				Util::toInt(xml.getChildAttrib("AsExactMatch", "1")) > 0); // SoporEDIT
 		}
 		xml.stepOut();
 	}
@@ -511,6 +512,7 @@ void RSSManager::saveFilters(SimpleXML& aXml, const vector<RSSFilter>& aList) {
 			aXml.addChildAttrib("FilterAction", f.getFilterAction());
 			aXml.addChildAttrib("ExpireDays", f.getExpireDays());
 			aXml.addChildAttrib("FormatTimeParams", f.getFormatTimeParams());
+			aXml.addChildAttrib("AsExactMatch", f.getAsExactMatch()); // SoporEDIT
 		}
 		aXml.stepOut();
 	}
@@ -538,7 +540,7 @@ void RSSManager::savedatabase(const RSSPtr& aFeed) {
 			indent += '\t';
 
 			Lock l(cs);
-			for (auto r : aFeed->getFeedData() | views::values) {
+			for (const auto& r : aFeed->getFeedData() | views::values) {
 				//Don't save more than 3 days old entries... Todo: setting?
 				if ((r->getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
 					xmlFile.write(indent);

@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_STDINC_H
 #define DCPLUSPLUS_DCPP_STDINC_H
 
-#include "compiler.h"
+#include <airdcpp/core/header/compiler.h>
 
 #ifndef _DEBUG
 # define BOOST_DISABLE_ASSERTS 1
@@ -30,7 +30,7 @@
 #endif
 
 #ifdef _WIN32
-#include "w.h"
+#include <airdcpp/core/header/w.h>
 #else
 #include <unistd.h>
 #define BOOST_PTHREAD_HAS_MUTEXATTR_SETTYPE
@@ -81,7 +81,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/regex.hpp>
 
 namespace dcpp {

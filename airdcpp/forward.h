@@ -23,7 +23,6 @@
  * This file contains forward declarations for the various DC++ classes
  */
 
-#include <boost/intrusive_ptr.hpp>
 #include <stdint.h>
 
 namespace dcpp {
@@ -102,7 +101,7 @@ using DownloadPtr = Download *;
 using DownloadList = std::vector<DownloadPtr>;
 
 class FavoriteHubEntry;
-using FavoriteHubEntryPtr = boost::intrusive_ptr<FavoriteHubEntry>;
+using FavoriteHubEntryPtr = std::shared_ptr<FavoriteHubEntry>;
 using FavoriteHubEntryList = std::vector<FavoriteHubEntryPtr>;
 using FavoriteHubToken = RandomNumericToken;
 
@@ -149,7 +148,7 @@ using LogMessagePtr = std::shared_ptr<LogMessage>;
 using LogMessageList = std::deque<LogMessagePtr>;
 
 class OnlineUser;
-using OnlineUserPtr = boost::intrusive_ptr<OnlineUser>;
+using OnlineUserPtr = std::shared_ptr<OnlineUser>;
 using OnlineUserList = std::vector<OnlineUserPtr>;
 using SID = uint32_t;
 
@@ -224,7 +223,7 @@ using UploadList = std::vector<UploadPtr>;
 class UploadQueueItem;
 
 class User;
-using UserPtr = boost::intrusive_ptr<User>;
+using UserPtr = std::shared_ptr<User>;
 using UserList = std::vector<UserPtr>;
 
 class UserCommand;
@@ -232,6 +231,7 @@ class UserCommand;
 class UserConnection;
 using UserConnectionPtr = UserConnection *;
 using UserConnectionList = std::vector<UserConnectionPtr>;
+using UserConnectionToken = uint32_t;
 
 class ViewFile;
 using ViewFilePtr = shared_ptr<ViewFile>;

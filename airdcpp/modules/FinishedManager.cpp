@@ -20,46 +20,25 @@
 
 #include "FinishedManager.h"
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/Download.h>
-#include <airdcpp/Upload.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/PathUtil.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/transfer/download/Download.h>
+#include <airdcpp/transfer/upload/Upload.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/transfer/upload/UploadManager.h>
 
-#include <airdcpp/LogManager.h>
-#include <airdcpp/ResourceManager.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/core/localization/ResourceManager.h>
 
 namespace dcpp {
 
-#ifdef _WIN32
-const tstring FinishedItem::getText(uint8_t col) const {
-	dcassert(col >= 0 && col < COLUMN_LAST);
-	switch(col) {
-		case COLUMN_FILE: return Text::toT(PathUtil::getFileName(getTarget()));
-		case COLUMN_DONE: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M:%S", getTime()));
-		case COLUMN_PATH: return Text::toT(PathUtil::getFilePath(getTarget()));
-		case COLUMN_NICK: return Text::toT(ClientManager::getInstance()->getFormattedNicks(getUser()));
-		case COLUMN_HUB: {
-			if (getUser().user->isOnline()) {
-				return Text::toT(ClientManager::getInstance()->getFormattedHubNames(getUser()));
-			} else {
-				auto ofu = ClientManager::getInstance()->getOfflineUser(getUser().user->getCID());
-				return TSTRING(OFFLINE) + (ofu ? _T(" ( ") + Text::toT(ofu->getUrl()) + _T(" ) ") : _T(""));
-			}
-		}
-		case COLUMN_SIZE: return Util::formatBytesW(getSize());
-		case COLUMN_SPEED: return Util::formatBytesW(getAvgSpeed()) + _T("/s");
-		case COLUMN_TYPE: {
-			tstring filetype = Text::toT(PathUtil::getFileExt(Text::fromT(getText(COLUMN_FILE))));
-			if(!filetype.empty() && filetype[0] == _T('.'))
-				filetype.erase(0, 1);
-			return filetype;
-		}
-		default: return Util::emptyStringT;
-	}
+
+IncrementingIdCounter<FinishedItemToken> FinishedItem::idCounter;
+
+FinishedItem::FinishedItem(string const& aTarget, const HintedUser& aUser, int64_t aSize, int64_t aSpeed, time_t aTime) :
+	target(aTarget), user(aUser), size(aSize), avgSpeed(aSpeed), time(aTime), token(idCounter.next())
+{
 }
-#endif
 
 FinishedManager::FinishedManager() { 
 	QueueManager::getInstance()->addListener(this);
@@ -69,16 +48,13 @@ FinishedManager::FinishedManager() {
 FinishedManager::~FinishedManager() {
 	QueueManager::getInstance()->removeListener(this);
 	UploadManager::getInstance()->removeListener(this);
-
-	Lock l(cs);
-	for_each(uploads.begin(), uploads.end(), DeleteFunction());
 }
 
-void FinishedManager::remove(FinishedItemPtr item) {
+void FinishedManager::remove(const FinishedItemPtr& aItem) {
 	{
 		Lock l(cs);
-		FinishedItemList *listptr = &uploads;
-		FinishedItemList::iterator it = find(listptr->begin(), listptr->end(), item);
+		auto listptr = &uploads;
+		auto it = find(listptr->begin(), listptr->end(), aItem);
 
 		if(it != listptr->end())
 			listptr->erase(it);
@@ -90,8 +66,7 @@ void FinishedManager::remove(FinishedItemPtr item) {
 void FinishedManager::removeAll() {
 	{
 		Lock l(cs);
-		FinishedItemList *listptr = &uploads;
-		for_each(listptr->begin(), listptr->end(), DeleteFunction());
+		auto listptr = &uploads;
 		listptr->clear();
 	}
 }
@@ -99,7 +74,8 @@ void FinishedManager::removeAll() {
 void FinishedManager::on(UploadManagerListener::Complete, const Upload* u) noexcept
 {
 	if(u->getType() == Transfer::TYPE_FILE || (u->getType() == Transfer::TYPE_FULL_LIST && SETTING(LOG_FILELIST_TRANSFERS))) {
-		FinishedItemPtr item = new FinishedItem(u->getPath(), u->getHintedUser(),	u->getFileSize(), static_cast<int64_t>(u->getAverageSpeed()), GET_TIME());
+		auto item = std::make_shared<FinishedItem>(u->getPath(), u->getHintedUser(), u->getFileSize(), static_cast<int64_t>(u->getAverageSpeed()), GET_TIME());
+
 		{
 			Lock l(cs);
 			uploads.push_back(item);

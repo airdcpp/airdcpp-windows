@@ -17,45 +17,45 @@
  */
 
 #include "stdinc.h"
-#include "DCPlusPlus.h"
+#include <airdcpp/DCPlusPlus.h>
 
-#include "format.h"
-#include "AppUtil.h"
-#include "File.h"
-#include "PathUtil.h"
-#include "StringTokenizer.h"
-#include "ValueGenerator.h"
+#include <airdcpp/core/header/format.h>
+#include <airdcpp/util/AppUtil.h>
+#include <airdcpp/core/io/File.h>
+#include <airdcpp/util/PathUtil.h>
+#include <airdcpp/util/text/StringTokenizer.h>
+#include <airdcpp/util/ValueGenerator.h>
 
-#include "ActivityManager.h"
-#include "ClientManager.h"
-#include "ConnectionManager.h"
-#include "ConnectivityManager.h"
-#include "CryptoManager.h"
-#include "ProtocolCommandManager.h"
-#include "DirectoryListingManager.h"
-#include "DownloadManager.h"
-#include "FavoriteManager.h"
-#include "FavoriteUserManager.h"
-#include "GeoManager.h"
-#include "HashManager.h"
-#include "IgnoreManager.h"
-#include "Localization.h"
-#include "LogManager.h"
-#include "PartialSharingManager.h"
-#include "PrivateChatManager.h"
-#include "QueueManager.h"
-#include "RecentManager.h"
-#include "ShareManager.h"
-#include "SearchManager.h"
-#include "SettingsManager.h"
-#include "TempShareManager.h"
-#include "ThrottleManager.h"
-#include "TransferInfoManager.h"
-#include "UploadBundleManager.h"
-#include "UpdateManager.h"
-#include "UploadManager.h"
-#include "UserCommandManager.h"
-#include "ViewFileManager.h"
+#include <airdcpp/hub/activity/ActivityManager.h>
+#include <airdcpp/hub/ClientManager.h>
+#include <airdcpp/connection/ConnectionManager.h>
+#include <airdcpp/connectivity/ConnectivityManager.h>
+#include <airdcpp/core/crypto/CryptoManager.h>
+#include <airdcpp/protocol/ProtocolCommandManager.h>
+#include <airdcpp/filelist/DirectoryListingManager.h>
+#include <airdcpp/transfer/download/DownloadManager.h>
+#include <airdcpp/favorites/FavoriteManager.h>
+#include <airdcpp/favorites/FavoriteUserManager.h>
+#include <airdcpp/core/geo/GeoManager.h>
+#include <airdcpp/hash/HashManager.h>
+#include <airdcpp/user/ignore/IgnoreManager.h>
+#include <airdcpp/core/localization/Localization.h>
+#include <airdcpp/events/LogManager.h>
+#include <airdcpp/queue/partial_sharing/PartialSharingManager.h>
+#include <airdcpp/private_chat/PrivateChatManager.h>
+#include <airdcpp/queue/QueueManager.h>
+#include <airdcpp/recents/RecentManager.h>
+#include <airdcpp/share/ShareManager.h>
+#include <airdcpp/search/SearchManager.h>
+#include <airdcpp/settings/SettingsManager.h>
+#include <airdcpp/share/temp_share/TempShareManager.h>
+#include <airdcpp/connection/ThrottleManager.h>
+#include <airdcpp/transfer/TransferInfoManager.h>
+#include <airdcpp/transfer/upload/upload_bundles/UploadBundleManager.h>
+#include <airdcpp/core/update/UpdateManager.h>
+#include <airdcpp/transfer/upload/UploadManager.h>
+#include <airdcpp/hub/user_command/UserCommandManager.h>
+#include <airdcpp/viewed_files/ViewFileManager.h>
 
 namespace dcpp {
 
