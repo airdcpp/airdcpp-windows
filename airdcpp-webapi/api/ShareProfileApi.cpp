@@ -125,7 +125,9 @@ namespace webserver {
 
 	void ShareProfileApi::on(ShareProfileManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
 		maybeSend("share_profile_removed", [&] {
-			return json({ "id", aProfile });
+			return json({ 
+				{ "id", aProfile } 
+			});
 		});
 	}
 
