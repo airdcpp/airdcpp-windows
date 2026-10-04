@@ -236,7 +236,7 @@ bool ActionUtil::getUCParams(HWND aParent, const UserCommand& uc, ParamMap& para
 			LineDlg dlg;
 			dlg.title = Text::toT(Util::toString(" > ", uc.getDisplayName()));
 			dlg.description = Text::toT(name);
-			dlg.line = Text::toT(boost::get<string>(params_["line:" + name]));
+			dlg.line = Text::toT(std::get<string>(params_["line:" + name]));
 
 			if (uc.adc()) {
 				Util::replace(_T("\\\\"), _T("\\"), dlg.description);

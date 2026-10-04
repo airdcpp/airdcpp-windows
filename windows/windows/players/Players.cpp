@@ -171,7 +171,7 @@ string Players::getItunesSpam(HWND playerWnd /*= NULL*/) {
 		CoUninitialize();
 
 		// If there is something in title, we have at least partly succeeded 
-		if(!params["title"].empty()) {
+		if(!std::get<string>(params["title"]).empty()) {
 			return Util::formatParams(SETTING(ITUNES_FORMAT), params);
 		} else {
 			return "no_media";
@@ -608,7 +608,7 @@ string Players::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 		CoUninitialize();
 			
 		// If there is something in title, we have at least partly succeeded 
-		if(!params["title"].empty()) {
+		if (!std::get<string>(params["title"]).empty()) {
 			return Util::formatParams(SETTING(WMP_FORMAT), params);
 		} else {
 			return "no_media";
@@ -633,11 +633,11 @@ string Players::getWinAmpSpam() {
 		params["version"] = Util::toString(majorVersion + minorVersion / 100.0);
 		int state = SendMessage(hwndWinamp,WM_USER, 0, IPC_ISPLAYING);
 		switch (state) {
-			case 0: params["state"] = boost::get<string>(params["stopped"]);
+			case 0: params["state"] = std::get<string>(params["stopped"]);
 				break;
-			case 1: params["state"] = boost::get<string>(params["playing"]);
+			case 1: params["state"] = std::get<string>(params["playing"]);
 				break;
-			case 3: params["state"] = boost::get<string>(params["paused"]);
+			case 3: params["state"] = std::get<string>(params["paused"]);
 		};
 		TCHAR titleBuffer[2048];
 		GetWindowText(hwndWinamp, titleBuffer, sizeof(titleBuffer));

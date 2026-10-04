@@ -182,8 +182,10 @@ private:
 	};
 
 	typedef boost::intrusive_ptr<QueueItemInfo> QueueItemInfoPtr;
-	class QueueItemInfo : public intrusive_ptr_base<QueueItemInfo>, boost::noncopyable {
+	class QueueItemInfo : public intrusive_ptr_base<QueueItemInfo> {
 	public:
+		QueueItemInfo(const QueueItemInfo&) = delete;
+		QueueItemInfo& operator=(const QueueItemInfo&) = delete;
 
 		QueueItemInfo(const BundlePtr& aBundle) : 
 			bundle(aBundle), childrenCreated(aBundle->isFileBundle()) {}

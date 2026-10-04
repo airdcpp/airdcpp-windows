@@ -33,9 +33,12 @@
 
 
 namespace wingui {
-class ExCImage : public CImage, public FastAlloc<ExCImage>, boost::noncopyable
+class ExCImage : public CImage, public FastAlloc<ExCImage>
 {
 public:
+	ExCImage(const ExCImage&) = delete;
+	ExCImage& operator=(const ExCImage&) = delete;
+
 	typedef std::shared_ptr<ExCImage> Ptr;
 
 	ExCImage() {

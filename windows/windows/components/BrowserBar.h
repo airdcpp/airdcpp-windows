@@ -39,11 +39,14 @@ static const tButton TBButtons[] = {
 };
 
 template<class ParentT>
-class BrowserBar : boost::noncopyable {
+class BrowserBar {
 	typedef std::function<void(const string&, bool)> HandleHistoryFunction;
 	typedef Callback HandleUPFuntion;
 
 public:
+	BrowserBar(const BrowserBar&) = delete;
+	BrowserBar& operator=(const BrowserBar&) = delete;
+
 	BrowserBar(ParentT* aParent, HandleHistoryFunction aHistoryF, HandleUPFuntion aHandleUP) : 
 		ParentW(aParent), handleHistory(aHistoryF), handleUP(aHandleUP), historyIndex(1),
 		pathContainer(WC_COMBOBOX, aParent, HISTORY_MSG_MAP) {}

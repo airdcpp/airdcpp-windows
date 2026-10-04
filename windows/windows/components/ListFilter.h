@@ -30,7 +30,10 @@ and moved to proper placement as individuals.
 The messages in this class can be chained by member to the parents message map with CHAIN_MSG_MAP_MEMBER(<FilterObjectName>)
 */
 
-class ListFilter : boost::noncopyable {
+class ListFilter {
+	ListFilter(const ListFilter&) = delete;
+	ListFilter& operator=(const ListFilter&) = delete;
+
 	typedef std::function<void ()> UpdateFunction;
 	typedef std::function<string (size_t)> InfoFunction;
 	typedef std::function<double(size_t)> NumericFunction;

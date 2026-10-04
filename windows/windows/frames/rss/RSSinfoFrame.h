@@ -128,8 +128,11 @@ private:
 		COLUMN_LAST
 	};
 
-	class ItemInfo: boost::noncopyable {
+	class ItemInfo {
 	public:
+		ItemInfo(const ItemInfo&) = delete;
+		ItemInfo& operator=(const ItemInfo&) = delete;
+
 		ItemInfo(const RSSDataPtr& aFeedData);
 		~ItemInfo() { }
 
