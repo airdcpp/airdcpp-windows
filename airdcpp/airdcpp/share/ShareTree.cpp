@@ -22,19 +22,15 @@
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/util/DupeUtil.h>
 #include <airdcpp/core/io/File.h>
-#include <airdcpp/core/io/stream/FilteredFile.h>
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/core/localization/ResourceManager.h>
 #include <airdcpp/search/SearchResult.h>
 #include <airdcpp/search/SearchQuery.h>
-#include <airdcpp/share/SharePathValidator.h>
 #include <airdcpp/share/profiles/ShareProfile.h>
 #include <airdcpp/share/ShareRefreshInfo.h>
 #include <airdcpp/core/io/xml/SimpleXML.h>
 #include <airdcpp/util/text/StringTokenizer.h>
 #include <airdcpp/connection/UserConnection.h>
-
-#include <airdcpp/core/thread/concurrency.h>
 
 namespace dcpp {
 

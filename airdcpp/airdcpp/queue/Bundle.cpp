@@ -24,13 +24,11 @@
 #include <airdcpp/connection/ConnectionManager.h>
 #include <airdcpp/transfer/download/Download.h>
 #include <airdcpp/core/io/File.h>
-#include <airdcpp/events/LogManager.h>
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/queue/QueueItem.h>
 #include <airdcpp/core/io/xml/SimpleXML.h>
 #include <airdcpp/core/io/stream/Streams.h>
 #include <airdcpp/core/timer/TimerManager.h>
-#include <airdcpp/connection/UserConnection.h>
 #include <airdcpp/util/ValueGenerator.h>
 
 #include <boost/range/numeric.hpp>

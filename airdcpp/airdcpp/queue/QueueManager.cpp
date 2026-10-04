@@ -24,7 +24,6 @@
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/connection/ConnectionManager.h>
 #include <airdcpp/DCPlusPlus.h>
-#include <airdcpp/protocol/ProtocolCommandManager.h>
 #include <airdcpp/filelist/DirectoryListing.h>
 #include <airdcpp/filelist/DirectoryListingManager.h>
 #include <airdcpp/transfer/download/Download.h>
@@ -49,7 +48,6 @@
 #include <airdcpp/connection/UserConnection.h>
 #include <airdcpp/util/ValueGenerator.h>
 #include <airdcpp/core/io/compress/ZUtils.h>
-#include <airdcpp/core/version.h>
 
 #include <boost/range/algorithm_ext/for_each.hpp>
 

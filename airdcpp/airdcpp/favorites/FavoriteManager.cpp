@@ -20,8 +20,6 @@
 #include <airdcpp/favorites/FavoriteManager.h>
 
 #include <airdcpp/hub/ClientManager.h>
-#include <airdcpp/user/HintedUser.h>
-#include <airdcpp/core/localization/ResourceManager.h>
 #include <airdcpp/share/ShareManager.h>
 #include <airdcpp/share/profiles/ShareProfileManager.h>
 #include <airdcpp/core/io/xml/SimpleXML.h>

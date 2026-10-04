@@ -24,13 +24,11 @@
 
 #include <airdcpp/core/io/compress/BZUtils.h>
 #include <airdcpp/hub/ClientManager.h>
-#include <airdcpp/util/DupeUtil.h>
 #include <airdcpp/core/io/stream/FilteredFile.h>
 #include <airdcpp/events/LogManager.h>
 #include <airdcpp/queue/QueueManager.h>
 #include <airdcpp/core/localization/ResourceManager.h>
 #include <airdcpp/share/ShareManager.h>
-#include <airdcpp/core/io/xml/SimpleXML.h>
 #include <airdcpp/core/io/xml/SimpleXMLReader.h>
 #include <airdcpp/core/io/stream/Streams.h>
 #include <airdcpp/util/text/StringTokenizer.h>

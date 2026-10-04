@@ -1245,7 +1245,7 @@
 #define IDC_TARGET_PATH                 1535
 #define IDC_REMOVE_ON_HIT2              1536
 #define IDC_USE_MATCHER                 1536
-#define _WIN32_WINNT                    0x600
+#define _WIN32_WINNT                    0x0A00
 #define IDC_MATCHER_PATTERN             1537
 #define IDC_PATTERN                     1538
 #define IDC_MON                         1539

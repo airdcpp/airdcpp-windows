@@ -22,7 +22,6 @@
 #include <airdcpp/util/AppUtil.h>
 #include <airdcpp/core/io/File.h>
 #include <airdcpp/hash/HashedFile.h>
-#include <airdcpp/message/Message.h>
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/search/SearchQuery.h>
 #include <airdcpp/search/SearchResult.h>

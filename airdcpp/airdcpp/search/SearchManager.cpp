@@ -21,7 +21,6 @@
 
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/util/CryptoUtil.h>
-#include <airdcpp/events/LogManager.h>
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/core/classes/ScopedFunctor.h>
 #include <airdcpp/search/SearchInstance.h>

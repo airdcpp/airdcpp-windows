@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <windows/stdafx.h>
 #include <windows/Resource.h>
 
 #include "ActionUtil.h"
@@ -29,14 +28,11 @@
 #include <windows/MainFrm.h>
 #include <windows/util/FormatUtil.h>
 
-#include <windows/frames/hub/HubFrame.h>
 #include <windows/dialog/BrowseDlg.h>
-#include <windows/components/ExMessageBox.h>
 
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/util/DupeUtil.h>
 #include <airdcpp/favorites/FavoriteUserManager.h>
-#include <airdcpp/core/geo/GeoManager.h>
 #include <airdcpp/util/LinkUtil.h>
 #include <airdcpp/core/localization/Localization.h>
 #include <airdcpp/events/LogManager.h>
@@ -44,7 +40,6 @@
 #include <airdcpp/queue/QueueManager.h>
 #include <airdcpp/util/RegexUtil.h>
 #include <airdcpp/core/localization/ResourceManager.h>
-#include <airdcpp/core/classes/ScopedFunctor.h>
 #include <airdcpp/search/SearchInstance.h>
 #include <airdcpp/util/text/StringTokenizer.h>
 #include <airdcpp/favorites/ReservedSlotManager.h>

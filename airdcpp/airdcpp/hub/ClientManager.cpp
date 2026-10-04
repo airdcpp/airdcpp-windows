@@ -19,12 +19,10 @@
 #include "stdinc.h"
 #include <airdcpp/hub/ClientManager.h>
 
-#include <airdcpp/connectivity/ConnectivityManager.h>
 #include <airdcpp/connection/ConnectionManager.h>
 #include <airdcpp/util/CryptoUtil.h>
 #include <airdcpp/protocol/ProtocolCommandManager.h>
 #include <airdcpp/util/LinkUtil.h>
-#include <airdcpp/events/LogManager.h>
 #include <airdcpp/search/RelevanceSearch.h>
 #include <airdcpp/core/localization/ResourceManager.h>
 

@@ -30,7 +30,6 @@
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/core/localization/ResourceManager.h>
 #include <airdcpp/search/SearchQuery.h>
-#include <airdcpp/search/SearchResult.h>
 #include <airdcpp/share/SharePathValidator.h>
 #include <airdcpp/share/profiles/ShareProfileManager.h>
 #include <airdcpp/share/ShareTasks.h>
@@ -39,8 +38,6 @@
 #include <airdcpp/core/io/stream/Streams.h>
 #include <airdcpp/transfer/Transfer.h>
 #include <airdcpp/connection/UserConnection.h>
-
-#include <airdcpp/core/version.h>
 
 #include <airdcpp/core/thread/concurrency.h>
 

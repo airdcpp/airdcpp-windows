@@ -22,7 +22,6 @@
 #include <airdcpp/connection/socket/BufferedSocket.h>
 #include <airdcpp/hub/ClientManager.h>
 #include <airdcpp/connection/ConnectionManager.h>
-#include <airdcpp/connectivity/ConnectivityManager.h>
 #include <airdcpp/protocol/ProtocolCommandManager.h>
 #include <airdcpp/favorites/FavoriteManager.h>
 #include <airdcpp/util/LinkUtil.h>

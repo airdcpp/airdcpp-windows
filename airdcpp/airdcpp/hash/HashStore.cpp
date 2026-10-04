@@ -29,7 +29,6 @@
 #include <airdcpp/share/ShareManager.h>
 #include <airdcpp/core/localization/ResourceManager.h>
 #include <airdcpp/util/Util.h>
-#include <airdcpp/core/version.h>
 
 
 #define FILEINDEX_VERSION 1
