@@ -23,6 +23,7 @@
 #include <windows/util/ActionUtil.h>
 #include <windows/util/WinUtil.h>
 #include <windows/components/BarShader.h>
+#include <windows/util/DarkMode.h>
 #include <windows/MainFrm.h>
 
 #include <web-server/ContextMenuManager.h>
@@ -177,6 +178,24 @@ void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption,
 
 	if(mi->text.length() > 25) {
 		mi->text = mi->text.substr(0, 25) + _T("...");
+	}
+
+	if (DarkMode::isEnabled()) {
+		// Windows draws menus with owner drawn items in the light theme, use a plain bold title instead
+		CMenuItemInfo title;
+		title.fMask = MIIM_FTYPE | MIIM_STATE | MIIM_STRING;
+		title.fType = MFT_STRING;
+		title.fState = MFS_DISABLED | MFS_DEFAULT;
+		title.dwTypeData = const_cast<LPTSTR>(mi->text.c_str());
+		CMenu::InsertMenuItem(uItem, byPosition, &title);
+
+		CMenuItemInfo separator;
+		separator.fMask = MIIM_FTYPE;
+		separator.fType = MFT_SEPARATOR;
+		CMenu::InsertMenuItem(byPosition ? uItem + 1 : uItem, byPosition, &separator);
+
+		delete mi;
+		return;
 	}
 
 	mi->parent = this;
