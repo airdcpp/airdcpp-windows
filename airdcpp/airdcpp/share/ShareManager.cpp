@@ -630,14 +630,19 @@ ShareManager::RefreshTaskHandler::ShareBuilder::ShareBuilder(const string& aPath
 }
 
 bool ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const bool& aStopping) noexcept {
+	ErrorCollector errors;
 	try {
-		buildTree(path, Text::toLower(path), newDirectory, optionalOldDirectory, aStopping);
+		buildTree(path, Text::toLower(path), newDirectory, optionalOldDirectory, aStopping, errors);
 	} catch (const std::bad_alloc&) {
 		log(STRING_F(DIR_REFRESH_FAILED, path % STRING(OUT_OF_MEMORY)), LogMessage::SEV_ERROR);
 		return false;
 	} catch (...) {
 		log(STRING_F(DIR_REFRESH_FAILED, path % STRING(UNKNOWN_ERROR)), LogMessage::SEV_ERROR);
 		return false;
+	}
+
+	if (auto msg = errors.getMessage(); !msg.empty()) {
+		log(STRING_F(SHARE_FILES_BLOCKED, path % msg), LogMessage::SEV_INFO);
 	}
 
 	return !aStopping;
@@ -664,8 +669,7 @@ bool ShareManager::RefreshTaskHandler::ShareBuilder::validateFileItem(const File
 	return true;
 }
 
-void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPath, const string& aPathLower, const ShareDirectory::Ptr& aParent, const ShareDirectory::Ptr& aOldParent, const bool& aStopping) {
-	ErrorCollector errors;
+void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPath, const string& aPathLower, const ShareDirectory::Ptr& aParent, const ShareDirectory::Ptr& aOldParent, const bool& aStopping, ErrorCollector& aErrorCollector) {
 	FileFindIter end;
 	for(FileFindIter i(aPath, "*"); i != end && !aStopping; ++i) {
 		const auto name = i->getFileName();
@@ -675,7 +679,7 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 
 		const auto isDirectory = i->isDirectory();
 		if (!isDirectory) {
-			errors.increaseTotal();
+			aErrorCollector.increaseTotal();
 		}
 
 		DualString dualName(name);
@@ -695,7 +699,7 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 			// Validations
 			{
 				auto newParent = !aOldParent;
-				if (!validateFileItem(*i, curPath, isNew, newParent, errors)) {
+				if (!validateFileItem(*i, curPath, isNew, newParent, aErrorCollector)) {
 					stats.skippedDirectoryCount++;
 					continue;
 				}
@@ -705,7 +709,7 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 			// Add it
 			auto curDir = ShareDirectory::createNormal(std::move(dualName), aParent.get(), i->getLastWriteTime(), *this);
 			if (curDir) {
-				buildTree(curPath, curPathLower, curDir, oldDir, aStopping);
+				buildTree(curPath, curPathLower, curDir, oldDir, aStopping, aErrorCollector);
 				if (checkContent(curDir)) {
 					if (isNew) {
 						stats.newDirectoryCount++;
@@ -727,8 +731,7 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 
 
 				// Validations
-				auto newParent = !aOldParent;
-				if (!validateFileItem(*i, curPath, isNew, newParent, errors)) {
+				if (const auto newParent = !aOldParent; !validateFileItem(*i, curPath, isNew, newParent, aErrorCollector)) {
 					stats.skippedFileCount++;
 					continue;
 				}
@@ -752,11 +755,6 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 			} catch(const HashException&) {
 			}
 		}
-	}
-
-	auto msg = errors.getMessage();
-	if (!msg.empty()) {
-		log(STRING_F(SHARE_FILES_BLOCKED, aPath % msg), LogMessage::SEV_INFO);
 	}
 }
 
