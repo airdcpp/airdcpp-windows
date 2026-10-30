@@ -21,10 +21,6 @@
 
 #include <airdcpp/core/io/stream/SharedFileStream.h>
 
-#ifdef _WIN32
-# include "Winioctl.h"
-#endif
-
 namespace dcpp {
 
 CriticalSection SharedFileStream::cs;

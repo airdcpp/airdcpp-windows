@@ -60,7 +60,7 @@ public:
 	void setPos(int64_t aPos) noexcept override;
 private:
 	SharedFileHandle* sfh;
-	int64_t pos;
+	int64_t pos = 0;
 };
 
 }
