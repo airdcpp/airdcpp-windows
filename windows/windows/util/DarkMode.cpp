@@ -1233,6 +1233,20 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 			break;
 		}
+		case WM_MDIACTIVATE:
+		{
+			// Switching between maximized windows shows the new window restored with the light caption for a moment
+			BOOL maximized = FALSE;
+			if (!SendMessage(hWnd, WM_MDIGETACTIVE, 0, reinterpret_cast<LPARAM>(&maximized)) || !maximized) {
+				break;
+			}
+
+			SendMessage(hWnd, WM_SETREDRAW, FALSE, 0);
+			auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			SendMessage(hWnd, WM_SETREDRAW, TRUE, 0);
+			RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
+			return result;
+		}
 		case WM_NCPAINT:
 		{
 			auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
