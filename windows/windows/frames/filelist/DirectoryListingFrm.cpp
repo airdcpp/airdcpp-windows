@@ -323,7 +323,12 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, uint8_t aType) noexcept {
 	if (matchADL) {
 		ctrlStatus.SetText(0, CTSTRING(MATCHING_ADL));
-		ADLSearchManager::getInstance()->matchListing(*dl.get());
+		try {
+			ADLSearchManager::getInstance()->matchListing(*dl.get());
+		} catch (const AbortException&) {
+			// The list is being closed
+			return;
+		}
 	}
 
 	onLoadingFinished(aStart, aDir, aType);
