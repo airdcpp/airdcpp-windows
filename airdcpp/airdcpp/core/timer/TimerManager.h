@@ -24,6 +24,9 @@
 #include <airdcpp/core/timer/TimerManagerListener.h>
 #include <airdcpp/core/thread/Thread.h>
 
+#include <condition_variable>
+#include <mutex>
+
 namespace dcpp {
 
 class TimerManager : public Speaker<TimerManagerListener>, public Singleton<TimerManager>, public Thread
