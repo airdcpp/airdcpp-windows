@@ -188,7 +188,13 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 LRESULT PrivateFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	HWND hWnd = (HWND)lParam;
 	HDC hDC = (HDC)wParam;
-	if(hWnd == ctrlClient.m_hWnd || hWnd == ctrlMessage.m_hWnd) {
+	if (hWnd == ctrlMessage.m_hWnd) {
+		::SetBkColor(hDC, WinUtil::inputColor);
+		::SetTextColor(hDC, WinUtil::textColor);
+		return (LRESULT)WinUtil::inputBrush;
+	}
+
+	if(hWnd == ctrlClient.m_hWnd) {
 		::SetBkColor(hDC, WinUtil::bgColor);
 		::SetTextColor(hDC, WinUtil::textColor);
 		return (LRESULT)WinUtil::bgBrush;

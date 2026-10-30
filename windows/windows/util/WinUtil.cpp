@@ -30,6 +30,7 @@
 #include <windows/components/BarShader.h>
 #include <windows/components/ExMessageBox.h>
 #include <windows/SplashWindow.h>
+#include <windows/util/DarkMode.h>
 
 #include <airdcpp/util/DupeUtil.h>
 #include <airdcpp/core/io/File.h>
@@ -63,6 +64,8 @@ SplashWindow* WinUtil::splash = nullptr;
 HBRUSH WinUtil::bgBrush = NULL;
 COLORREF WinUtil::textColor = 0;
 COLORREF WinUtil::bgColor = 0;
+HBRUSH WinUtil::inputBrush = NULL;
+COLORREF WinUtil::inputColor = 0;
 HFONT WinUtil::font = NULL;
 int WinUtil::fontHeight = 0;
 HFONT WinUtil::boldFont = NULL;
@@ -410,6 +413,15 @@ void WinUtil::initColors() {
 	textColor = SETTING(TEXT_COLOR);
 	bgColor = SETTING(BACKGROUND_COLOR);
 
+	// The message boxes would be hard to tell apart from the chat in dark mode
+	inputColor = bgColor;
+	if (DarkMode::isEnabled() && GetRValue(bgColor) + GetGValue(bgColor) + GetBValue(bgColor) < 3 * 128) {
+		inputColor = RGB(GetRValue(bgColor) / 2, GetGValue(bgColor) / 2, GetBValue(bgColor) / 2);
+	}
+
+	::DeleteObject(inputBrush);
+	inputBrush = CreateSolidBrush(inputColor);
+
 	CHARFORMAT2 cf;
 	memzero(&cf, sizeof(CHARFORMAT2));
 	cf.cbSize = sizeof(cf);
@@ -547,6 +559,7 @@ void WinUtil::uninit() {
 	::DeleteObject(font);
 	::DeleteObject(boldFont);
 	::DeleteObject(bgBrush);
+	::DeleteObject(inputBrush);
 	::DeleteObject(tabFont);
 
 	::DeleteObject(OEMFont);

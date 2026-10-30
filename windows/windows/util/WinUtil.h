@@ -125,6 +125,9 @@ public:
 	static HBRUSH bgBrush;
 	static COLORREF textColor;
 	static COLORREF bgColor;
+	// Background of the chat message boxes
+	static HBRUSH inputBrush;
+	static COLORREF inputColor;
 	static HFONT font;
 	static int fontHeight;
 	static HFONT boldFont;
