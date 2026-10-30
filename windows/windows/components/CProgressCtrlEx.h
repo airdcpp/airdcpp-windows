@@ -29,6 +29,7 @@
 #endif // _MSC_VER > 1000
 
 #include <windows/stdafx.h>
+#include <windows/util/DarkMode.h>
 #include <windows/util/WinUtil.h>
 
 namespace wingui {
@@ -51,6 +52,12 @@ public:
 	}
 
 	LRESULT onPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+		if (DarkMode::isEnabled()) {
+			// The visual style has no dark variant
+			paintDark();
+			return 0;
+		}
+
 		DefWindowProc(uMsg, wParam, lParam);
 		CRect rc;
 		GetClientRect(rc);
@@ -90,6 +97,26 @@ public:
 	}
 
 private:
+	void paintDark() {
+		CPaintDC dc(m_hWnd);
+		CRect rc;
+		GetClientRect(rc);
+		dc.FillRect(rc, DarkMode::getSysColorBrush(COLOR_WINDOW));
+
+		PBRANGE range;
+		GetRange(&range);
+		if (range.iHigh > range.iLow) {
+			auto bar = rc;
+			bar.right = rc.left + MulDiv(rc.Width(), GetPos() - range.iLow, range.iHigh - range.iLow);
+			dc.FillRect(bar, GetSysColorBrush(COLOR_HIGHLIGHT));
+		}
+
+		dc.SetBkMode(TRANSPARENT);
+		auto oldFont = dc.SelectFont(WinUtil::progressFont);
+		dc.SetTextColor(WinUtil::TBprogressTextColor);
+		dc.DrawText(ctrlText.c_str(), static_cast<int>(ctrlText.size()), &rc, dTextFormat);
+		dc.SelectFont(oldFont);
+	}
 
 	void showPercentage(int pos){
 		tstring tmp;

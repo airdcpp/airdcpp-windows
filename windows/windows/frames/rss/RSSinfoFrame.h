@@ -35,6 +35,7 @@
 #include <airdcpp/modules/AutoSearchManagerListener.h>
 #include <airdcpp/queue/QueueManagerListener.h>
 #include <airdcpp/core/queue/TaskQueue.h>
+#include <windows/components/ThemedSplitterImpl.h>
 
 namespace wingui {
 
@@ -42,7 +43,7 @@ namespace wingui {
 
 class RssInfoFrame : public MDITabChildWindowImpl<RssInfoFrame>, public StaticFrame<RssInfoFrame, ResourceManager::RSS_FEEDS, IDC_RSSFRAME>, 
 	private RSSManagerListener, private QueueManagerListener, private AutoSearchManagerListener,
-	public CSplitterImpl<RssInfoFrame>,  private Async<RssInfoFrame>, public DownloadBaseHandler<RssInfoFrame>
+	public ThemedSplitterImpl<RssInfoFrame>,  private Async<RssInfoFrame>, public DownloadBaseHandler<RssInfoFrame>
 {
 public:
 
@@ -70,7 +71,7 @@ public:
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		CHAIN_MSG_MAP(baseClass)
-		CHAIN_MSG_MAP(CSplitterImpl<RssInfoFrame>)
+		CHAIN_MSG_MAP(ThemedSplitterImpl<RssInfoFrame>)
 		ALT_MSG_MAP(RSS_STATUS_MSG_MAP)
 			COMMAND_ID_HANDLER(IDC_ADD, onConfig);
 			COMMAND_ID_HANDLER(IDC_REMOVE, onConfig);

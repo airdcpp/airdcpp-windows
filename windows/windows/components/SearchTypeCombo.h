@@ -23,6 +23,7 @@
 
 #include <airdcpp/core/header/typedefs.h>
 #include <atlctrls.h>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 
@@ -33,7 +34,7 @@ public:
 
 	static LRESULT onMeasureItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	static LRESULT onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
-	void fillList(const string& aSelection, COLORREF aTextColor = GetSysColor(COLOR_WINDOWTEXT), COLORREF aBgColor = GetSysColor(COLOR_WINDOW));
+	void fillList(const string& aSelection, COLORREF aTextColor = DarkMode::getSysColor(COLOR_WINDOWTEXT), COLORREF aBgColor = DarkMode::getSysColor(COLOR_WINDOW));
 private:
 	struct ItemInfo {
 		ItemInfo(const tstring& aTitle, int aImageIndex, COLORREF aTextColor, COLORREF aBgColor) : title(aTitle), imageIndex(aImageIndex), bgColor(aBgColor), 

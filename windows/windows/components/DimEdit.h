@@ -35,6 +35,7 @@
 #include <string>
 #include <AtlCrack.h>
 #include <airdcpp/core/header/typedefs.h>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 class CDimEdit : public CWindowImpl< CDimEdit, CEdit > {
@@ -138,7 +139,7 @@ public:
       dc.SetTextAlign( TA_CENTER );
       dc.TextOut( ( paint.rcPaint.right - paint.rcPaint.left ) / 2, 1, m_dimText.c_str( ) );
 		} else { 	//  If the control is "normal", display the text on the left.
-      dc.SetTextColor( GetSysColor( COLOR_BTNTEXT ) );
+      dc.SetTextColor( DarkMode::getSysColor( COLOR_BTNTEXT ) );
       dc.SetTextAlign( TA_LEFT );
       int length = GetWindowTextLength( ) + 1;
       TCHAR* text = new TCHAR[length];

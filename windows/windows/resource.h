@@ -101,6 +101,7 @@
 #define IDR_RECENTS                     238
 #define IDR_AUTOSEARCH                  239
 #define IDB_SPLASH                      240
+#define IDB_SPLASH_DARK                 490
 #define IDD_HIGHLIGHTPAGE               240
 #define IDR_UPLOAD_QUEUE                241
 #define IDD_SOUNDS                      241
@@ -1654,6 +1655,8 @@
 #define IDC_SETTINGS_BIND_ADDRESS_HTTP_LABEL 10237
 #define IDC_BIND_ADDRESS_HTTP           10238
 #define IDC_CONFIGURE                   10239
+#define IDC_WINDOW_THEME_LABEL          10240
+#define IDC_WINDOW_THEME                10241
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1866,7 +1869,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        479
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10239
+#define _APS_NEXT_CONTROL_VALUE         10242
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

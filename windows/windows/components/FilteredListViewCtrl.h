@@ -28,6 +28,7 @@
 #include <airdcpp/core/types/DupeType.h>
 #include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/util/DupeUtil.h>
+#include <windows/util/DarkMode.h>
 
 #define KEY_MESSAGE_MAP 7
 
@@ -186,11 +187,11 @@ public:
 		WTL::CDCHandle dc(reinterpret_cast<HDC>(wParam));
 		RECT rc;
 		this->GetClientRect(&rc);
-		dc.FillRect(&rc, GetSysColorBrush(COLOR_3DFACE));
+		dc.FillRect(&rc, DarkMode::getSysColorBrush(COLOR_3DFACE));
 		//dc.FillRect(&rc, WinUtil::bgBrush);
 
 		// draw the left border
-		HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_APPWORKSPACE)));
+		HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, DarkMode::getSysColor(COLOR_APPWORKSPACE)));
 		MoveToEx(dc, rc.left, rc.top, (LPPOINT) NULL);
 		LineTo(dc, rc.left, rc.bottom);
 
@@ -216,8 +217,8 @@ public:
 		HWND hWnd = (HWND) lParam;
 		if (hWnd == ctrlQueued.m_hWnd || hWnd == ctrlShared.m_hWnd) {
 			HDC hDC = (HDC) wParam;
-			::SetBkColor(hDC, ::GetSysColor(COLOR_3DFACE));
-			return (LRESULT)::GetSysColorBrush(COLOR_3DFACE);
+			::SetBkColor(hDC, DarkMode::getSysColor(COLOR_3DFACE));
+			return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
 			//::SetBkColor(hDC, WinUtil::bgColor);
 			//::SetTextColor(hDC, WinUtil::textColor);
 			//::SetBkMode(hDC, TRANSPARENT);

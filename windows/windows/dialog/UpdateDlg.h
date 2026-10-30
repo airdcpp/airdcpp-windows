@@ -22,6 +22,7 @@
 #include <windows/RichTextBox.h>
 
 #include <airdcpp/core/update/UpdateVersion.h>
+#include <windows/components/HyperLink.h>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -82,7 +83,7 @@ public:
 	
 	static bool canAutoUpdate(const string& url);
 private:
-	CHyperLink url;
+	HyperLink url;
 	CStatic ctrlUpdateStatus;
 	bool versionAvailable = false;
 

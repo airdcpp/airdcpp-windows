@@ -31,6 +31,7 @@
 
 #include <windows/frames/autosearch/AutoSearchItemSettings.h>
 #include <windows/components/TabbedDialog.h>
+#include <windows/util/DarkMode.h>
 
 
 namespace wingui {
@@ -66,8 +67,8 @@ public:
 		HDC hdc = (HDC)wParam;
 		SetBkMode(hdc, TRANSPARENT);
 		if (uMsg != WM_CTLCOLORDLG) {
-			SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
-			return (LRESULT)GetStockObject(COLOR_3DFACE);
+			SetBkColor(hdc, DarkMode::getSysColor(COLOR_3DFACE));
+			return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
 		}
 		return (LRESULT)GetStockObject(NULL_BRUSH);
 	}

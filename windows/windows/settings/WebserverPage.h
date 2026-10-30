@@ -31,6 +31,7 @@
 #include <windows/RichTextBox.h>
 
 #include <web-server/WebServerManager.h>
+#include <windows/components/HyperLink.h>
 
 namespace wingui {
 class WebServerPage : public CPropertyPage<IDD_WEB_SERVER_PAGE>, public PropPage, private webserver::WebServerManagerListener, private Async<WebServerPage>
@@ -90,7 +91,7 @@ protected:
 	CEdit ctrlTlsPort;
 	ExListViewCtrl ctrlWebUsers;
 
-	CHyperLink url;
+	HyperLink url;
 
 	AdapterInfoList bindAdapters;
 	void initBindAddresses() noexcept;

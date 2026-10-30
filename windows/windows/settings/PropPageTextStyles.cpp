@@ -28,6 +28,7 @@
 #include <windows/util/WinUtil.h>
 #include <windows/settings/OperaColorsPage.h>
 #include <windows/settings/base/PropertiesDlg.h>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 PropPage::TextItem PropPageTextStyles::texts[] = {
@@ -197,7 +198,7 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 		onResetColor(i);
 	}
 
-	setForeColor(ctrlTabExample, GetSysColor(COLOR_3DFACE));	
+	setForeColor(ctrlTabExample, DarkMode::getSysColor(COLOR_3DFACE));	
 
 	ctrlTabList.SetCurSel(0);
 	BOOL bTmp;

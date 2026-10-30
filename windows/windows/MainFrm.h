@@ -44,6 +44,8 @@
 #include <windows/components/OMenu.h>
 #include <windows/picturewindow.h>
 #include <windows/components/CProgressCtrlEx.h>
+#include <windows/components/MDICommandBar.h>
+#include <windows/components/ThemedSplitterImpl.h>
 
 namespace wingui {
 #define STATUS_MESSAGE_MAP 9
@@ -53,7 +55,7 @@ class HashProgressDlg;
 class TransferView;
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
-		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
+		public CMessageFilter, public CIdleHandler, public ThemedSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ClientManagerListener,
 		private PrivateChatManagerListener, private ActivityManagerListener, private ViewFileManagerListener
@@ -65,7 +67,7 @@ public:
 	virtual ~MainFrame();
 	DECLARE_FRAME_WND_CLASS(_T("AirDC++"), IDR_MAINFRAME)
 
-	CMDICommandBarCtrl m_CmdBar;
+	MDICommandBar m_CmdBar;
 
 	BOOL PreTranslateMessage(MSG* pMsg)
 	{
@@ -90,7 +92,7 @@ public:
 		UIUpdateToolBar();
 		return FALSE;
 	}
-	typedef CSplitterImpl<MainFrame> splitterBase;
+	typedef ThemedSplitterImpl<MainFrame> splitterBase;
 	BEGIN_MSG_MAP(MainFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
@@ -108,6 +110,7 @@ public:
 		MESSAGE_HANDLER(WM_COPYDATA, onCopyData)
 		MESSAGE_HANDLER(WMU_WHERE_ARE_YOU, onWhereAreYou)
 		MESSAGE_HANDLER(WM_ACTIVATEAPP, onActivateApp)
+		MESSAGE_HANDLER(WM_SETTINGCHANGE, onSettingChange)
 		MESSAGE_HANDLER(WM_APPCOMMAND, onAppCommand)
 		MESSAGE_HANDLER(IDC_REBUILD_TOOLBAR, OnCreateToolbar)
 		MESSAGE_HANDLER(IDC_SET_FONTS, onSetFont)
@@ -182,7 +185,7 @@ public:
 		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onRefreshDropDown)
 		CHAIN_MDI_CHILD_COMMANDS()
 		CHAIN_MSG_MAP(CUpdateUI<MainFrame>)
-		CHAIN_MSG_MAP(CSplitterImpl<MainFrame>)
+		CHAIN_MSG_MAP(ThemedSplitterImpl<MainFrame>)
 		CHAIN_MSG_MAP(CMDIFrameWindowImpl<MainFrame>)
 		ALT_MSG_MAP(STATUS_MESSAGE_MAP)
 			NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
@@ -227,6 +230,7 @@ public:
 	LRESULT onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onActivateApp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onSettingChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onAppCommand(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onAway(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 

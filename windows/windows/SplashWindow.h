@@ -29,10 +29,12 @@
 #include <windows/components/ExCImage.h>
 #include <windows/Async.h>
 
+#include <airdcpp/settings/SettingsManagerListener.h>
+
 using std::string;
 
 namespace wingui {
-class SplashWindow : public CWindowImpl<SplashWindow, CWindow>, public Async<SplashWindow> {
+class SplashWindow : public CWindowImpl<SplashWindow, CWindow>, public Async<SplashWindow>, private SettingsManagerListener {
 public:
 	BEGIN_MSG_MAP(SplashImpl)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
@@ -57,6 +59,9 @@ public:
 
 	void update(const string& status);
 	void update(float progress);
+
+	// Call after the settings manager has been created (before the settings are loaded)
+	void listenSettings();
 private:
 	void draw();
 	void loadImage();
@@ -70,6 +75,11 @@ private:
 
 	tstring status;
 	float progress = 0;
+	bool dark = false;
+	bool customImage = false;
+
+	// The window theme setting is available after the settings have been loaded
+	void on(SettingsManagerListener::LoadCompleted, bool) noexcept override;
 	bool closing = false;
 
 	HFONT hFontTitle;

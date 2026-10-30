@@ -26,6 +26,7 @@
 #include <windows/Resource.h>
 #include <windows/ResourceLoader.h>
 #include <windows/SplashWindow.h>
+#include <windows/util/DarkMode.h>
 #include <windows/util/WinUtil.h>
 #include <windows/settings/wizard/Wizard.h>
 
@@ -66,6 +67,9 @@ void WinClient::webErrorF(const string& aError) {
 };
 
 void WinClient::initModules() {
+	// The splash image depends on the window theme setting
+	WinUtil::splash->listenSettings();
+
 	ADLSearchManager::newInstance();
 	HighlightManager::newInstance();
 	FinishedManager::newInstance();
@@ -277,6 +281,8 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 				SetProcessDefaultLayout(LAYOUT_RTL);
 			}
 
+			DarkMode::init();
+
 			wndMain = make_unique<MainFrame>(
 				startupParams, 
 				[this](auto file) { updater.addUpdate(file); }
@@ -344,6 +350,8 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 
 	nRet = theLoop.Run();
 	_Module.RemoveMessageLoop();
+
+	DarkMode::uninit();
 
 	wndMain.reset(nullptr);
 	WinUtil::splash->destroy();

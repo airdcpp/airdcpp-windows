@@ -22,6 +22,7 @@
 #include <windows/frames/extensions/DynamicTabPage.h>
 
 #include <airdcpp/util/text/Text.h>
+#include <windows/util/DarkMode.h>
 
 
 namespace wingui {
@@ -48,12 +49,12 @@ LRESULT DynamicTabPage::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 	if (uMsg == WM_CTLCOLORSTATIC) {
 		HDC hdc = (HDC)wParam;
 		SetBkMode(hdc, TRANSPARENT);
-		SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
-		return (LRESULT)GetStockObject(COLOR_3DFACE);
+		SetBkColor(hdc, DarkMode::getSysColor(COLOR_3DFACE));
+		return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
 	} else if (uMsg == WM_CTLCOLORDLG) {
 		HDC hdc = (HDC)wParam;
-		SetBkColor(hdc, ::GetSysColor(COLOR_WINDOW));
-		return (LRESULT)GetStockObject(COLOR_WINDOW);
+		SetBkColor(hdc, DarkMode::getSysColor(COLOR_WINDOW));
+		return (LRESULT)DarkMode::getSysColorBrush(COLOR_WINDOW);
 	}
 
 	bHandled = FALSE;
@@ -65,10 +66,10 @@ LRESULT DynamicTabPage::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /
 	WTL::CDCHandle dc(reinterpret_cast<HDC>(wParam));
 	RECT rc;
 	GetClientRect(&rc);
-	dc.FillRect(&rc, GetSysColorBrush(COLOR_WINDOW));
+	dc.FillRect(&rc, DarkMode::getSysColorBrush(COLOR_WINDOW));
 
 	//draw the left border
-	HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DLIGHT)));
+	HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, DarkMode::getSysColor(COLOR_3DLIGHT)));
 	MoveToEx(dc, rc.left, rc.top, (LPPOINT)NULL);
 	LineTo(dc, rc.left, rc.bottom);
 

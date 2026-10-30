@@ -33,12 +33,13 @@
 #include <airdcpp/favorites/FavoriteUserManagerListener.h>
 #include <airdcpp/queue/QueueManagerListener.h>
 #include <airdcpp/user/ignore/IgnoreManagerListener.h>
+#include <windows/components/ThemedSplitterImpl.h>
 
 #define STATUS_MAP 10
 
 namespace wingui {
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::USERS, IDC_FAVUSERS>,
-	public CSplitterImpl<UsersFrame>, private FavoriteUserManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
+	public ThemedSplitterImpl<UsersFrame>, private FavoriteUserManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
 	private SettingsManagerListener, private QueueManagerListener, private IgnoreManagerListener, private Async<UsersFrame> {
 public:
 	
@@ -49,7 +50,7 @@ public:
 		
 	typedef MDITabChildWindowImpl<UsersFrame> baseClass;
 	typedef UserInfoBaseHandler<UsersFrame> uibBase;
-	typedef CSplitterImpl<UsersFrame> splitBase;
+	typedef ThemedSplitterImpl<UsersFrame> splitBase;
 
 	BEGIN_MSG_MAP(UsersFrame)
 		NOTIFY_HANDLER(IDC_USERS, LVN_GETDISPINFO, ctrlUsers.onGetDispInfo)

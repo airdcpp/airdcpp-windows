@@ -24,6 +24,7 @@
 #include <math.h>
 
 #include <windows/EmoticonsManager.h>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 #define EMOTICONS_ICONMARGIN 8
@@ -104,7 +105,7 @@ LRESULT EmoticonsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		}
 
 		BITMAP bm = {0};
-		HBITMAP hbm = (*Emoticons.begin())->getEmoticonBmp(GetSysColor(COLOR_BTNFACE));
+		HBITMAP hbm = (*Emoticons.begin())->getEmoticonBmp(DarkMode::getSysColor(COLOR_BTNFACE));
 		GetObject(hbm, sizeof(BITMAP), &bm);
 		int bW = bm.bmWidth;
 		DeleteObject(hbm);
@@ -135,7 +136,7 @@ LRESULT EmoticonsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 				try {
 					CButton emoButton;
 					emoButton.Create(EmoticonsDlg::m_hWnd, pos, (*pEmotion)->getEmoticonText().c_str(), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER);
-					HBITMAP b = (*pEmotion)->getEmoticonBmp(GetSysColor(COLOR_BTNFACE));
+					HBITMAP b = (*pEmotion)->getEmoticonBmp(DarkMode::getSysColor(COLOR_BTNFACE));
 					emoButton.SetBitmap(b);
 					bitmapList.push_back(b);
 

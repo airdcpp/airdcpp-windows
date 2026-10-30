@@ -60,6 +60,8 @@ protected:
 	static TextItem texts[];
 	static ListItem listItems[];
 
+	CComboBox ctrlTheme;
+
 };
 }
 
