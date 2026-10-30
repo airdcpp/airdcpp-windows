@@ -869,21 +869,8 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.InsertSeparatorFirst(CTSTRING(TEXT));
 		}
 
-		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
-		menu.AppendMenu(MF_STRING, IDC_COPY_ACTUAL_LINE,  CTSTRING(COPY_LINE));
+		// Download items go first, directly below the title
 		if (!isPath) {
-			menu.appendSeparator();
-			menu.appendItem(TSTRING(SEARCH), [this] { handleSearch(); });
-			if (isTTH || isMagnet) {
-				menu.appendItem(TSTRING(SEARCH_TTH), [this] { handleSearchTTH(); });
-			}
-
-			if (dupeType != DUPE_NONE) {
-				menu.appendSeparator();
-				menu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenFolder(); });
-			}
-
-			menu.appendSeparator();
 			if (isMagnet) {
 				auto isMyLink = client && Text::toT(client->getMyNick()) == author;
 				auto magnet = *selectedHighlight->getMagnet();
@@ -896,9 +883,27 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 				if ((!author.empty() && !isMyLink) || DupeUtil::allowOpenFileDupe(dupeType))
 					menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
+
+				menu.appendSeparator();
 			} else if (isRelease) {
 				//autosearch menus
 				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
+				menu.appendSeparator();
+			}
+		}
+
+		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
+		menu.AppendMenu(MF_STRING, IDC_COPY_ACTUAL_LINE,  CTSTRING(COPY_LINE));
+		if (!isPath) {
+			menu.appendSeparator();
+			menu.appendItem(TSTRING(SEARCH), [this] { handleSearch(); });
+			if (isTTH || isMagnet) {
+				menu.appendItem(TSTRING(SEARCH_TTH), [this] { handleSearchTTH(); });
+			}
+
+			if (dupeType != DUPE_NONE) {
+				menu.appendSeparator();
+				menu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenFolder(); });
 			}
 		}
 
