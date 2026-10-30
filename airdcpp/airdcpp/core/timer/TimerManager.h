@@ -24,8 +24,6 @@
 #include <airdcpp/core/timer/TimerManagerListener.h>
 #include <airdcpp/core/thread/Thread.h>
 
-#include <boost/thread/mutex.hpp>
-
 namespace dcpp {
 
 class TimerManager : public Speaker<TimerManagerListener>, public Singleton<TimerManager>, public Thread
@@ -40,7 +38,9 @@ public:
 	static time_t getUptime() noexcept;
 private:
 	friend class Singleton<TimerManager>;
-	boost::timed_mutex mtx;
+	std::mutex mtx;
+	std::condition_variable cv;
+	bool stopping = false;
 
 	TimerManager();
 	~TimerManager();
