@@ -22,9 +22,7 @@
 #include <airdcpp/core/types/DirectoryContentInfo.h>
 #include <airdcpp/util/PathUtil.h>
 #include <airdcpp/settings/SettingsManager.h>
-#include <airdcpp/util/SystemUtil.h>
 
-#include <locale.h>
 #include <iomanip>
 
 namespace dcpp {
@@ -261,7 +259,7 @@ wstring::size_type Util::findSubString(const wstring& aString, const wstring& aS
 }
 
 int Util::stricmp(const char* a, const char* b) noexcept {
-	while(*a) {
+	while(*a && *b) {
 		wchar_t ca = 0, cb = 0;
 		int na = Text::utf8ToWc(a, ca);
 		int nb = Text::utf8ToWc(b, cb);
@@ -282,7 +280,7 @@ int Util::stricmp(const char* a, const char* b) noexcept {
 
 int Util::strnicmp(const char* a, const char* b, size_t n) noexcept {
 	const char* end = a + n;
-	while(*a && a < end) {
+	while(*a && *b && a < end) {
 		wchar_t ca = 0, cb = 0;
 		int na = Text::utf8ToWc(a, ca);
 		int nb = Text::utf8ToWc(b, cb);
@@ -621,7 +619,7 @@ int Util::DefaultSort(const char* a, const char* b) noexcept {
 				v1 += *a - '0';
 
 				a += na;
-				na = Text::utf8ToWc(a, ca);
+				na = abs(Text::utf8ToWc(a, ca));
 			}
 
 			while (iswdigit(cb)) {
@@ -629,7 +627,7 @@ int Util::DefaultSort(const char* a, const char* b) noexcept {
 				v2 += *b - '0';
 
 				b += nb;
-				nb = Text::utf8ToWc(b, cb);
+				nb = abs(Text::utf8ToWc(b, cb));
 			}
 
 			if (v1 != v2)
@@ -653,7 +651,7 @@ tstring Util::replaceT(const tstring& aString, const tstring& fStr, const tstrin
 	tstring::size_type pos = 0;
 	while( (pos = tmp.find(fStr, pos)) != tstring::npos ) {
 		tmp.replace(pos, fStr.length(), rStr);
-		pos += rStr.length() - fStr.length();
+		pos += rStr.length();
 	}
 
 	return tmp;
