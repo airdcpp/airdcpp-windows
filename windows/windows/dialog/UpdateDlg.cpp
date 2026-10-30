@@ -30,6 +30,7 @@
 
 #include <windows/util/WinUtil.h>
 #include <windows/util/ActionUtil.h>
+#include <windows/util/DarkMode.h>
 #include <windows/MainFrm.h>
 
 namespace wingui {
@@ -45,6 +46,17 @@ UpdateDlg::~UpdateDlg() {
 LRESULT UpdateDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	if((HWND) lParam == GetDlgItem(IDC_UPDATE_STATUS)) {
 		HDC hDC = (HDC)wParam;
+		if (DarkMode::isEnabled()) {
+			// A hollow brush leaves the static white in dark mode; the light theme red isn't readable on dark either
+			::SetTextColor(hDC, versionAvailable ? RGB(100, 170, 255) : RGB(90, 200, 100));
+			::SetBkColor(hDC, DarkMode::getSysColor(COLOR_3DFACE));
+			if (statusBrush.IsNull()) {
+				statusBrush.CreateSolidBrush(DarkMode::getSysColor(COLOR_3DFACE));
+			}
+
+			return (LRESULT)(HBRUSH)statusBrush;
+		}
+
 		if (versionAvailable)
 			::SetTextColor(hDC, RGB(251,69,69));
 		else

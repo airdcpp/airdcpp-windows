@@ -85,6 +85,7 @@ public:
 private:
 	HyperLink url;
 	CStatic ctrlUpdateStatus;
+	CBrush statusBrush; // Own brush so that the dark mode doesn't replace the status text color
 	bool versionAvailable = false;
 
 	string message;
