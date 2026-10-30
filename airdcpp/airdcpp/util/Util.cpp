@@ -351,7 +351,7 @@ string Util::formatParams(const string& aMsg, const ParamMap& aParams, FilterF a
 	return result;
 }
 
-string Util::formatTime(const string &msg, time_t aTime) noexcept {
+string Util::formatTime(const string& msg, time_t aTime) noexcept {
 	if (msg.empty()) {
 		return Util::emptyString;
 	}
@@ -399,23 +399,33 @@ string Util::formatCurrentTime() noexcept {
 	char buf[64];
 	time_t _tt;
 	time(&_tt);
-	tm* _tm = localtime(&_tt);
-	if(_tm == NULL) {
+	std::tm tmv{};
+#ifdef _WIN32
+	if (localtime_s(&tmv, &_tt) != 0) {
+#else
+	if (!localtime_r(&_tt, &tmv)) {
+#endif
 		strcpy(buf, "xx:xx:xx");
 	} else {
-		strftime(buf, 64, "%X", _tm);
+		strftime(buf, 64, "%X", &tmv);
 	}
 	return buf;
 }
 
 string Util::getTimeStamp(time_t t) noexcept {
-	char buf[255];
-	tm* _tm = localtime(&t);
-	if (_tm == NULL) {
+	char buf[255] = { 0 };
+	std::tm tmv{};
+#ifdef _WIN32
+	if (localtime_s(&tmv, &t) != 0) {
+#else
+	if (!localtime_r(&t, &tmv)) {
+#endif
 		strcpy(buf, "xx:xx");
-	}
-	else {
-		strftime(buf, 254, SETTING(TIME_STAMPS_FORMAT).c_str(), _tm);
+	} else {
+		// strftime returns 0 and leaves the buffer INDETERMINATE when the result does not fit
+		if (strftime(buf, sizeof(buf), SETTING(TIME_STAMPS_FORMAT).c_str(), &tmv) == 0) {
+			strcpy(buf, "xx:xx");
+		}
 	}
 	return Text::toUtf8(buf);
 }
