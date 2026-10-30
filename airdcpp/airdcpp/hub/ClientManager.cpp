@@ -521,10 +521,10 @@ void ClientManager::userUpdated(const UserPtr& aUser) const noexcept {
 	}
 }
 
-optional<ClientManager::ShareInfo> ClientManager::getShareInfo(const HintedUser& aUser) const noexcept {
+optional<ShareProfileContentInfo> ClientManager::getShareInfo(const HintedUser& aUser) const noexcept {
 	auto ou = findOnlineUser(aUser);
 	if (ou) {
-		return ShareInfo({ Util::toInt64(ou->getIdentity().getShareSize()), Util::toInt(ou->getIdentity().getSharedFiles()) });
+		return ShareProfileContentInfo({ Util::toInt64(ou->getIdentity().getShareSize()), Util::toSizeT(ou->getIdentity().getSharedFiles()) });
 	}
 
 	return nullopt;

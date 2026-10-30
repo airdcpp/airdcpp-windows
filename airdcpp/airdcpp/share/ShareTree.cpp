@@ -143,14 +143,8 @@ string ShareTree::realToVirtualAdc(const string& aPath, const OptionalProfileTok
 	return vPathAdc + ADC_SEPARATOR_STR + PathUtil::getFileName(aPath);
 }
 
-string ShareTree::validateVirtualName(const string& aVirt) const noexcept {
-	string tmp = aVirt;
-	string::size_type idx = 0;
-
-	while( (idx = tmp.find_first_of("\\/"), idx) != string::npos) {
-		tmp[idx] = '_';
-	}
-	return tmp;
+string ShareTree::validateVirtualName(const string& aVirt) noexcept {
+	return PathUtil::cleanPathSeparators(aVirt);
 }
 
 void ShareTree::countStats(time_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles_, size_t& uniqueFiles, size_t& lowerCaseFiles_, size_t& totalStrLen_, size_t& roots_) const noexcept{
@@ -391,7 +385,8 @@ ShareRoot::Ptr ShareTree::addShareRoot(const string& aPath, const string& aVirtu
 	dcassert(find_if(rootPaths | views::keys, IsParentOrExact(aPath, PATH_SEPARATOR)).base() == rootPaths.end());
 
 	// It's a new parent, will be handled in the task thread
-	auto root = ShareDirectory::createRoot(aPath, aVirtualName, aProfiles, aIncoming, aLastModified, *this, aLastRefreshed);
+	auto vName = validateVirtualName(aVirtualName);
+	auto root = ShareDirectory::createRoot(aPath, vName, aProfiles, aIncoming, aLastModified, *this, aLastRefreshed);
 	return root->getRoot();
 }
 
@@ -447,10 +442,10 @@ ShareRoot::Ptr ShareTree::updateShareRoot(const ShareDirectoryInfoPtr& aDirector
 		ShareDirectory::removeDirName(*directory, lowerDirNameMap);
 		rootDirectory->setName(vName);
 		ShareDirectory::addDirName(directory, lowerDirNameMap, *bloom.get());
-	}
 
-	rootDirectory->setIncoming(aDirectoryInfo->incoming);
-	rootDirectory->setRootProfiles(aDirectoryInfo->profiles);
+		rootDirectory->setIncoming(aDirectoryInfo->incoming);
+		rootDirectory->setRootProfiles(aDirectoryInfo->profiles);
+	}
 
 #ifdef _DEBUG
 	validateDirectoryTreeDebug();
@@ -700,7 +695,7 @@ void ShareTree::getProfileInfo(ProfileToken aProfile, int64_t& totalSize_, size_
 	RLock l(cs);
 	getRootsUnsafe(aProfile, roots);
 	for (const auto& d : roots) {
-		d->getProfileInfo(aProfile, totalSize_, filesCount_);
+		d->getContentInfo(totalSize_, filesCount_);
 	}
 }
 

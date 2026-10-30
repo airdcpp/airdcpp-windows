@@ -1077,23 +1077,23 @@ tstring DirectoryListingFrame::getComboDesc() {
 	return (dl->getIsOwnList() ? TSTRING(SHARE_PROFILE) : TSTRING(BROWSE_VIA));
 }
 
+ShareProfileContentInfo DirectoryListingFrame::getListInfoUnsafe() const noexcept {
+	if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
+		return dl->getPartialListInfo();
+	} else {
+		return dl->getFullListInfoUnsafe();
+	}
+}
+
 void DirectoryListingFrame::initStatus() {
 	dl->addAsyncTask([=] {
-		size_t totalFiles = 0;
-		int64_t totalSize = 0;
-		if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
-			dl->getPartialListInfo(totalSize, totalFiles);
-		} else {
-			totalSize = dl->getTotalListSizeUnsafe();
-			totalFiles = dl->getTotalFileCountUnsafe();
-		}
-
+		auto listInfo = getListInfoUnsafe();
 		callAsync([=] {
-			tstring tmp = TSTRING_F(TOTAL_SIZE, Util::formatBytesW(totalSize));
+			tstring tmp = TSTRING_F(TOTAL_SIZE, Util::formatBytesW(listInfo.size));
 			statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getStatusTextWidth(tmp, m_hWnd);
 			ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
 
-			tmp = TSTRING_F(TOTAL_FILES, totalFiles);
+			tmp = TSTRING_F(TOTAL_FILES, listInfo.fileCount);
 			statusSizes[STATUS_TOTAL_FILES] = WinUtil::getStatusTextWidth(tmp, m_hWnd);
 			ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
 

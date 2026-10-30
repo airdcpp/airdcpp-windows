@@ -20,13 +20,12 @@
 #define SHARE_DIRECTORIES_H
 
 #include <atlcrack.h>
+#include <windows/resource.h>
 
 #include <windows/components/ExListViewCtrl.h>
-#include <windows/settings/FolderTree.h>
 #include <windows/settings/base/PropPage.h>
 
 #include <airdcpp/settings/SettingsManager.h>
-#include <airdcpp/share/ShareManager.h>
 #include <airdcpp/share/ShareDirectoryInfo.h>
 #include <airdcpp/share/profiles/ShareProfile.h>
 

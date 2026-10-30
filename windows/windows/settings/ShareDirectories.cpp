@@ -17,11 +17,12 @@
  */
 
 #include <windows/stdafx.h>
+#include <windows/settings/ShareDirectories.h>
 
 #include <airdcpp/util/Util.h>
 #include <airdcpp/hub/ClientManager.h>
-#include <airdcpp/favorites/FavoriteManager.h>
 #include <airdcpp/util/PathUtil.h>
+#include <airdcpp/share/ShareManager.h>
 #include <airdcpp/share/profiles/ShareProfileManager.h>
 #include <airdcpp/util/ValueGenerator.h>
 
@@ -30,11 +31,9 @@
 
 #include <windows/dialog/BrowseDlg.h>
 #include <windows/Resource.h>
-#include <windows/settings/ShareDirectories.h>
 #include <windows/util/WinUtil.h>
 #include <windows/dialog/LineDlg.h>
-#include <windows/settings/base/PropertiesDlg.h>
-#include <windows/settings/TempShare_dlg.h>
+#include <windows/settings/FolderTree.h>
 #include <windows/settings/SharePageDlg.h>
 #include <windows/MainFrm.h>
 #include <windows/util/ActionUtil.h>
@@ -551,7 +550,7 @@ bool ShareDirectories::showShareDlg(const ShareProfileInfo::List& spList, Profil
 		return false;
 	}
 
-	newName = Text::toT(ShareManager::getInstance()->validateVirtualName(Text::fromT(newName)));
+	newName = Text::toT(ShareManager::validateVirtualName(Text::fromT(newName)));
 	return true;
 }
 
@@ -627,7 +626,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 	ProfileTokenSet profileTokens = { curProfile };
 	tstring newName;
 
-	if (!showShareDlg(parent->getProfiles(), curProfile, Text::toT(ShareManager::getInstance()->validateVirtualName(PathUtil::getLastDir(path))), profileTokens, newName, false)) {
+	if (!showShareDlg(parent->getProfiles(), curProfile, Text::toT(ShareManager::validateVirtualName(PathUtil::getLastDir(path))), profileTokens, newName, false)) {
 		return false;
 	}
 

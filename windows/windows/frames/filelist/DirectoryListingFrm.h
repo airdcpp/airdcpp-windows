@@ -281,7 +281,10 @@ private:
 
 	void updateStatus() noexcept;
 	void updateStatus(const DirectoryListing::Directory::Ptr& aCurrentDir) noexcept;
+
 	void initStatus();
+	ShareProfileContentInfo getListInfoUnsafe() const noexcept;
+
 	void up();
 	void handleHistoryClick(const string& aPath, bool byHistory);
 
