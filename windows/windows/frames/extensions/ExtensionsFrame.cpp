@@ -197,11 +197,10 @@ bool ExtensionsFrame::ItemInfo::hasUpdate() const noexcept {
 	}
 
 	try {
-		semver::version installedSemver{ ext->getVersion() };
-		semver::version latestSemver{ catalogItem->version };
+		const auto installedSemver = semver::from_string(ext->getVersion());
+		const auto latestSemver = semver::from_string(catalogItem->version);
 
-		auto comp = installedSemver.compare(latestSemver);
-		return comp < 0;
+		return installedSemver < latestSemver;
 	} catch (const std::exception& e) {
 		dcdebug("Failed to parse extension version (%s)\n", e.what());
 	}
