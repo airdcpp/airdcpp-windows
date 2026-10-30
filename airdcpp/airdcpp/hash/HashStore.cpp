@@ -309,7 +309,7 @@ int64_t HashStore::getRootInfo(const TTHValue& root, InfoType aType) noexcept {
 			memcpy(&version, p, sizeof(uint8_t));
 			p += sizeof(uint8_t);
 
-			if (version > FILEINDEX_VERSION) {
+			if (version > HASHDATA_VERSION) {
 				return false;
 			}
 
