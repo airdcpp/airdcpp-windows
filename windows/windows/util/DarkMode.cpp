@@ -692,6 +692,11 @@ void paintTab(HWND hWnd, HDC hdc, const RECT& rcClient) noexcept {
 }
 
 // The sunken client edge is drawn with the light system colors
+// Edits draw their themed (light) border directly when they get the focus or the mouse moves over them
+bool hasThemedClientEdge(HWND hWnd, WindowType aType) noexcept {
+	return (aType == TYPE_EDIT || aType == TYPE_RICHEDIT) && (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_CLIENTEDGE);
+}
+
 void paintClientEdge(HWND hWnd) noexcept {
 	RECT rc;
 	GetWindowRect(hWnd, &rc);
@@ -774,7 +779,34 @@ void paintGridLines(HWND hWnd) noexcept {
 
 // While the mouse isn't over them, the dark scroll bars of Windows 11 show a light thin thumb
 const TCHAR* PROP_SCROLL_HOT = _T("AirDCDarkModeScrollHot");
+const COLORREF SCROLL_TRACK = RGB(23, 23, 23);
 const UINT_PTR SCROLL_TIMER = 0x44524B53;
+
+// The size box between the scroll bars is lighter than the tracks
+void paintScrollCorner(HWND hWnd) noexcept {
+	auto style = GetWindowLongPtr(hWnd, GWL_STYLE);
+	if ((style & (WS_HSCROLL | WS_VSCROLL)) != (WS_HSCROLL | WS_VSCROLL)) {
+		return;
+	}
+
+	SCROLLBARINFO h = { sizeof(SCROLLBARINFO) }, v = { sizeof(SCROLLBARINFO) };
+	if (!GetScrollBarInfo(hWnd, OBJID_HSCROLL, &h) || !GetScrollBarInfo(hWnd, OBJID_VSCROLL, &v) ||
+		((h.rgstate[0] | v.rgstate[0]) & (STATE_SYSTEM_INVISIBLE | STATE_SYSTEM_OFFSCREEN))) {
+		return;
+	}
+
+	RECT rcWindow;
+	GetWindowRect(hWnd, &rcWindow);
+
+	RECT rc = { v.rcScrollBar.left, h.rcScrollBar.top, v.rcScrollBar.right, h.rcScrollBar.bottom };
+	OffsetRect(&rc, -rcWindow.left, -rcWindow.top);
+
+	auto hdc = GetWindowDC(hWnd);
+	auto brush = CreateSolidBrush(SCROLL_TRACK);
+	FillRect(hdc, &rc, brush);
+	DeleteObject(brush);
+	ReleaseDC(hWnd, hdc);
+}
 
 void paintThinScrollThumbs(HWND hWnd, WindowType aType) noexcept {
 	if (aType != TYPE_LISTVIEW && aType != TYPE_TREEVIEW && aType != TYPE_RICHEDIT) {
@@ -808,7 +840,7 @@ void paintThinScrollThumbs(HWND hWnd, WindowType aType) noexcept {
 			thickness = MulDiv(2, GetDeviceCaps(hdc, LOGPIXELSX), 96);
 		}
 
-		auto track = CreateSolidBrush(RGB(23, 23, 23));
+		auto track = CreateSolidBrush(SCROLL_TRACK);
 		FillRect(hdc, &rc, track);
 		DeleteObject(track);
 
@@ -1226,9 +1258,20 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			// Windows using a system color as the class background (controls paint their own background)
 			auto classBrush = GetClassLongPtr(hWnd, GCLP_HBRBACKGROUND);
 			if (type == TYPE_OTHER && classBrush > 0 && classBrush <= COLOR_MENUBAR + 1) {
+				// Windows that don't erase their background (such as the double buffered tab bar) must be left alone,
+				// the erased area would be shown until the window has been painted
+				auto hdc = reinterpret_cast<HDC>(wParam);
+				auto saved = SaveDC(hdc);
+				IntersectClipRect(hdc, 0, 0, 0, 0);
+				auto erased = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				RestoreDC(hdc, saved);
+				if (!erased) {
+					return FALSE;
+				}
+
 				RECT rc;
 				GetClientRect(hWnd, &rc);
-				FillRect(reinterpret_cast<HDC>(wParam), &rc, DarkMode::getSysColorBrush(static_cast<int>(classBrush) - 1));
+				FillRect(hdc, &rc, DarkMode::getSysColorBrush(static_cast<int>(classBrush) - 1));
 				return TRUE;
 			}
 			break;
@@ -1237,7 +1280,8 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		{
 			// Switching between maximized windows shows the new window restored with the light caption for a moment
 			BOOL maximized = FALSE;
-			if (!SendMessage(hWnd, WM_MDIGETACTIVE, 0, reinterpret_cast<LPARAM>(&maximized)) || !maximized) {
+			if (!SendMessage(hWnd, WM_MDIGETACTIVE, 0, reinterpret_cast<LPARAM>(&maximized)) || !maximized || !IsWindowVisible(hWnd)) {
+				// Not maximized, or the redrawing has been disabled by the caller already
 				break;
 			}
 
@@ -1284,6 +1328,7 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				ReleaseDC(hWnd, hdc);
 			}
 
+			paintScrollCorner(hWnd);
 			paintThinScrollThumbs(hWnd, type);
 			if (type == TYPE_LISTVIEW || type == TYPE_TREEVIEW || type == TYPE_RICHEDIT) {
 				// Again after the fade in animation of the scroll bars
@@ -1314,6 +1359,11 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		{
 			if (type == TYPE_UPDOWN) {
 				InvalidateRect(hWnd, nullptr, FALSE);
+			} else if (hasThemedClientEdge(hWnd, type)) {
+				// The hot border is painted without WM_NCPAINT
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintClientEdge(hWnd);
+				return result;
 			}
 			break;
 		}
@@ -1330,6 +1380,13 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			if (RemoveProp(hWnd, PROP_SCROLL_HOT)) {
 				// After the collapse animation
 				SetTimer(hWnd, SCROLL_TIMER, 700, nullptr);
+			}
+
+			if (uMsg == WM_MOUSEMOVE && hasThemedClientEdge(hWnd, type)) {
+				// The hot border is painted without WM_NCPAINT
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintClientEdge(hWnd);
+				return result;
 			}
 			break;
 		}
@@ -1468,6 +1525,13 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				// The disabled list view would use the light system colors
 				InvalidateRect(hWnd, nullptr, TRUE);
 				return 0;
+			}
+
+			// The focused border is painted without WM_NCPAINT
+			if ((uMsg == WM_SETFOCUS || uMsg == WM_KILLFOCUS) && hasThemedClientEdge(hWnd, type)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintClientEdge(hWnd);
+				return result;
 			}
 
 			// The button may paint itself without WM_PAINT

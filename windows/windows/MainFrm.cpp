@@ -649,8 +649,12 @@ LRESULT MainFrame::onSelected(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, B
 	if(MDIGetActive() != hWnd) {
 		MDIActivate(hWnd);
 	} else if(SETTING(TOGGLE_ACTIVE_WINDOW)) {
+		// Moving a maximized window to the bottom would show the restored windows behind it until the next one has been activated
+		::SendMessage(m_hWndMDIClient, WM_SETREDRAW, FALSE, 0);
 		::SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 		MDINext(hWnd);
+		::SendMessage(m_hWndMDIClient, WM_SETREDRAW, TRUE, 0);
+		::RedrawWindow(m_hWndMDIClient, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN | RDW_UPDATENOW);
 		hWnd = MDIGetActive();
 	}
 	if(::IsIconic(hWnd))
