@@ -50,11 +50,11 @@ LRESULT DynamicTabPage::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 		HDC hdc = (HDC)wParam;
 		SetBkMode(hdc, TRANSPARENT);
 		SetBkColor(hdc, DarkMode::getSysColor(COLOR_3DFACE));
-		return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
+		return DarkMode::isEnabled() ? (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE) : (LRESULT)GetStockObject(COLOR_3DFACE);
 	} else if (uMsg == WM_CTLCOLORDLG) {
 		HDC hdc = (HDC)wParam;
 		SetBkColor(hdc, DarkMode::getSysColor(COLOR_WINDOW));
-		return (LRESULT)DarkMode::getSysColorBrush(COLOR_WINDOW);
+		return DarkMode::isEnabled() ? (LRESULT)DarkMode::getSysColorBrush(COLOR_WINDOW) : (LRESULT)GetStockObject(COLOR_WINDOW);
 	}
 
 	bHandled = FALSE;

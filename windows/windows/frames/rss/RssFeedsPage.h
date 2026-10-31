@@ -54,8 +54,13 @@ public:
 		HDC hdc = (HDC)wParam;
 		SetBkMode(hdc, TRANSPARENT);
 		if (uMsg != WM_CTLCOLORDLG) {
-			SetBkColor(hdc, DarkMode::getSysColor(COLOR_3DFACE));
-			return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
+			if (DarkMode::isEnabled()) {
+				SetBkColor(hdc, DarkMode::getSysColor(COLOR_3DFACE));
+				return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
+			}
+
+			SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
+			return (LRESULT)GetStockObject(COLOR_3DFACE);
 		}
 		return (LRESULT)GetStockObject(NULL_BRUSH);
 	}
