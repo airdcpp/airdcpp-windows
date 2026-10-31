@@ -581,15 +581,16 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, 1 + POPUP_UID, r);
 	}
 		
-	int h = WinUtil::fontHeight + 4;
+	const int lineHeight = getMessageLineHeight();
+	int h = lineHeight + 4;
 
 	const int maxLines = resizePressed && (SETTING(MAX_RESIZE_LINES) <= 1) ? 2 : SETTING(MAX_RESIZE_LINES);
 
 	if((maxLines != 1) && lineCount != 0) {
 		if(lineCount < maxLines) {
-			h = WinUtil::fontHeight * lineCount + 4;
+			h = lineHeight * lineCount + 4;
 		} else {
-			h = WinUtil::fontHeight * maxLines + 4;
+			h = lineHeight * maxLines + 4;
 		}
 	} 
 
@@ -626,8 +627,8 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	ctrlMessage.MoveWindow(rc);
 
 //ApexDC
-	if(h != (WinUtil::fontHeight + 4)) {
-		rc.bottom -= h - (WinUtil::fontHeight + 4);
+	if(h != (lineHeight + 4)) {
+		rc.bottom -= h - (lineHeight + 4);
 	}
 //end
 
@@ -1850,7 +1851,7 @@ void HubFrame::setFonts() {
 	ctrlClient.SetSelAll();
 
 	ctrlClient.SetFont(WinUtil::font, FALSE);
-	ctrlMessage.SetFont(WinUtil::font, FALSE);
+	ctrlMessage.SetFont(getMessageFont(), FALSE);
 	
 	ctrlClient.SetSelectionCharFormat(WinUtil::m_ChatTextLog);
 	ctrlClient.SetSelNone();

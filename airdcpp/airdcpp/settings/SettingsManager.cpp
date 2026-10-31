@@ -290,7 +290,7 @@ const string SettingsManager::settingTags[] =
 	"tabactivebg", "TabActiveText", "TabActiveBorder", "TabInactiveBg", "TabInactiveBgDisconnected", "TabInactiveText", 
 	"TabInactiveBorder", "TabInactiveBgNotify", "TabDirtyBlend", "TabSize", "MediaPlayer",
 	"PopupTime", "MaxMsgLength", "PopupBackColor", "PopupTextColor", "PopupTitleTextColor", 
-	"TbImageSize", "TbImageSizeHot", "MaxResizeLines",
+	"TbImageSize", "TbImageSizeHot", "MaxResizeLines", "ChatZoom",
 	"DupeColor", "TextDupeBackColor", 
 	"TextNormBackColor", "TextNormForeColor", 
 	"FavTop", "FavBottom", "FavLeft", "FavRight", "SyslogTop", "SyslogBottom", "SyslogLeft", "SyslogRight", "NotepadTop", "NotepadBottom",
@@ -947,6 +947,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(LAST_SEARCH_FILETYPE, "0");
 	setDefault(LAST_AS_FILETYPE, "7");
 	setDefault(MAX_RESIZE_LINES, 4);
+	setDefault(CHAT_ZOOM, 100);
 	setDefault(PASSWD_PROTECT, false);
 	setDefault(PASSWD_PROTECT_TRAY, false);
 	setDefault(BOLD_HUB_TABS_ON_KICK, false);
@@ -1246,6 +1247,8 @@ void SettingsManager::set(IntSetting key, int value, bool aForceSet) noexcept {
 #ifdef HAVE_GUI
 	} else if (key == MAX_RESIZE_LINES && value < 1) {
 		value = 1;
+	} else if (key == CHAT_ZOOM) {
+		value = std::clamp(value, 50, 400);
 #endif
 	} else if (key == DISCONNECT_SPEED && value < 1) {
 		value = 1;

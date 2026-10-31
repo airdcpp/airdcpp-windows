@@ -714,14 +714,15 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		updateStatusBar();
 	}
 	
-	int h = WinUtil::fontHeight + 4;
+	const int lineHeight = getMessageLineHeight();
+	int h = lineHeight + 4;
 	const int maxLines = resizePressed && SETTING(MAX_RESIZE_LINES) <= 1 ? 2 : SETTING(MAX_RESIZE_LINES);
 
 	if((maxLines != 1) && lineCount != 0) {
 		if(lineCount < maxLines) {
-			h = WinUtil::fontHeight * lineCount + 4;
+			h = lineHeight * lineCount + 4;
 		} else {
-			h = WinUtil::fontHeight * maxLines + 4;
+			h = lineHeight * maxLines + 4;
 		}
 	} 
 
@@ -750,8 +751,8 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	ctrlMessage.MoveWindow(rc);
 
 	 //ApexDC	
-	if(h != (WinUtil::fontHeight + 4)) {
-		rc.bottom -= h - (WinUtil::fontHeight + 4);
+	if(h != (lineHeight + 4)) {
+		rc.bottom -= h - (lineHeight + 4);
 	}
 
 	if (ctrlSendMessage.IsWindow()) {
