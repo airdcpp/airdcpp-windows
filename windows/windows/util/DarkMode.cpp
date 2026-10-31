@@ -1244,7 +1244,15 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			SendMessage(hWnd, WM_SETREDRAW, FALSE, 0);
 			auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
 			SendMessage(hWnd, WM_SETREDRAW, TRUE, 0);
-			RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
+
+			// The MDI client doesn't clip its children, so erasing it would blank the whole area until the new window
+			// has been painted (the maximized window covers the client area)
+			RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_FRAME | RDW_NOCHILDREN | RDW_UPDATENOW);
+
+			auto active = reinterpret_cast<HWND>(SendMessage(hWnd, WM_MDIGETACTIVE, 0, 0));
+			if (active) {
+				RedrawWindow(active, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN | RDW_UPDATENOW);
+			}
 			return result;
 		}
 		case WM_NCPAINT:
@@ -1489,6 +1497,141 @@ WindowType getSubclassedType(HWND hWnd) noexcept {
 	return static_cast<WindowType>(type);
 }
 
+// Lists, trees and rich edits redraw their scroll bars directly when their contents change (without WM_NCPAINT).
+// Windows draws the wide thumb at that point when the application isn't active, which makes the scroll bars flicker
+// on every update unless the thin thumb is painted again right away (before the frame is shown).
+void paintThinScrollThumbsAfterUpdate(HWND hWnd, int aBar, BOOL aRedraw) noexcept {
+	if (!aRedraw || aBar == SB_CTL || !DarkMode::isEnabled() || !hWnd || GetWindowThreadProcessId(hWnd, nullptr) != GetCurrentThreadId()) {
+		return;
+	}
+
+	DWORD_PTR type = 0;
+	if (GetWindowSubclass(hWnd, subclassProc, SUBCLASS_ID, &type)) {
+		paintThinScrollThumbs(hWnd, static_cast<WindowType>(type));
+	}
+}
+
+decltype(&SetScrollInfo) origSetScrollInfo = nullptr;
+decltype(&SetScrollPos) origSetScrollPos = nullptr;
+decltype(&SetScrollRange) origSetScrollRange = nullptr;
+decltype(&ShowScrollBar) origShowScrollBar = nullptr;
+decltype(&EnableScrollBar) origEnableScrollBar = nullptr;
+
+int WINAPI hookSetScrollInfo(HWND hWnd, int nBar, LPCSCROLLINFO lpsi, BOOL redraw) noexcept {
+	auto result = origSetScrollInfo(hWnd, nBar, lpsi, redraw);
+	paintThinScrollThumbsAfterUpdate(hWnd, nBar, redraw);
+	return result;
+}
+
+int WINAPI hookSetScrollPos(HWND hWnd, int nBar, int nPos, BOOL bRedraw) noexcept {
+	auto result = origSetScrollPos(hWnd, nBar, nPos, bRedraw);
+	paintThinScrollThumbsAfterUpdate(hWnd, nBar, bRedraw);
+	return result;
+}
+
+BOOL WINAPI hookSetScrollRange(HWND hWnd, int nBar, int nMinPos, int nMaxPos, BOOL bRedraw) noexcept {
+	auto result = origSetScrollRange(hWnd, nBar, nMinPos, nMaxPos, bRedraw);
+	paintThinScrollThumbsAfterUpdate(hWnd, nBar, bRedraw);
+	return result;
+}
+
+BOOL WINAPI hookShowScrollBar(HWND hWnd, int wBar, BOOL bShow) noexcept {
+	auto result = origShowScrollBar(hWnd, wBar, bShow);
+	paintThinScrollThumbsAfterUpdate(hWnd, wBar, TRUE);
+	return result;
+}
+
+BOOL WINAPI hookEnableScrollBar(HWND hWnd, UINT wSBflags, UINT wArrows) noexcept {
+	auto result = origEnableScrollBar(hWnd, wSBflags, wArrows);
+	paintThinScrollThumbsAfterUpdate(hWnd, static_cast<int>(wSBflags), TRUE);
+	return result;
+}
+
+struct ImportHook {
+	const char* name;
+	void* hook;
+};
+
+const ImportHook scrollBarHooks[] = {
+	{ "SetScrollInfo", reinterpret_cast<void*>(&hookSetScrollInfo) },
+	{ "SetScrollPos", reinterpret_cast<void*>(&hookSetScrollPos) },
+	{ "SetScrollRange", reinterpret_cast<void*>(&hookSetScrollRange) },
+	{ "ShowScrollBar", reinterpret_cast<void*>(&hookShowScrollBar) },
+	{ "EnableScrollBar", reinterpret_cast<void*>(&hookEnableScrollBar) },
+};
+
+bool isUser32Import(const char* aDll) noexcept {
+	// Delay loaded imports go through the API sets
+	return _stricmp(aDll, "user32.dll") == 0 || _strnicmp(aDll, "ext-ms-win-ntuser-", 18) == 0 || _strnicmp(aDll, "api-ms-win-ntuser-", 18) == 0;
+}
+
+void patchImportThunks(BYTE* aBase, const IMAGE_THUNK_DATA* aNames, IMAGE_THUNK_DATA* aAddresses) noexcept {
+	for (; aNames->u1.AddressOfData; ++aNames, ++aAddresses) {
+		if (IMAGE_SNAP_BY_ORDINAL(aNames->u1.Ordinal)) {
+			continue;
+		}
+
+		auto name = reinterpret_cast<const char*>(reinterpret_cast<const IMAGE_IMPORT_BY_NAME*>(aBase + aNames->u1.AddressOfData)->Name);
+		for (const auto& h : scrollBarHooks) {
+			if (strcmp(name, h.name) != 0) {
+				continue;
+			}
+
+			// Unresolved delay loaded imports point to the loader stub, which is never needed after this
+			DWORD oldProtect;
+			if (VirtualProtect(&aAddresses->u1.Function, sizeof(aAddresses->u1.Function), PAGE_READWRITE, &oldProtect)) {
+				aAddresses->u1.Function = reinterpret_cast<ULONG_PTR>(h.hook);
+				VirtualProtect(&aAddresses->u1.Function, sizeof(aAddresses->u1.Function), oldProtect, &oldProtect);
+			}
+			break;
+		}
+	}
+}
+
+void patchScrollBarImports(HMODULE aModule) noexcept {
+	if (!origSetScrollInfo) {
+		auto user32Module = GetModuleHandle(_T("user32.dll"));
+		origSetScrollInfo = reinterpret_cast<decltype(origSetScrollInfo)>(GetProcAddress(user32Module, "SetScrollInfo"));
+		origSetScrollPos = reinterpret_cast<decltype(origSetScrollPos)>(GetProcAddress(user32Module, "SetScrollPos"));
+		origSetScrollRange = reinterpret_cast<decltype(origSetScrollRange)>(GetProcAddress(user32Module, "SetScrollRange"));
+		origShowScrollBar = reinterpret_cast<decltype(origShowScrollBar)>(GetProcAddress(user32Module, "ShowScrollBar"));
+		origEnableScrollBar = reinterpret_cast<decltype(origEnableScrollBar)>(GetProcAddress(user32Module, "EnableScrollBar"));
+		if (!origSetScrollInfo || !origSetScrollPos || !origSetScrollRange || !origShowScrollBar || !origEnableScrollBar) {
+			origSetScrollInfo = nullptr;
+			return;
+		}
+	}
+
+	auto base = reinterpret_cast<BYTE*>(aModule);
+	auto dos = reinterpret_cast<const IMAGE_DOS_HEADER*>(base);
+	if (dos->e_magic != IMAGE_DOS_SIGNATURE) {
+		return;
+	}
+
+	auto nt = reinterpret_cast<const IMAGE_NT_HEADERS*>(base + dos->e_lfanew);
+	if (nt->Signature != IMAGE_NT_SIGNATURE) {
+		return;
+	}
+
+	const auto& imports = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+	if (imports.VirtualAddress) {
+		for (auto desc = reinterpret_cast<const IMAGE_IMPORT_DESCRIPTOR*>(base + imports.VirtualAddress); desc->Name; ++desc) {
+			if (desc->OriginalFirstThunk && isUser32Import(reinterpret_cast<const char*>(base + desc->Name))) {
+				patchImportThunks(base, reinterpret_cast<const IMAGE_THUNK_DATA*>(base + desc->OriginalFirstThunk), reinterpret_cast<IMAGE_THUNK_DATA*>(base + desc->FirstThunk));
+			}
+		}
+	}
+
+	const auto& delayImports = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT];
+	if (delayImports.VirtualAddress) {
+		for (auto desc = reinterpret_cast<const IMAGE_DELAYLOAD_DESCRIPTOR*>(base + delayImports.VirtualAddress); desc->DllNameRVA; ++desc) {
+			if (desc->Attributes.RvaBased && isUser32Import(reinterpret_cast<const char*>(base + desc->DllNameRVA))) {
+				patchImportThunks(base, reinterpret_cast<const IMAGE_THUNK_DATA*>(base + desc->ImportNameTableRVA), reinterpret_cast<IMAGE_THUNK_DATA*>(base + desc->ImportAddressTableRVA));
+			}
+		}
+	}
+}
+
 void subclassWindow(HWND hWnd, WindowType aType) noexcept {
 	DWORD_PTR existing = 0;
 	if (GetWindowSubclass(hWnd, subclassProc, SUBCLASS_ID, &existing)) {
@@ -1496,6 +1639,17 @@ void subclassWindow(HWND hWnd, WindowType aType) noexcept {
 	}
 
 	SetWindowSubclass(hWnd, subclassProc, SUBCLASS_ID, static_cast<DWORD_PTR>(aType));
+
+	if (aType == TYPE_RICHEDIT) {
+		static bool richEditPatched = false;
+		if (!richEditPatched) {
+			// Loaded on demand
+			richEditPatched = true;
+			if (auto module = GetModuleHandle(_T("msftedit.dll"))) {
+				patchScrollBarImports(module);
+			}
+		}
+	}
 }
 
 // Other user32 windows (such as menus) must not be touched
@@ -1633,6 +1787,10 @@ void DarkMode::init() noexcept {
 
 	user32 = GetModuleHandle(_T("user32.dll"));
 	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPCTSTR>(&InitCommonControlsEx), &comctl32);
+	if (comctl32) {
+		patchScrollBarImports(comctl32);
+	}
+
 	hook = SetWindowsHookEx(WH_CALLWNDPROCRET, callWndProcRetHook, nullptr, GetCurrentThreadId());
 
 	update();
