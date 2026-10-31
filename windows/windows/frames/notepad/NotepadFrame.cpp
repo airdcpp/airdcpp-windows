@@ -20,6 +20,7 @@
 #include <windows/Resource.h>
 
 #include <windows/frames/notepad/NotepadFrame.h>
+#include <windows/util/TextZoom.h>
 #include <windows/util/ActionUtil.h>
 #include <windows/util/WinUtil.h>
 
@@ -35,7 +36,7 @@ LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL, WS_EX_CLIENTEDGE);
 	
 	ctrlPad.LimitText(0);
-	ctrlPad.SetFont(WinUtil::font);
+	TextZoom::addEdit(ctrlPad.m_hWnd, WinUtil::font);
 	string tmp;
 	try {
 		auto path = WinUtil::getPath(WinUtil::PATH_NOTEPAD);

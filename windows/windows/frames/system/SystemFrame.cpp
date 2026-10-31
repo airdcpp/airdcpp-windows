@@ -20,6 +20,7 @@
 #include <windows/Resource.h>
 
 #include <windows/frames/system/SystemFrame.h>
+#include <windows/util/TextZoom.h>
 #include <windows/util/WinUtil.h>
 #include <windows/util/ActionUtil.h>
 #include <windows/frames/text/TextFrame.h>
@@ -45,6 +46,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE);
 
 	ctrlPad.SetFont(WinUtil::font);
+	TextZoom::addRichEdit(ctrlPad.m_hWnd);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	ctrlPad.LimitText(96*1024); //now that we have icons we might want to limit even lower, the ram usage grows when many icons in view.

@@ -44,6 +44,7 @@
 #include <windows/components/OMenu.h>
 #include <windows/picturewindow.h>
 #include <windows/components/CProgressCtrlEx.h>
+#include <windows/util/TextZoom.h>
 
 namespace wingui {
 #define STATUS_MESSAGE_MAP 9
@@ -74,6 +75,9 @@ public:
 
 		if((pMsg->message >= WM_MOUSEFIRST) && (pMsg->message <= WM_MOUSELAST))
 			ctrlTooltips.RelayEvent(pMsg);
+
+		if (TextZoom::preTranslateMessage(pMsg))
+			return TRUE;
 
 		if(CMDIFrameWindowImpl<MainFrame>::PreTranslateMessage(pMsg))
 			return TRUE;

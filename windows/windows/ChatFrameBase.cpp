@@ -51,94 +51,21 @@
 
 namespace wingui {
 
-std::set<ChatFrameBase*> ChatFrameBase::frames;
-HFONT ChatFrameBase::zoomFont = nullptr;
-HFONT ChatFrameBase::zoomBaseFont = nullptr;
-int ChatFrameBase::zoomFontZoom = 0;
-int ChatFrameBase::zoomLineHeight = 0;
-int ChatFrameBase::zoomWheelDelta = 0;
-
 ChatFrameBase::ChatFrameBase() {
 }
 
 ChatFrameBase::~ChatFrameBase() {
-	frames.erase(this);
-}
-
-HFONT ChatFrameBase::getMessageFont() noexcept {
-	auto zoom = SETTING(CHAT_ZOOM);
-	if (zoom == 100) {
-		return WinUtil::font;
-	}
-
-	if (zoomFont && zoomBaseFont == WinUtil::font && zoomFontZoom == zoom) {
-		return zoomFont;
-	}
-
-	LOGFONT lf = { 0 };
-	if (!::GetObject(WinUtil::font, sizeof(lf), &lf)) {
-		return WinUtil::font;
-	}
-
-	lf.lfHeight = MulDiv(lf.lfHeight, zoom, 100);
-	auto font = ::CreateFontIndirect(&lf);
-	if (!font) {
-		return WinUtil::font;
-	}
-
-	// The previous font is deleted by applyZoomAll once no window uses it
-	zoomFont = font;
-	zoomBaseFont = WinUtil::font;
-	zoomFontZoom = zoom;
-	zoomLineHeight = WinUtil::getTextHeight(WinUtil::mainWnd, font);
-	return zoomFont;
+	TextZoom::remove(ctrlClient.m_hWnd);
+	TextZoom::remove(ctrlMessage.m_hWnd);
 }
 
 int ChatFrameBase::getMessageLineHeight() noexcept {
-	return getMessageFont() == WinUtil::font ? WinUtil::fontHeight : zoomLineHeight;
+	return TextZoom::getTextHeight(WinUtil::font);
 }
 
-void ChatFrameBase::applyZoom() noexcept {
-	auto zoom = SETTING(CHAT_ZOOM);
-
-	// 0/0 turns the zooming off
-	ctrlClient.SendMessage(EM_SETZOOM, zoom == 100 ? 0 : zoom, zoom == 100 ? 0 : 100);
-	ctrlMessage.SetFont(getMessageFont());
-}
-
-void ChatFrameBase::applyZoomAll() noexcept {
-	auto oldFont = zoomFont;
-	for (auto frame: frames) {
-		frame->applyZoom();
-		frame->UpdateLayout();
-	}
-
-	if (oldFont && oldFont != zoomFont) {
-		::DeleteObject(oldFont);
-	}
-}
-
-LRESULT ChatFrameBase::onZoomWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (!(GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) || ::GetKeyState(VK_MENU) >= 0) {
-		bHandled = FALSE;
-		return 0;
-	}
-
-	// High resolution wheels send smaller steps
-	zoomWheelDelta += GET_WHEEL_DELTA_WPARAM(wParam);
-	auto steps = zoomWheelDelta / WHEEL_DELTA;
-	if (steps == 0) {
-		return 0;
-	}
-
-	zoomWheelDelta -= steps * WHEEL_DELTA;
-
-	auto zoom = std::clamp(SETTING(CHAT_ZOOM) + steps * 10, 50, 400);
-	if (zoom != SETTING(CHAT_ZOOM)) {
-		SettingsManager::getInstance()->set(SettingsManager::CHAT_ZOOM, zoom);
-		applyZoomAll();
-	}
-
+LRESULT ChatFrameBase::onTextZoomChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	// The height of the message box follows the font
+	UpdateLayout();
 	return 0;
 }
 
@@ -206,8 +133,8 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, getSendFileTitle().c_str());
 	}
 
-	frames.insert(this);
-	applyZoom();
+	TextZoom::addRichEdit(ctrlClient.m_hWnd);
+	TextZoom::addEdit(ctrlMessage.m_hWnd, WinUtil::font);
 }
 
 const tstring& ChatFrameBase::getSendFileTitle() {

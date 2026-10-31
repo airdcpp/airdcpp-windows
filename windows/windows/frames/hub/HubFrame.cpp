@@ -1851,10 +1851,11 @@ void HubFrame::setFonts() {
 	ctrlClient.SetSelAll();
 
 	ctrlClient.SetFont(WinUtil::font, FALSE);
-	ctrlMessage.SetFont(getMessageFont(), FALSE);
+	TextZoom::addEdit(ctrlMessage.m_hWnd, WinUtil::font);
 	
 	ctrlClient.SetSelectionCharFormat(WinUtil::m_ChatTextLog);
 	ctrlClient.SetSelNone();
+	TextZoom::addRichEdit(ctrlClient.m_hWnd);
 	ctrlClient.SetRedraw(TRUE);
 
 	addStatusLine(TSTRING(NEW_TEXT_STYLE_APPLIED), LogMessage::SEV_INFO, LogMessage::Type::SYSTEM);
