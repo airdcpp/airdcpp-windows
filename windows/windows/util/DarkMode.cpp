@@ -1244,7 +1244,13 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				return TRUE;
 			}
 
-			if (type == TYPE_DIALOG || type == TYPE_MESSAGEBOX || type == TYPE_STATUSBAR || type == TYPE_REBAR || type == TYPE_TAB || type == TYPE_UPDOWN) {
+			if (type == TYPE_STATUSBAR || type == TYPE_TAB || type == TYPE_UPDOWN) {
+				// Painted completely (double buffered) in WM_PAINT, erasing first would show the empty background for a moment
+				// (the status bar fields are updated every second)
+				return TRUE;
+			}
+
+			if (type == TYPE_DIALOG || type == TYPE_MESSAGEBOX || type == TYPE_REBAR) {
 				auto hdc = reinterpret_cast<HDC>(wParam);
 				auto brush = type == TYPE_DIALOG || type == TYPE_MESSAGEBOX ?
 					reinterpret_cast<HBRUSH>(SendMessage(hWnd, WM_CTLCOLORDLG, wParam, reinterpret_cast<LPARAM>(hWnd))) :
