@@ -18,6 +18,7 @@
 #include <windows/Resource.h>
 
 #include <windows/frames/cdm_debug/CDMDebugFrame.h>
+#include <windows/util/TextZoom.h>
 #include <windows/util/WinUtil.h>
 
 #include <web-server/WebServerManager.h>
@@ -43,7 +44,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE);
 	ctrlPad.LimitText(0);
-	ctrlPad.SetFont(WinUtil::font);
+	TextZoom::addEdit(ctrlPad.m_hWnd, WinUtil::font);
 	
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);

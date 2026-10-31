@@ -54,7 +54,20 @@ namespace wingui {
 ChatFrameBase::ChatFrameBase() {
 }
 
-ChatFrameBase::~ChatFrameBase() { }
+ChatFrameBase::~ChatFrameBase() {
+	TextZoom::remove(ctrlClient.m_hWnd);
+	TextZoom::remove(ctrlMessage.m_hWnd);
+}
+
+int ChatFrameBase::getMessageLineHeight() noexcept {
+	return TextZoom::getTextHeight(WinUtil::font);
+}
+
+LRESULT ChatFrameBase::onTextZoomChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	// The height of the message box follows the font
+	UpdateLayout();
+	return 0;
+}
 
 LRESULT ChatFrameBase::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	cancelHashing = true;
@@ -105,7 +118,6 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 
 	ctrlMessage.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
 		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
-	ctrlMessage.SetFont(WinUtil::font);
 	ctrlMessage.SetLimitText(32*1024);
 	lineCount = 1; //ApexDC
 
@@ -120,6 +132,9 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 		ctrlMagnet.SetIcon(GET_ICON(IDI_SEND_FILE, 16));
 		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, getSendFileTitle().c_str());
 	}
+
+	TextZoom::addRichEdit(ctrlClient.m_hWnd);
+	TextZoom::addEdit(ctrlMessage.m_hWnd, WinUtil::font);
 }
 
 const tstring& ChatFrameBase::getSendFileTitle() {

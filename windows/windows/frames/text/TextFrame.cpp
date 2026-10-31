@@ -20,6 +20,7 @@
 #include <windows/Resource.h>
 
 #include <windows/frames/text/TextFrame.h>
+#include <windows/util/TextZoom.h>
 #include <windows/util/WinUtil.h>
 
 #include <airdcpp/core/io/File.h>
@@ -140,6 +141,8 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.SetBackgroundColor(WinUtil::bgColor);
 		ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	}
+
+	TextZoom::addRichEdit(ctrlPad.m_hWnd);
 
 	if (useTextFormatting()) {
 		text = Message::unifyLineEndings(text);

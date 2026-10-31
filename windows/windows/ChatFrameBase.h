@@ -30,6 +30,7 @@
 #include <windows/ResourceLoader.h>
 #include <windows/components/ExCImage.h>
 #include <windows/frames/StaticFrame.h>
+#include <windows/util/TextZoom.h>
 
 
 namespace wingui {
@@ -49,6 +50,7 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnForwardMsg)
+		MESSAGE_HANDLER(TextZoom::WM_TEXT_ZOOM_CHANGED, onTextZoomChanged)
 		COMMAND_RANGE_HANDLER(IDC_EMOMENU, IDC_EMOMENU + menuItems, onEmoPackChange)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
@@ -66,6 +68,8 @@ public:
 	LRESULT onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 	LRESULT onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 
+	LRESULT onTextZoomChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
 	virtual bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) = 0;
 	virtual bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) = 0;
 	virtual void addStatusMessage(const LogMessagePtr& aMessage) = 0;
@@ -82,6 +86,9 @@ protected:
 	tstring complete;
 	bool inHistory = false;
 	int lineCount = 1; //ApexDC
+
+	// Line height of the message box (with the text zoom)
+	static int getMessageLineHeight() noexcept;
 
 	OMenu emoMenu;
 
