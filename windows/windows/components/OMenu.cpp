@@ -23,6 +23,7 @@
 #include <windows/util/ActionUtil.h>
 #include <windows/util/WinUtil.h>
 #include <windows/components/BarShader.h>
+#include <windows/util/DarkMode.h>
 #include <windows/MainFrm.h>
 
 #include <web-server/ContextMenuManager.h>
@@ -179,6 +180,26 @@ void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption,
 		mi->text = mi->text.substr(0, 25) + _T("...");
 	}
 
+	if (DarkMode::isEnabled()) {
+		// Windows draws menus with owner drawn items in the light theme, use a plain bold title instead.
+		// A menu can only have one default item and InsertMenuItem fails for a second one, so the
+		// title is only bold when no action is the default (appendItem moves the default if needed).
+		CMenuItemInfo title;
+		title.fMask = MIIM_FTYPE | MIIM_STATE | MIIM_STRING;
+		title.fType = MFT_STRING;
+		title.fState = MFS_DISABLED | (defaultSet ? 0 : MFS_DEFAULT);
+		title.dwTypeData = const_cast<LPTSTR>(mi->text.c_str());
+		CMenu::InsertMenuItem(uItem, byPosition, &title);
+
+		CMenuItemInfo separator;
+		separator.fMask = MIIM_FTYPE;
+		separator.fType = MFT_SEPARATOR;
+		CMenu::InsertMenuItem(byPosition ? uItem + 1 : uItem, byPosition, &separator);
+
+		delete mi;
+		return;
+	}
+
 	mi->parent = this;
 	addItem(mi);
 	MENUITEMINFO mii = {0};
@@ -282,9 +303,10 @@ unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f /*nullptr
 		info.fMask |= MIIM_STATE;
 		info.fState |= MFS_DISABLED;
 	}
-	if (flags & FLAG_DEFAULT && !defaultSet) {
-		info.fMask |= MIIM_STATE;
-		info.fState |= MFS_DEFAULT;
+	// The default state is set after inserting: InsertMenuItem fails if the menu already has a default item
+	// (such as a dark mode title), while SetMenuDefaultItem moves it
+	const auto isDefault = flags & FLAG_DEFAULT && !defaultSet;
+	if (isDefault) {
 		defaultSet = true;
 	}
 
@@ -317,6 +339,10 @@ unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f /*nullptr
 	}
 
 	CMenu::InsertMenuItem(index, TRUE, &info);
+	if (isDefault) {
+		SetMenuDefaultItem(index, TRUE);
+	}
+
 	return index;
 }
 

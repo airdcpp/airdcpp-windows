@@ -300,7 +300,7 @@ const string SettingsManager::settingTags[] =
 
 	"ListHighlightBackColor", "ListHighlightColor", "QueueColor", "TextQueueBackColor", "QueueSplitterPosition",
 	"WinampBarIconSize", "TBProgressTextColor",
-	"ColorStatusFinished", "ColorStatusShared", "ProgressLighten", "FavUsersSplitterPos",
+	"ColorStatusFinished", "ColorStatusShared", "ProgressLighten", "FavUsersSplitterPos", "WindowTheme",
 #endif
 	"SENTRY",
 
@@ -721,6 +721,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 
 	setDefault(BACKGROUND_COLOR, RGB(255, 255, 255));
 	setDefault(TEXT_COLOR, RGB(0,0,0));
+	setDefault(WINDOW_THEME, WINDOW_THEME_AUTO);
 
 	setDefault(TEXT_GENERAL_BACK_COLOR, RGB(255, 255, 255));
 	setDefault(TEXT_GENERAL_FORE_COLOR, RGB(0,0,0));

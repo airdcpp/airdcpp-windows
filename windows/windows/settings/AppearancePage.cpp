@@ -36,6 +36,7 @@ PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY }, 
 	{ IDC_SETTINGS_COUNTRY_FORMAT, ResourceManager::SETTINGS_COUNTRY_FORMAT }, 
 	{ IDC_DATE_FORMAT_LBL, ResourceManager::FILE_DATE_FORMAT },
+	{ IDC_WINDOW_THEME_LABEL, ResourceManager::WINDOW_THEME },
 	{ 0, ResourceManager::LAST }
 };
 
@@ -88,6 +89,11 @@ AppearancePage::~AppearancePage(){ }
 
 void AppearancePage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_APPEARANCE_BOOLEANS));
+
+	auto theme = ctrlTheme.GetCurSel();
+	if (theme >= SettingsManager::WINDOW_THEME_AUTO && theme < SettingsManager::WINDOW_THEME_LAST) {
+		settings->set(SettingsManager::WINDOW_THEME, theme);
+	}
 }
 
 
@@ -97,6 +103,13 @@ LRESULT AppearancePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	PropPage::translate((HWND)(*this), texts);
 
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_APPEARANCE_BOOLEANS));
+
+	// Same order as the setting values
+	ctrlTheme.Attach(GetDlgItem(IDC_WINDOW_THEME));
+	ctrlTheme.AddString(CTSTRING(WINDOW_THEME_AUTO));
+	ctrlTheme.AddString(CTSTRING(WINDOW_THEME_LIGHT));
+	ctrlTheme.AddString(CTSTRING(WINDOW_THEME_DARK));
+	ctrlTheme.SetCurSel(SETTING(WINDOW_THEME));
 
 
 	// Do specialized reading here

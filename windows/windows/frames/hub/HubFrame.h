@@ -38,20 +38,21 @@
 #include <windows/util/WinUtil.h>
 #include <windows/UCHandler.h>
 #include <windows/components/ListFilter.h>
+#include <windows/components/ThemedSplitterImpl.h>
 
 namespace wingui {
 #define SHOW_USERS 9
 #define STATUS_MSG 52
 class ChatFrameBase;
 
-class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private FavoriteUserManagerListener,
+class HubFrame : private ClientListener, public ThemedSplitterImpl<HubFrame>, private FavoriteUserManagerListener,
 	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("HubFrame"), IDR_HUB, 0, COLOR_3DFACE);
 
 	typedef ChatFrameBase chatBase;
-	typedef CSplitterImpl<HubFrame> splitBase;
+	typedef ThemedSplitterImpl<HubFrame> splitBase;
 	typedef UserInfoBaseHandler<HubFrame> uibBase;
 	
 	BEGIN_MSG_MAP(HubFrame)
@@ -117,7 +118,7 @@ public:
 	LRESULT onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEnterUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/);
-	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSelectUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

@@ -1941,6 +1941,10 @@ enum Strings { // @DontAdd
 
 	API_SHARE_REFRESH_PENDING, // "Refresh pending"
 	API_SHARE_REFRESHING, // "Refreshing"
+	WINDOW_THEME, // "Window theme"
+	WINDOW_THEME_AUTO, // "Use the Windows app mode"
+	WINDOW_THEME_LIGHT, // "Light"
+	WINDOW_THEME_DARK, // "Dark"
 
 	LAST // @DontAdd
 };

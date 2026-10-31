@@ -22,6 +22,7 @@
 #include <windows/RichTextBox.h>
 
 #include <airdcpp/core/update/UpdateVersion.h>
+#include <windows/components/HyperLink.h>
 
 #if _MSC_VER > 1000
 #pragma once
@@ -82,8 +83,9 @@ public:
 	
 	static bool canAutoUpdate(const string& url);
 private:
-	CHyperLink url;
+	HyperLink url;
 	CStatic ctrlUpdateStatus;
+	CBrush statusBrush; // Own brush so that the dark mode doesn't replace the status text color
 	bool versionAvailable = false;
 
 	string message;

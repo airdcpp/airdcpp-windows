@@ -36,6 +36,7 @@
 
 #include <airdcpp/user/User.h>
 #include <airdcpp/core/classes/FastAlloc.h>
+#include <windows/components/ThemedSplitterImpl.h>
 
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11
@@ -58,7 +59,7 @@ static const cmdBarButton cmdBarButtons[] = {
 	{IDC_NEXT, 3, ResourceManager::NEXT},
 };
 
-class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>,
+class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public ThemedSplitterImpl<DirectoryListingFrame>,
 	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
 	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame> {
 
@@ -82,7 +83,7 @@ public:
 	static bool parseWindowParams(StringMap& params);
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
-	typedef CSplitterImpl<DirectoryListingFrame> splitBase;
+	typedef ThemedSplitterImpl<DirectoryListingFrame> splitBase;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;
 
 	enum {

@@ -24,6 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include <airdcpp/connection/http/HttpConnection.h>
+#include <windows/components/HyperLink.h>
 
 namespace wingui {
 class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener
@@ -48,7 +49,7 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
-	CHyperLink url;
+	HyperLink url;
 	AboutDlg(const AboutDlg&) { dcassert(0); }
 	HttpConnection c;
 	

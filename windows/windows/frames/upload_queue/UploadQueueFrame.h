@@ -27,12 +27,13 @@
 
 #include <airdcpp/user/UserInfoBase.h>
 #include <airdcpp/transfer/upload/UploadQueueManagerListener.h>
+#include <windows/components/ThemedSplitterImpl.h>
 
 #define SHOWTREE_MESSAGE_MAP 12
 
 namespace wingui {
 class UploadQueueFrame : public MDITabChildWindowImpl<UploadQueueFrame>, private Async<UploadQueueFrame>, public StaticFrame<UploadQueueFrame, ResourceManager::UPLOAD_QUEUE, IDC_UPLOAD_QUEUE>,
-	private UploadQueueManagerListener, public CSplitterImpl<UploadQueueFrame>, private SettingsManagerListener, public UserInfoBaseHandler<UploadQueueFrame>
+	private UploadQueueManagerListener, public ThemedSplitterImpl<UploadQueueFrame>, private SettingsManagerListener, public UserInfoBaseHandler<UploadQueueFrame>
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("UploadQueueFrame"), IDR_UPLOAD_QUEUE, 0, COLOR_3DFACE);
@@ -42,7 +43,7 @@ public:
 	~UploadQueueFrame() { }
 
 	typedef MDITabChildWindowImpl<UploadQueueFrame> baseClass;
-	typedef CSplitterImpl<UploadQueueFrame> splitBase;
+	typedef ThemedSplitterImpl<UploadQueueFrame> splitBase;
 	typedef UserInfoBaseHandler<UploadQueueFrame> uibBase;
 
 	// Inline message map

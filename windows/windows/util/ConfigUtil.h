@@ -22,6 +22,7 @@
 #include <web-server/ApiSettingItem.h>
 
 #include <airdcpp/core/header/typedefs.h>
+#include <windows/components/HyperLink.h>
 
 namespace wingui {
 
@@ -180,7 +181,7 @@ public:
 		bool handleClick(HWND m_hWnd) override;
 
 		CStatic ctrlValue;
-		CHyperLink url;
+		HyperLink url;
 
 		void onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam) override;
 	};

@@ -27,6 +27,7 @@
 #include <windows/components/OMenu.h>
 #include <windows/components/ShellContextMenu.h>
 #include <windows/resource.h>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 enum {
@@ -462,7 +463,7 @@ public:
 			if(drawActive) {
 				dcassert(active);
 				drawTab(memDC, active, active->xpos, active->row, true);
-				HPEN pen = memDC.SelectPen(::CreatePen(PS_SOLID, 2, GetSysColor(COLOR_BTNFACE)));
+				HPEN pen = memDC.SelectPen(::CreatePen(PS_SOLID, 2, DarkMode::getSysColor(COLOR_BTNFACE)));
 				int y = (rows - active->row -1) * getTabHeight();
 				memDC.MoveTo(active->xpos, y);
 				memDC.LineTo(active->xpos + active->getWidth(), y);

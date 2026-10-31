@@ -25,6 +25,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 //
 
 IDB_SPLASH              PNG                     "res\\splash.png"
+IDB_SPLASH_DARK         PNG                     "res\\splash_dark.png"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -964,6 +965,8 @@ BEGIN
     PUSHBUTTON      "?",IDC_COUNTRY_FORMAT_HELP,104,251,14,14
     GROUPBOX        "Date format",IDC_DATE_FORMAT_LBL,147,196,117,38
     EDITTEXT        IDC_DATE_FORMAT,155,211,84,15,ES_AUTOHSCROLL
+    GROUPBOX        "Window theme",IDC_WINDOW_THEME_LABEL,147,236,117,38
+    COMBOBOX        IDC_WINDOW_THEME,155,251,101,50,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_LOGPAGE DIALOGEX 0, 0, 294, 318

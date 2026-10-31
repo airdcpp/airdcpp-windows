@@ -21,6 +21,7 @@
 
 #include <windows/HttpLinks.h>
 #include <windows/components/TabbedDialog.h>
+#include <windows/components/HyperLink.h>
 
 namespace wingui {
 class AutoSearchParams : public CDialogImpl<AutoSearchParams>
@@ -30,7 +31,7 @@ public:
 	enum { IDD = IDD_AUTOSEARCH_PARAMS };
 
 	CEdit ctrlMaxNumber, ctrlCurNumber, ctrlNumberLen;
-	CHyperLink url;
+	HyperLink url;
 	
 	BEGIN_MSG_MAP(AutoSearchParams)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)

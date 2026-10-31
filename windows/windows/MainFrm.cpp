@@ -39,6 +39,7 @@
 #include <windows/frames/upload_queue/UploadQueueFrame.h>
 #include <windows/dialog/LineDlg.h>
 #include <windows/frames/private_chat/PrivateFrame.h>
+#include <windows/util/DarkMode.h>
 #include <windows/util/WinUtil.h>
 #include <windows/frames/cdm_debug/CDMDebugFrame.h>
 #include <windows/components/InputBox.h>
@@ -99,7 +100,7 @@ bool MainFrame::isShutdownStatus = false;
 #define CONFIG_FRAMES_NAME "Frames.xml"
 #define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
-MainFrame::MainFrame(const StartupParams& aStartupParams, AddUpdateF&& aAddUpdateF) : CSplitterImpl(false),
+MainFrame::MainFrame(const StartupParams& aStartupParams, AddUpdateF&& aAddUpdateF) : ThemedSplitterImpl(false),
 	addUpdateF(std::move(aAddUpdateF)), transferView(make_unique<TransferView>()),
 	hashProgress(make_unique<HashProgressDlg>()),
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), startupParams(aStartupParams)
@@ -648,8 +649,12 @@ LRESULT MainFrame::onSelected(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, B
 	if(MDIGetActive() != hWnd) {
 		MDIActivate(hWnd);
 	} else if(SETTING(TOGGLE_ACTIVE_WINDOW)) {
+		// Moving a maximized window to the bottom would show the restored windows behind it until the next one has been activated
+		::SendMessage(m_hWndMDIClient, WM_SETREDRAW, FALSE, 0);
 		::SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 		MDINext(hWnd);
+		::SendMessage(m_hWndMDIClient, WM_SETREDRAW, TRUE, 0);
+		::RedrawWindow(m_hWndMDIClient, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN | RDW_UPDATENOW);
 		hWnd = MDIGetActive();
 	}
 	if(::IsIconic(hWnd))
@@ -928,6 +933,11 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 	if(dlg->DoModal(m_hWnd) == IDOK) 
 	{
+		if (DarkMode::update()) {
+			// The default colors have changed (the windows are updated after the settings have been saved)
+			WinUtil::initColors();
+		}
+
 		addThreadedTask([=] {
 			PropPage::TaskList tasks;
 			dlg->getTasks(tasks);
@@ -1846,6 +1856,22 @@ void MainFrame::on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) 
 		setAwayButton(aNewMode != AWAY_OFF);
 		ctrlStatus.SetIcon(STATUS_AWAY, aNewMode == AWAY_OFF ? GET_ICON(IDI_USER_BASE, 16) : GET_ICON(IDI_USER_AWAY, 16));
 	});
+}
+
+LRESULT MainFrame::onSettingChange(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+	bHandled = FALSE;
+	if (DarkMode::isThemeChangeMessage(uMsg, lParam) && DarkMode::update()) {
+		// The Windows app mode has changed
+		WinUtil::initColors();
+		addThreadedTask([] {
+			// Let the windows update their colors
+			SettingsManager::getInstance()->save();
+		});
+
+		RedrawWindow(nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
+	}
+
+	return 0;
 }
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

@@ -30,6 +30,7 @@
 
 #include <windows/frames/autosearch/AutoSearchItemSettings.h>
 #include <windows/components/TabbedDialog.h>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage>, public TabPage {
@@ -70,6 +71,11 @@ public:
 		HDC hdc = (HDC)wParam;
 		SetBkMode(hdc, TRANSPARENT);
 		if (uMsg != WM_CTLCOLORDLG) {
+			if (DarkMode::isEnabled()) {
+				SetBkColor(hdc, DarkMode::getSysColor(COLOR_3DFACE));
+				return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
+			}
+
 			SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
 			return (LRESULT)GetStockObject(COLOR_3DFACE);
 		}

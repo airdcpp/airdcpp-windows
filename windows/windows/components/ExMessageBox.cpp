@@ -21,6 +21,7 @@
 #include <windows/stdafx.h>
 
 #include <windows/components/ExMessageBox.h>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 ExMessageBox::MessageBoxValues ExMessageBox::mbv = {0};
@@ -64,7 +65,7 @@ LRESULT CALLBACK CheckMessageBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 				
 			// Fill the entire dialog
 			GetClientRect(hWnd, &rc);
-			FillRect(dc, &rc, GetSysColorBrush(COLOR_WINDOW));
+			FillRect(dc, &rc, DarkMode::getSysColorBrush(COLOR_WINDOW));
 				
 			// Calculate strip height
 			RECT rcButton = {0};
@@ -73,10 +74,10 @@ LRESULT CALLBACK CheckMessageBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 				
 			// Fill the strip
 			rc.top += (rc.bottom - rc.top) - stripHeight;
-			FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+			FillRect(dc, &rc, DarkMode::getSysColorBrush(COLOR_3DFACE));
 				
 			// Make a line
-			HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DLIGHT)));
+			HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, DarkMode::getSysColor(COLOR_3DLIGHT)));
 			MoveToEx(dc, rc.left - 1, rc.top, (LPPOINT)NULL);
 			LineTo(dc, rc.right, rc.top);
 			DeleteObject(SelectObject(dc, oldPen));
@@ -91,7 +92,7 @@ LRESULT CALLBACK CheckMessageBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			{
 				HDC hdc = (HDC)wParam;
 				SetBkMode(hdc, TRANSPARENT);
-				return (LRESULT)GetSysColorBrush(COLOR_3DFACE);
+				return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
 			}
 		}
 		break;

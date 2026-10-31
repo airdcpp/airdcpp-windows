@@ -7,6 +7,7 @@ Here's a little extended implementation of the Splitter class.
 #define __CSPLITTEREX_H__
 
 #include "stdafx.h"
+#include <windows/util/DarkMode.h>
 
 #if _MSC_VER >= 1000
 #pragma once
@@ -344,7 +345,7 @@ public:
 		RECT rect = { 0 };
 		if(GetSplitterBarRect(&rect))
 		{
-			dc.FillRect(&rect, COLOR_3DFACE);
+			dc.FillRect(&rect, DarkMode::getSysColorBrush(COLOR_3DFACE));
 
 #if (!defined(_WIN32_WCE) || (_WIN32_WCE >= 420))
 			if((m_dwExtendedStyle & SPLIT_GRADIENTBAR) != 0)
@@ -355,7 +356,7 @@ public:
 				else
 					rect2.top = (rect.top + rect.bottom) / 2 - 1;
 
-				dc.GradientFillRect(rect2, ::GetSysColor(COLOR_3DFACE), ::GetSysColor(COLOR_3DSHADOW), t_bVertical);
+				dc.GradientFillRect(rect2, DarkMode::getSysColor(COLOR_3DFACE), DarkMode::getSysColor(COLOR_3DSHADOW), t_bVertical);
 			}
 #endif // !defined(_WIN32_WCE) || (_WIN32_WCE >= 420)
 
@@ -375,7 +376,7 @@ public:
 			T* pT = static_cast<T*>(this);
 			if((pT->GetExStyle() & WS_EX_CLIENTEDGE) == 0)
 				dc.DrawEdge(&rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
-			dc.FillRect(&rect, COLOR_APPWORKSPACE);
+			dc.FillRect(&rect, DarkMode::getSysColorBrush(COLOR_APPWORKSPACE));
 		}
 	}
 

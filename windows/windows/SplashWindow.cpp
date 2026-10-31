@@ -21,9 +21,11 @@
 
 #include <airdcpp/util/text/Text.h>
 #include <airdcpp/util/Util.h>
+#include <airdcpp/settings/SettingsManager.h>
 #include <airdcpp/core/version.h>
 
 #include <windows/resource.h>
+#include <windows/util/DarkMode.h>
 #include <windows/util/WinUtil.h>
 
 namespace wingui {
@@ -95,8 +97,31 @@ LRESULT SplashWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 }
 
 void SplashWindow::loadImage() {
-	if(img.Load(_T("splash.png")) != S_OK)
-		img.LoadFromResource(IDB_SPLASH, _T("PNG"), _Module.get_m_hInst());
+	// Follows the Windows app mode until the settings have been loaded (the splash is also shown when shutting down)
+	dark = DarkMode::isInitialized() ? DarkMode::isEnabled() : DarkMode::isWindowsAppModeDark();
+	customImage = img.Load(_T("splash.png")) == S_OK;
+	if (!customImage)
+		img.LoadFromResource(dark ? IDB_SPLASH_DARK : IDB_SPLASH, _T("PNG"), _Module.get_m_hInst());
+}
+
+void SplashWindow::listenSettings() {
+	SettingsManager::getInstance()->addListener(this);
+}
+
+void SplashWindow::on(SettingsManagerListener::LoadCompleted, bool) noexcept {
+	callAsync([this] {
+		SettingsManager::getInstance()->removeListener(this);
+
+		auto selectedDark = DarkMode::isDarkThemeSelected();
+		if (customImage || selectedDark == dark) {
+			return;
+		}
+
+		dark = selectedDark;
+		img.Destroy();
+		img.LoadFromResource(dark ? IDB_SPLASH_DARK : IDB_SPLASH, _T("PNG"), _Module.get_m_hInst());
+		RedrawWindow();
+	});
 }
 
 SplashWindow::~SplashWindow() {
@@ -160,7 +185,7 @@ void SplashWindow::draw() {
 	SelectObject(dc, hFontTitle);
 	//::SetTextColor(dc, RGB(255,255,255)); //white text
 	//::SetTextColor(dc, RGB(0,0,0)); //black text
-	::SetTextColor(dc, RGB(104,104,104)); //grey text
+	::SetTextColor(dc, dark ? RGB(170,170,170) : RGB(104,104,104)); //grey text
 	::DrawText(dc, title.c_str(), _tcslen(title.c_str()), &rc2, DT_LEFT);
 
 	if(!status.empty()) {
@@ -168,7 +193,7 @@ void SplashWindow::draw() {
 		rc2.top = rc2.bottom - 20;
 		rc2.right = rc2.right - 20;	
 		SelectObject(dc, hFontStatus);
-		::SetTextColor(dc, RGB(104,104,104)); //grey text
+		::SetTextColor(dc, dark ? RGB(170,170,170) : RGB(104,104,104)); //grey text
 
 		tstring tmp = (_T(".:: ") + status + (progress > 0 ? _T(" (") + WinUtil::toStringW(static_cast<int>(progress*100.00)) + _T("%)") : Util::emptyStringT) + _T(" ::."));
 		::DrawText(dc, tmp.c_str(), _tcslen((tmp).c_str()), &rc2, DT_RIGHT);

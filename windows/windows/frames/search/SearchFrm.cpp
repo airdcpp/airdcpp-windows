@@ -47,6 +47,7 @@
 
 #include <boost/range/numeric.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <windows/util/DarkMode.h>
 
 namespace wingui {
 string SearchFrame::id = "Search";
@@ -1206,10 +1207,10 @@ LRESULT SearchFrame::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lP
 	WTL::CDCHandle dc(reinterpret_cast<HDC>(wParam));
 	RECT rc;
 	GetClientRect(&rc);
-	dc.FillRect(&rc, GetSysColorBrush(COLOR_3DFACE));
+	dc.FillRect(&rc, DarkMode::getSysColorBrush(COLOR_3DFACE));
 
 	// draw the borders
-	HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_APPWORKSPACE)));
+	HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, DarkMode::getSysColor(COLOR_APPWORKSPACE)));
 	//MoveToEx(dc, rc.left, rc.top, (LPPOINT) NULL);
 	//LineTo(dc, rc.left, rc.top + 40);
 
@@ -1266,9 +1267,9 @@ LRESULT SearchFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 
 	if(hWnd == searchLabel.m_hWnd || hWnd == sizeLabel.m_hWnd || hWnd == optionLabel.m_hWnd || hWnd == typeLabel.m_hWnd
 		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd || hWnd == dateLabel || hWnd == ctrlRequireAsch || hWnd == aschLabel) {
-		::SetBkColor(hDC, ::GetSysColor(COLOR_3DFACE));
-		::SetTextColor(hDC, ::GetSysColor(COLOR_BTNTEXT));
-		return (LRESULT)::GetSysColorBrush(COLOR_3DFACE);
+		::SetBkColor(hDC, DarkMode::getSysColor(COLOR_3DFACE));
+		::SetTextColor(hDC, DarkMode::getSysColor(COLOR_BTNTEXT));
+		return (LRESULT)DarkMode::getSysColorBrush(COLOR_3DFACE);
 	} else {
 		::SetBkColor(hDC, WinUtil::bgColor);
 		::SetTextColor(hDC, WinUtil::textColor);

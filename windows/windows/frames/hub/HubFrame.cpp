@@ -952,8 +952,15 @@ LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 
-LRESULT HubFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT HubFrame::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	HDC hDC = (HDC)wParam;
+	if (uMsg == WM_CTLCOLOREDIT) {
+		// Message and filter boxes
+		::SetBkColor(hDC, WinUtil::inputColor);
+		::SetTextColor(hDC, WinUtil::textColor);
+		return (LRESULT)WinUtil::inputBrush;
+	}
+
 	::SetBkColor(hDC, WinUtil::bgColor);
 	::SetTextColor(hDC, WinUtil::textColor);
 	return (LRESULT)WinUtil::bgBrush;

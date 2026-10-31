@@ -34,13 +34,14 @@
 #include <airdcpp/queue/QueueItem.h>
 #include <airdcpp/core/classes/Pointer.h>
 #include <airdcpp/core/queue/TaskQueue.h>
+#include <windows/components/ThemedSplitterImpl.h>
 
 #define STATUS_MSG_MAP 19
 //#define CONTROL_MSG_MAP 22
 
 namespace wingui {
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
-	public CSplitterImpl<QueueFrame>,
+	public ThemedSplitterImpl<QueueFrame>,
 	private QueueManagerListener, private DownloadManagerListener, private SettingsManagerListener, private Async<QueueFrame>
 {
 public:
@@ -72,7 +73,7 @@ public:
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 		CHAIN_MSG_MAP(baseClass)
-		CHAIN_MSG_MAP(CSplitterImpl<QueueFrame>)
+		CHAIN_MSG_MAP(ThemedSplitterImpl<QueueFrame>)
 		//ALT_MSG_MAP(CONTROL_MSG_MAP)
 			//MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		ALT_MSG_MAP(STATUS_MSG_MAP)
