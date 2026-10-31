@@ -994,9 +994,18 @@ void paintIconButton(HWND hWnd, HDC hdc, const RECT& rcClient) noexcept {
 		DeleteObject(SelectObject(hdc, oldBrush));
 	}
 
-	// Icons are also used with the bitmap style
-	auto icon = reinterpret_cast<HICON>(SendMessage(hWnd, BM_GETIMAGE, IMAGE_ICON, 0));
-	if (icon) {
+	// Icons are also used with the bitmap style, and the button returns its image regardless of the requested type
+	auto image = reinterpret_cast<HANDLE>(SendMessage(hWnd, BM_GETIMAGE, IMAGE_ICON, 0));
+	if (!image) {
+		image = reinterpret_cast<HANDLE>(SendMessage(hWnd, BM_GETIMAGE, IMAGE_BITMAP, 0));
+	}
+
+	if (!image) {
+		return;
+	}
+
+	if (GetObjectType(image) != OBJ_BITMAP) {
+		auto icon = static_cast<HICON>(image);
 		ICONINFO ii = { 0 };
 		if (GetIconInfo(icon, &ii)) {
 			BITMAP bm = { 0 };
@@ -1014,9 +1023,9 @@ void paintIconButton(HWND hWnd, HDC hdc, const RECT& rcClient) noexcept {
 			}
 		}
 	} else {
-		auto bitmap = reinterpret_cast<HBITMAP>(SendMessage(hWnd, BM_GETIMAGE, IMAGE_BITMAP, 0));
+		auto bitmap = static_cast<HBITMAP>(image);
 		BITMAP bm = { 0 };
-		if (bitmap && GetObject(bitmap, sizeof(bm), &bm)) {
+		if (GetObject(bitmap, sizeof(bm), &bm)) {
 			int x = rcClient.left + (rcClient.right - rcClient.left - bm.bmWidth) / 2;
 			int y = rcClient.top + (rcClient.bottom - rcClient.top - bm.bmHeight) / 2;
 			DrawState(hdc, nullptr, nullptr, reinterpret_cast<LPARAM>(bitmap), 0, x, y, bm.bmWidth, bm.bmHeight, DST_BITMAP | (enabled ? DSS_NORMAL : DSS_DISABLED));
