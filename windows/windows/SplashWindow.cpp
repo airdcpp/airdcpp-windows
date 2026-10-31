@@ -97,8 +97,8 @@ LRESULT SplashWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 }
 
 void SplashWindow::loadImage() {
-	// Follows the Windows app mode until the settings have been loaded
-	dark = DarkMode::isWindowsAppModeDark();
+	// Follows the Windows app mode until the settings have been loaded (the splash is also shown when shutting down)
+	dark = DarkMode::isInitialized() ? DarkMode::isEnabled() : DarkMode::isWindowsAppModeDark();
 	customImage = img.Load(_T("splash.png")) == S_OK;
 	if (!customImage)
 		img.LoadFromResource(dark ? IDB_SPLASH_DARK : IDB_SPLASH, _T("PNG"), _Module.get_m_hInst());

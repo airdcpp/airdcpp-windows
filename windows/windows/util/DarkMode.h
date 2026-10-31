@@ -34,6 +34,9 @@ public:
 
 	static bool isEnabled() noexcept { return enabled; }
 
+	// The settings have been loaded and the window theme has been applied
+	static bool isInitialized() noexcept { return initialized; }
+
 	// Re-evaluates the theme after the setting or the Windows app mode has changed
 	// Returns true if the theme was switched (the colors must be reloaded by the caller)
 	static bool update() noexcept;
@@ -56,6 +59,7 @@ public:
 	static void apply(HWND hWnd) noexcept;
 private:
 	static bool enabled;
+	static bool initialized;
 };
 
 }

@@ -30,6 +30,7 @@
 namespace wingui {
 
 bool DarkMode::enabled = false;
+bool DarkMode::initialized = false;
 
 namespace {
 
@@ -1837,6 +1838,8 @@ void setColorDefaults(bool aDark) noexcept {
 }
 
 void DarkMode::init() noexcept {
+	initialized = true;
+
 	// The ordinals are valid since Windows 10 1903 (build 18362)
 	if (getWindowsBuild() < 18362) {
 		return;
