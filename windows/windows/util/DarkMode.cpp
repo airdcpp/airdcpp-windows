@@ -2035,21 +2035,6 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				paintFontDialogControlEdge(hWnd);
 				return result;
 			}
-			if (GetProp(hWnd, PROP_DARK_PAGE)) {
-				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
-				auto dc = GetDC(hWnd);
-				if (dc) {
-					auto saved = SaveDC(dc);
-					excludeChildren(hWnd, dc, false);
-					RECT rc;
-					GetClientRect(hWnd, &rc);
-					FillRect(dc, &rc, DarkMode::getSysColorBrush(COLOR_3DFACE));
-					RestoreDC(dc, saved);
-					ReleaseDC(hWnd, dc);
-				}
-				return result;
-			}
-
 			if (type == TYPE_LISTVIEW && !IsWindowEnabled(hWnd)) {
 				auto result = paintDisabledListView(hWnd, uMsg, wParam, lParam);
 				paintGridLines(hWnd);
