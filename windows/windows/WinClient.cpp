@@ -120,6 +120,9 @@ Callback WinClient::wizardFGetter(unique_ptr<SetupWizard>& wizard) {
 	return [&]() {
 		Semaphore s;
 		WinUtil::splash->callAsync([&] {
+			// Startup settings are loaded before the first-run wizard is created.
+			// Initialize the theme here so the wizard and its pages use it too.
+			DarkMode::init();
 			wizard = make_unique<SetupWizard>(true);
 			if (wizard->DoModal(/*m_hWnd*/) != IDOK) {
 				// The wizard was cancelled

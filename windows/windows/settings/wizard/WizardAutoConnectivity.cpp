@@ -40,6 +40,7 @@ PropPage::Item WizardAutoConnectivity::items[] = {
 };
 
 LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	DarkMode::applyPage((HWND)(*this));
 	PropPage::translate((HWND)(*this), texts);
 
 	log.Attach(GetDlgItem(IDC_CONNECTIVITY_LOG));

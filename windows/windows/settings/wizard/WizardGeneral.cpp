@@ -45,6 +45,7 @@ PropPage::Item WizardGeneral::items[] = {
 
 
 LRESULT WizardGeneral::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	DarkMode::applyPage((HWND)(*this));
 	PropPage::read((HWND)*this, items);
 	PropPage::translate((HWND)(*this), texts);
 

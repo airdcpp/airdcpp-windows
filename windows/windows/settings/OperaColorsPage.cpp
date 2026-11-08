@@ -18,6 +18,8 @@
 
 #include <windows/stdafx.h>
 
+#include <windows/util/DarkMode.h>
+
 #include <airdcpp/settings/SettingsManager.h>
 
 #include <windows/Resource.h>
@@ -63,6 +65,7 @@ PropPage::Item OperaColorsPage::items[] = {
 OperaColorsPage::clrs OperaColorsPage::colours[] = {
 	{ ResourceManager::DOWNLOAD, SettingsManager::DOWNLOAD_BAR_COLOR, 0 },
 	{ ResourceManager::SETCZDC_UPLOAD, SettingsManager::UPLOAD_BAR_COLOR, 0 },
+	{ ResourceManager::SEARCH, SettingsManager::SEARCH_PROGRESS_COLOR, 0 },
 	{ ResourceManager::BACKGROUND, SettingsManager::PROGRESS_BACK_COLOR, 0 },
 	{ ResourceManager::DONE_CHUNKS, SettingsManager::COLOR_DONE, 0 },
 	{ ResourceManager::FINISHED, SettingsManager::COLOR_STATUS_FINISHED, 0 },
@@ -72,12 +75,14 @@ OperaColorsPage::clrs OperaColorsPage::colours[] = {
 OperaColorsPage::clrs OperaColorsPage::ODCcolours[] = {
 	{ ResourceManager::DOWNLOAD, SettingsManager::DOWNLOAD_BAR_COLOR, 0 },
 	{ ResourceManager::SETCZDC_UPLOAD, SettingsManager::UPLOAD_BAR_COLOR, 0 },
+	{ ResourceManager::SEARCH, SettingsManager::SEARCH_PROGRESS_COLOR, 0 },
 	{ ResourceManager::FILE_SEGMENT, SettingsManager::PROGRESS_SEGMENT_COLOR, 0 },
 	{ ResourceManager::FINISHED, SettingsManager::COLOR_STATUS_FINISHED, 0 },
 	{ ResourceManager::SHARED, SettingsManager::COLOR_STATUS_SHARED, 0 },
 };
 
 UINT_PTR CALLBACK MenuBarCommDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	if (auto result = DarkMode::commonColorDialogHook(hWnd, uMsg, wParam, lParam); result) return result;
 
 	if (uMsg == WM_COMMAND) {
 		if (HIWORD(wParam) == EN_CHANGE && 
@@ -149,10 +154,14 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	//load defaults
 	for (int i = 0; i < sizeof(colours) / sizeof(clrs); i++){
-		colours[i].value = SettingsManager::getInstance()->get((SettingsManager::IntSetting)colours[i].setting, true);
+		colours[i].value = (colours[i].setting == SettingsManager::SEARCH_PROGRESS_COLOR && !SettingsManager::getInstance()->hasSetting(SettingsManager::SEARCH_PROGRESS_COLOR)) ?
+			SETTING(DOWNLOAD_BAR_COLOR) :
+			SettingsManager::getInstance()->get((SettingsManager::IntSetting)colours[i].setting, true);
 	}
 	for (int i = 0; i < sizeof(ODCcolours) / sizeof(clrs); i++){
-		ODCcolours[i].value = SettingsManager::getInstance()->get((SettingsManager::IntSetting)ODCcolours[i].setting, true);
+		ODCcolours[i].value = (ODCcolours[i].setting == SettingsManager::SEARCH_PROGRESS_COLOR && !SettingsManager::getInstance()->hasSetting(SettingsManager::SEARCH_PROGRESS_COLOR)) ?
+			SETTING(DOWNLOAD_BAR_COLOR) :
+			SettingsManager::getInstance()->get((SettingsManager::IntSetting)ODCcolours[i].setting, true);
 	}
 	updateProgress();
 	fillColorList();
@@ -185,9 +194,11 @@ void OperaColorsPage::write()
 	SettingsManager::getInstance()->set(SettingsManager::PROGRESS_3DDEPTH, BarDepth);
 
 	for (int i = 0; i < sizeof(colours) / sizeof(clrs); i++){
+		if (colours[i].setting == SettingsManager::SEARCH_PROGRESS_COLOR && odcStyle) continue;
 		settings->set((SettingsManager::IntSetting)colours[i].setting, (int)colours[i].value);
 	}
 	for (int i = 0; i < sizeof(ODCcolours) / sizeof(clrs); i++){
+		if (ODCcolours[i].setting == SettingsManager::SEARCH_PROGRESS_COLOR && !odcStyle) continue;
 		settings->set((SettingsManager::IntSetting)ODCcolours[i].setting, (int)ODCcolours[i].value);
 	}
 
@@ -264,6 +275,8 @@ void OperaColorsPage::EditTextStyle() {
 	font = currentFont;
 
 	CFontDialog d(&font, CF_EFFECTS | CF_SCREENFONTS, NULL, *this);
+	d.m_cf.lpfnHook = DarkMode::commonFontDialogHook;
+	d.m_cf.Flags |= CF_ENABLEHOOK;
 	d.m_cf.rgbColors = textclr;
 	if(d.DoModal() == IDOK)
 	{
@@ -290,8 +303,12 @@ void OperaColorsPage::fillColorList() {
 LRESULT OperaColorsPage::onMenubarClicked(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (wID == IDC_SETTINGS_ODC_MENUBAR_LEFT) {
 		CColorDialog d(crMenubarLeft, CC_FULLOPEN, *this);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 		color_proc = d.m_cc.lpfnHook;
 		d.m_cc.lpfnHook = MenuBarCommDlgProc;
+		d.m_cc.Flags |= CC_ENABLEHOOK;
 		current_page = this;//d.m_cc.lCustData = (LPARAM)this;
 		bDoProgress = false;
 		bDoLeft = true;
@@ -302,8 +319,12 @@ LRESULT OperaColorsPage::onMenubarClicked(WORD /*wNotifyCode*/, WORD wID, HWND /
 			crMenubarLeft = backup;
 	} else if (wID == IDC_SETTINGS_ODC_MENUBAR_RIGHT) {
 		CColorDialog d(crMenubarRight, CC_FULLOPEN, *this);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 		color_proc = d.m_cc.lpfnHook;
 		d.m_cc.lpfnHook = MenuBarCommDlgProc;
+		d.m_cc.Flags |= CC_ENABLEHOOK;
 		current_page = this;//d.m_cc.lCustData = (LPARAM)this;
 		bDoProgress = false;
 		bDoLeft = false;
@@ -335,6 +356,9 @@ LRESULT OperaColorsPage::onClickedProgressText(WORD /* wNotifyCode */, WORD wID,
 	switch (wID) {
 	case IDC_PROGRESS_TEXT_DOWNLOAD: {
 		CColorDialog d(crProgressTextDown, 0, *this);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 		if (d.DoModal() == IDOK) {
 			crProgressTextDown = d.GetColor();
 			ctrlList.Invalidate();
@@ -343,6 +367,9 @@ LRESULT OperaColorsPage::onClickedProgressText(WORD /* wNotifyCode */, WORD wID,
 	}
 	case IDC_PROGRESS_TEXT_UPLOAD: {
 		CColorDialog d(crProgressTextUp, 0, *this);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 		if (d.DoModal() == IDOK) {
 			crProgressTextUp = d.GetColor();
 			ctrlList.Invalidate();
@@ -400,14 +427,29 @@ LRESULT OperaColorsPage::onSelectColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	if (ctrlList.GetSelectedCount() > 0) {
 		if (!odcStyle) {
 			CColorDialog d(colours[ctrlList.GetSelectedIndex()].value, 0, *this);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 			if (d.DoModal() == IDOK) {
 				colours[ctrlList.GetSelectedIndex()].value = d.GetColor();
+				if (colours[ctrlList.GetSelectedIndex()].setting == SettingsManager::SEARCH_PROGRESS_COLOR) {
+					for (auto& color : ODCcolours) if (color.setting == SettingsManager::SEARCH_PROGRESS_COLOR) color.value = d.GetColor();
+				}
 				ctrlList.Update(ctrlList.GetSelectedIndex());
 			}
 		} else {
 			CColorDialog d(ODCcolours[ctrlList.GetSelectedIndex()].value, 0, *this);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 			if (d.DoModal() == IDOK) {
 				ODCcolours[ctrlList.GetSelectedIndex()].value = d.GetColor();
+				if (ODCcolours[ctrlList.GetSelectedIndex()].setting == SettingsManager::SEARCH_PROGRESS_COLOR) {
+					for (auto& color : colours) if (color.setting == SettingsManager::SEARCH_PROGRESS_COLOR) color.value = d.GetColor();
+				}
+				if (colours[ctrlList.GetSelectedIndex()].setting == SettingsManager::SEARCH_PROGRESS_COLOR) {
+					for (auto& color : ODCcolours) if (color.setting == SettingsManager::SEARCH_PROGRESS_COLOR) color.value = d.GetColor();
+				}
 				ctrlList.Update(ctrlList.GetSelectedIndex());
 			}
 		}

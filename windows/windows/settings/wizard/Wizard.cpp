@@ -32,7 +32,12 @@
 
 namespace wingui {
 SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(CTSTRING(WIZARD)), initial(isInitial), saved(false), pagesDeleted(false) {
-	//m_psh.pfnCallback = &PropSheetProc;
+	// The native Aero wizard paints its page header and margins with a fixed
+	// light theme. Use the classic wizard frame while dark mode is active so
+	// those areas follow the app's dark dialog colors as well.
+	if (DarkMode::isEnabled()) {
+		m_psh.dwFlags &= ~PSH_AEROWIZARD;
+	}
 
 	auto s = SettingsManager::getInstance();
 
@@ -53,6 +58,11 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 }
 
 SetupWizard::~SetupWizard() { }
+
+LRESULT SetupWizard::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
+	DarkMode::applyPage(m_hWnd);
+	return TRUE;
+}
 
 void SetupWizard::getTasks(PropPage::TaskList& tasks) {
 	pagesDeleted = true;

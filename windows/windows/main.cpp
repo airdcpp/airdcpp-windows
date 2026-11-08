@@ -292,12 +292,20 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		return FALSE;
 	}
 
+	// The isolated dark-mode review executable uses its own profile and may
+	// coexist with the installed client without prompting on every launch.
+	TCHAR executablePath[MAX_PATH] = {};
+	GetModuleFileName(nullptr, executablePath, _countof(executablePath));
+	auto executableName = _tcsrchr(executablePath, _T('\\'));
+	executableName = executableName ? executableName + 1 : executablePath;
+	const auto autoAllowReviewInstance = _tcsicmp(executableName, _T("AirDC-DarkReview.exe")) == 0;
+
 	// Other instances
 	if (dcapp.IsAnotherInstanceRunning()) {
-		auto multiple = client.getStartupParams().hasParam("/silent");
+		auto multiple = autoAllowReviewInstance || client.getStartupParams().hasParam("/silent");
 
 		// Allow for more than one instance...
-		if (_tcslen(lpstrCmdLine) == 0) {
+		if (_tcslen(lpstrCmdLine) == 0 && !autoAllowReviewInstance) {
 			auto title = _T("There is already an instance of AirDC++ running.\nDo you want to launch another instance anyway?");
 			if (::MessageBox(NULL, title, Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
 				multiple = true;

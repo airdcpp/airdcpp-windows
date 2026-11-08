@@ -54,9 +54,13 @@ public:
 	// Theme-aware versions of GetSysColor and GetSysColorBrush (the brushes must not be deleted)
 	static COLORREF getSysColor(int aIndex) noexcept;
 	static HBRUSH getSysColorBrush(int aIndex) noexcept;
+	static void prepareColorDialogColors(COLORREF* aColors) noexcept;
+	static UINT_PTR CALLBACK commonColorDialogHook(HWND, UINT, WPARAM, LPARAM) noexcept;
+	static UINT_PTR CALLBACK commonFontDialogHook(HWND, UINT, WPARAM, LPARAM) noexcept;
 
 	// Applies the current theme to a window and its children (windows created after init() are handled automatically)
 	static void apply(HWND hWnd) noexcept;
+	static void applyPage(HWND hWnd) noexcept;
 private:
 	static bool enabled;
 	static bool initialized;

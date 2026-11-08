@@ -26,6 +26,7 @@
 namespace wingui {
 
 LRESULT WizardLanguage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	DarkMode::applyPage((HWND)(*this));
 	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
 	ActionUtil::appendLanguageMenu(ctrlLanguage);
 

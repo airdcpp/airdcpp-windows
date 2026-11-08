@@ -27,6 +27,7 @@ PropPage::TextItem WizardFinish::texts[] = {
 };
 
 LRESULT WizardFinish::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	DarkMode::applyPage((HWND)(*this));
 	PropPage::translate((HWND)(*this), texts);
 	return TRUE; 
 }

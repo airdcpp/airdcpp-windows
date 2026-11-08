@@ -1,5 +1,5 @@
 /* 
-* Copyright (C) 2003-2005 Pär Björklund, per.bjorklund@gmail.com
+* Copyright (C) 2003-2005 Pï¿½r Bjï¿½rklund, per.bjorklund@gmail.com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 
 #include <windows/stdafx.h>
+
+#include <windows/util/DarkMode.h>
 #include <windows/resource.h>
 
 #include <airdcpp/settings/SettingsManager.h>
@@ -137,6 +139,9 @@ LRESULT FulHighlightDialog::onCancel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 LRESULT FulHighlightDialog::onFgColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	CColorDialog dlg(fgColor, CC_FULLOPEN);
+	DarkMode::prepareColorDialogColors(dlg.m_cc.lpCustColors);
+	dlg.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	dlg.m_cc.Flags |= CC_ENABLEHOOK;
 	if(dlg.DoModal() == IDOK) {
 		fgColor = dlg.GetColor();
 	}
@@ -145,6 +150,9 @@ LRESULT FulHighlightDialog::onFgColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 
 LRESULT FulHighlightDialog::onBgColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	CColorDialog dlg(bgColor, CC_FULLOPEN);
+	DarkMode::prepareColorDialogColors(dlg.m_cc.lpCustColors);
+	dlg.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	dlg.m_cc.Flags |= CC_ENABLEHOOK;
 	if(dlg.DoModal() == IDOK) {
 		bgColor = dlg.GetColor();
 	}

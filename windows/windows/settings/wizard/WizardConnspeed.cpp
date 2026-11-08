@@ -79,6 +79,7 @@ PropPage::Item WizardConnspeed::downloadItems[] = {
 };
 
 LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
+	DarkMode::applyPage((HWND)(*this));
 	PropPage::translate((HWND)(*this), texts);
 
 	ctrlDownload.Attach(GetDlgItem(IDC_DOWN_SPEED));

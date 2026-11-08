@@ -19,6 +19,7 @@
 #include <windows/stdafx.h>
 
 #include <windows/util/DarkMode.h>
+#include <windows/ResourceLoader.h>
 
 #include <airdcpp/settings/SettingsManager.h>
 
@@ -59,6 +60,7 @@ const UINT WM_APPLY_THEME = RegisterWindowMessage(_T("AirDCApplyWindowTheme"));
 HHOOK hook = nullptr;
 HINSTANCE user32 = nullptr;
 HMODULE comctl32 = nullptr;
+HMODULE comdlg32 = nullptr;
 
 // Colors of the dark theme
 const COLORREF DARK_FACE = RGB(32, 32, 32);
@@ -71,6 +73,8 @@ const COLORREF DARK_SHADOW = RGB(60, 60, 60);
 const COLORREF DARK_DARK_SHADOW = RGB(20, 20, 20);
 const COLORREF DARK_LIGHT = RGB(55, 55, 55);
 const COLORREF DARK_MENU = RGB(43, 43, 43);
+const int COLOR_DIALOG_CUSTOM_FIRST = 721;
+const int COLOR_DIALOG_CUSTOM_COUNT = 16;
 
 // Dark defaults for the color settings (customized colors are kept)
 struct ColorDefault {
@@ -208,6 +212,22 @@ WindowType getWindowType(HWND hWnd) noexcept {
 WindowType getSubclassedType(HWND hWnd) noexcept;
 void subclassWindow(HWND hWnd, WindowType aType) noexcept;
 
+bool isColorDialogPaletteBackground(HWND dialog, HWND control) noexcept {
+    if (!dialog || !control || !GetDlgItem(dialog, COLOR_DIALOG_CUSTOM_FIRST)) {
+        return false;
+    }
+    TCHAR className[32] = {};
+    if (!GetClassName(control, className, _countof(className)) || _tcscmp(className, _T("Static")) != 0) {
+        return false;
+    }
+    RECT rc = {};
+    GetWindowRect(control, &rc);
+    return rc.right - rc.left >= 150 && rc.bottom - rc.top >= 50;
+}
+HBRUSH getFontPreviewBrush() noexcept {
+	static auto brush = CreateSolidBrush(DARK_CONTROL);
+	return brush;
+}
 bool isSysColorBrush(HBRUSH aBrush) noexcept {
 	if (!aBrush) {
 		return true;
@@ -295,7 +315,13 @@ bool isMultilineEdit(HWND hWnd, WindowType aType) noexcept {
 const TCHAR* PROP_DARK = _T("AirDCDarkMode");
 const TCHAR* PROP_HOT_IMAGES = _T("AirDCDarkModeHotImages");
 const TCHAR* PROP_PAINT_DISABLED = _T("AirDCDarkModePaintDisabled");
-
+const TCHAR* PROP_FORCE_DARK_COLORS = _T("AirDCForceDarkControlColors");
+const TCHAR* PROP_FONT_DARK_LISTBOX = _T("AirDCFontDarkListBox");
+const TCHAR* PROP_FONT_DARK_COMBO = _T("AirDCFontDarkCombo");
+const TCHAR* PROP_FONT_SAMPLE = _T("AirDCFontSample");
+const TCHAR* PROP_DARK_PAGE = _T("AirDCDarkPage");
+const TCHAR* PROP_DARK_COMBO_LIST_COLORS = _T("AirDCDarkComboListColors");
+const TCHAR* PROP_DARK_COMBO_POPUP = _T("AirDCDarkComboPopup");
 void applyWindowTheme(HWND hWnd, WindowType aType) noexcept {
 	auto dark = DarkMode::isEnabled();
 	if (aType == TYPE_TOOLBAR) {
@@ -322,6 +348,13 @@ void applyWindowTheme(HWND hWnd, WindowType aType) noexcept {
 		SetProp(hWnd, PROP_DARK, reinterpret_cast<HANDLE>(1));
 	} else {
 		RemoveProp(hWnd, PROP_DARK);
+	}
+	if (aType == TYPE_DIALOG) {
+		if (dark) {
+			SetProp(hWnd, PROP_DARK_PAGE, reinterpret_cast<HANDLE>(1));
+		} else {
+			RemoveProp(hWnd, PROP_DARK_PAGE);
+		}
 	}
 
 	// Dark list boxes would draw a white selection
@@ -355,7 +388,16 @@ void applyWindowTheme(HWND hWnd, WindowType aType) noexcept {
 			// The CFD style is for single line fields (multiline edits need the dark scroll bars)
 			SetWindowTheme(hWnd, dark ? (isMultilineEdit(hWnd, aType) ? L"DarkMode_Explorer" : L"DarkMode_CFD") : nullptr, nullptr);
 			if (aType == TYPE_COMBO) {
-				COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
+				// Dropdown list color notifications may be sent to the combo itself
+				// rather than its dialog owner (notably for ComboBoxEx controls).
+				for (auto owner = hWnd; owner; owner = GetParent(owner)) {
+					if (dark) {
+						SetProp(owner, PROP_DARK_COMBO_LIST_COLORS, reinterpret_cast<HANDLE>(1));
+					} else {
+						RemoveProp(owner, PROP_DARK_COMBO_LIST_COLORS);
+					}
+				}
+		COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
 				if (GetComboBoxInfo(hWnd, &info) && info.hwndList) {
 					// The CFD style has dark scroll bars and the system selection colors
 					SetWindowTheme(info.hwndList, dark ? L"DarkMode_CFD" : nullptr, nullptr);
@@ -368,6 +410,9 @@ void applyWindowTheme(HWND hWnd, WindowType aType) noexcept {
 		case TYPE_UPDOWN:
 		case TYPE_TOOLTIP:
 		case TYPE_RICHEDIT:
+			SetWindowTheme(hWnd, dark ? L"DarkMode_Explorer" : nullptr, nullptr);
+			break;
+		case TYPE_DIALOG:
 			SetWindowTheme(hWnd, dark ? L"DarkMode_Explorer" : nullptr, nullptr);
 			break;
 		case TYPE_PROGRESS:
@@ -704,7 +749,7 @@ void paintClientEdge(HWND hWnd) noexcept {
 	OffsetRect(&rc, -rc.left, -rc.top);
 
 	auto hdc = GetWindowDC(hWnd);
-	auto outer = CreateSolidBrush(DARK_SHADOW);
+	auto outer = CreateSolidBrush(DARK_DARK_SHADOW);
 	FrameRect(hdc, &rc, outer);
 	InflateRect(&rc, -1, -1);
 	FrameRect(hdc, &rc, DarkMode::getSysColorBrush(COLOR_3DFACE));
@@ -712,6 +757,69 @@ void paintClientEdge(HWND hWnd) noexcept {
 	ReleaseDC(hWnd, hdc);
 }
 
+void disableFontDialogComboClientEdge(HWND hWnd) noexcept {
+	auto exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+	if (exStyle & WS_EX_CLIENTEDGE) {
+		SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle & ~WS_EX_CLIENTEDGE);
+		SetWindowPos(hWnd, nullptr, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+	}
+}
+
+void paintFontDialogControlEdge(HWND hWnd) noexcept {
+	TCHAR className[32] = {};
+	if (!GetClassName(hWnd, className, _countof(className))) {
+		return;
+	}
+
+	if (_tcscmp(className, _T("Edit")) == 0) {
+		hWnd = GetParent(hWnd);
+		if (!hWnd || !GetClassName(hWnd, className, _countof(className))) {
+			return;
+		}
+	}
+
+	if (_tcscmp(className, _T("ComboBox")) == 0) {
+		COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
+		if (!GetComboBoxInfo(hWnd, &info)) {
+			return;
+		}
+		auto dc = GetDC(hWnd);
+		if (!dc) {
+			return;
+		}
+		auto edge = CreateSolidBrush(DARK_CONTROL);
+		const auto& item = info.rcItem;
+		RECT topEdge = { item.left - 3, item.top - 3, item.right + 3, item.top };
+		RECT leftEdge = { item.left - 3, item.top, item.left, item.bottom };
+		RECT rightEdge = { item.right, item.top, item.right + 3, item.bottom };
+		RECT bottomEdge = { item.left - 3, item.bottom, item.right + 3, item.bottom + 3 };
+		FillRect(dc, &topEdge, edge);
+		FillRect(dc, &leftEdge, edge);
+		FillRect(dc, &rightEdge, edge);
+		FillRect(dc, &bottomEdge, edge);
+		DeleteObject(edge);
+		ReleaseDC(hWnd, dc);
+		return;
+	}
+
+	if (_tcscmp(className, WC_LISTBOX) != 0) {
+		return;
+	}
+	RECT rc;
+	GetWindowRect(hWnd, &rc);
+	OffsetRect(&rc, -rc.left, -rc.top);
+	auto dc = GetWindowDC(hWnd);
+	if (!dc) {
+		return;
+	}
+	auto edge = CreateSolidBrush(DARK_CONTROL);
+	FrameRect(dc, &rc, edge);
+	InflateRect(&rc, -1, -1);
+	FrameRect(dc, &rc, edge);
+	DeleteObject(edge);
+	ReleaseDC(hWnd, dc);
+}
 // The column separators of the visual style and the grid lines are light
 void paintGridLines(HWND hWnd) noexcept {
 	if ((GetWindowLongPtr(hWnd, GWL_STYLE) & LVS_TYPEMASK) != LVS_REPORT) {
@@ -815,7 +923,7 @@ void paintThinScrollThumbs(HWND hWnd, WindowType aType) noexcept {
 	}
 
 	auto style = GetWindowLongPtr(hWnd, GWL_STYLE);
-	if (!(style & (WS_HSCROLL | WS_VSCROLL)) || !IsWindowVisible(hWnd) || GetCapture() == hWnd || GetProp(hWnd, PROP_SCROLL_HOT)) {
+	if (!(style & (WS_HSCROLL | WS_VSCROLL)) || !IsWindowVisible(hWnd)) {
 		return;
 	}
 
@@ -823,6 +931,8 @@ void paintThinScrollThumbs(HWND hWnd, WindowType aType) noexcept {
 	GetWindowRect(hWnd, &rcWindow);
 
 	HDC hdc = nullptr;
+	const auto hot = GetCapture() == hWnd || GetProp(hWnd, PROP_SCROLL_HOT) != nullptr;
+	const auto pressed = (GetKeyState(VK_LBUTTON) & 0x8000) != 0;
 	int thickness = 2;
 	for (auto vertical : { false, true }) {
 		if (!(style & (vertical ? WS_VSCROLL : WS_HSCROLL))) {
@@ -838,7 +948,7 @@ void paintThinScrollThumbs(HWND hWnd, WindowType aType) noexcept {
 		OffsetRect(&rc, -rcWindow.left, -rcWindow.top);
 		if (!hdc) {
 			hdc = GetWindowDC(hWnd);
-			thickness = MulDiv(2, GetDeviceCaps(hdc, LOGPIXELSX), 96);
+			thickness = MulDiv(hot ? 6 : 2, GetDeviceCaps(hdc, LOGPIXELSX), 96);
 		}
 
 		auto track = CreateSolidBrush(SCROLL_TRACK);
@@ -851,14 +961,20 @@ void paintThinScrollThumbs(HWND hWnd, WindowType aType) noexcept {
 
 		RECT rcThumb;
 		if (vertical) {
-			auto x = rc.left + (rc.right - rc.left) / 2;
-			SetRect(&rcThumb, x, rc.top + sbi.xyThumbTop, x + thickness, rc.top + sbi.xyThumbBottom);
+			auto thumbTop = rc.top + sbi.xyThumbTop;
+			auto thumbBottom = rc.top + sbi.xyThumbBottom;
+			auto thumbLeft = hot ? rc.left : rc.left + (rc.right - rc.left - thickness) / 2;
+			auto thumbRight = hot ? rc.right : thumbLeft + thickness;
+			SetRect(&rcThumb, thumbLeft, thumbTop, thumbRight, thumbBottom);
 		} else {
-			auto y = rc.top + (rc.bottom - rc.top) / 2;
-			SetRect(&rcThumb, rc.left + sbi.xyThumbTop, y, rc.left + sbi.xyThumbBottom, y + thickness);
+			auto thumbLeft = rc.left + sbi.xyThumbTop;
+			auto thumbRight = rc.left + sbi.xyThumbBottom;
+			auto thumbTop = hot ? rc.top : rc.top + (rc.bottom - rc.top - thickness) / 2;
+			auto thumbBottom = hot ? rc.bottom : thumbTop + thickness;
+			SetRect(&rcThumb, thumbLeft, thumbTop, thumbRight, thumbBottom);
 		}
 
-		auto thumb = CreateSolidBrush(RGB(78, 78, 78));
+		auto thumb = CreateSolidBrush(pressed ? RGB(48, 48, 48) : RGB(78, 78, 78));
 		FillRect(hdc, &rcThumb, thumb);
 		DeleteObject(thumb);
 	}
@@ -880,7 +996,9 @@ void paintComboBox(HWND hWnd, HDC hdc, const RECT& rcClient) noexcept {
 
 	FillRect(hdc, &rcClient, DarkMode::getSysColorBrush(COLOR_WINDOW));
 
-	auto border = CreateSolidBrush(focused ? GetSysColor(COLOR_HIGHLIGHT) : hot ? DARK_EDGE : DARK_SHADOW);
+	const auto borderColor = GetProp(hWnd, PROP_FONT_DARK_COMBO) ? DARK_CONTROL :
+		(focused ? DarkMode::getSysColor(COLOR_HIGHLIGHT) : hot ? DARK_SHADOW : DARK_DARK_SHADOW);
+	auto border = CreateSolidBrush(borderColor);
 	FrameRect(hdc, &rcClient, border);
 	DeleteObject(border);
 
@@ -1114,6 +1232,42 @@ LRESULT bufferedPaint(HWND hWnd, PaintF aPaintF) noexcept {
 }
 
 LRESULT handleCtlColor(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+    auto paletteControl = reinterpret_cast<HWND>(lParam);
+    if (uMsg == WM_CTLCOLORSTATIC && GetProp(paletteControl, PROP_FONT_SAMPLE)) {
+		auto hdc = reinterpret_cast<HDC>(wParam);
+		SetTextColor(hdc, DARK_TEXT);
+		SetBkColor(hdc, DARK_CONTROL);
+		SetBkMode(hdc, OPAQUE);
+		return reinterpret_cast<LRESULT>(getFontPreviewBrush());
+	}
+    if (uMsg == WM_CTLCOLORSTATIC && isColorDialogPaletteBackground(hWnd, paletteControl)) {
+        SetTextColor(reinterpret_cast<HDC>(wParam), DARK_TEXT);
+        SetBkColor(reinterpret_cast<HDC>(wParam), DARK_FACE);
+        return reinterpret_cast<LRESULT>(DarkMode::getSysColorBrush(COLOR_3DFACE));
+    }
+	if (uMsg == WM_CTLCOLORLISTBOX && GetProp(hWnd, PROP_DARK_COMBO_LIST_COLORS)) {
+		auto hdc = reinterpret_cast<HDC>(wParam);
+		SetTextColor(hdc, DARK_TEXT);
+		SetBkColor(hdc, DARK_CONTROL);
+		return reinterpret_cast<LRESULT>(getFontPreviewBrush());
+	}
+	if (GetProp(hWnd, PROP_FORCE_DARK_COLORS)) {
+		auto hdc = reinterpret_cast<HDC>(wParam);
+		auto bg = (uMsg == WM_CTLCOLOREDIT || uMsg == WM_CTLCOLORLISTBOX) ? COLOR_WINDOW : COLOR_3DFACE;
+		SetTextColor(hdc, DARK_TEXT);
+		SetBkColor(hdc, DarkMode::getSysColor(bg));
+		return reinterpret_cast<LRESULT>(DarkMode::getSysColorBrush(bg));
+	}
+	if (uMsg == WM_CTLCOLORSTATIC) {
+		auto control = reinterpret_cast<HWND>(lParam);
+		auto id = GetDlgCtrlID(control);
+		if (id >= COLOR_DIALOG_CUSTOM_FIRST && id < COLOR_DIALOG_CUSTOM_FIRST + COLOR_DIALOG_CUSTOM_COUNT) {
+			SetTextColor(reinterpret_cast<HDC>(wParam), DARK_TEXT);
+			SetBkColor(reinterpret_cast<HDC>(wParam), DARK_FACE);
+			return reinterpret_cast<LRESULT>(DarkMode::getSysColorBrush(COLOR_3DFACE));
+		}
+	}
+
 	auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
 	if (!isSysColorBrush(reinterpret_cast<HBRUSH>(result))) {
 		// Custom colors
@@ -1192,10 +1346,318 @@ LRESULT paintDisabledListView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return result;
 }
 
+LRESULT CALLBACK subclassProc(HWND, UINT, WPARAM, LPARAM, UINT_PTR, DWORD_PTR) noexcept;
+void applyComboPopupTheme(HWND combo) noexcept;
+
+bool drawLanguageComboItem(const DRAWITEMSTRUCT* item) noexcept {
+	if (!item || item->CtlType != ODT_COMBOBOX || item->CtlID != IDC_LANGUAGE || !item->hwndItem || !item->hDC) {
+		return false;
+	}
+
+	const auto dark = DarkMode::isEnabled();
+	const auto selected = (item->itemState & ODS_SELECTED) != 0;
+	const auto background = dark ? (selected ? DarkMode::getSysColor(COLOR_HIGHLIGHT) : DARK_CONTROL) :
+		(selected ? GetSysColor(COLOR_HIGHLIGHT) : GetSysColor(COLOR_WINDOW));
+	const auto textColor = dark ? (selected ? DarkMode::getSysColor(COLOR_HIGHLIGHTTEXT) : DARK_TEXT) :
+		(selected ? GetSysColor(COLOR_HIGHLIGHTTEXT) : GetSysColor(COLOR_WINDOWTEXT));
+	auto brush = CreateSolidBrush(background);
+	FillRect(item->hDC, &item->rcItem, brush);
+	DeleteObject(brush);
+
+	if (item->itemID != static_cast<UINT>(-1)) {
+		const auto flagIndex = static_cast<int>(item->itemData);
+		int iconWidth = 0, iconHeight = 0;
+		if (flagIndex >= 0 && ResourceLoader::flagImages.GetIconSize(iconWidth, iconHeight)) {
+			POINT iconPos = { item->rcItem.left + 4, item->rcItem.top + (item->rcItem.bottom - item->rcItem.top - iconHeight) / 2 };
+			ResourceLoader::flagImages.Draw(item->hDC, flagIndex, iconPos, ILD_TRANSPARENT);
+		}
+
+		TCHAR label[256] = {};
+		SendMessage(item->hwndItem, CB_GETLBTEXT, item->itemID, reinterpret_cast<LPARAM>(label));
+		RECT textRect = item->rcItem;
+		textRect.left += max(24, iconWidth + 8);
+		SetBkMode(item->hDC, TRANSPARENT);
+		SetTextColor(item->hDC, textColor);
+		DrawText(item->hDC, label, -1, &textRect, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
+	}
+
+	if (item->itemState & ODS_FOCUS) {
+		DrawFocusRect(item->hDC, &item->rcItem);
+	}
+	return true;
+}
+
+bool drawFontDialogListItem(const DRAWITEMSTRUCT* item) noexcept {
+	if (!item || !item->hwndItem || !item->hDC) {
+		return false;
+	}
+	if (item->CtlType != ODT_LISTBOX && item->CtlType != ODT_COMBOBOX) {
+		return false;
+	}
+	TCHAR className[32] = {};
+	GetClassName(item->hwndItem, className, _countof(className));
+
+	const auto selected = (item->itemState & ODS_SELECTED) != 0;
+	const auto bg = selected ? DarkMode::getSysColor(COLOR_HIGHLIGHT) : DARK_CONTROL;
+	auto brush = CreateSolidBrush(bg);
+	FillRect(item->hDC, &item->rcItem, brush);
+	DeleteObject(brush);
+	auto oldFont = GetCurrentObject(item->hDC, OBJ_FONT);
+	if (auto font = reinterpret_cast<HFONT>(SendMessage(item->hwndItem, WM_GETFONT, 0, 0)); font) {
+		SelectObject(item->hDC, font);
+	}
+	SetBkMode(item->hDC, TRANSPARENT);
+	SetTextColor(item->hDC, selected ? DarkMode::getSysColor(COLOR_HIGHLIGHTTEXT) : DARK_TEXT);
+
+	if (item->itemID != static_cast<UINT>(-1)) {
+		TCHAR label[256] = {};
+		const auto textMessage = _tcscmp(className, WC_COMBOBOX) == 0 ? CB_GETLBTEXT : LB_GETTEXT;
+		SendMessage(item->hwndItem, textMessage, item->itemID, reinterpret_cast<LPARAM>(label));
+		auto rc = item->rcItem;
+		InflateRect(&rc, -4, 0);
+		DrawText(item->hDC, label, -1, &rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
+	}
+	SelectObject(item->hDC, oldFont);
+	return true;
+}
+
+void paintFontComboList(HWND hWnd) noexcept {
+	auto dc = GetDC(hWnd);
+	if (!dc) {
+		return;
+	}
+
+	RECT client;
+	GetClientRect(hWnd, &client);
+	auto background = CreateSolidBrush(DARK_CONTROL);
+	FillRect(dc, &client, background);
+	DeleteObject(background);
+
+	SetBkMode(dc, TRANSPARENT);
+	auto oldFont = GetCurrentObject(dc, OBJ_FONT);
+	if (auto font = reinterpret_cast<HFONT>(SendMessage(hWnd, WM_GETFONT, 0, 0)); font) {
+		SelectObject(dc, font);
+	}
+	const auto count = static_cast<int>(SendMessage(hWnd, LB_GETCOUNT, 0, 0));
+	const auto first = max(0, static_cast<int>(SendMessage(hWnd, LB_GETTOPINDEX, 0, 0)));
+	const auto selected = static_cast<int>(SendMessage(hWnd, LB_GETCURSEL, 0, 0));
+	for (auto i = first; i < count; ++i) {
+		RECT rc;
+		if (SendMessage(hWnd, LB_GETITEMRECT, i, reinterpret_cast<LPARAM>(&rc)) == LB_ERR || rc.top >= client.bottom) {
+			break;
+		}
+		const auto isSelected = i == selected;
+		if (isSelected) {
+			auto selection = CreateSolidBrush(DarkMode::getSysColor(COLOR_HIGHLIGHT));
+			FillRect(dc, &rc, selection);
+			DeleteObject(selection);
+		}
+		TCHAR label[256] = {};
+		if (SendMessage(hWnd, LB_GETTEXT, i, reinterpret_cast<LPARAM>(label)) == LB_ERR) {
+			continue;
+		}
+		SetTextColor(dc, isSelected ? DarkMode::getSysColor(COLOR_HIGHLIGHTTEXT) : DARK_TEXT);
+		InflateRect(&rc, -4, 0);
+		DrawText(dc, label, -1, &rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS);
+	}
+	SelectObject(dc, oldFont);
+	ReleaseDC(hWnd, dc);
+}
+
+void paintFontComboHorizontalScrollBar(HWND hWnd) noexcept {
+	RECT window, client;
+	GetWindowRect(hWnd, &window);
+	GetClientRect(hWnd, &client);
+	MapWindowPoints(hWnd, nullptr, reinterpret_cast<LPPOINT>(&client), 2);
+	RECT bar = { client.left - window.left, client.bottom - window.top, client.right - window.left, window.bottom - window.top };
+	if (bar.right <= bar.left || bar.bottom <= bar.top) return;
+	auto dc = GetWindowDC(hWnd);
+	if (!dc) return;
+	auto brush = CreateSolidBrush(DARK_FACE);
+	FillRect(dc, &bar, brush);
+	DeleteObject(brush);
+	SCROLLINFO si = { sizeof(SCROLLINFO), SIF_ALL };
+	if (GetScrollInfo(hWnd, SB_HORZ, &si)) {
+		const auto arrowWidth = min<LONG>(static_cast<LONG>(GetSystemMetrics(SM_CXHSCROLL)), (bar.right - bar.left) / 3);
+		const auto range = max(1, si.nMax - si.nMin + 1);
+		const auto thumbWidth = max(12, static_cast<int>(static_cast<long long>(bar.right - bar.left - 2 * arrowWidth) * max(1u, si.nPage) / range));
+		const auto travel = max<int>(0, static_cast<int>(bar.right - bar.left - 2 * arrowWidth) - thumbWidth);
+		const auto scrollRange = max(1, range - static_cast<int>(si.nPage));
+		const auto thumbLeft = bar.left + arrowWidth + travel * (si.nPos - si.nMin) / scrollRange;
+		RECT thumb = { thumbLeft, bar.top + 2, min(bar.right - arrowWidth, thumbLeft + thumbWidth), bar.bottom - 2 };
+		auto thumbBrush = CreateSolidBrush((GetKeyState(VK_LBUTTON) & 0x8000) ? RGB(110, 110, 110) : RGB(90, 90, 90));
+		FillRect(dc, &thumb, thumbBrush);
+		DeleteObject(thumbBrush);
+	}
+	ReleaseDC(hWnd, dc);
+}
+
+void paintFontComboScrollBar(HWND hWnd) noexcept {
+	paintFontComboHorizontalScrollBar(hWnd);
+
+	RECT window;
+	GetWindowRect(hWnd, &window);
+	SCROLLBARINFO sbi = { sizeof(SCROLLBARINFO) };
+	if (!GetScrollBarInfo(hWnd, OBJID_VSCROLL, &sbi) || (sbi.rgstate[0] & (STATE_SYSTEM_INVISIBLE | STATE_SYSTEM_OFFSCREEN))) {
+		return;
+	}
+
+	RECT bar = sbi.rcScrollBar;
+	OffsetRect(&bar, -window.left, -window.top);
+	if (bar.right <= bar.left || bar.bottom <= bar.top) {
+		return;
+	}
+
+	auto dc = GetWindowDC(hWnd);
+	if (!dc) {
+		return;
+	}
+
+	auto track = CreateSolidBrush(DARK_FACE);
+	FillRect(dc, &bar, track);
+	DeleteObject(track);
+
+	const auto arrowHeight = min<LONG>(sbi.dxyLineButton > 0 ? sbi.dxyLineButton : GetSystemMetrics(SM_CYVSCROLL), (bar.bottom - bar.top) / 3);
+	POINT arrow[3];
+	auto arrowBrush = CreateSolidBrush(DARK_SHADOW);
+	auto oldBrush = SelectObject(dc, arrowBrush);
+	auto oldPen = SelectObject(dc, GetStockObject(NULL_PEN));
+	const auto midX = (bar.left + bar.right) / 2;
+	arrow[0] = { midX - 3, bar.top + arrowHeight / 2 + 2 };
+	arrow[1] = { midX + 3, bar.top + arrowHeight / 2 + 2 };
+	arrow[2] = { midX, bar.top + arrowHeight / 2 - 2 };
+	Polygon(dc, arrow, 3);
+	arrow[0] = { midX - 3, bar.bottom - arrowHeight / 2 - 2 };
+	arrow[1] = { midX + 3, bar.bottom - arrowHeight / 2 - 2 };
+	arrow[2] = { midX, bar.bottom - arrowHeight / 2 + 2 };
+	Polygon(dc, arrow, 3);
+	SelectObject(dc, oldPen);
+	SelectObject(dc, oldBrush);
+	DeleteObject(arrowBrush);
+
+	if (!(sbi.rgstate[3] & STATE_SYSTEM_UNAVAILABLE) && sbi.xyThumbBottom > sbi.xyThumbTop) {
+		RECT thumb = { bar.left + 1, bar.top + sbi.xyThumbTop, bar.right - 1, bar.top + sbi.xyThumbBottom };
+		const auto pressed = (sbi.rgstate[3] & STATE_SYSTEM_PRESSED) || (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
+		auto thumbBrush = CreateSolidBrush(pressed ? RGB(110, 110, 110) : RGB(90, 90, 90));
+		FillRect(dc, &thumb, thumbBrush);
+		auto thumbEdge = CreateSolidBrush(DARK_SHADOW);
+		FrameRect(dc, &thumb, thumbEdge);
+		DeleteObject(thumbEdge);
+		DeleteObject(thumbBrush);
+	}
+
+	// The popup list reserves a short bottom band even when it has no
+	// horizontal scrollbar; the common-dialog theme paints that band white.
+	RECT popup, popupClient;
+	GetWindowRect(hWnd, &popup);
+	GetClientRect(hWnd, &popupClient);
+	MapWindowPoints(hWnd, nullptr, reinterpret_cast<LPPOINT>(&popupClient), 2);
+	RECT bottomBand = { popupClient.left - popup.left, popupClient.bottom - popup.top,
+		popupClient.right - popup.left, popup.bottom - popup.top };
+	auto bottomBrush = CreateSolidBrush(DARK_CONTROL);
+	FillRect(dc, &bottomBand, bottomBrush);
+	DeleteObject(bottomBrush);
+	ReleaseDC(hWnd, dc);
+}
+BOOL CALLBACK applyDialogChildTheme(HWND child, LPARAM /*lParam*/) noexcept {
+	if (!GetWindowSubclass(child, subclassProc, SUBCLASS_ID, nullptr)) {
+		subclassWindow(child, getWindowType(child));
+	}
+	applyWindowTheme(child, getSubclassedType(child));
+	return TRUE;
+}
+
+BOOL CALLBACK applyFontDialogChildTheme(HWND child, LPARAM /*lParam*/) noexcept {
+	if (!GetWindowSubclass(child, subclassProc, SUBCLASS_ID, nullptr)) {
+		subclassWindow(child, getWindowType(child));
+	}
+	auto type = getSubclassedType(child);
+	auto parent = GetParent(child);
+	const auto comboList = type == TYPE_LISTBOX && parent && getWindowType(parent) == TYPE_COMBO;
+	if (type == TYPE_LISTBOX) {
+		// ChooseFont font, style, and size lists are owner-drawn by comdlg32. Mark their
+		// WM_DRAWITEM notifications and keep the CFD theme for dark scrollbars.
+		SetProp(child, PROP_FONT_DARK_LISTBOX, reinterpret_cast<HANDLE>(1));
+		if (allowDarkModeForWindow) {
+			allowDarkModeForWindow(child, true);
+		}
+		// Keep the owner-drawn list dark and avoid the common-dialog themed
+		// scrollbar, which paints a light thumb during native drag tracking.
+		SetWindowTheme(child, L"DarkMode_Explorer", nullptr);
+	} else {
+		applyWindowTheme(child, type);
+	}
+	if (type == TYPE_LISTBOX) {
+		// ChooseFont can place list boxes under an intermediate container, so
+		// handle their color notifications at the immediate parent as well.
+		if (parent) {
+			if (!GetWindowSubclass(parent, subclassProc, SUBCLASS_ID, nullptr)) {
+				subclassWindow(parent, getWindowType(parent));
+			}
+			SetProp(parent, PROP_FORCE_DARK_COLORS, reinterpret_cast<HANDLE>(1));
+			if (comboList) {
+				// Combo-box owner-draw notifications identify the combo itself,
+				// rather than its ComboLBox popup, as hwndItem.
+				SetProp(parent, PROP_FONT_DARK_LISTBOX, reinterpret_cast<HANDLE>(1));
+			}
+		}
+		InvalidateRect(child, nullptr, TRUE);
+	} else if (type == TYPE_COMBO) {
+		SetProp(child, PROP_FONT_DARK_COMBO, reinterpret_cast<HANDLE>(1));
+		SetProp(child, PROP_FORCE_DARK_COLORS, reinterpret_cast<HANDLE>(1));
+		disableFontDialogComboClientEdge(child);
+		SetWindowTheme(child, L"", L"");
+		COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
+		if (GetComboBoxInfo(child, &info)) {
+			if (info.hwndList) {
+				if (!GetWindowSubclass(info.hwndList, subclassProc, SUBCLASS_ID, nullptr)) {
+					subclassWindow(info.hwndList, TYPE_LISTBOX);
+				}
+				SetProp(info.hwndList, PROP_FONT_DARK_LISTBOX, reinterpret_cast<HANDLE>(1));
+				SetWindowTheme(info.hwndList, L"", nullptr);
+				RedrawWindow(info.hwndList, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_UPDATENOW);
+			}
+			if (info.hwndItem && info.hwndItem != child) {
+				if (!GetWindowSubclass(info.hwndItem, subclassProc, SUBCLASS_ID, nullptr)) {
+					subclassWindow(info.hwndItem, TYPE_EDIT);
+				}
+				SetProp(info.hwndItem, PROP_FONT_DARK_COMBO, reinterpret_cast<HANDLE>(1));
+				SetProp(info.hwndItem, PROP_FORCE_DARK_COLORS, reinterpret_cast<HANDLE>(1));
+				// Let the embedded edit use the dark CTLCOLOR brush; the CFD visual style paints it light.
+				SetWindowTheme(info.hwndItem, L"", L"");
+				InvalidateRect(info.hwndItem, nullptr, TRUE);
+			}
+		}
+		disableFontDialogComboClientEdge(child);
+	} else {
+		TCHAR className[32] = {};
+		TCHAR text[64] = {};
+		GetClassName(child, className, _countof(className));
+		GetWindowText(child, text, _countof(text));
+		if (_tcscmp(className, WC_STATIC) == 0 && _tcscmp(text, _T("AaBbYyZz")) == 0) {
+			SetProp(child, PROP_FONT_SAMPLE, reinterpret_cast<HANDLE>(1));
+			if (parent) {
+				SetProp(parent, PROP_FORCE_DARK_COLORS, reinterpret_cast<HANDLE>(1));
+				SetWindowTheme(child, L"DarkMode_CFD", nullptr);
+			}
+			InvalidateRect(child, nullptr, TRUE);
+		}
+	}
+	return TRUE;
+}
 LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR /*uIdSubclass*/, DWORD_PTR dwRefData) noexcept {
 	auto type = static_cast<WindowType>(dwRefData);
 
 	if (uMsg == WM_APPLY_THEME) {
+		if (GetProp(hWnd, PROP_FONT_DARK_COMBO)) {
+			// ChooseFont's WM_INITDIALOG hook removes the visual style after creating
+			// the controls; preserve that choice when the queued theme pass arrives.
+			SetWindowTheme(hWnd, L"", L"");
+					disableFontDialogComboClientEdge(hWnd);
+			paintFontDialogControlEdge(hWnd);
+			return 0;
+		}
+
 		applyWindowTheme(hWnd, type);
 		if (type == TYPE_MESSAGEBOX) {
 			// The buttons and texts are created by the system
@@ -1211,18 +1673,37 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case WM_NCDESTROY:
 			RemoveProp(hWnd, PROP_SCROLL_HOT);
 			RemoveProp(hWnd, PROP_DARK);
+			RemoveProp(hWnd, PROP_DARK_PAGE);
+			RemoveProp(hWnd, PROP_DARK_COMBO_LIST_COLORS);
+			RemoveProp(hWnd, PROP_DARK_COMBO_POPUP);
 			RemoveProp(hWnd, PROP_HOT_IMAGES);
 			RemoveProp(hWnd, PROP_PAINT_DISABLED);
+			RemoveProp(hWnd, PROP_FORCE_DARK_COLORS);
 			RemoveWindowSubclass(hWnd, subclassProc, SUBCLASS_ID);
 			break;
 		case WM_INITDIALOG:
 		{
 			auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
 			applyWindowTheme(hWnd, type);
+			if (type == TYPE_DIALOG && DarkMode::isEnabled()) {
+				EnumChildWindows(hWnd, applyDialogChildTheme, 0);
+			}
 			return result;
 		}
 		default:
 			break;
+	}
+	if (uMsg == WM_DRAWITEM && drawLanguageComboItem(reinterpret_cast<const DRAWITEMSTRUCT*>(lParam))) {
+		return TRUE;
+	}
+	if (uMsg == WM_MEASUREITEM) {
+		auto measure = reinterpret_cast<LPMEASUREITEMSTRUCT>(lParam);
+		if (measure && measure->CtlID == IDC_LANGUAGE) {
+			int iconWidth = 0, iconHeight = 0;
+			ResourceLoader::flagImages.GetIconSize(iconWidth, iconHeight);
+			measure->itemHeight = max(20, iconHeight + 4);
+			return TRUE;
+		}
 	}
 
 	if (!DarkMode::isEnabled()) {
@@ -1230,6 +1711,18 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	}
 
 	switch (uMsg) {
+		case WM_COMMAND:
+			if (HIWORD(wParam) == CBN_DROPDOWN) {
+				applyComboPopupTheme(reinterpret_cast<HWND>(lParam));
+			}
+			break;
+		case WM_DRAWITEM:
+			if (GetProp(hWnd, PROP_FORCE_DARK_COLORS)) {
+				if (drawFontDialogListItem(reinterpret_cast<const DRAWITEMSTRUCT*>(lParam))) {
+					return TRUE;
+				}
+			}
+			break;
 		case WM_CTLCOLORDLG:
 		case WM_CTLCOLORSTATIC:
 		case WM_CTLCOLORBTN:
@@ -1240,6 +1733,19 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			return handleCtlColor(hWnd, uMsg, wParam, lParam);
 		case WM_ERASEBKGND:
 		{
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_DARK_COMBO_POPUP)) {
+				RECT rc;
+				GetClientRect(hWnd, &rc);
+				FillRect(reinterpret_cast<HDC>(wParam), &rc, getFontPreviewBrush());
+				return TRUE;
+			}
+			if (GetProp(hWnd, PROP_DARK_PAGE)) {
+				RECT rc;
+				GetClientRect(hWnd, &rc);
+				FillRect(reinterpret_cast<HDC>(wParam), &rc, DarkMode::getSysColorBrush(COLOR_3DFACE));
+				return TRUE;
+			}
+
 			if (type == TYPE_BUTTON && isGroupBox(static_cast<DWORD>(GetWindowLongPtr(hWnd, GWL_STYLE)))) {
 				// Transparent, the parent paints the background
 				return TRUE;
@@ -1317,18 +1823,40 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		}
 		case WM_NCPAINT:
 		{
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				// The common-dialog theme redraws its scrollbar thumb after the
+				// subclass paint while the user drags it. Own non-client painting
+				// for these popup lists so the native light thumb cannot overwrite it.
+				paintFontComboScrollBar(hWnd);
+				paintFontDialogControlEdge(hWnd);
+				SetTimer(hWnd, SCROLL_TIMER, 25, nullptr);
+				return 0;
+			}
 			auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			const auto fontDialogControl = (type == TYPE_COMBO || type == TYPE_EDIT) && GetProp(hWnd, PROP_FONT_DARK_COMBO);
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				paintFontComboScrollBar(hWnd);
+				SetTimer(hWnd, SCROLL_TIMER, 25, nullptr);
+			}
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_DARK_COMBO_POPUP)) {
+				paintFontComboScrollBar(hWnd);
+			}
+			if (fontDialogControl) {
+				paintFontDialogControlEdge(hWnd);
+			} else if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				paintFontDialogControlEdge(hWnd);
+			}
 
 			// The borders of the visual styles are light (combo boxes are painted separately)
-			if ((GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_CLIENTEDGE) && type != TYPE_COMBO) {
+			if ((GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_CLIENTEDGE) && type != TYPE_COMBO && !fontDialogControl && !(type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX))) {
 				paintClientEdge(hWnd);
-			} else if (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_STATICEDGE) {
+			} else if (!fontDialogControl && !(type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) && (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_STATICEDGE)) {
 				// Light and white lines
 				RECT rc;
 				GetWindowRect(hWnd, &rc);
 				OffsetRect(&rc, -rc.left, -rc.top);
 				auto hdc = GetWindowDC(hWnd);
-				auto brush = CreateSolidBrush(DARK_SHADOW);
+				auto brush = CreateSolidBrush(DARK_DARK_SHADOW);
 				FrameRect(hdc, &rc, brush);
 				DeleteObject(brush);
 				ReleaseDC(hWnd, hdc);
@@ -1338,7 +1866,7 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				GetWindowRect(hWnd, &rc);
 				OffsetRect(&rc, -rc.left, -rc.top);
 				auto hdc = GetWindowDC(hWnd);
-				auto brush = CreateSolidBrush(DARK_SHADOW);
+				auto brush = CreateSolidBrush(DARK_DARK_SHADOW);
 				FrameRect(hdc, &rc, brush);
 				DeleteObject(brush);
 				ReleaseDC(hWnd, hdc);
@@ -1360,11 +1888,44 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case WM_KEYDOWN:
 		{
 			auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				paintFontComboScrollBar(hWnd);
+				SetTimer(hWnd, SCROLL_TIMER, 25, nullptr);
+			}
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_DARK_COMBO_POPUP)) {
+				paintFontComboScrollBar(hWnd);
+			}
 			paintThinScrollThumbs(hWnd, type);
 			return result;
 		}
 		case WM_NCMOUSEMOVE:
 		{
+			if ((type == TYPE_COMBO || type == TYPE_EDIT) && GetProp(hWnd, PROP_FONT_DARK_COMBO)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontDialogControlEdge(hWnd);
+				return result;
+			}
+			if (hasThemedClientEdge(hWnd, type)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintClientEdge(hWnd);
+				return result;
+			}
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				if (wParam == HTHSCROLL || wParam == HTVSCROLL) {
+					SetProp(hWnd, PROP_SCROLL_HOT, reinterpret_cast<HANDLE>(1));
+					TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE | TME_NONCLIENT, hWnd, 0 };
+					TrackMouseEvent(&tme);
+				}
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontComboScrollBar(hWnd);
+				SetTimer(hWnd, SCROLL_TIMER, 25, nullptr);
+				return result;
+			}
+			if ((type == TYPE_COMBO || type == TYPE_EDIT) && GetProp(hWnd, PROP_FONT_DARK_COMBO)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontDialogControlEdge(hWnd);
+				return result;
+			}
 			// Windows shows the wide thumb while the mouse is over the scroll bar
 			if ((wParam == HTHSCROLL || wParam == HTVSCROLL) && !GetProp(hWnd, PROP_SCROLL_HOT)) {
 				SetProp(hWnd, PROP_SCROLL_HOT, reinterpret_cast<HANDLE>(1));
@@ -1375,6 +1936,10 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		{
 			if (type == TYPE_UPDOWN) {
 				InvalidateRect(hWnd, nullptr, FALSE);
+			} else if ((type == TYPE_COMBO || type == TYPE_EDIT) && GetProp(hWnd, PROP_FONT_DARK_COMBO)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontDialogControlEdge(hWnd);
+				return result;
 			} else if (hasThemedClientEdge(hWnd, type)) {
 				// The hot border is painted without WM_NCPAINT
 				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
@@ -1385,7 +1950,44 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		}
 		case WM_NCMOUSELEAVE:
 		case WM_MOUSEMOVE:
+		case WM_NCLBUTTONDOWN:
+		case WM_NCLBUTTONUP:
+		case WM_NCLBUTTONDBLCLK:
 		{
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				if (uMsg == WM_NCMOUSELEAVE && RemoveProp(hWnd, PROP_SCROLL_HOT)) {
+					SetTimer(hWnd, SCROLL_TIMER, 700, nullptr);
+				} else {
+					paintFontComboScrollBar(hWnd);
+					SetTimer(hWnd, SCROLL_TIMER, 25, nullptr);
+				}
+				return result;
+			}
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_DARK_COMBO_POPUP)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontComboScrollBar(hWnd);
+				return result;
+			}
+			if ((type == TYPE_COMBO || type == TYPE_EDIT) && GetProp(hWnd, PROP_FONT_DARK_COMBO)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontDialogControlEdge(hWnd);
+				return result;
+			}
+			if (hasThemedClientEdge(hWnd, type)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintClientEdge(hWnd);
+				return result;
+			}
+			if (uMsg == WM_NCMOUSELEAVE && type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				if (RemoveProp(hWnd, PROP_SCROLL_HOT)) {
+					SetTimer(hWnd, SCROLL_TIMER, 700, nullptr);
+				} else {
+					paintFontComboScrollBar(hWnd);
+				}
+				return result;
+			}
 			if (type == TYPE_UPDOWN) {
 				// Hot part
 				TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hWnd, 0 };
@@ -1404,11 +2006,22 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				paintClientEdge(hWnd);
 				return result;
 			}
-			break;
+			auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+			paintThinScrollThumbs(hWnd, type);
+			return result;
 		}
 		case WM_TIMER:
 		{
 			if (wParam == SCROLL_TIMER) {
+				if (type == TYPE_LISTBOX && (GetProp(hWnd, PROP_FONT_DARK_LISTBOX) || GetProp(hWnd, PROP_DARK_COMBO_POPUP))) {
+					paintFontComboScrollBar(hWnd);
+					if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+						SetTimer(hWnd, SCROLL_TIMER, 16, nullptr);
+					} else {
+						KillTimer(hWnd, SCROLL_TIMER);
+					}
+					return 0;
+				}
 				KillTimer(hWnd, SCROLL_TIMER);
 				paintThinScrollThumbs(hWnd, type);
 				return 0;
@@ -1417,10 +2030,41 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		}
 		case WM_PAINT:
 		{
+			if (type == TYPE_EDIT && GetProp(hWnd, PROP_FONT_DARK_COMBO)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontDialogControlEdge(hWnd);
+				return result;
+			}
+			if (GetProp(hWnd, PROP_DARK_PAGE)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				auto dc = GetDC(hWnd);
+				if (dc) {
+					auto saved = SaveDC(dc);
+					excludeChildren(hWnd, dc, false);
+					RECT rc;
+					GetClientRect(hWnd, &rc);
+					FillRect(dc, &rc, DarkMode::getSysColorBrush(COLOR_3DFACE));
+					RestoreDC(dc, saved);
+					ReleaseDC(hWnd, dc);
+				}
+				return result;
+			}
+
 			if (type == TYPE_LISTVIEW && !IsWindowEnabled(hWnd)) {
 				auto result = paintDisabledListView(hWnd, uMsg, wParam, lParam);
 				paintGridLines(hWnd);
 				paintThinScrollThumbs(hWnd, type);
+				return result;
+			}
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_FONT_DARK_LISTBOX)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontComboList(hWnd);
+				paintFontComboScrollBar(hWnd);
+				return result;
+			}
+			if (type == TYPE_LISTBOX && GetProp(hWnd, PROP_DARK_COMBO_POPUP)) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontComboScrollBar(hWnd);
 				return result;
 			}
 
@@ -1448,7 +2092,7 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 			if (type == TYPE_COMBO && (GetWindowLongPtr(hWnd, GWL_STYLE) & 0x3) != CBS_SIMPLE) {
 				// Not for the ComboBoxEx wrapper
-				COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
+		COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
 				if (GetComboBoxInfo(hWnd, &info)) {
 					return bufferedPaint(hWnd, paintComboBox);
 				}
@@ -1544,6 +2188,11 @@ LRESULT CALLBACK subclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 
 			// The focused border is painted without WM_NCPAINT
+			if ((uMsg == WM_SETFOCUS || uMsg == WM_KILLFOCUS) && (type == TYPE_EDIT && GetProp(hWnd, PROP_FONT_DARK_COMBO))) {
+				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
+				paintFontDialogControlEdge(hWnd);
+				return result;
+			}
 			if ((uMsg == WM_SETFOCUS || uMsg == WM_KILLFOCUS) && hasThemedClientEdge(hWnd, type)) {
 				auto result = DefSubclassProc(hWnd, uMsg, wParam, lParam);
 				paintClientEdge(hWnd);
@@ -1738,6 +2387,29 @@ bool isMessageBox(HWND hWnd) noexcept {
 	return GetClassName(hWnd, buf, 8) && _tcscmp(buf, _T("#32770")) == 0;
 }
 
+bool isComboListBox(HWND hWnd) noexcept {
+	TCHAR buf[32];
+	return GetClassName(hWnd, buf, _countof(buf)) && _tcscmp(buf, _T("ComboLBox")) == 0;
+}
+
+void applyComboPopupTheme(HWND combo) noexcept {
+	if (!DarkMode::isEnabled() || !combo) {
+		return;
+	}
+
+	COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
+	if (!GetComboBoxInfo(combo, &info) || !info.hwndList) {
+		return;
+	}
+
+	if (!GetWindowSubclass(info.hwndList, subclassProc, SUBCLASS_ID, nullptr)) {
+		subclassWindow(info.hwndList, TYPE_LISTBOX);
+	}
+	SetProp(info.hwndList, PROP_DARK_COMBO_POPUP, reinterpret_cast<HANDLE>(1));
+	SetWindowTheme(info.hwndList, L"DarkMode_CFD", nullptr);
+	RedrawWindow(info.hwndList, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_UPDATENOW);
+}
+
 // Menu windows are run by the system and can't be subclassed: the light non-client frame of owner drawn menus
 // is painted over while the menu loop is idle
 BOOL CALLBACK paintMenuFrameProc(HWND hWnd, LPARAM /*lParam*/) noexcept {
@@ -1763,19 +2435,65 @@ BOOL CALLBACK paintMenuFrameProc(HWND hWnd, LPARAM /*lParam*/) noexcept {
 // Windows are subclassed after WM_CREATE because ATL replaces the window procedure of its windows on creation
 LRESULT CALLBACK callWndProcRetHook(int nCode, WPARAM wParam, LPARAM lParam) noexcept {
 	auto cwp = reinterpret_cast<const CWPRETSTRUCT*>(lParam);
+	if (nCode == HC_ACTION && DarkMode::isEnabled() &&
+		(GetProp(cwp->hwnd, PROP_FONT_DARK_LISTBOX) || GetProp(cwp->hwnd, PROP_DARK_COMBO_POPUP)) &&
+		(cwp->message == WM_NCPAINT || cwp->message == WM_NCACTIVATE ||
+		 cwp->message == WM_PAINT || cwp->message == WM_VSCROLL || cwp->message == WM_HSCROLL ||
+		 cwp->message == WM_NCLBUTTONDOWN || cwp->message == WM_NCLBUTTONUP || cwp->message == WM_NCLBUTTONDBLCLK ||
+		 cwp->message == WM_NCMOUSEMOVE || cwp->message == WM_NCMOUSELEAVE ||
+		 cwp->message == WM_MOUSEMOVE || cwp->message == WM_MOUSEWHEEL || cwp->message == WM_CAPTURECHANGED ||
+		 cwp->message == WM_TIMER)) {
+		// Common-dialog scroll tracking can repaint its native light scrollbar after
+		// the subclass procedure returns; repaint once more at the post-window-proc hook.
+		paintFontComboScrollBar(cwp->hwnd);
+		if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+			SetTimer(cwp->hwnd, SCROLL_TIMER, 16, nullptr);
+		}
+	}
+	if (nCode == HC_ACTION && DarkMode::isEnabled() && GetProp(cwp->hwnd, PROP_FONT_DARK_COMBO) &&
+		(cwp->message == WM_NCPAINT || cwp->message == WM_NCACTIVATE || cwp->message == WM_PAINT ||
+		 cwp->message == WM_NCMOUSEMOVE || cwp->message == WM_NCMOUSELEAVE || cwp->message == WM_MOUSEMOVE ||
+		 cwp->message == WM_SETFOCUS || cwp->message == WM_KILLFOCUS)) {
+		// The common dialog can repaint the light edit frame after the control subclass.
+		paintFontDialogControlEdge(cwp->hwnd);
+	}
 	if (nCode == HC_ACTION && cwp->message == WM_ENTERIDLE && cwp->wParam == MSGF_MENU && DarkMode::isEnabled()) {
 		EnumThreadWindows(GetCurrentThreadId(), paintMenuFrameProc, 0);
+	}
+
+	if (nCode == HC_ACTION && DarkMode::isEnabled() &&
+		(cwp->message == WM_SETTEXT || (cwp->message == WM_SHOWWINDOW && cwp->wParam))) {
+		// Property sheets (including the Aero setup wizard) paint their page
+		// margins themselves, outside the normal dialog background path.
+		if (auto page = reinterpret_cast<HWND>(SendMessage(cwp->hwnd, PSM_GETCURRENTPAGEHWND, 0, 0)); page && IsWindow(page)) {
+			SetProp(cwp->hwnd, PROP_DARK_PAGE, reinterpret_cast<HANDLE>(1));
+			SetProp(cwp->hwnd, PROP_FORCE_DARK_COLORS, reinterpret_cast<HANDLE>(1));
+			if (!GetWindowSubclass(cwp->hwnd, subclassProc, SUBCLASS_ID, nullptr)) {
+				subclassWindow(cwp->hwnd, getWindowType(cwp->hwnd));
+			}
+			SetWindowTheme(cwp->hwnd, L"DarkMode_Explorer", nullptr);
+			RedrawWindow(cwp->hwnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN | RDW_UPDATENOW);
+		}
 	}
 
 	if (nCode == HC_ACTION && cwp->message == WM_CREATE && cwp->lResult != -1) {
 		// Only theme our own windows, windows created by the common controls and message boxes
 		// (common dialogs have their own dark mode support)
 		auto instance = reinterpret_cast<HINSTANCE>(GetWindowLongPtr(cwp->hwnd, GWLP_HINSTANCE));
-		if (instance && (instance == _Module.GetModuleInstance() || instance == _Module.GetResourceInstance() || instance == comctl32 || (instance == user32 && isMessageBox(cwp->hwnd)))) {
-			subclassWindow(cwp->hwnd, instance == user32 ? TYPE_MESSAGEBOX : getWindowType(cwp->hwnd));
+		const auto isUser32Dialog = instance == user32 && isMessageBox(cwp->hwnd);
+		const auto isComboPopup = isComboListBox(cwp->hwnd);
+		if (isComboPopup || (instance && (instance == _Module.GetModuleInstance() || instance == _Module.GetResourceInstance() || instance == comctl32 || instance == comdlg32 || isUser32Dialog))) {
+			subclassWindow(cwp->hwnd, isUser32Dialog ? TYPE_MESSAGEBOX : getWindowType(cwp->hwnd));
 
 			auto type = getSubclassedType(cwp->hwnd);
 			applyWindowTheme(cwp->hwnd, type);
+			if (isComboPopup) {
+				// ComboLBox is created lazily when a dropdown opens, after the combo
+				// control was themed. Track it so its classic scrollbar can be painted dark.
+				if (DarkMode::isEnabled()) {
+					SetProp(cwp->hwnd, PROP_DARK_COMBO_POPUP, reinterpret_cast<HANDLE>(1));
+				}
+			}
 
 			// Application code may set the light Explorer theme after the window has been created
 			if (type == TYPE_LISTVIEW || type == TYPE_TREEVIEW || type == TYPE_COMBO || type == TYPE_DIALOG || type == TYPE_MESSAGEBOX || type == TYPE_TOOLBAR) {
@@ -1788,10 +2506,10 @@ LRESULT CALLBACK callWndProcRetHook(int nCode, WPARAM wParam, LPARAM lParam) noe
 }
 
 BOOL CALLBACK applyChildProc(HWND hWnd, LPARAM /*lParam*/) noexcept {
-	DWORD_PTR type = 0;
-	if (GetWindowSubclass(hWnd, subclassProc, SUBCLASS_ID, &type)) {
-		applyWindowTheme(hWnd, static_cast<WindowType>(type));
+	if (!GetWindowSubclass(hWnd, subclassProc, SUBCLASS_ID, nullptr)) {
+		subclassWindow(hWnd, getWindowType(hWnd));
 	}
+	applyWindowTheme(hWnd, getSubclassedType(hWnd));
 
 	RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME);
 	return TRUE;
@@ -1838,6 +2556,9 @@ void setColorDefaults(bool aDark) noexcept {
 }
 
 void DarkMode::init() noexcept {
+	if (initialized) {
+		return;
+	}
 	initialized = true;
 
 	// The ordinals are valid since Windows 10 1903 (build 18362)
@@ -1869,6 +2590,7 @@ void DarkMode::init() noexcept {
 
 	user32 = GetModuleHandle(_T("user32.dll"));
 	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPCTSTR>(&InitCommonControlsEx), &comctl32);
+	comdlg32 = LoadLibrary(_T("comdlg32.dll"));
 	if (comctl32) {
 		patchScrollBarImports(comctl32);
 	}
@@ -1882,6 +2604,10 @@ void DarkMode::uninit() noexcept {
 	if (hook) {
 		UnhookWindowsHookEx(hook);
 		hook = nullptr;
+	}
+	if (comdlg32) {
+		FreeLibrary(comdlg32);
+		comdlg32 = nullptr;
 	}
 }
 
@@ -2005,13 +2731,198 @@ HBRUSH DarkMode::getSysColorBrush(int aIndex) noexcept {
 	return brushes[aIndex];
 }
 
+
+void paintColorPaletteBackground(HWND dialog, int id, int rows) noexcept {
+    auto palette = GetDlgItem(dialog, id);
+    if (!palette || !IsWindowVisible(palette)) return;
+
+    auto dc = GetDC(palette);
+    if (!dc) return;
+    auto signaturePoint = id == 720 ? POINT{ 0, 0 } : POINT{ 2, 2 };
+    auto expectedPixel = id == 720 ? DARK_SHADOW : DARK_FACE;
+    if (GetPixel(dc, signaturePoint.x, signaturePoint.y) == expectedPixel) {
+        ReleaseDC(palette, dc);
+        return;
+    }
+    auto saved = SaveDC(dc);
+    RECT bounds = {};
+    GetClientRect(palette, &bounds);
+    auto width = bounds.right - bounds.left;
+    auto height = bounds.bottom - bounds.top;
+    auto customColors = id == 721 ? static_cast<COLORREF*>(GetProp(dialog, _T("AirDCColorDialogColors"))) : nullptr;
+    if (customColors) {
+        for (auto row = 0; row < rows; ++row) {
+            for (auto col = 0; col < 8; ++col) {
+                if (customColors[row * 8 + col] == DARK_FACE) continue;
+                auto left = bounds.left + width * col / 8 + 4;
+                auto top = bounds.top + height * row / rows + 4;
+                auto right = bounds.left + width * (col + 1) / 8 - 8;
+                auto bottom = bounds.top + height * (row + 1) / rows - 8;
+                if (right > left && bottom > top) ExcludeClipRect(dc, left, top, right, bottom);
+            }
+        }
+    }
+    FillRect(dc, &bounds, DarkMode::getSysColorBrush(COLOR_3DFACE));
+    if (!customColors) {
+        static constexpr COLORREF basicColors[6][8] = {
+            { 0x008080FF, 0x0080FFFF, 0x0080FF80, 0x0080FF00, 0x00FFFF80, 0x00FF8000, 0x00C080FF, 0x00FF80FF },
+            { 0x000000FF, 0x0000FFFF, 0x0000FF80, 0x0040FF00, 0x00FFFF00, 0x00C08000, 0x00C08080, 0x00FF00FF },
+            { 0x00404080, 0x004080FF, 0x0000FF00, 0x00808000, 0x00804000, 0x00FF8080, 0x00400080, 0x008000FF },
+            { 0x00000080, 0x000080FF, 0x00008000, 0x00408000, 0x00FF0000, 0x00A00000, 0x00800080, 0x00FF0080 },
+            { 0x00000040, 0x00004080, 0x00004000, 0x00404000, 0x00800000, 0x00400000, 0x00400040, 0x00800040 },
+            { 0x00000000, 0x00008080, 0x00408080, 0x00808080, 0x00808040, 0x00C0C0C0, 0x00400040, 0x00FFFFFF }
+        };
+        auto outline = CreateSolidBrush(DARK_SHADOW);
+        auto colorBrush = static_cast<HBRUSH>(GetStockObject(DC_BRUSH));
+        auto dx = width / 8;
+        auto dy = height / rows;
+        for (auto row = 0; row < rows; ++row) {
+            for (auto col = 0; col < 8; ++col) {
+                RECT slot = { bounds.left + col * dx, bounds.top + row * dy, bounds.left + col * dx + dx - 4, bounds.top + row * dy + dy - 4 };
+                FrameRect(dc, &slot, outline);
+                RECT color = { slot.left + 1, slot.top + 1, slot.right - 1, slot.bottom - 1 };
+                SetDCBrushColor(dc, basicColors[row][col]);
+                FillRect(dc, &color, colorBrush);
+            }
+        }
+        DeleteObject(outline);
+    }    if (customColors) {
+        auto outline = CreateSolidBrush(DARK_SHADOW);
+        if (outline) {
+            for (auto row = 0; row < 2; ++row) {
+                for (auto col = 0; col < 8; ++col) {
+                    if (customColors[row * 8 + col] != DARK_FACE) continue;
+                    RECT slot = {
+                        bounds.left + width * col / 8,
+                        bounds.top + height * row / 2,
+                        bounds.left + width * (col + 1) / 8 - 4,
+                        bounds.top + height * (row + 1) / 2 - 4
+                    };
+                    FrameRect(dc, &slot, outline);
+                }
+            }
+            DeleteObject(outline);
+        }
+    }
+    RestoreDC(dc, saved);
+    ReleaseDC(palette, dc);
+}
+
+void CALLBACK colorDialogSubclassInstallTimerProc(HWND hWnd, UINT, UINT_PTR timerId, DWORD) noexcept {
+    if (!DarkMode::isEnabled() || !IsWindow(hWnd)) {
+        KillTimer(hWnd, timerId);
+        return;
+    }
+    paintColorPaletteBackground(hWnd, 720, 6);
+    paintColorPaletteBackground(hWnd, 721, 2);
+}
+UINT_PTR CALLBACK DarkMode::commonColorDialogHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+    if (!enabled) return 0;
+    if (uMsg == WM_INITDIALOG) {
+        auto dialog = reinterpret_cast<LPCHOOSECOLOR>(lParam);
+        if (dialog) SetProp(hWnd, _T("AirDCColorDialogColors"), dialog->lpCustColors);
+        apply(hWnd);
+        SetTimer(hWnd, 0x434F4C44, 32, colorDialogSubclassInstallTimerProc);
+        return 0;
+    }
+    if (uMsg == WM_CTLCOLORDLG || uMsg == WM_CTLCOLORSTATIC || uMsg == WM_CTLCOLORBTN || uMsg == WM_CTLCOLOREDIT || uMsg == WM_CTLCOLORLISTBOX || uMsg == WM_CTLCOLORSCROLLBAR) {
+        auto dc = reinterpret_cast<HDC>(wParam);
+        auto control = reinterpret_cast<HWND>(lParam);
+        if (uMsg == WM_CTLCOLORSTATIC && control) {
+            auto id = GetDlgCtrlID(control);
+            if (id >= COLOR_DIALOG_CUSTOM_FIRST && id < COLOR_DIALOG_CUSTOM_FIRST + COLOR_DIALOG_CUSTOM_COUNT) {
+                auto colors = static_cast<COLORREF*>(GetProp(hWnd, _T("AirDCColorDialogColors")));
+                if (colors && colors[id - COLOR_DIALOG_CUSTOM_FIRST] != DARK_FACE) return 0;
+            }
+        }
+        SetTextColor(dc, DARK_TEXT);
+        SetBkColor(dc, DARK_FACE);
+        return reinterpret_cast<UINT_PTR>(DarkMode::getSysColorBrush(COLOR_3DFACE));
+    }
+    return 0;
+}
+
+UINT_PTR CALLBACK DarkMode::commonFontDialogHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+    if (!enabled) return 0;
+    if (uMsg == WM_INITDIALOG) {
+        apply(hWnd);
+        // The hook callback receives color notifications, but the dialog
+        // window itself must handle WM_CTLCOLORLISTBOX for ChooseFont.
+        subclassWindow(hWnd, TYPE_DIALOG);
+        SetProp(hWnd, PROP_FORCE_DARK_COLORS, reinterpret_cast<HANDLE>(1));
+        applyWindowTheme(hWnd, TYPE_DIALOG);
+        // ChooseFont's child controls are created by comdlg32, outside the
+        // normal dialog subclassing path. Subclass them explicitly so the
+        // list boxes and edit fields use the dark control colors.
+        EnumChildWindows(hWnd, applyFontDialogChildTheme, 0);
+        return 0;
+    }
+    if (uMsg == WM_CTLCOLORDLG || uMsg == WM_CTLCOLORSTATIC || uMsg == WM_CTLCOLORBTN || uMsg == WM_CTLCOLOREDIT || uMsg == WM_CTLCOLORLISTBOX || uMsg == WM_CTLCOLORSCROLLBAR) {
+        auto control = reinterpret_cast<HWND>(lParam);
+        auto dc = reinterpret_cast<HDC>(wParam);
+        if (uMsg == WM_CTLCOLORSTATIC && GetProp(control, PROP_FONT_SAMPLE)) {
+            SetTextColor(dc, DARK_TEXT);
+            SetBkColor(dc, DARK_CONTROL);
+            SetBkMode(dc, OPAQUE);
+            return reinterpret_cast<UINT_PTR>(getFontPreviewBrush());
+        }
+        if (uMsg == WM_CTLCOLORLISTBOX && control) {
+            // ChooseFont creates separate ComboLBox popup windows for the
+            // Font, Style, Size, and Script selectors. Theme them when shown.
+            subclassWindow(control, TYPE_LISTBOX);
+            if (allowDarkModeForWindow) {
+                allowDarkModeForWindow(control, true);
+            }
+            SetProp(control, PROP_FONT_DARK_LISTBOX, reinterpret_cast<HANDLE>(1));
+            SetWindowTheme(control, L"DarkMode_Explorer", nullptr);
+            SetTextColor(dc, DARK_TEXT);
+            SetBkColor(dc, DarkMode::getSysColor(COLOR_WINDOW));
+            return reinterpret_cast<UINT_PTR>(DarkMode::getSysColorBrush(COLOR_WINDOW));
+        }
+        SetTextColor(dc, DARK_TEXT);
+        SetBkColor(dc, DARK_FACE);
+        return reinterpret_cast<UINT_PTR>(DarkMode::getSysColorBrush(COLOR_3DFACE));
+    }
+    return 0;
+}
+void DarkMode::prepareColorDialogColors(COLORREF* aColors) noexcept {
+	if (!enabled || !aColors) {
+		return;
+	}
+
+	// The common dialog renders empty custom-color slots as white. Give those
+	// slots a dark placeholder while preserving any colors already in the array.
+	for (auto i = 0; i < COLOR_DIALOG_CUSTOM_COUNT; ++i) {
+		if (aColors[i] == RGB(0, 0, 0) || aColors[i] == RGB(255, 255, 255)) {
+			aColors[i] = DARK_FACE;
+		}
+	}
+}
 void DarkMode::apply(HWND hWnd) noexcept {
 	if (!setPreferredAppMode) {
 		return;
 	}
 
+	if (!GetWindowSubclass(hWnd, subclassProc, SUBCLASS_ID, nullptr)) {
+		subclassWindow(hWnd, getWindowType(hWnd));
+	}
+	applyWindowTheme(hWnd, getSubclassedType(hWnd));
 	applyChildProc(hWnd, 0);
 	EnumChildWindows(hWnd, applyChildProc, 0);
+}
+
+void DarkMode::applyPage(HWND hWnd) noexcept {
+	if (!setPreferredAppMode || !enabled || !IsWindow(hWnd)) {
+		return;
+	}
+	SetProp(hWnd, PROP_DARK_PAGE, reinterpret_cast<HANDLE>(1));
+	SetProp(hWnd, PROP_FORCE_DARK_COLORS, reinterpret_cast<HANDLE>(1));
+	if (!GetWindowSubclass(hWnd, subclassProc, SUBCLASS_ID, nullptr)) {
+		subclassWindow(hWnd, TYPE_DIALOG);
+	}
+	applyWindowTheme(hWnd, TYPE_DIALOG);
+	EnumChildWindows(hWnd, applyChildProc, 0);
+	RedrawWindow(hWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN);
 }
 
 }

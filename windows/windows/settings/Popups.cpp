@@ -17,6 +17,8 @@
  */
 
 #include <windows/stdafx.h>
+
+#include <windows/util/DarkMode.h>
 #include <airdcpp/settings/SettingsManager.h>
 
 #include <windows/Resource.h>
@@ -111,6 +113,9 @@ LRESULT Popups::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 LRESULT Popups::onBackColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CColorDialog dlg(SETTING(POPUP_BACKCOLOR), CC_FULLOPEN);
+	DarkMode::prepareColorDialogColors(dlg.m_cc.lpCustColors);
+	dlg.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	dlg.m_cc.Flags |= CC_ENABLEHOOK;
 	if(dlg.DoModal() == IDOK)
 		SettingsManager::getInstance()->set(SettingsManager::POPUP_BACKCOLOR, (int)dlg.GetColor());
 	return 0;
@@ -120,6 +125,8 @@ LRESULT Popups::onFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOO
 	LOGFONT font;  
 	WinUtil::decodeFont(Text::toT(SETTING(POPUP_FONT)), font);
 	CFontDialog dlg(&font, CF_EFFECTS | CF_SCREENFONTS);
+	dlg.m_cf.lpfnHook = DarkMode::commonFontDialogHook;
+	dlg.m_cf.Flags |= CF_ENABLEHOOK;
 	dlg.m_cf.rgbColors = SETTING(POPUP_TEXTCOLOR);
 	if(dlg.DoModal() == IDOK){
 		SettingsManager::getInstance()->set(SettingsManager::POPUP_TEXTCOLOR, (int)dlg.GetColor());
@@ -132,6 +139,8 @@ LRESULT Popups::onTitleFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	LOGFONT tmp = myFont;
 	WinUtil::decodeFont(Text::toT(SETTING(POPUP_TITLE_FONT)), tmp);
 	CFontDialog dlg(&tmp, CF_EFFECTS | CF_SCREENFONTS);
+	dlg.m_cf.lpfnHook = DarkMode::commonFontDialogHook;
+	dlg.m_cf.Flags |= CF_ENABLEHOOK;
 	dlg.m_cf.rgbColors = SETTING(POPUP_TITLE_TEXTCOLOR);
 	if(dlg.DoModal() == IDOK){
 		myFont = tmp;

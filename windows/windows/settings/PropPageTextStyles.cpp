@@ -379,6 +379,9 @@ void PropPageTextStyles::TextStyleSettings::SaveSettings() {
 
 void PropPageTextStyles::TextStyleSettings::EditBackColor() {
 	CColorDialog d( crBackColor, 0, *m_pParent );
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 	if (d.DoModal() == IDOK) {
 		crBackColor = d.GetColor();
 	}
@@ -386,6 +389,9 @@ void PropPageTextStyles::TextStyleSettings::EditBackColor() {
 
 void PropPageTextStyles::TextStyleSettings::EditForeColor() {
 	CColorDialog d( crTextColor, 0, *m_pParent );
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 	if (d.DoModal() == IDOK) {
 		crTextColor = d.GetColor();
 	}
@@ -410,6 +416,8 @@ void PropPageTextStyles::TextStyleSettings::EditTextStyle() {
 		font.lfItalic = false;
 
 	CFontDialog d( &font, CF_EFFECTS | CF_SCREENFONTS, NULL, *m_pParent );
+	d.m_cf.lpfnHook = DarkMode::commonFontDialogHook;
+	d.m_cf.Flags |= CF_ENABLEHOOK;
 	d.m_cf.rgbColors = crTextColor;
 	if (d.DoModal() == IDOK) {
   	_tcscpy( szFaceName, font.lfFaceName );
@@ -779,6 +787,9 @@ LRESULT PropPageTextStyles::onClickedResetTabColor(WORD /*wNotifyCode*/, WORD /*
 
 LRESULT PropPageTextStyles::onClientSelectTabColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	CColorDialog d(colours[ctrlTabList.GetCurSel()].value, 0, *this);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 	if (d.DoModal() == IDOK) {
 		colours[ctrlTabList.GetCurSel()].value = d.GetColor();
 		switch(ctrlTabList.GetCurSel()) {
@@ -794,6 +805,8 @@ LRESULT PropPageTextStyles::onClickedText(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 {
 	LOGFONT tmp = m_Font;
 	CFontDialog d(&tmp, CF_EFFECTS | CF_SCREENFONTS, NULL, *this);
+	d.m_cf.lpfnHook = DarkMode::commonFontDialogHook;
+	d.m_cf.Flags |= CF_ENABLEHOOK;
 	d.m_cf.rgbColors = fg;
 	if(d.DoModal() == IDOK)
 	{

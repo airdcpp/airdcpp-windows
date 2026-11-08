@@ -55,7 +55,7 @@ public:
 private:
 	bool checkLanguage();
 	void completeLanguageCheck();
-	CComboBoxEx ctrlLanguage;
+	CComboBox ctrlLanguage;
 	SetupWizard* wizard;
 	LanguageDownloadDlg* dl;
 }; 

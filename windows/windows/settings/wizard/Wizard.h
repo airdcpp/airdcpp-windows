@@ -23,6 +23,7 @@
 #include <windows/resource.h>
 #include <windows/settings/base/PropPage.h>
 #include <windows/Async.h>
+#include <windows/util/DarkMode.h>
 
 #include <atldlgs.h>
 
@@ -44,12 +45,14 @@ public:
 
 	typedef CAeroWizardFrameImpl<SetupWizard> baseClass;
 	BEGIN_MSG_MAP(SampleWizard)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 		
 	SetupWizard(bool isInitial = false);
 	~SetupWizard();
+	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
 
 	template<class T>
 	T* getPage(Pages aPage) {

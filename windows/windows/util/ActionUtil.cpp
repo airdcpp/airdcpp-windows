@@ -604,22 +604,15 @@ void ActionUtil::removeBundle(QueueToken aBundleToken) {
 	}
 }
 
-void ActionUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage_) noexcept {
-	ctrlLanguage_.SetImageList(ResourceLoader::flagImages);
-	int count = 0;
-
+void ActionUtil::appendLanguageMenu(CComboBox& ctrlLanguage_) noexcept {
 	const auto languages = Localization::getLanguages();
 	for (const auto& l : languages) {
-		COMBOBOXEXITEM cbli = { CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE };
-		CString str = Text::toT(l.getLanguageName()).c_str();
-		cbli.iItem = count++;
-		cbli.pszText = (LPTSTR)(LPCTSTR)str;
-		cbli.cchTextMax = str.GetLength();
-
+		const auto label = Text::toT(l.getLanguageName());
 		auto flagIndex = Localization::getFlagIndexByCode(l.getCountryFlagCode());
-		cbli.iImage = flagIndex;
-		cbli.iSelectedImage = flagIndex;
-		ctrlLanguage_.InsertItem(&cbli);
+		const auto item = ctrlLanguage_.AddString(label.c_str());
+		if (item != CB_ERR) {
+			ctrlLanguage_.SetItemData(item, static_cast<DWORD_PTR>(flagIndex));
+		}
 	}
 
 	auto cur = Localization::getLanguageIndex(languages);

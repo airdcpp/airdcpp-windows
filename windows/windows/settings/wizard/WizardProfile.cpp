@@ -39,6 +39,7 @@ PropPage::TextItem WizardProfile::texts[] = {
 };
 
 LRESULT WizardProfile::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	DarkMode::applyPage((HWND)(*this));
 	PropPage::translate((HWND)(*this), texts);
 
 	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 

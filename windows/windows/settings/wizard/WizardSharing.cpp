@@ -29,6 +29,7 @@ PropPage::TextItem WizardSharing::texts[] = {
 };
 
 LRESULT WizardSharing::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	DarkMode::applyPage((HWND)(*this));
 	PropPage::translate((HWND)(*this), texts);
 
 	dirPage->Create(this->m_hWnd);

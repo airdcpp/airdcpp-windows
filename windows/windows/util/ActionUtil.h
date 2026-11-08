@@ -88,7 +88,7 @@ public:
 
 	static void appendPreviewMenu(OMenu& parent_, const string& aTarget);
 
-	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept;
+	static void appendLanguageMenu(CComboBox& ctrlLanguage) noexcept;
 	static void setLanguage(int aLanguageIndex) noexcept;
 
 	static void appendHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);

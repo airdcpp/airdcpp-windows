@@ -1,5 +1,5 @@
 /* 
-* Copyright (C) 2003-2005 Pär Björklund, per.bjorklund@gmail.com
+* Copyright (C) 2003-2005 Pï¿½r Bjï¿½rklund, per.bjorklund@gmail.com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 */
 
 #include <windows/stdafx.h>
+
+#include <windows/util/DarkMode.h>
 #include <windows/Resource.h>
 
 
@@ -108,6 +110,9 @@ LRESULT FulTabsPage::onColorButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	}
 	
 	CColorDialog d(col, CC_FULLOPEN);
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 	if(d.DoModal() == IDOK){
 		switch(sel){
 		case 0: settings->set(SettingsManager::TAB_ACTIVE_BG, (int)d.GetColor()); break;

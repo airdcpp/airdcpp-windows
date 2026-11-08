@@ -410,9 +410,14 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 			uint64_t now = GET_TICK();
 			uint64_t length = min((uint64_t)(rc.right - rc.left), (rc.right - rc.left) * (now - searchStartTime) / (searchEndTime - searchStartTime));
 
-			OperaColors::FloodFill(dc, rc.left, rc.top,  rc.left + (LONG)length, rc.bottom, RGB(128,128,128), RGB(160,160,160));
+			COLORREF progressColor = SETTING(PROGRESS_OVERRIDE_COLORS) ?
+				(SettingsManager::getInstance()->hasSetting(SettingsManager::SEARCH_PROGRESS_COLOR) ? SETTING(SEARCH_PROGRESS_COLOR) : SETTING(DOWNLOAD_BAR_COLOR)) : GetSysColor(COLOR_HIGHLIGHT);
+			COLORREF progressLight, progressDark;
+			OperaColors::EnlightenFlood(progressColor, progressLight, progressDark, SETTING(PROGRESS_LIGHTEN));
+			OperaColors::FloodFill(dc, rc.left, rc.top, rc.left + (LONG)length, rc.bottom, progressLight, progressDark);
 
 			dc.SetBkMode(TRANSPARENT);
+			HFONT oldFont = dc.SelectFont(WinUtil::progressFont);
 
 			uint64_t percent = (now - searchStartTime) * 100 / (searchEndTime - searchStartTime);
 			tstring progress = percent >= 100 ? TSTRING(DONE) : Text::toT(Util::toString(percent) + "%");
@@ -421,7 +426,7 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 			int textHeight = WinUtil::getTextHeight(dc);
 			LONG top = rc.top + (rc.bottom - rc.top - textHeight) / 2;
 
-			dc.SetTextColor(RGB(255, 255, 255));
+			dc.SetTextColor(SETTING(PROGRESS_TEXT_COLOR_DOWN));
 			RECT rc2 = rc;
 			rc2.right = rc.left + (LONG)length;
 			dc.ExtTextOut(rc.left + borders[2], top, ETO_CLIPPED, &rc2, buf.c_str(), buf.size(), NULL);
@@ -432,6 +437,7 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 			rc2.left = rc.left + (LONG)length;
 			dc.ExtTextOut(rc.left + borders[2], top, ETO_CLIPPED, &rc2, buf.c_str(), buf.size(), NULL);
 			
+			dc.SelectFont(oldFont);
 			dc.Detach();
 		}
 	} else if(dis->CtlType == ODT_MENU) {

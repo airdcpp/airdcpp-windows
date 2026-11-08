@@ -177,7 +177,7 @@ public:
 
 		LIST_HL_BG_COLOR, LIST_HL_COLOR, QUEUE_DUPE_COLOR, TEXT_QUEUE_DUPE_BACK_COLOR, QUEUE_SPLITTER_POS,
 		WTB_IMAGE_SIZE, TB_PROGRESS_TEXT_COLOR,
-		COLOR_STATUS_FINISHED, COLOR_STATUS_SHARED, PROGRESS_LIGHTEN, FAV_USERS_SPLITTER_POS, WINDOW_THEME,
+		COLOR_STATUS_FINISHED, COLOR_STATUS_SHARED, PROGRESS_LIGHTEN, FAV_USERS_SPLITTER_POS, WINDOW_THEME, SEARCH_PROGRESS_COLOR,
 #endif
 		INT_LAST 
 	};
@@ -344,6 +344,8 @@ public:
 	int get(IntSetting key, bool useDefault = true) const noexcept {
 		return (isSet[key] || !useDefault) ? intSettings[key - INT_FIRST] : intDefaults[key - INT_FIRST];
 	}
+
+	bool hasSetting(IntSetting key) const noexcept { return isSet[key]; }
 	bool get(BoolSetting key, bool useDefault = true) const noexcept {
 		return (isSet[key] || !useDefault) ? boolSettings[key - BOOL_FIRST] : boolDefaults[key - BOOL_FIRST];
 	}

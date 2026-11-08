@@ -62,7 +62,7 @@ private:
 
 	static Item items[];
 	static TextItem texts[];
-	CComboBoxEx ctrlLanguage;
+	CComboBox ctrlLanguage;
 
 	int curProfile;
 	ProfileSettingItem::List conflicts;

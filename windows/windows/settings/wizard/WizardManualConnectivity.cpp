@@ -29,6 +29,7 @@ PropPage::TextItem WizardManualConnectivity::texts[] = {
 };
 
 LRESULT WizardManualConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	DarkMode::applyPage((HWND)(*this));
 	PropPage::translate((HWND)(*this), texts);
 
 	protocols->Create(this->m_hWnd);

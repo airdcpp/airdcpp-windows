@@ -16,6 +16,8 @@
 
 #include <windows/stdafx.h>
 
+#include <windows/util/DarkMode.h>
+
 #include <windows/Resource.h>
 #include <windows/settings/ListViewColours.h>
 #include <windows/util/WinUtil.h>
@@ -74,6 +76,9 @@ LRESULT ListViewColours::onChangeColour(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		default: break;
 	}
 	CColorDialog d( colour, 0, hWndCtl );
+	DarkMode::prepareColorDialogColors(d.m_cc.lpCustColors);
+	d.m_cc.lpfnHook = DarkMode::commonColorDialogHook;
+	d.m_cc.Flags |= CC_ENABLEHOOK;
 	if (d.DoModal() == IDOK) {
 		switch(index) {
 			case 0: normalColour = d.GetColor(); break;
@@ -131,6 +136,8 @@ void ListViewColours::EditTextStyle() {
 	font = currentFont;
 
 	CFontDialog d(&font, CF_SCREENFONTS, NULL, *this);
+	d.m_cf.lpfnHook = DarkMode::commonFontDialogHook;
+	d.m_cf.Flags |= CF_ENABLEHOOK;
 	//d.m_cf.rgbColors = textclr;
 	if(d.DoModal() == IDOK){
 		fontChanged = true;
