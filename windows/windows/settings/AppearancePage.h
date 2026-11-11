@@ -26,6 +26,8 @@
 #include <atlcrack.h>
 #include <windows/settings/base/PropPage.h>
 #include <windows/components/ExListViewCtrl.h>
+#include <string>
+#include <vector>
 
 
 namespace wingui {
@@ -42,12 +44,14 @@ public:
 	BEGIN_MSG_MAP_EX(AppearancePage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_ID_HANDLER(IDC_BROWSE, onBrowse)
+		COMMAND_ID_HANDLER(IDC_SPELLCHECK_MANAGE_LANGUAGES, onManageSpellcheckLanguages)
 		COMMAND_HANDLER(IDC_TIMESTAMP_HELP, BN_CLICKED, onClickedTimeHelp)
 		COMMAND_HANDLER(IDC_COUNTRY_FORMAT_HELP, BN_CLICKED, onClickedCountryHelp)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onManageSpellcheckLanguages(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedTimeHelp(WORD /* wNotifyCode */, WORD wID, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onClickedCountryHelp(WORD /* wNotifyCode */, WORD wID, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	
@@ -59,6 +63,7 @@ protected:
 	static Item items[];
 	static TextItem texts[];
 	static ListItem listItems[];
+	std::vector<std::string> spellcheckLanguages;
 
 };
 }

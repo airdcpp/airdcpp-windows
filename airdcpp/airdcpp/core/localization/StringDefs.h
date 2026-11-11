@@ -1942,5 +1942,10 @@ enum Strings { // @DontAdd
 	API_SHARE_REFRESH_PENDING, // "Refresh pending"
 	API_SHARE_REFRESHING, // "Refreshing"
 
+	SETTINGS_CHAT_SPELLCHECK, // "Underline misspelled words in chat"
+	SETTINGS_SPELLCHECK_LANGUAGE, // "Spelling language"
+	SETTINGS_SPELLCHECK_SYSTEM_DEFAULT, // "System default"
+	SETTINGS_SPELLCHECK_MANAGE_LANGUAGES, // "Manage spelling languages..."
+
 	LAST // @DontAdd
 };
