@@ -1808,6 +1808,10 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 }
 
 void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
+	// The owner-drawn search progress segment uses the progress bar color settings.
+	// Refresh it when those settings are saved, even when the search result colors are unchanged.
+	ctrlStatus.Invalidate();
+
 	bool refresh = false;
 	if(ctrlResults.list.GetBkColor() != WinUtil::bgColor) {
 		ctrlResults.list.SetBkColor(WinUtil::bgColor);
