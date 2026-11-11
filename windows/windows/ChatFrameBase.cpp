@@ -103,10 +103,31 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 	}
 
 
-	ctrlMessage.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
-		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
+	const auto messageStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
+		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL;
+	const auto messageHwnd = ::CreateWindowEx(WS_EX_CLIENTEDGE, MSFTEDIT_CLASS, _T(""), messageStyle,
+		aRcDefault.left, aRcDefault.top, aRcDefault.right - aRcDefault.left, aRcDefault.bottom - aRcDefault.top,
+		m_hWnd, nullptr, GetModuleHandle(nullptr), nullptr);
+	ctrlMessage.Attach(messageHwnd);
 	ctrlMessage.SetFont(WinUtil::font);
-	ctrlMessage.SetLimitText(32*1024);
+	ctrlMessage.SendMessage(EM_EXLIMITTEXT, 0, 32 * 1024);
+	if (SETTING(CHAT_SPELLCHECK)) {
+		const auto langOptions = ctrlMessage.SendMessage(EM_GETLANGOPTIONS);
+		ctrlMessage.SendMessage(EM_SETLANGOPTIONS, 0, langOptions | IMF_SPELLCHECKING);
+		ctrlMessage.SendMessage(EM_SETEDITSTYLE, SES_CTFALLOWPROOFING, SES_CTFALLOWPROOFING);
+
+		const auto spellcheckLanguage = Text::toT(SETTING(SPELLCHECK_LANGUAGE));
+		if (!spellcheckLanguage.empty()) {
+			const auto languageId = LocaleNameToLCID(spellcheckLanguage.c_str(), LOCALE_ALLOW_NEUTRAL_NAMES);
+			if (languageId) {
+				CHARFORMAT2 languageFormat = {};
+				languageFormat.cbSize = sizeof(languageFormat);
+				languageFormat.dwMask = CFM_LCID;
+				languageFormat.lcid = languageId;
+				ctrlMessage.SendMessage(EM_SETCHARFORMAT, SCF_DEFAULT, reinterpret_cast<LPARAM>(&languageFormat));
+			}
+		}
+	}
 	lineCount = 1; //ApexDC
 
 	if(SETTING(SHOW_EMOTICON)){

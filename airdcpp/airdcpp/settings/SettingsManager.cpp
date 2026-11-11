@@ -927,6 +927,8 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 
 	setDefault(SERVER_COMMANDS, true);
 	setDefault(CLIENT_COMMANDS, true);
+	setDefault(CHAT_SPELLCHECK, true);
+	setDefault(SPELLCHECK_LANGUAGE, "");
 	setDefault(POPUP_FONT, "MS Shell Dlg,-11,400,0");
 	setDefault(POPUP_TITLE_FONT, "MS Shell Dlg,-11,400,0");
 	setDefault(POPUPFILE, AppUtil::getPath(AppUtil::PATH_RESOURCES) + "popup.bmp");

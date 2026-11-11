@@ -25,6 +25,9 @@
 
 #include <airdcpp/util/text/Text.h>
 
+#include <spellcheck.h>
+#include <shellapi.h>
+
 namespace wingui {
 PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_APPEARANCE_OPTIONS, ResourceManager::SETTINGS_OPTIONS },
@@ -35,6 +38,7 @@ PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_REQUIRES_RESTART, ResourceManager::SETTINGS_REQUIRES_RESTART },
 	{ IDC_SETTINGS_GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY }, 
 	{ IDC_SETTINGS_COUNTRY_FORMAT, ResourceManager::SETTINGS_COUNTRY_FORMAT }, 
+	{ IDC_SPELLCHECK_LANGUAGE_LABEL, ResourceManager::SETTINGS_SPELLCHECK_LANGUAGE },
 	{ IDC_DATE_FORMAT_LBL, ResourceManager::FILE_DATE_FORMAT },
 	{ 0, ResourceManager::LAST }
 };
@@ -79,6 +83,7 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::SHOW_MAGNET, ResourceManager::SHOW_MAGNET_BUTTON },
 	{ SettingsManager::SHOW_MULTILINE, ResourceManager::SHOW_MULTILINE_BUTTON },
 	{ SettingsManager::SHOW_SEND_MESSAGE, ResourceManager::SHOW_SEND_MESSAGE_BUTTON },
+	{ SettingsManager::CHAT_SPELLCHECK, ResourceManager::SETTINGS_CHAT_SPELLCHECK },
 	{ 0, ResourceManager::LAST }
 };
 
@@ -88,6 +93,11 @@ AppearancePage::~AppearancePage(){ }
 
 void AppearancePage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_APPEARANCE_BOOLEANS));
+
+	const auto selection = static_cast<int>(SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_GETCURSEL));
+	const auto languageIndex = selection < 0 ? 0 : static_cast<int>(SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_GETITEMDATA, selection));
+	SettingsManager::getInstance()->set(SettingsManager::SPELLCHECK_LANGUAGE,
+		languageIndex > 0 && static_cast<size_t>(languageIndex) <= spellcheckLanguages.size() ? spellcheckLanguages[languageIndex - 1] : "");
 }
 
 
@@ -98,9 +108,53 @@ LRESULT AppearancePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_APPEARANCE_BOOLEANS));
 
+	spellcheckLanguages.clear();
+	SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_RESETCONTENT);
+	SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(TSTRING(SETTINGS_SPELLCHECK_SYSTEM_DEFAULT).c_str()));
+	SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_SETITEMDATA, 0, 0);
+
+	static const CLSID spellCheckerFactoryClass = { 0x7ab36653, 0x1796, 0x484b, { 0xbd, 0xfa, 0xe7, 0x4f, 0x1d, 0xb7, 0xc1, 0xdc } };
+	CComPtr<ISpellCheckerFactory> spellcheckerFactory;
+	CComPtr<IEnumString> supportedLanguages;
+	if (SUCCEEDED(CoCreateInstance(spellCheckerFactoryClass, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&spellcheckerFactory))) &&
+		SUCCEEDED(spellcheckerFactory->get_SupportedLanguages(&supportedLanguages))) {
+		for (;;) {
+			LPOLESTR language = nullptr;
+			ULONG fetched = 0;
+			if (supportedLanguages->Next(1, &language, &fetched) != S_OK || fetched != 1) {
+				break;
+			}
+
+			spellcheckLanguages.emplace_back(Text::fromT(language));
+			const auto languageIndex = static_cast<int>(spellcheckLanguages.size());
+			WCHAR displayName[128] = {};
+			if (!GetLocaleInfoEx(language, LOCALE_SLOCALIZEDDISPLAYNAME, displayName, ARRAYSIZE(displayName))) {
+				wcscpy_s(displayName, language);
+			}
+			const auto itemIndex = static_cast<int>(SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(displayName)));
+			SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_SETITEMDATA, itemIndex, languageIndex);
+			CoTaskMemFree(language);
+		}
+	}
+
+	auto selectedLanguage = SettingsManager::getInstance()->get(SettingsManager::SPELLCHECK_LANGUAGE, true);
+	int selectedIndex = 0;
+	for (size_t i = 0; i < spellcheckLanguages.size(); ++i) {
+		if (spellcheckLanguages[i] == selectedLanguage) {
+			selectedIndex = static_cast<int>(i + 1);
+			break;
+		}
+	}
+	SendDlgItemMessage(IDC_SPELLCHECK_LANGUAGE, CB_SETCURSEL, selectedIndex);
+	SetDlgItemText(IDC_SPELLCHECK_MANAGE_LANGUAGES, TSTRING(SETTINGS_SPELLCHECK_MANAGE_LANGUAGES).c_str());
 
 	// Do specialized reading here
 	return TRUE;
+}
+
+LRESULT AppearancePage::onManageSpellcheckLanguages(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ShellExecute(m_hWnd, _T("open"), _T("ms-settings:regionlanguage"), nullptr, nullptr, SW_SHOWNORMAL);
+	return 0;
 }
 
 LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

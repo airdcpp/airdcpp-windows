@@ -1850,6 +1850,9 @@
 #define IDC_FAVORITES                   42783
 #define IDC_FOLLOW                      42784
 #define IDC_SEND_MESSAGE                42786
+#define IDC_SPELLCHECK_LANGUAGE         42792
+#define IDC_SPELLCHECK_MANAGE_LANGUAGES 42793
+#define IDC_SPELLCHECK_LANGUAGE_LABEL   42794
 #define IDC_FILTER_FOCUS                42788
 #define IDC_AUTOSEARCH                  42789
 #define IDC_BROWSE_OWN_LIST             42791
