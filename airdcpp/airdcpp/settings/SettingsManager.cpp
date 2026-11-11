@@ -227,7 +227,7 @@ const string SettingsManager::settingTags[] =
 	"MediaToolbar", "password", "HighlightList", "IconPath",
 	"AutoSearchFrame2Order", "AutoSearchFrame2Widths", "ToolbarPos", "TBProgressFont", "LastSearchFiletype", "LastSearchDisabledHubs", "LastASFiletype", "LastSearchExcluded",
 	"UsersFrmVisible2", "ListViewFont", "LastFilelistFiletype", "AutosearchFrmVisible",
-	"RssFrameOrder", "RssFrameWidths", "RssFrameVisible",
+	"RssFrameOrder", "RssFrameWidths", "RssFrameVisible", "SpellcheckLanguage",
 #endif
 	"SENTRY",
 
@@ -387,7 +387,7 @@ const string SettingsManager::settingTags[] =
 		
 	"HubBoldTabs", "showWinampControl", "BlendTabs", "TabShowIcons", 
 	"FavUsersShowInfo", "SearchUseExcluded", "AutoSearchBold", "ShowEmoticon", "ShowMultiline", "ShowMagnet", "ShowSendMessage", "WarnElevated",
-	"ConfirmFileDeletions", "CloseMinimize",
+	"ConfirmFileDeletions", "CloseMinimize", "ChatSpellcheck",
 
 	"FilterFLShared", "FilterFLQueued", "FilterFLInversed", "FilterFLTop", "FilterFLPartialDupes", "FilterFLResetChange", "FilterSearchShared", 
 	"FilterSearchQueued", "FilterSearchInversed", "FilterSearchTop", "FilterSearchPartialDupes", "FilterSearchResetChange", "SearchAschOnlyMan", 
